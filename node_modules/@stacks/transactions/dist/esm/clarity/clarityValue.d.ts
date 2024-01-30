@@ -1,0 +1,26 @@
+import { BooleanCV, BufferCV, IntCV, UIntCV, StandardPrincipalCV, ContractPrincipalCV, ResponseErrorCV, ResponseOkCV, ListCV, TupleCV, StringAsciiCV, StringUtf8CV, NoneCV, SomeCV, TrueCV, FalseCV } from '.';
+import { ClarityType } from './constants';
+export type ClarityValue = BooleanCV | BufferCV | IntCV | UIntCV | StandardPrincipalCV | ContractPrincipalCV | ResponseErrorCV | ResponseOkCV | NoneCV | SomeCV | ListCV | TupleCV | StringAsciiCV | StringUtf8CV;
+export declare function cvToString(val: ClarityValue, encoding?: 'tryAscii' | 'hex'): string;
+export declare function cvToValue(val: ClarityValue, strictJsonCompat?: boolean): any;
+export declare function cvToJSON(val: ClarityValue): any;
+export declare function getCVTypeString(val: ClarityValue): string;
+type ClarityTypetoValue = {
+    [ClarityType.OptionalNone]: NoneCV;
+    [ClarityType.OptionalSome]: SomeCV;
+    [ClarityType.ResponseOk]: ResponseOkCV;
+    [ClarityType.ResponseErr]: ResponseErrorCV;
+    [ClarityType.BoolTrue]: TrueCV;
+    [ClarityType.BoolFalse]: FalseCV;
+    [ClarityType.Int]: IntCV;
+    [ClarityType.UInt]: UIntCV;
+    [ClarityType.StringASCII]: StringAsciiCV;
+    [ClarityType.StringUTF8]: StringUtf8CV;
+    [ClarityType.PrincipalStandard]: StandardPrincipalCV;
+    [ClarityType.PrincipalContract]: ContractPrincipalCV;
+    [ClarityType.List]: ListCV;
+    [ClarityType.Tuple]: TupleCV;
+    [ClarityType.Buffer]: BufferCV;
+};
+export declare function isClarityType<T extends ClarityType>(input: ClarityValue, withType: T): input is ClarityTypetoValue[T];
+export {};

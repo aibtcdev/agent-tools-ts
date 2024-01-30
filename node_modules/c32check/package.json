@@ -1,0 +1,175 @@
+{
+  "name": "c32check",
+  "version": "2.0.0",
+  "description": "Crockford base-32 checksum encoding",
+  "main": "lib/index",
+  "unpkg": "dist/c32check.js",
+  "jsdelivr": "dist/c32check.js",
+  "prettier": "@stacks/prettier-config",
+  "browser": {
+    "crypto": false
+  },
+  "scripts": {
+    "webpack": "rimraf lib dist && webpack --mode=production",
+    "webpack:analyze": "rimraf dist && cross-env NODE_ENV=production ANALYZE=true webpack --mode=production",
+    "compile": "rimraf lib && tsc",
+    "prepublishOnly": "npm run build",
+    "build": "npm run lint && npm run test && npm run webpack && npm run compile",
+    "lint": "eslint --ext=.ts ./src ./tests",
+    "prettier": "prettier --write ./src/**/*.ts",
+    "test": "nyc node ./tests/unitTests/src/index.ts",
+    "data-set-test": "cross-env BIG_DATA_TESTS=1 nyc node ./tests/unitTests/src/index.ts",
+    "codecovUpload": "codecov",
+    "prepare": "husky install .github/husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacks-network/c32check.git"
+  },
+  "author": {
+    "name": "Jude Nelson",
+    "email": "jude@blockstack.com",
+    "url": "https://blockstack.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stacks-network/c32check/issues"
+  },
+  "keywords": [
+    "blockchain",
+    "id",
+    "auth",
+    "authentication",
+    "bitcoin",
+    "blockchain auth",
+    "blockchain authentication",
+    "blockchainid",
+    "blockchain id",
+    "bitcoin auth",
+    "bitcoin authentication",
+    "bitcoin login",
+    "blockchain login",
+    "authorization",
+    "login",
+    "signin",
+    "sso",
+    "crypto",
+    "cryptography",
+    "token",
+    "blockstack",
+    "blockstack auth",
+    "profile",
+    "identity",
+    "ethereum"
+  ],
+  "homepage": "https://stacks.co",
+  "contributors": [
+    {
+      "name": "Jude Nelson",
+      "email": "jude@blockstack.com"
+    },
+    {
+      "name": "Aaron Blankstein",
+      "email": "aaron@blockstack.com"
+    },
+    {
+      "name": "Matthew Little",
+      "email": "matt@blockstack.com"
+    }
+  ],
+  "files": [
+    "src",
+    "lib",
+    "dist"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.17.10",
+    "@babel/preset-env": "^7.17.10",
+    "@commitlint/cli": "^17.0.3",
+    "@commitlint/config-conventional": "^17.0.3",
+    "@stacks/eslint-config": "^1.2.0",
+    "@stacks/prettier-config": "^0.0.10",
+    "@types/bs58": "^4.0.1",
+    "@types/node": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.34.0",
+    "@typescript-eslint/parser": "^5.34.0",
+    "babel-loader": "^8.2.5",
+    "codecov": "^3.8.3",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.22.0",
+    "husky": "^8.0.1",
+    "nyc": "^15.1.0",
+    "prettier": "^2.7.1",
+    "rimraf": "^3.0.2",
+    "source-map-support": "^0.5.19",
+    "tape": "^5.6.0",
+    "tape-promise": "^4.0.0",
+    "ts-loader": "^8.0.2",
+    "ts-node": "^8.10.2",
+    "typescript": "^4.6.4",
+    "webpack": "^5.74.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.1.2",
+    "base-x": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=8"
+  },
+  "nyc": {
+    "cache": false,
+    "all": true,
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ],
+    "require": [
+      "ts-node/register/transpile-only",
+      "source-map-support/register"
+    ],
+    "reporter": [
+      "text",
+      "lcov"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "release": {
+    "branches": "master",
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "npm ci"
+        }
+      ],
+      [
+        "@semantic-release/npm",
+        {
+          "npmPublish": true
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "message": "chore: release ${nextRelease.version}",
+          "assets": [
+            "*.{json,md}"
+          ]
+        }
+      ]
+    ]
+  }
+}
