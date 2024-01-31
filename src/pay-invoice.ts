@@ -11,7 +11,6 @@ import {
   createSTXPostCondition,
   getNonce,
   makeContractCall,
-  TxBroadcastResultRejected,
 } from "@stacks/transactions";
 
 import {
@@ -46,11 +45,7 @@ async function main() {
     functionName: "pay-invoice-by-resource-name",
     functionArgs: [
       Cl.stringUtf8(RESOURCE_NAME),
-      Cl.some(
-        Cl.buffer(
-          Buffer.from("First test from a script, with post-conditions!")
-        )
-      ), // memo (optional)
+      Cl.none(), // memo (optional)
     ],
     fee: DEFAULT_FEE,
     nonce: nonce,
