@@ -16,7 +16,7 @@ async function main() {
 
   // get account address and private key
   const { address, key } = await deriveChildAccount(
-    "testnet",
+    network,
     mnemonic,
     accountIndex
   );
