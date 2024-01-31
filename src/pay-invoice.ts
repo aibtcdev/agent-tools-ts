@@ -7,8 +7,11 @@ import {
   FungibleConditionCode,
   PostConditionMode,
   SignedContractCallOptions,
+  broadcastTransaction,
   createSTXPostCondition,
   getNonce,
+  makeContractCall,
+  TxBroadcastResultRejected,
 } from "@stacks/transactions";
 
 import {
@@ -43,7 +46,11 @@ async function main() {
     functionName: "pay-invoice-by-resource-name",
     functionArgs: [
       Cl.stringUtf8(RESOURCE_NAME),
-      Cl.buffer(Buffer.from("First test from a script, with post-conditions!")), // memo (optional)
+      Cl.some(
+        Cl.buffer(
+          Buffer.from("First test from a script, with post-conditions!")
+        )
+      ), // memo (optional)
     ],
     fee: DEFAULT_FEE,
     nonce: nonce,
@@ -60,10 +67,36 @@ async function main() {
     ],
   };
 
-  console.log("--------------------------------------------------");
-  console.log("Address:", address);
-  console.log("--------------------------------------------------");
-  console.log("Transaction Options:", txOptions);
+  try {
+    // create and broadcast transaction
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastTransaction(transaction, network);
+
+    // handle error in response
+    if ("error" in broadcastResponse) {
+      console.error("Transaction failed to broadcast");
+      console.error(`Error: ${broadcastResponse.error}`);
+      if (broadcastResponse.reason) {
+        console.error(`Reason: ${broadcastResponse.reason}`);
+      }
+      if (broadcastResponse.reason_data) {
+        console.error(
+          `Reason Data: ${JSON.stringify(
+            broadcastResponse.reason_data,
+            null,
+            2
+          )}`
+        );
+      }
+    } else {
+      // report successful result
+      console.log("Transaction broadcasted successfully!");
+      console.log(`TXID: 0x${broadcastResponse.txid}`);
+    }
+  } catch (error) {
+    // report error
+    console.error(`General Failure: ${error}`);
+  }
 }
 
 main();
