@@ -1,32 +1,23 @@
-// pay a stacks-m2m invoice
-// with post-conditions
-
-import { TransactionVersion } from "@stacks/transactions";
+import { TransactionVersion } from "@stacks/common";
+import { StacksMainnet, StacksTestnet } from "@stacks/network";
 import {
-  generateWallet,
   generateNewAccount,
+  generateWallet,
   getStxAddress,
 } from "@stacks/wallet-sdk";
 
-async function main() {
-  // get seed phrase from env
-  const network = Bun.env.network;
-  const mnemonic = Bun.env.mnemonic;
-  const accountIndex = Bun.env.accountIndex;
-
-  // get account address and private key
-  const { address, key } = await deriveChildAccount(
-    network,
-    mnemonic,
-    accountIndex
-  );
-
-  console.log("Address:", address);
+export function getNetwork(network: string) {
+  switch (network) {
+    case "mainnet":
+      return new StacksMainnet();
+    case "testnet":
+      return new StacksTestnet();
+    default:
+      return new StacksTestnet();
+  }
 }
 
-main();
-
-async function getTxVersion(network: string) {
+export function getTxVersion(network: string) {
   switch (network) {
     case "mainnet":
       return TransactionVersion.Mainnet;
@@ -37,7 +28,7 @@ async function getTxVersion(network: string) {
   }
 }
 
-async function deriveChildAccount(
+export async function deriveChildAccount(
   network: string,
   mnemonic: string,
   index: number
