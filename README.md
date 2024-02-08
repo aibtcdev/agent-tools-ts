@@ -4,14 +4,12 @@ Typescript utility scripts that interact with the Stacks blockchain, using Bun!
 
 ## Local Development
 
-Install Bun globally
+1. Clone repository
+2. Install Bun globally
 
 ```bash
 curl -fsSL https://bun.sh/install | bash
 ```
 
-Install dependencies
-`bun install`
-
-Run scripts
-`bun run <script-name>`
+3. Install dependencies: `bun install`
+4. Run scripts: `bun run <script-name>`
