@@ -21,6 +21,7 @@ async function main() {
   // get the current nonce for the account
   const nonce = await getNonce(address, network);
   // log the account info
+  console.log(`Account index: ${accountIndex}`);
   console.log(`Account address: ${address}`);
   console.log(`Nonce: ${nonce}`);
 }

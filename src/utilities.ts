@@ -48,8 +48,37 @@ export async function deriveChildAccount(
   return {
     address: getStxAddress({
       account: wallet.accounts[index],
-      transactionVersion: await getTxVersion(network),
+      transactionVersion: getTxVersion(network),
     }),
     key: wallet.accounts[index].stxPrivateKey,
   };
+}
+
+export async function deriveChildAccounts(
+  network: string,
+  mnemonic: string,
+  index: number
+) {
+  // using a blank password since wallet isn't persisted
+  const password = "";
+  // create a Stacks wallet with the mnemonic
+  let wallet = await generateWallet({
+    secretKey: mnemonic,
+    password: password,
+  });
+  // loop to add new accounts to reach the selected index
+  for (let i = 0; i <= index; i++) {
+    wallet = generateNewAccount(wallet);
+  }
+
+  // use Promise.all to handle the asynchronous operation inside map
+  const addresses = wallet.accounts.map((account) => {
+    const transactionVersion = getTxVersion(network);
+    return getStxAddress({
+      account: account,
+      transactionVersion: transactionVersion,
+    });
+  });
+
+  return addresses;
 }
