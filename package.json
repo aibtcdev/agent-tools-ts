@@ -1,1 +1,8 @@
-{ "dependencies": { "@stacks/wallet-sdk": "^6.11.3" } }
+{
+  "scripts": {
+    "generate-mnemonic": "bunx --bun run-func src/utilities.ts generateMnemonic"
+  },
+  "dependencies": {
+    "@stacks/wallet-sdk": "^6.11.3"
+  }
+}
