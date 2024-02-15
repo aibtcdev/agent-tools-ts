@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "generate-mnemonic": "node -e 'import(\"@stacks/wallet-sdk\").then(({generateSecretKey}) => console.log(generateSecretKey()))'"
+    "generate-mnemonic": "bunx --bun run-func src/utilities.ts generateMnemonic"
   },
   "dependencies": {
     "@stacks/wallet-sdk": "^6.11.3"

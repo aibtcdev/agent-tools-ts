@@ -4,7 +4,12 @@ import {
   generateNewAccount,
   generateWallet,
   getStxAddress,
+  generateSecretKey,
 } from "@stacks/wallet-sdk";
+
+export function generateMnemonic() {
+  return generateSecretKey();
+}
 
 export function getNetwork(network: string) {
   switch (network) {
