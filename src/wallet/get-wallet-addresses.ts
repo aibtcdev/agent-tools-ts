@@ -1,10 +1,17 @@
-import { deriveChildAccounts } from "./utilities";
+import { deriveChildAccounts } from "../utilities";
+
+// CONFIGURATION
+
+const NETWORK = Bun.env.network;
+const MNEMONIC = Bun.env.mnemonic;
+
+// MAIN SCRIPT (DO NOT EDIT BELOW)
 
 async function main() {
   // get account info from env
-  const network = Bun.env.network;
-  const mnemonic = Bun.env.mnemonic;
-  const desiredIndex = 9; // hard-coded index for now
+  const network = NETWORK;
+  const mnemonic = MNEMONIC;
+  const desiredIndex = 9; // hard-coded to return 10 addresses
 
   // check that values exist for each
   if (!network) {

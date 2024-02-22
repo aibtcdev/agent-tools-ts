@@ -1,0 +1,110 @@
+// pay a stacks-m2m invoice
+// with post-conditions
+
+import {
+  AnchorMode,
+  Cl,
+  FungibleConditionCode,
+  PostConditionMode,
+  SignedContractCallOptions,
+  broadcastTransaction,
+  createAssetInfo,
+  createFungiblePostCondition,
+  getNonce,
+  makeContractCall,
+} from "@stacks/transactions";
+import { deriveChildAccount } from "../utilities";
+
+// CONFIGURATION
+
+const NETWORK = Bun.env.network;
+const MNEMONIC = Bun.env.mnemonic;
+const ACCOUNT_INDEX = Bun.env.accountIndex;
+
+const DEPLOYER = "ST2HQ5J6RP8HSQE9KKGWCHW9PT9SVE4TDGBZQ3EKR";
+const TOKEN_CONTRACT_NAME = "stacks-m2m-aibtc";
+const TOKEN_NAME = "bridged-bitcoin";
+const CONTRACT_NAME = "stacks-m2m-v2";
+const DEFAULT_FEE = 250_000; // 0.25 STX
+const RESOURCE_ID = 1;
+const RESOURCE_PRICE = 1_000; // 0.00001 aiBTC
+const FUNCTION_NAME = "pay-invoice";
+const FUNCTION_ARGS = [
+  Cl.uint(RESOURCE_ID),
+  Cl.none(), // memo (optional)
+];
+
+// MAIN SCRIPT (DO NOT EDIT BELOW)
+
+async function main() {
+  // get account info from env
+  const network = NETWORK;
+  const mnemonic = MNEMONIC;
+  const accountIndex = ACCOUNT_INDEX;
+
+  // get account address and private key
+  const { address, key } = await deriveChildAccount(
+    network,
+    mnemonic,
+    accountIndex
+  );
+
+  // get the current nonce for the account
+  const nonce = await getNonce(address, network);
+
+  // create the pay-invoice transaction
+  const txOptions: SignedContractCallOptions = {
+    contractAddress: DEPLOYER,
+    contractName: CONTRACT_NAME,
+    functionName: FUNCTION_NAME,
+    functionArgs: FUNCTION_ARGS,
+    fee: DEFAULT_FEE,
+    nonce: nonce,
+    network: network,
+    senderKey: key,
+    anchorMode: AnchorMode.Any,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions: [
+      createFungiblePostCondition(
+        address,
+        FungibleConditionCode.Equal,
+        RESOURCE_PRICE,
+        createAssetInfo(DEPLOYER, TOKEN_CONTRACT_NAME, TOKEN_NAME)
+      ),
+    ],
+  };
+
+  try {
+    // create and broadcast transaction
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastTransaction(transaction, network);
+
+    // handle error in response
+    if ("error" in broadcastResponse) {
+      console.error("Transaction failed to broadcast");
+      console.error(`Error: ${broadcastResponse.error}`);
+      if (broadcastResponse.reason) {
+        console.error(`Reason: ${broadcastResponse.reason}`);
+      }
+      if (broadcastResponse.reason_data) {
+        console.error(
+          `Reason Data: ${JSON.stringify(
+            broadcastResponse.reason_data,
+            null,
+            2
+          )}`
+        );
+      }
+    } else {
+      // report successful result
+      console.log("Transaction broadcasted successfully!");
+      console.log(`SENT FROM: ${address}`);
+      console.log(`TXID: 0x${broadcastResponse.txid}`);
+    }
+  } catch (error) {
+    // report error
+    console.error(`General/Unexpected Failure: ${error}`);
+  }
+}
+
+main();

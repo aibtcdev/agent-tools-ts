@@ -8,25 +8,39 @@ import {
   PostConditionMode,
   SignedContractCallOptions,
   broadcastTransaction,
-  createSTXPostCondition,
+  createAssetInfo,
+  createFungiblePostCondition,
   getNonce,
   makeContractCall,
 } from "@stacks/transactions";
+import { deriveChildAccount } from "../utilities";
 
-import {
-  CONTRACT_ADDRESS,
-  CONTRACT_NAME,
-  DEFAULT_FEE,
-  RESOURCE_NAME,
-  RESOURCE_PRICE,
-} from "./constants";
-import { deriveChildAccount } from "./utilities";
+// CONFIGURATION
+
+const NETWORK = Bun.env.network;
+const MNEMONIC = Bun.env.mnemonic;
+const ACCOUNT_INDEX = Bun.env.accountIndex;
+
+const DEPLOYER = "ST2HQ5J6RP8HSQE9KKGWCHW9PT9SVE4TDGBZQ3EKR";
+const TOKEN_CONTRACT_NAME = "stacks-m2m-aibtc";
+const TOKEN_NAME = "bridged-bitcoin";
+const CONTRACT_NAME = "stacks-m2m-v2";
+const DEFAULT_FEE = 250_000; // 0.25 STX
+const RESOURCE_NAME = "bitcoin-face";
+const RESOURCE_PRICE = 1_000; // 0.00001 aiBTC
+const FUNCTION_NAME = "pay-invoice-by-resource-name";
+const FUNCTION_ARGS = [
+  Cl.stringUtf8(RESOURCE_NAME),
+  Cl.none(), // memo (optional)
+];
+
+// MAIN SCRIPT (DO NOT EDIT BELOW)
 
 async function main() {
   // get account info from env
-  const network = Bun.env.network;
-  const mnemonic = Bun.env.mnemonic;
-  const accountIndex = Bun.env.accountIndex;
+  const network = NETWORK;
+  const mnemonic = MNEMONIC;
+  const accountIndex = ACCOUNT_INDEX;
 
   // get account address and private key
   const { address, key } = await deriveChildAccount(
@@ -40,13 +54,10 @@ async function main() {
 
   // create the pay-invoice transaction
   const txOptions: SignedContractCallOptions = {
-    contractAddress: CONTRACT_ADDRESS,
+    contractAddress: DEPLOYER,
     contractName: CONTRACT_NAME,
-    functionName: "pay-invoice-by-resource-name",
-    functionArgs: [
-      Cl.stringUtf8(RESOURCE_NAME),
-      Cl.none(), // memo (optional)
-    ],
+    functionName: FUNCTION_NAME,
+    functionArgs: FUNCTION_ARGS,
     fee: DEFAULT_FEE,
     nonce: nonce,
     network: network,
@@ -54,10 +65,11 @@ async function main() {
     anchorMode: AnchorMode.Any,
     postConditionMode: PostConditionMode.Deny,
     postConditions: [
-      createSTXPostCondition(
+      createFungiblePostCondition(
         address,
         FungibleConditionCode.Equal,
-        RESOURCE_PRICE
+        RESOURCE_PRICE,
+        createAssetInfo(DEPLOYER, TOKEN_CONTRACT_NAME, TOKEN_NAME)
       ),
     ],
   };
@@ -90,7 +102,7 @@ async function main() {
     }
   } catch (error) {
     // report error
-    console.error(`General Failure: ${error}`);
+    console.error(`General/Unexpected Failure: ${error}`);
   }
 }
 
