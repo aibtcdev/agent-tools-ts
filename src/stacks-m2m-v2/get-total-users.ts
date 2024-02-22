@@ -1,12 +1,14 @@
-// CONFIGURATION
-
 import {
   ReadOnlyFunctionOptions,
   callReadOnlyFunction,
   cvToValue,
 } from "@stacks/transactions";
-import { CONTRACT_NAME, DEPLOYER } from "./constants";
+import { CONTRACT_NAME, DEPLOYER } from "../constants";
 import { deriveChildAccount } from "../utilities";
+
+// get total users in contract
+
+// CONFIGURATION
 
 const NETWORK = Bun.env.network;
 const MNEMONIC = Bun.env.mnemonic;

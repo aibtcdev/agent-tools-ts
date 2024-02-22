@@ -10,7 +10,7 @@ import {
 import { deriveChildAccount } from "../utilities";
 import { DEPLOYER, TOKEN_CONTRACT_NAME } from "../constants";
 
-// get 100_000_000 aiBTC from the faucet
+// get 10_000 aiBTC from the faucet
 
 // CONFIGURATION
 
@@ -19,7 +19,7 @@ const MNEMONIC = Bun.env.mnemonic;
 const ACCOUNT_INDEX = Bun.env.accountIndex;
 
 const DEFAULT_FEE = 250_000; // 0.25 STX
-const FUNCTION_NAME = "faucet-flood";
+const FUNCTION_NAME = "faucet-drip";
 
 // MAIN SCRIPT (DO NOT EDIT BELOW)
 

@@ -1,6 +1,8 @@
 import { getNonce } from "@stacks/transactions";
 import { deriveChildAccount } from "../utilities";
 
+// get currently selected wallet info from env file
+
 // CONFIGURATION
 
 const NETWORK = Bun.env.network;

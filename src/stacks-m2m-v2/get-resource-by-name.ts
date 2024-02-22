@@ -1,5 +1,3 @@
-// CONFIGURATION
-
 import {
   Cl,
   ReadOnlyFunctionOptions,
@@ -8,6 +6,10 @@ import {
 } from "@stacks/transactions";
 import { CONTRACT_NAME, DEPLOYER } from "../constants";
 import { deriveChildAccount } from "../utilities";
+
+// get resource info by name
+
+// CONFIGURATION
 
 const NETWORK = Bun.env.network;
 const MNEMONIC = Bun.env.mnemonic;

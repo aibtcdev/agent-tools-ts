@@ -1,5 +1,7 @@
 import { deriveChildAccounts } from "../utilities";
 
+// get first 10 account addresses from wallet
+
 // CONFIGURATION
 
 const NETWORK = Bun.env.network;

@@ -1,6 +1,3 @@
-// pay a stacks-m2m invoice
-// with post-conditions
-
 import {
   AnchorMode,
   Cl,
@@ -20,6 +17,9 @@ import {
   TOKEN_NAME,
   CONTRACT_NAME,
 } from "../constants";
+
+// pay a stacks-m2m invoice
+// TODO: fix post-conditions
 
 // CONFIGURATION
 
