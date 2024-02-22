@@ -1,25 +1,16 @@
-// pay a stacks-m2m invoice
-// with post-conditions
+// get aiBTC from the faucet
 
 import {
   AnchorMode,
   Cl,
-  FungibleConditionCode,
   PostConditionMode,
   SignedContractCallOptions,
   broadcastTransaction,
-  createAssetInfo,
-  createFungiblePostCondition,
   getNonce,
   makeContractCall,
 } from "@stacks/transactions";
 import { deriveChildAccount } from "../utilities";
-import {
-  DEPLOYER,
-  TOKEN_CONTRACT_NAME,
-  TOKEN_NAME,
-  CONTRACT_NAME,
-} from "../constants";
+import { DEPLOYER, TOKEN_CONTRACT_NAME } from "../constants";
 
 // CONFIGURATION
 
@@ -28,13 +19,7 @@ const MNEMONIC = Bun.env.mnemonic;
 const ACCOUNT_INDEX = Bun.env.accountIndex;
 
 const DEFAULT_FEE = 250_000; // 0.25 STX
-const RESOURCE_ID = 1;
-const RESOURCE_PRICE = 1_000; // 0.00001 aiBTC
-const FUNCTION_NAME = "pay-invoice";
-const FUNCTION_ARGS = [
-  Cl.uint(RESOURCE_ID),
-  Cl.none(), // memo (optional)
-];
+const FUNCTION_NAME = "faucet-flood";
 
 // MAIN SCRIPT (DO NOT EDIT BELOW)
 
@@ -51,13 +36,16 @@ async function main() {
     accountIndex
   );
 
+  // set target as current account index
+  const FUNCTION_ARGS = [Cl.principal(address)];
+
   // get the current nonce for the account
   const nonce = await getNonce(address, network);
 
   // create the pay-invoice transaction
   const txOptions: SignedContractCallOptions = {
     contractAddress: DEPLOYER,
-    contractName: CONTRACT_NAME,
+    contractName: TOKEN_CONTRACT_NAME,
     functionName: FUNCTION_NAME,
     functionArgs: FUNCTION_ARGS,
     fee: DEFAULT_FEE,
@@ -65,19 +53,8 @@ async function main() {
     network: network,
     senderKey: key,
     anchorMode: AnchorMode.Any,
-    postConditionMode: PostConditionMode.Allow,
-    postConditions: [],
-    /*
     postConditionMode: PostConditionMode.Deny,
-    postConditions: [
-      createFungiblePostCondition(
-        address,
-        FungibleConditionCode.Equal,
-        RESOURCE_PRICE,
-        createAssetInfo(DEPLOYER, TOKEN_CONTRACT_NAME, TOKEN_NAME)
-      ),
-    ],
-    */
+    postConditions: [],
   };
 
   try {

@@ -12,7 +12,7 @@ const NETWORK = Bun.env.network;
 const MNEMONIC = Bun.env.mnemonic;
 const ACCOUNT_INDEX = Bun.env.accountIndex;
 
-const FUNCTION_NAME = "get-total-users";
+const FUNCTION_NAME = "get-total-resources";
 const FUNCTION_ARGS = [];
 
 // MAIN SCRIPT (DO NOT EDIT)

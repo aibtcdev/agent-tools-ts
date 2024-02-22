@@ -19,7 +19,7 @@ import {
   TOKEN_CONTRACT_NAME,
   TOKEN_NAME,
   CONTRACT_NAME,
-} from "./constants";
+} from "../constants";
 
 // CONFIGURATION
 

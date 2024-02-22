@@ -1,19 +1,21 @@
 // CONFIGURATION
 
 import {
+  Cl,
   ReadOnlyFunctionOptions,
   callReadOnlyFunction,
-  cvToValue,
+  cvToJSON,
 } from "@stacks/transactions";
-import { CONTRACT_NAME, DEPLOYER } from "./constants";
+import { CONTRACT_NAME, DEPLOYER } from "../constants";
 import { deriveChildAccount } from "../utilities";
 
 const NETWORK = Bun.env.network;
 const MNEMONIC = Bun.env.mnemonic;
 const ACCOUNT_INDEX = Bun.env.accountIndex;
 
-const FUNCTION_NAME = "get-total-users";
-const FUNCTION_ARGS = [];
+const RESOURCE_NAME = "bitcoin-face";
+const FUNCTION_NAME = "get-resource-by-name";
+const FUNCTION_ARGS = [Cl.stringUtf8(RESOURCE_NAME)];
 
 // MAIN SCRIPT (DO NOT EDIT)
 
@@ -37,7 +39,7 @@ async function main() {
 
   try {
     const response = await callReadOnlyFunction(txOptions);
-    console.log(cvToValue(response));
+    console.log(cvToJSON(response));
   } catch (error) {
     // report error
     console.error(`General/Unexpected Failure: ${error}`);
