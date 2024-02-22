@@ -98,6 +98,7 @@ async function main() {
     } else {
       // report successful result
       console.log("Transaction broadcasted successfully!");
+      console.log(`SENT FROM: ${address}`);
       console.log(`TXID: 0x${broadcastResponse.txid}`);
     }
   } catch (error) {
