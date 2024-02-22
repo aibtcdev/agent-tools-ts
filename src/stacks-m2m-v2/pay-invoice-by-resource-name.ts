@@ -14,6 +14,12 @@ import {
   makeContractCall,
 } from "@stacks/transactions";
 import { deriveChildAccount } from "../utilities";
+import {
+  DEPLOYER,
+  TOKEN_CONTRACT_NAME,
+  TOKEN_NAME,
+  CONTRACT_NAME,
+} from "./constants";
 
 // CONFIGURATION
 
@@ -21,10 +27,6 @@ const NETWORK = Bun.env.network;
 const MNEMONIC = Bun.env.mnemonic;
 const ACCOUNT_INDEX = Bun.env.accountIndex;
 
-const DEPLOYER = "ST2HQ5J6RP8HSQE9KKGWCHW9PT9SVE4TDGBZQ3EKR";
-const TOKEN_CONTRACT_NAME = "stacks-m2m-aibtc";
-const TOKEN_NAME = "bridged-bitcoin";
-const CONTRACT_NAME = "stacks-m2m-v2";
 const DEFAULT_FEE = 250_000; // 0.25 STX
 const RESOURCE_NAME = "bitcoin-face";
 const RESOURCE_PRICE = 1_000; // 0.00001 aiBTC
@@ -63,6 +65,9 @@ async function main() {
     network: network,
     senderKey: key,
     anchorMode: AnchorMode.Any,
+    postConditionMode: PostConditionMode.Allow,
+    postConditions: [],
+    /*
     postConditionMode: PostConditionMode.Deny,
     postConditions: [
       createFungiblePostCondition(
@@ -72,6 +77,7 @@ async function main() {
         createAssetInfo(DEPLOYER, TOKEN_CONTRACT_NAME, TOKEN_NAME)
       ),
     ],
+    */
   };
 
   try {
@@ -98,7 +104,7 @@ async function main() {
     } else {
       // report successful result
       console.log("Transaction broadcasted successfully!");
-      console.log(`SENT FROM: ${address}`);
+      console.log(`FROM: ${address}`);
       console.log(`TXID: 0x${broadcastResponse.txid}`);
     }
   } catch (error) {
