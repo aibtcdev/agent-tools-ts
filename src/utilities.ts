@@ -5,6 +5,10 @@ import {
   generateWallet,
   getStxAddress,
 } from "@stacks/wallet-sdk";
+import type {
+  AddressNonces,
+  Transaction,
+} from "@stacks/stacks-blockchain-api-types";
 
 export function getNetwork(network: string) {
   switch (network) {
@@ -25,6 +29,17 @@ export function getTxVersion(network: string) {
       return TransactionVersion.Testnet;
     default:
       return TransactionVersion.Testnet;
+  }
+}
+
+export function getApiUrl(network: string) {
+  switch (network) {
+    case "mainnet":
+      return "https://stacks-node-api.mainnet.stacks.co";
+    case "testnet":
+      return "https://stacks-node-api.testnet.stacks.co";
+    default:
+      return "https://stacks-node-api.testnet.stacks.co";
   }
 }
 
@@ -81,4 +96,35 @@ export async function deriveChildAccounts(
   });
 
   return addresses;
+}
+
+// gets transaction data from the API
+export async function getTransaction(network: string, txId: string) {
+  const apiUrl = getApiUrl(network);
+  const response = await fetch(`${apiUrl}/extended/v1/tx/${txId}`);
+  if (!response.ok) {
+    throw new Error(`Failed to get transaction: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data as Transaction;
+}
+
+// gets the current nonce for the account from the API
+// more reliable than @stacks/transactions getNonce()
+export async function getNonces(network: string, address: string) {
+  const apiUrl = getApiUrl(network);
+  const response = await fetch(
+    `${apiUrl}/extended/v1/address/${address}/nonces`
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to get nonce: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data as AddressNonces;
+}
+
+export async function getNextNonce(network: string, address: string) {
+  const nonces = await getNonces(network, address);
+  const nextNonce = nonces.possible_next_nonce;
+  return nextNonce;
 }
