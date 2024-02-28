@@ -28,7 +28,7 @@ async function main() {
   // get account address
   const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
   // get the current nonce for the account
-  const nonce = await getNextNonce(address, network);
+  const nonce = await getNextNonce(network, address);
   // log the account info
   console.log(`Account index: ${accountIndex}`);
   console.log(`Account address: ${address}`);

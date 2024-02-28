@@ -39,7 +39,7 @@ async function main() {
   const FUNCTION_ARGS = [Cl.principal(address)];
 
   // get the current nonce for the account
-  const nonce = await getNextNonce(address, network);
+  const nonce = await getNextNonce(network, address);
 
   // create the pay-invoice transaction
   const txOptions: SignedContractCallOptions = {
