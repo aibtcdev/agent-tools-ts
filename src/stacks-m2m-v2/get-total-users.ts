@@ -1,6 +1,7 @@
 import {
   ReadOnlyFunctionOptions,
   callReadOnlyFunction,
+  cvToJSON,
   cvToValue,
 } from "@stacks/transactions";
 import { CONTRACT_NAME, DEPLOYER } from "../constants";
@@ -39,7 +40,9 @@ async function main() {
 
   try {
     const response = await callReadOnlyFunction(txOptions);
-    console.log(cvToValue(response));
+    const responseJson = cvToJSON(response);
+    const totalUsers = responseJson.value;
+    console.log(totalUsers);
   } catch (error) {
     // report error
     console.error(`General/Unexpected Failure: ${error}`);

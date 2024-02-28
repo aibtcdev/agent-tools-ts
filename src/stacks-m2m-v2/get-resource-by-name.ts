@@ -6,6 +6,7 @@ import {
 } from "@stacks/transactions";
 import { CONTRACT_NAME, DEPLOYER } from "../constants";
 import { deriveChildAccount } from "../utilities";
+import { ResourceInfo } from "../types";
 
 // get resource info by name
 
@@ -41,7 +42,69 @@ async function main() {
 
   try {
     const response = await callReadOnlyFunction(txOptions);
-    console.log(cvToJSON(response));
+    const responseJson = cvToJSON(response);
+    /*
+    example response:
+    {
+      type: "(optional (tuple (createdAt uint) (description (string-utf8 52)) (enabled bool) (name (string-utf8 12)) (price uint) (totalSpent uint) (totalUsed uint)))",
+      value: {
+        type: "(tuple (createdAt uint) (description (string-utf8 52)) (enabled bool) (name (string-utf8 12)) (price uint) (totalSpent uint) (totalUsed uint))",
+        value: {
+          createdAt: [Object ...],
+          description: [Object ...],
+          enabled: [Object ...],
+          name: [Object ...],
+          price: [Object ...],
+          totalSpent: [Object ...],
+          totalUsed: [Object ...],
+        },
+      },
+    }
+    */
+    const resource = responseJson.value.value;
+    /*
+    example resource info:
+    {
+      "createdAt": {
+        "type": "uint",
+        "value": "148069"
+      },
+      "description": {
+        "type": "(string-utf8 52)",
+        "value": "Generates a Bitcoin face based on the supplied data."
+      },
+      "enabled": {
+        "type": "bool",
+        "value": true
+      },
+      "name": {
+        "type": "(string-utf8 12)",
+        "value": "bitcoin-face"
+      },
+      "price": {
+        "type": "uint",
+        "value": "1000"
+      },
+      "totalSpent": {
+        "type": "uint",
+        "value": "3000"
+      },
+      "totalUsed": {
+        "type": "uint",
+        "value": "3"
+      }
+    }
+    */
+    const resourceInfo: ResourceInfo = {
+      createdAt: parseInt(resource.createdAt.value),
+      description: resource.description.value,
+      enabled: resource.enabled.value,
+      name: resource.name.value,
+      price: parseInt(resource.price.value),
+      totalSpent: parseInt(resource.totalSpent.value),
+      totalUsed: parseInt(resource.totalUsed.value),
+    };
+    console.log(JSON.stringify(resourceInfo, null, 2));
   } catch (error) {
     // report error
     console.error(`General/Unexpected Failure: ${error}`);

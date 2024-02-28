@@ -41,7 +41,20 @@ async function main() {
 
   try {
     const response = await callReadOnlyFunction(txOptions);
-    console.log(cvToJSON(response));
+    const responseJson = cvToJSON(response);
+    /*
+    example response:
+    {
+      type: "(response uint UnknownType)",
+      value: {
+        type: "uint",
+        value: "99999000",
+      },
+      success: true,
+    }
+    */
+    const balance = responseJson.value.value;
+    console.log(balance);
   } catch (error) {
     // report error
     console.error(`General/Unexpected Failure: ${error}`);

@@ -7,10 +7,9 @@ import {
   broadcastTransaction,
   createAssetInfo,
   createFungiblePostCondition,
-  getNonce,
   makeContractCall,
 } from "@stacks/transactions";
-import { deriveChildAccount } from "../utilities";
+import { deriveChildAccount, getNextNonce } from "../utilities";
 import {
   DEPLOYER,
   TOKEN_CONTRACT_NAME,
@@ -52,7 +51,7 @@ async function main() {
   );
 
   // get the current nonce for the account
-  const nonce = await getNonce(address, network);
+  const nonce = await getNextNonce(address, network);
 
   // create the pay-invoice transaction
   const txOptions: SignedContractCallOptions = {
@@ -105,6 +104,7 @@ async function main() {
       // report successful result
       console.log("Transaction broadcasted successfully!");
       console.log(`FROM: ${address}`);
+      console.log(`NONCE: ${nonce}`);
       console.log(`TXID: 0x${broadcastResponse.txid}`);
     }
   } catch (error) {

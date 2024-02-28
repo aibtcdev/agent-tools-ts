@@ -1,5 +1,4 @@
-import { getNonce } from "@stacks/transactions";
-import { deriveChildAccount } from "../utilities";
+import { deriveChildAccount, getNextNonce } from "../utilities";
 
 // get currently selected wallet info from env file
 
@@ -29,7 +28,7 @@ async function main() {
   // get account address
   const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
   // get the current nonce for the account
-  const nonce = await getNonce(address, network);
+  const nonce = await getNextNonce(address, network);
   // log the account info
   console.log(`Account index: ${accountIndex}`);
   console.log(`Account address: ${address}`);
