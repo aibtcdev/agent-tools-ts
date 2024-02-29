@@ -2,7 +2,6 @@ import {
   ReadOnlyFunctionOptions,
   callReadOnlyFunction,
   cvToJSON,
-  cvToValue,
 } from "@stacks/transactions";
 import { CONTRACT_NAME, DEPLOYER } from "../constants";
 import { deriveChildAccount } from "../utilities";
