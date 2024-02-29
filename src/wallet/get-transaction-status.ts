@@ -1,11 +1,8 @@
 // CONFIGURATION
 
-import type { Transaction } from "@stacks/stacks-blockchain-api-types";
-import { deriveChildAccount, getTransaction } from "../utilities";
+import { getTransaction } from "../utilities";
 
 const NETWORK = Bun.env.network;
-const MNEMONIC = Bun.env.mnemonic;
-const ACCOUNT_INDEX = Bun.env.accountIndex;
 
 // MAIN SCRIPT (DO NOT EDIT)
 
@@ -19,15 +16,10 @@ async function main() {
 
   // get account info
   const network = NETWORK;
-  const mnemonic = MNEMONIC;
-  const accountIndex = ACCOUNT_INDEX;
-
-  // get address from mnemonic
-  const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
 
   // get transaction info from API
   try {
-    const txResponse: Transaction = await getTransaction(network, txId);
+    const txResponse = await getTransaction(network, txId);
     // get transaction status from object
     const txStatus = txResponse.tx_status;
     console.log(txStatus);

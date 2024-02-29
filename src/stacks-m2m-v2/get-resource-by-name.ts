@@ -6,7 +6,7 @@ import {
 } from "@stacks/transactions";
 import { CONTRACT_NAME, DEPLOYER } from "../constants";
 import { deriveChildAccount } from "../utilities";
-import { ResourceInfo } from "../types";
+import { ResourceData } from "../types";
 
 // get resource info by name
 
@@ -63,7 +63,7 @@ async function main() {
     */
     const resource = responseJson.value.value;
     /*
-    example resource info:
+    example resource data:
     {
       "createdAt": {
         "type": "uint",
@@ -95,7 +95,7 @@ async function main() {
       }
     }
     */
-    const resourceInfo: ResourceInfo = {
+    const resourceData: ResourceData = {
       createdAt: parseInt(resource.createdAt.value),
       description: resource.description.value,
       enabled: resource.enabled.value,
@@ -104,7 +104,7 @@ async function main() {
       totalSpent: parseInt(resource.totalSpent.value),
       totalUsed: parseInt(resource.totalUsed.value),
     };
-    console.log(JSON.stringify(resourceInfo, null, 2));
+    console.log(JSON.stringify(resourceData, null, 2));
   } catch (error) {
     // report error
     console.error(`General/Unexpected Failure: ${error}`);

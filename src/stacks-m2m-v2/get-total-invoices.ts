@@ -41,8 +41,8 @@ async function main() {
   try {
     const response = await callReadOnlyFunction(txOptions);
     const responseJson = cvToJSON(response);
-    const totalUsers = responseJson.value;
-    console.log(totalUsers);
+    const totalInvoices = responseJson.value;
+    console.log(totalInvoices);
   } catch (error) {
     // report error
     console.error(`General/Unexpected Failure: ${error}`);
