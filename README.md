@@ -1,8 +1,19 @@
-# 🤖💳🤖 Stacks M2M
+<p align="center"><img src="https://github.com/aibtcdev/landing-page/blob/main/public/logos/aibtcdev-logo-sm-250px.png" alt="Bitcoin x AI Logo" width="150px" ></p>
 
-Typescript utility scripts that interact with the Stacks blockchain, using Bun!
+# Bitcoin x AI: Agent Tools TS
 
-## Local Development
+## Description
+
+This is a collection of Typescript scripts that interact with a Bitcoin/Stacks wallet and the Stacks blockchain.
+
+## Development
+
+Tech stack:
+
+- Bun.js
+- Stacks.js
+
+To run this locally:
 
 1. Clone repository
 2. Install Bun globally
