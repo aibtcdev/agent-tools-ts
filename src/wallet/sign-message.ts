@@ -96,11 +96,14 @@ async function main() {
     privateKey: privateKeyObj,
   });
 
-  console.log(`===== SIGNATURE TEST =====`);
+  console.log(`===== SIGNATURE INFO =====`);
   console.log(`Message: ${cvToValue(messageCV)}`);
   console.log(`Domain: ${JSON.stringify(domain, null, 2)}`);
-  console.log(`Signature object: ${JSON.stringify(signedMessage, null, 2)}`);
-  console.log(`Signed data: ${signedMessage.data}`);
+  console.log(`Signed message type: ${signedMessage.type}`);
+  console.log(`Signed message data: ${signedMessage.data}`);
+
+  // decode the signature
+  const decodedSignature = decodeStructuredDataSignature(signedMessage.data);
 
   // hash the domain
   const hashedDomain = hashStructuredData(domainCV);
@@ -116,23 +119,20 @@ async function main() {
   });
   const decodedTestSignature = decodeStructuredDataSignature(encodedTestData);
 
-  // decode the signature
-  const decodedSignature = decodeStructuredDataSignature(signedMessage.data);
-
-  console.log(`===== HASH TEST =====`);
+  console.log(`===== HASH COMPARISONS =====`);
 
   console.log(`Hashed domain hex: ${hashedDomainHex}`);
-  console.log(`Hashed message hex: ${hashedMessageHex}`);
   console.log(
     `Decoded signature domain hex: ${bytesToHex(decodedSignature.domainHash)}`
-  );
-  console.log(
-    `Decoded signature message hex: ${bytesToHex(decodedSignature.messageHash)}`
   );
   console.log(
     `Decoded test signature domain hex: ${bytesToHex(
       decodedTestSignature.domainHash
     )}`
+  );
+  console.log(`Hashed message hex: ${hashedMessageHex}`);
+  console.log(
+    `Decoded signature message hex: ${bytesToHex(decodedSignature.messageHash)}`
   );
   console.log(
     `Decoded test signature message hex: ${bytesToHex(
