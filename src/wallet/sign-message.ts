@@ -1,20 +1,25 @@
 // get currently selected wallet info from env file
 
-import { hexToBytes } from "@stacks/common";
+import { sha256 } from "@noble/hashes/sha256";
+import { bytesToHex, hexToBytes } from "@stacks/common";
 import {
   getPublicKeyFromPrivate,
+  verifyMessageSignature,
   verifyMessageSignatureRsv,
 } from "@stacks/encryption";
 import {
   createStacksPrivateKey,
   cvToHex,
+  encodeStructuredData,
   hashStructuredData,
+  hexToCV,
+  publicKeyFromSignatureRsv,
   signStructuredData,
   stringAsciiCV,
   tupleCV,
   uintCV,
 } from "@stacks/transactions";
-import { deriveChildAccount, getNetwork } from "../utilities";
+import { deriveChildAccount, getNetwork, getTxVersion } from "../utilities";
 
 // CONFIGURATION
 
@@ -44,6 +49,8 @@ async function main() {
   }
   // get network object
   const networkObj = getNetwork(network);
+  // get tx version object
+  const txVersion = getTxVersion(network);
   // get account address and private key
   const { address, key: privateKey } = await deriveChildAccount(
     network,
@@ -78,6 +85,11 @@ async function main() {
   const message = `${address}`; // ,${new Date().toISOString()}
   const messageCV = stringAsciiCV(message);
 
+  // trying something different from stacks.js tests
+  const messageHash = bytesToHex(
+    sha256(encodeStructuredData({ message: messageCV, domain }))
+  );
+
   // hash the message (not sure if needed)
   const hashedMessage = hashStructuredData(messageCV);
   const hashedMessageHex = Buffer.from(hashedMessage).toString("hex");
@@ -89,6 +101,18 @@ async function main() {
     privateKey: privateKeyObj,
   });
 
+  // get public key from the signature
+  // other signature format (not SIP-018)
+  /*
+  const publicKeyFromSignature = publicKeyFromSignatureRsv(
+    hashedMessageHex,
+    signedMessage
+  );
+  */
+
+  // get address from the public key
+  // getAddressFromPublicKey(publicKey, txVersion);
+
   // verify the signature
   const isSignatureVerified = verifyMessageSignatureRsv({
     signature: signedMessage.data,
@@ -97,7 +121,14 @@ async function main() {
     // using the hex for the CV returns false
     // message: cvToHex(messageCV),
     // matches hashedMessage but returns false
-    message: hashedMessage,
+    message: messageHash,
+    publicKey: publicKey,
+  });
+
+  // trying without rsv, same result
+  const isSignatureVerifiedAlt = verifyMessageSignature({
+    signature: signedMessage.data,
+    message: messageHash,
     publicKey,
   });
 
@@ -105,16 +136,20 @@ async function main() {
   console.log(`===== ACCOUNT INFO =====`);
   console.log(`Network: ${network}`);
   console.log(`Chain ID: ${networkObj.chainId}`);
+  console.log(`Transaction version: ${txVersion}`);
   console.log(`Account index: ${accountIndex}`);
   console.log(`Account address: ${address}`);
   console.log(`Public key: ${publicKey}`);
   console.log(`===== SIGNATURE TEST =====`);
   console.log(`Message: ${message}`);
+  console.log(`Message hash: ${messageHash}`);
   console.log(`Hashed message: ${hashedMessage}`);
+  console.log(`Hashed message hex: ${hashedMessageHex}`);
   console.log(`Signature object: ${JSON.stringify(signedMessage)}`);
   console.log(`Signed data: ${signedMessage.data}`);
   console.log(`===== DECODE SIGNATURE TEST =====`);
   console.log(`Is signature verified: ${isSignatureVerified}`);
+  console.log(`Is signature verified (alt): ${isSignatureVerifiedAlt}`);
   console.log(`message: ${message}`);
   console.log(`messageCV Hex: ${cvToHex(messageCV)}`);
   console.log(`message hex to bytes: ${hexToBytes(hashedMessageHex)}`);
