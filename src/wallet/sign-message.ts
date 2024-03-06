@@ -10,6 +10,9 @@ import {
 import {
   createStacksPrivateKey,
   cvToHex,
+  cvToJSON,
+  cvToValue,
+  decodeStructuredDataSignature,
   encodeStructuredData,
   hashStructuredData,
   hexToCV,
@@ -62,22 +65,23 @@ async function main() {
   // get public key from private key
   const publicKey = getPublicKeyFromPrivate(privateKey);
 
-  /*
-  Test data so far:
-    Account index: 6
-    Account address: ST6CWNRQWF468S6A56Q995WVY7F6X43GFV7H16N2
-    Private key: verified
-    Public key: 0236abd49563801f333b2e5118e2c0fe64e8bbc5cc76cf0b090d12ee6708fdeec9
-  */
+  console.log(`===== ACCOUNT INFO =====`);
+  console.log(`Network: ${network}`);
+  console.log(`Chain ID: ${networkObj.chainId}`);
+  console.log(`Transaction version: ${txVersion}`);
+  console.log(`Account index: ${accountIndex}`);
+  console.log(`Account address: ${address}`);
+  console.log(`Public key: ${publicKey}`);
 
   // create a domain object
   // based on @stacks.js/transactions signature test
   // https://github.com/hirosystems/stacks.js/blob/fc7e50cb1dca6402677451be06534f0a8f1346b3/packages/transactions/tests/structuredDataSignature.test.ts#L214-L242
-  const domain = tupleCV({
+  const domainCV = tupleCV({
     name: stringAsciiCV("aibtcdev"),
     version: stringAsciiCV("0.0.2"),
     "chain-id": uintCV(networkObj.chainId),
   });
+  const domain = cvToJSON(domainCV);
 
   // create a message object formatted:
   // address,timestamp
@@ -85,21 +89,56 @@ async function main() {
   const message = `${address}`; // ,${new Date().toISOString()}
   const messageCV = stringAsciiCV(message);
 
-  // trying something different from stacks.js tests
-  const messageHash = bytesToHex(
-    sha256(encodeStructuredData({ message: messageCV, domain }))
-  );
-
-  // hash the message (not sure if needed)
-  const hashedMessage = hashStructuredData(messageCV);
-  const hashedMessageHex = Buffer.from(hashedMessage).toString("hex");
-
   // create signed message
   const signedMessage = signStructuredData({
     message: messageCV,
-    domain,
+    domain: domainCV,
     privateKey: privateKeyObj,
   });
+
+  console.log(`===== SIGNATURE TEST =====`);
+  console.log(`Message: ${cvToValue(messageCV)}`);
+  console.log(`Domain: ${JSON.stringify(domain, null, 2)}`);
+  console.log(`Signature object: ${JSON.stringify(signedMessage, null, 2)}`);
+  console.log(`Signed data: ${signedMessage.data}`);
+
+  // hash the domain
+  const hashedDomain = hashStructuredData(domainCV);
+  const hashedDomainHex = bytesToHex(hashedDomain);
+  // hash the message
+  const hashedMessage = hashStructuredData(messageCV);
+  const hashedMessageHex = bytesToHex(hashedMessage);
+
+  // encode the data
+  const encodedTestData = encodeStructuredData({
+    message: messageCV,
+    domain: domainCV,
+  });
+  const decodedTestSignature = decodeStructuredDataSignature(encodedTestData);
+
+  // decode the signature
+  const decodedSignature = decodeStructuredDataSignature(signedMessage.data);
+
+  console.log(`===== HASH TEST =====`);
+
+  console.log(`Hashed domain hex: ${hashedDomainHex}`);
+  console.log(`Hashed message hex: ${hashedMessageHex}`);
+  console.log(
+    `Decoded signature domain hex: ${bytesToHex(decodedSignature.domainHash)}`
+  );
+  console.log(
+    `Decoded signature message hex: ${bytesToHex(decodedSignature.messageHash)}`
+  );
+  console.log(
+    `Decoded test signature domain hex: ${bytesToHex(
+      decodedTestSignature.domainHash
+    )}`
+  );
+  console.log(
+    `Decoded test signature message hex: ${bytesToHex(
+      decodedTestSignature.messageHash
+    )}`
+  );
 
   // get public key from the signature
   // other signature format (not SIP-018)
@@ -121,38 +160,22 @@ async function main() {
     // using the hex for the CV returns false
     // message: cvToHex(messageCV),
     // matches hashedMessage but returns false
-    message: messageHash,
+    message: message,
     publicKey: publicKey,
   });
 
   // trying without rsv, same result
   const isSignatureVerifiedAlt = verifyMessageSignature({
     signature: signedMessage.data,
-    message: messageHash,
+    message: message,
     publicKey,
   });
 
   // log all the things
-  console.log(`===== ACCOUNT INFO =====`);
-  console.log(`Network: ${network}`);
-  console.log(`Chain ID: ${networkObj.chainId}`);
-  console.log(`Transaction version: ${txVersion}`);
-  console.log(`Account index: ${accountIndex}`);
-  console.log(`Account address: ${address}`);
-  console.log(`Public key: ${publicKey}`);
-  console.log(`===== SIGNATURE TEST =====`);
-  console.log(`Message: ${message}`);
-  console.log(`Message hash: ${messageHash}`);
-  console.log(`Hashed message: ${hashedMessage}`);
-  console.log(`Hashed message hex: ${hashedMessageHex}`);
-  console.log(`Signature object: ${JSON.stringify(signedMessage)}`);
-  console.log(`Signed data: ${signedMessage.data}`);
+
   console.log(`===== DECODE SIGNATURE TEST =====`);
   console.log(`Is signature verified: ${isSignatureVerified}`);
   console.log(`Is signature verified (alt): ${isSignatureVerifiedAlt}`);
-  console.log(`message: ${message}`);
-  console.log(`messageCV Hex: ${cvToHex(messageCV)}`);
-  console.log(`message hex to bytes: ${hexToBytes(hashedMessageHex)}`);
 }
 
 main();
