@@ -14,7 +14,7 @@ import {
   tupleCV,
   uintCV,
 } from "@stacks/transactions";
-import { deriveChildAccount } from "../utilities";
+import { deriveChildAccount, getNetwork } from "../utilities";
 
 // CONFIGURATION
 
@@ -42,6 +42,8 @@ async function main() {
   if (!accountIndex) {
     throw new Error("No account index provided in environment variables");
   }
+  // get network object
+  const networkObj = getNetwork(network);
   // get account address and private key
   const { address, key: privateKey } = await deriveChildAccount(
     network,
@@ -55,7 +57,7 @@ async function main() {
 
   /*
   Test data so far:
-  Account index: 6
+    Account index: 6
     Account address: ST6CWNRQWF468S6A56Q995WVY7F6X43GFV7H16N2
     Private key: verified
     Public key: 0236abd49563801f333b2e5118e2c0fe64e8bbc5cc76cf0b090d12ee6708fdeec9
@@ -67,7 +69,7 @@ async function main() {
   const domain = tupleCV({
     name: stringAsciiCV("aibtcdev"),
     version: stringAsciiCV("0.0.2"),
-    "chain-id": uintCV(1),
+    "chain-id": uintCV(networkObj.chainId),
   });
 
   // create a message object formatted:
@@ -95,21 +97,22 @@ async function main() {
     // using the hex for the CV returns false
     // message: cvToHex(messageCV),
     // matches hashedMessage but returns false
-    message: hexToBytes(hashedMessageHex),
+    message: hashedMessage,
     publicKey,
   });
 
   // log all the things
   console.log(`===== ACCOUNT INFO =====`);
+  console.log(`Network: ${network}`);
+  console.log(`Chain ID: ${networkObj.chainId}`);
   console.log(`Account index: ${accountIndex}`);
   console.log(`Account address: ${address}`);
   console.log(`Public key: ${publicKey}`);
   console.log(`===== SIGNATURE TEST =====`);
   console.log(`Message: ${message}`);
   console.log(`Hashed message: ${hashedMessage}`);
-  console.log(`Hashed message hex: ${hashedMessageHex}`);
   console.log(`Signature object: ${JSON.stringify(signedMessage)}`);
-  console.log(`Signed data: ${JSON.stringify(signedMessage.data)}`);
+  console.log(`Signed data: ${signedMessage.data}`);
   console.log(`===== DECODE SIGNATURE TEST =====`);
   console.log(`Is signature verified: ${isSignatureVerified}`);
   console.log(`message: ${message}`);
