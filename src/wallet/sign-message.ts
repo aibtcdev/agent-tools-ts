@@ -17,8 +17,6 @@ import {
   cvToJSON,
   cvToValue,
   encodeStructuredData,
-  publicKeyFromSignatureRsv,
-  signMessageHashRsv,
   signStructuredData,
   stringAsciiCV,
   tupleCV,
@@ -64,16 +62,13 @@ async function main() {
     mnemonic,
     accountIndex
   );
-  // get public key from private key
-  const publicKey = getPublicKeyFromPrivate(privateKeyString);
 
   console.log(`===== ACCOUNT INFO =====`);
   console.log(`Network: ${network}`);
   console.log(`Chain ID: ${networkObj.chainId}`);
-  console.log(`Transaction version: ${txVersion}`);
+  console.log(`Tx version: ${txVersion}`);
   console.log(`Account index: ${accountIndex}`);
   console.log(`Account address: ${address}`);
-  console.log(`Public key: ${publicKey}`);
 
   // SIGNING THE MESSAGE
 
@@ -106,7 +101,10 @@ async function main() {
   console.log(`Signed message type: ${signedMessage.type}`);
   console.log(`Signed message data: ${signedMessage.data}`);
 
-  // VALIDATING THE EXPECTED SIGNED MESSAGE
+  // GETTING THE PUBLIC KEY FROM TYPE 10 SIGNATURE (SIP-018)
+
+  // get public key from private key
+  const publicKeyFromPrivate = getPublicKeyFromPrivate(privateKeyString);
 
   const expectedMessage = encodeStructuredData({
     message,
@@ -114,54 +112,24 @@ async function main() {
   });
   const expectedMessageHashed = sha256(expectedMessage);
 
+  const publicKeyFromSignature = publicKeyFromSignatureRsvStructured(
+    bytesToHex(expectedMessageHashed),
+    signedMessage
+  );
+
+  // VALIDATING THE EXPECTED SIGNED MESSAGE
+
   // test if signature is verified
   const isTestSignatureVerified = verifyMessageSignatureRsv({
     signature: signedMessage.data,
     message: expectedMessageHashed,
-    publicKey: publicKey,
+    publicKey: publicKeyFromSignature,
   });
 
   console.log(`===== VALIDATION INFO =====`);
-  console.log(`Signature verified: ${isTestSignatureVerified}`);
-
-  // GETTING THE PUBLIC KEY FROM TYPE 9
-
-  const simpleMessage = "aibtcdev";
-  const simpleMessageEncoded = encodeStructuredData({
-    message: stringAsciiCV(simpleMessage),
-    domain,
-  });
-  const simpleMessageHashed = sha256(simpleMessageEncoded);
-  const simpleMessageHashedHex = bytesToHex(simpleMessageHashed);
-
-  // this is type 9: MessageSignature
-  const simpleMessageSigned = signMessageHashRsv({
-    privateKey,
-    messageHash: simpleMessageHashedHex,
-  });
-
-  console.log(`Simple message: ${simpleMessage}`);
-  console.log(`Simple message hex: ${simpleMessageHashedHex}`);
-  console.log(
-    `Simple message signed: ${JSON.stringify(simpleMessageSigned, null, 2)}`
-  );
-
-  const publicKeyFromSignature = publicKeyFromSignatureRsv(
-    simpleMessageHashedHex,
-    simpleMessageSigned
-  );
-
+  console.log(`Public key from private:   ${publicKeyFromPrivate}`);
   console.log(`Public key from signature: ${publicKeyFromSignature}`);
-
-  // GETTING THE PUBLIC KEY FROM TYPE 10 SIGNATURE (SIP-018)
-
-  const pubKeyTestFromSignature = publicKeyFromSignatureRsvStructured(
-    bytesToHex(expectedMessageHashed),
-    signedMessage
-  );
-  console.log(
-    `Public key from signature (SIP-018): ${pubKeyTestFromSignature}`
-  );
+  console.log(`Signature verified: ${isTestSignatureVerified}`);
 }
 
 function publicKeyFromSignatureVrsStructured(
