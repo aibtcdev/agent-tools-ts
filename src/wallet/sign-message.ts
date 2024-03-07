@@ -1,22 +1,24 @@
-// get currently selected wallet info from env file
-
 import { sha256 } from "@noble/hashes/sha256";
-import { bytesToHex, hexToBytes } from "@stacks/common";
+import { Point, Signature } from "@noble/secp256k1";
+import {
+  bytesToHex,
+  hexToBigInt,
+  parseRecoverableSignatureVrs,
+  signatureRsvToVrs,
+} from "@stacks/common";
 import {
   getPublicKeyFromPrivate,
-  verifyMessageSignature,
   verifyMessageSignatureRsv,
 } from "@stacks/encryption";
 import {
+  PubKeyEncoding,
+  StructuredDataSignature,
   createStacksPrivateKey,
-  cvToHex,
   cvToJSON,
   cvToValue,
-  decodeStructuredDataSignature,
   encodeStructuredData,
-  hashStructuredData,
-  hexToCV,
   publicKeyFromSignatureRsv,
+  signMessageHashRsv,
   signStructuredData,
   stringAsciiCV,
   tupleCV,
@@ -36,6 +38,8 @@ const ACCOUNT_INDEX = Bun.env.accountIndex;
 // MAIN SCRIPT (DO NOT EDIT BELOW)
 
 async function main() {
+  // ACCOUNT INFO
+
   // get account info from env
   const network = NETWORK;
   const mnemonic = MNEMONIC;
@@ -55,15 +59,13 @@ async function main() {
   // get tx version object
   const txVersion = getTxVersion(network);
   // get account address and private key
-  const { address, key: privateKey } = await deriveChildAccount(
+  const { address, key: privateKeyString } = await deriveChildAccount(
     network,
     mnemonic,
     accountIndex
   );
-  // create private key obj for signature function
-  const privateKeyObj = createStacksPrivateKey(privateKey);
   // get public key from private key
-  const publicKey = getPublicKeyFromPrivate(privateKey);
+  const publicKey = getPublicKeyFromPrivate(privateKeyString);
 
   console.log(`===== ACCOUNT INFO =====`);
   console.log(`Network: ${network}`);
@@ -73,109 +75,124 @@ async function main() {
   console.log(`Account address: ${address}`);
   console.log(`Public key: ${publicKey}`);
 
-  // create a domain object
+  // SIGNING THE MESSAGE
+
+  // create private key obj for signature function
+  const privateKey = createStacksPrivateKey(privateKeyString);
+
+  // create a domain object as a clarity value
   // based on @stacks.js/transactions signature test
   // https://github.com/hirosystems/stacks.js/blob/fc7e50cb1dca6402677451be06534f0a8f1346b3/packages/transactions/tests/structuredDataSignature.test.ts#L214-L242
-  const domainCV = tupleCV({
+  const domain = tupleCV({
     name: stringAsciiCV("aibtcdev"),
     version: stringAsciiCV("0.0.2"),
     "chain-id": uintCV(networkObj.chainId),
   });
-  const domain = cvToJSON(domainCV);
 
-  // create a message object formatted:
-  // address,timestamp
-  // e.g. ST6CWNRQWF468S6A56Q995WVY7F6X43GFV7H16N2,2024-03-01T20:00:00.000Z
-  const message = `${address}`; // ,${new Date().toISOString()}
-  const messageCV = stringAsciiCV(message);
+  // create the message to be signed as a clarity value
+  const message = stringAsciiCV(address);
 
-  // create signed message
+  // sign the message
+  // this is type 10: StructuredDataSignature
   const signedMessage = signStructuredData({
-    message: messageCV,
-    domain: domainCV,
-    privateKey: privateKeyObj,
+    message,
+    domain,
+    privateKey,
   });
 
   console.log(`===== SIGNATURE INFO =====`);
-  console.log(`Message: ${cvToValue(messageCV)}`);
-  console.log(`Domain: ${JSON.stringify(domain, null, 2)}`);
+  console.log(`Message: ${cvToValue(message)}`);
+  console.log(`Domain: ${JSON.stringify(cvToJSON(domain), null, 2)}`);
   console.log(`Signed message type: ${signedMessage.type}`);
   console.log(`Signed message data: ${signedMessage.data}`);
 
-  // decode the signature
-  const decodedSignature = decodeStructuredDataSignature(signedMessage.data);
+  // VALIDATING THE EXPECTED SIGNED MESSAGE
 
-  // hash the domain
-  const hashedDomain = hashStructuredData(domainCV);
-  const hashedDomainHex = bytesToHex(hashedDomain);
-  // hash the message
-  const hashedMessage = hashStructuredData(messageCV);
-  const hashedMessageHex = bytesToHex(hashedMessage);
-
-  // encode the data
-  const encodedTestData = encodeStructuredData({
-    message: messageCV,
-    domain: domainCV,
+  const expectedMessage = encodeStructuredData({
+    message,
+    domain,
   });
-  const decodedTestSignature = decodeStructuredDataSignature(encodedTestData);
+  const expectedMessageHashed = sha256(expectedMessage);
 
-  console.log(`===== HASH COMPARISONS =====`);
-
-  console.log(`Hashed domain hex: ${hashedDomainHex}`);
-  console.log(
-    `Decoded signature domain hex: ${bytesToHex(decodedSignature.domainHash)}`
-  );
-  console.log(
-    `Decoded test signature domain hex: ${bytesToHex(
-      decodedTestSignature.domainHash
-    )}`
-  );
-  console.log(`Hashed message hex: ${hashedMessageHex}`);
-  console.log(
-    `Decoded signature message hex: ${bytesToHex(decodedSignature.messageHash)}`
-  );
-  console.log(
-    `Decoded test signature message hex: ${bytesToHex(
-      decodedTestSignature.messageHash
-    )}`
-  );
-
-  // get public key from the signature
-  // other signature format (not SIP-018)
-  /*
-  const publicKeyFromSignature = publicKeyFromSignatureRsv(
-    hashedMessageHex,
-    signedMessage
-  );
-  */
-
-  // get address from the public key
-  // getAddressFromPublicKey(publicKey, txVersion);
-
-  // verify the signature
-  const isSignatureVerified = verifyMessageSignatureRsv({
+  // test if signature is verified
+  const isTestSignatureVerified = verifyMessageSignatureRsv({
     signature: signedMessage.data,
-    // using the string returns false
-    // message: message,
-    // using the hex for the CV returns false
-    // message: cvToHex(messageCV),
-    // matches hashedMessage but returns false
-    message: message,
+    message: expectedMessageHashed,
     publicKey: publicKey,
   });
 
-  // trying without rsv, same result
-  const isSignatureVerifiedAlt = verifyMessageSignature({
-    signature: signedMessage.data,
-    message: message,
-    publicKey,
+  console.log(`===== VALIDATION INFO =====`);
+  console.log(`Signature verified: ${isTestSignatureVerified}`);
+
+  // GETTING THE PUBLIC KEY FROM TYPE 9
+
+  const simpleMessage = "aibtcdev";
+  const simpleMessageEncoded = encodeStructuredData({
+    message: stringAsciiCV(simpleMessage),
+    domain,
+  });
+  const simpleMessageHashed = sha256(simpleMessageEncoded);
+  const simpleMessageHashedHex = bytesToHex(simpleMessageHashed);
+
+  // this is type 9: MessageSignature
+  const simpleMessageSigned = signMessageHashRsv({
+    privateKey,
+    messageHash: simpleMessageHashedHex,
   });
 
-  // log all the things
+  console.log(`Simple message: ${simpleMessage}`);
+  console.log(`Simple message hex: ${simpleMessageHashedHex}`);
+  console.log(
+    `Simple message signed: ${JSON.stringify(simpleMessageSigned, null, 2)}`
+  );
 
-  console.log(`===== DECODE SIGNATURE TEST =====`);
-  console.log(`Is signature verified: ${isSignatureVerified}`);
-  console.log(`Is signature verified (alt): ${isSignatureVerifiedAlt}`);
+  const publicKeyFromSignature = publicKeyFromSignatureRsv(
+    simpleMessageHashedHex,
+    simpleMessageSigned
+  );
+
+  console.log(`Public key from signature: ${publicKeyFromSignature}`);
+
+  // GETTING THE PUBLIC KEY FROM TYPE 10 SIGNATURE (SIP-018)
+
+  const pubKeyTestFromSignature = publicKeyFromSignatureRsvStructured(
+    bytesToHex(expectedMessageHashed),
+    signedMessage
+  );
+  console.log(
+    `Public key from signature (SIP-018): ${pubKeyTestFromSignature}`
+  );
+}
+
+function publicKeyFromSignatureVrsStructured(
+  messageHash: string,
+  messageSignature: StructuredDataSignature,
+  pubKeyEncoding = PubKeyEncoding.Compressed
+): string {
+  const parsedSignature = parseRecoverableSignatureVrs(messageSignature.data);
+  const signature = new Signature(
+    hexToBigInt(parsedSignature.r),
+    hexToBigInt(parsedSignature.s)
+  );
+  const point = Point.fromSignature(
+    messageHash,
+    signature,
+    parsedSignature.recoveryId
+  );
+  const compressed = pubKeyEncoding === PubKeyEncoding.Compressed;
+  return point.toHex(compressed);
+}
+
+function publicKeyFromSignatureRsvStructured(
+  messageHash: string,
+  messageSignature: StructuredDataSignature,
+  pubKeyEncoding?: PubKeyEncoding.Compressed
+) {
+  return publicKeyFromSignatureVrsStructured(
+    messageHash,
+    { ...messageSignature, data: signatureRsvToVrs(messageSignature.data) },
+    pubKeyEncoding
+  );
 }
 
 main();
