@@ -17,6 +17,8 @@ import {
   cvToJSON,
   cvToValue,
   encodeStructuredData,
+  getAddressFromPublicKey,
+  publicKeyFromSignatureRsv,
   signStructuredData,
   stringAsciiCV,
   tupleCV,
@@ -112,9 +114,14 @@ async function main() {
   });
   const expectedMessageHashed = sha256(expectedMessage);
 
-  const publicKeyFromSignature = publicKeyFromSignatureRsvStructured(
+  const publicKeyFromSignature = publicKeyFromSignatureRsv(
     bytesToHex(expectedMessageHashed),
     signedMessage
+  );
+
+  const addressFromSignature = getAddressFromPublicKey(
+    publicKeyFromSignature,
+    txVersion
   );
 
   // VALIDATING THE EXPECTED SIGNED MESSAGE
@@ -129,38 +136,9 @@ async function main() {
   console.log(`===== VALIDATION INFO =====`);
   console.log(`Public key from private:   ${publicKeyFromPrivate}`);
   console.log(`Public key from signature: ${publicKeyFromSignature}`);
+  console.log(`Address from private key:  ${address}`);
+  console.log(`Address from signature:    ${addressFromSignature}`);
   console.log(`Signature verified: ${isTestSignatureVerified}`);
-}
-
-function publicKeyFromSignatureVrsStructured(
-  messageHash: string,
-  messageSignature: StructuredDataSignature,
-  pubKeyEncoding = PubKeyEncoding.Compressed
-): string {
-  const parsedSignature = parseRecoverableSignatureVrs(messageSignature.data);
-  const signature = new Signature(
-    hexToBigInt(parsedSignature.r),
-    hexToBigInt(parsedSignature.s)
-  );
-  const point = Point.fromSignature(
-    messageHash,
-    signature,
-    parsedSignature.recoveryId
-  );
-  const compressed = pubKeyEncoding === PubKeyEncoding.Compressed;
-  return point.toHex(compressed);
-}
-
-function publicKeyFromSignatureRsvStructured(
-  messageHash: string,
-  messageSignature: StructuredDataSignature,
-  pubKeyEncoding?: PubKeyEncoding.Compressed
-) {
-  return publicKeyFromSignatureVrsStructured(
-    messageHash,
-    { ...messageSignature, data: signatureRsvToVrs(messageSignature.data) },
-    pubKeyEncoding
-  );
 }
 
 main();
