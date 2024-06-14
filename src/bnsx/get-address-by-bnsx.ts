@@ -3,11 +3,12 @@ import {
     callReadOnlyFunction,
     cvToJSON,
     ClarityType,
+    uintCV,
   } from "@stacks/transactions";
   import { BNSX_REGISTRY_CONTRACT_NAME, BNSX_REGISTRY_CONTRACT_ADDRESS } from "../constants";
   import { deriveChildAccount } from "../utilities";
   
-  // get address by bnsx name
+  // get address by bns name
   
   // CONFIGURATION
   
@@ -15,11 +16,8 @@ import {
   const MNEMONIC = Bun.env.mnemonic;
   const ACCOUNT_INDEX = Bun.env.accountIndex;
   
-  const BNSX_NAME = Bun.env.bnsxName;
-  const FUNCTION_NAME = "get-address-by-bnsx";
-  const FUNCTION_ARGS = [BNSX_NAME];
-  
-  // MAIN SCRIPT (DO NOT EDIT)
+  const BNS_NAME = Bun.env.bnsName;
+  const FUNCTION_NAME = "get-name-owner";
   
   async function main() {
     // get account info
@@ -30,34 +28,65 @@ import {
     // get address from mnemonic
     const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
   
-    const txOptions: ReadOnlyFunctionOptions = {
-      contractName: BNSX_REGISTRY_CONTRACT_NAME,
-      contractAddress: BNSX_REGISTRY_CONTRACT_ADDRESS,
-      functionName: FUNCTION_NAME,
-      functionArgs: FUNCTION_ARGS.map(arg => ({ type: ClarityType.StringUtf8, value: arg })),
-      network: network,
-      senderAddress: address,
-    };
-  
     try {
+      // Get the name ID for the given BNS name
+      const nameId = await getNameId(BNS_NAME);
+  
+      if (!nameId) {
+        console.log("Name not found");
+        return;
+      }
+  
+      const txOptions: ReadOnlyFunctionOptions = {
+        contractName: BNSX_REGISTRY_CONTRACT_NAME,
+        contractAddress: BNSX_REGISTRY_CONTRACT_ADDRESS,
+        functionName: FUNCTION_NAME,
+        functionArgs: [uintCV(nameId)],
+        network: network,
+        senderAddress: address,
+      };
+  
       const response = await callReadOnlyFunction(txOptions);
       const responseJson = cvToJSON(response);
-      
-      if (responseJson.type === "optional" && responseJson.value !== null) {
-        const address = responseJson.value.value;
-        console.log(address);
+  
+      if (responseJson.type === ClarityType.OptionalSome) {
+        const ownerAddress = responseJson.value.value;
+        console.log(`Address for ${BNS_NAME}:`, ownerAddress);
       } else {
-        console.log("No address found for the given BNSx name.");
+        console.log("Address not found for the given BNS name.");
       }
     } catch (error) {
-      // report error
       console.error(`General/Unexpected Failure: ${error}`);
     }
   }
   
+  async function getNameId(bnsName: string): Promise<bigint | undefined> {
+    const nameParts = bnsName.split(".");
+    const name = nameParts[0];
+    const namespace = nameParts[1];
+  
+    const txOptions: ReadOnlyFunctionOptions = {
+      contractName: BNSX_REGISTRY_CONTRACT_NAME,
+      contractAddress: BNSX_REGISTRY_CONTRACT_ADDRESS,
+      functionName: "get-id-for-name",
+      functionArgs: [
+        { type: ClarityType.Tuple, value: [
+          { key: "name", type: ClarityType.Buffer, value: Buffer.from(name) },
+          { key: "namespace", type: ClarityType.Buffer, value: Buffer.from(namespace) },
+        ]}
+      ],
+      network: NETWORK,
+      senderAddress: BNSX_REGISTRY_CONTRACT_ADDRESS,
+    };
+  
+    const response = await callReadOnlyFunction(txOptions);
+    const responseJson = cvToJSON(response);
+  
+    if (responseJson.type === ClarityType.OptionalSome) {
+      return BigInt(responseJson.value.value);
+    }
+  
+    return undefined;
+  }
+  
   main();
-
-  // Example usage
-const exampleAddress = "SPP3HM2E4JXGT26G1QRWQ2YTR5WT040S5NKXZYFC";
-const ADDRESS = exampleAddress;
-main();
