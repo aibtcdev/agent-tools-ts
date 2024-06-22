@@ -5,7 +5,7 @@ import {
   pubKeyfromPrivKey,
   publicKeyToString,
 } from "@stacks/transactions";
-import { deriveChildAccount } from "../utilities";
+import { deriveChildAccount, getNetwork } from "../utilities";
 import { buildRegisterNameTx } from "@stacks/bns";
 
 // CONFIGURATION
@@ -13,7 +13,14 @@ const NETWORK = Bun.env.network;
 const MNEMONIC = Bun.env.mnemonic;
 const ACCOUNT_INDEX = Bun.env.accountIndex;
 
-async function registerName(name: string, zonefile: string, salt: string) {
+const network = NETWORK;
+const networkObj = getNetwork(network);
+
+async function registerName(
+  name: string,
+  zonefile: string = "",
+  salt: string = ""
+) {
   try {
     // Derive child account from mnemonic
     const { address, key } = await deriveChildAccount(
@@ -27,7 +34,7 @@ async function registerName(name: string, zonefile: string, salt: string) {
     // Build the transaction for registering the name
     const unsignedTX = await buildRegisterNameTx({
       fullyQualifiedName: name,
-      network: NETWORK,
+      network: networkObj,
       publicKey,
       salt,
       zonefile,
@@ -40,7 +47,7 @@ async function registerName(name: string, zonefile: string, salt: string) {
     // Broadcast the transaction
     const broadcastResponse = await broadcastTransaction(
       signer.transaction,
-      NETWORK,
+      networkObj,
       Buffer.from(zonefile)
     );
 
@@ -72,11 +79,11 @@ async function registerName(name: string, zonefile: string, salt: string) {
 
 // Get the name, zonefile, and salt from command line arguments and call registerName
 const name = process.argv[2];
-const zonefile = process.argv[3];
-const salt = process.argv[4];
+const zonefile = process.argv[3] || ""; // Default to empty string if not provided
+const salt = process.argv[4] || ""; // Default to empty string if not provided
 
-if (name && zonefile && salt) {
+if (name) {
   registerName(name, zonefile, salt);
 } else {
-  console.error("Please provide a name, zonefile, and salt as arguments.");
+  console.error("Please provide a name as an argument.");
 }
