@@ -78,8 +78,8 @@ async function preorderName(
 
 // Get the name, salt, and stxToBurn from command line arguments and call preorderName
 const name = process.argv[2];
-const salt = process.argv[3] || ""; // Default to empty string if not provided
-const stxToBurn = process.argv[4] || "";
+const stxToBurn = process.argv[3] || "";
+const salt = process.argv[4] || ""; // Default to empty string if not provided
 
 if (name) {
   preorderName(name, salt, stxToBurn);
