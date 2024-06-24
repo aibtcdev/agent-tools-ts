@@ -3,6 +3,7 @@
   "version": "0.0.2",
   "private": true,
   "dependencies": {
+    "@stacks/bns": "^6.15.0",
     "@stacks/stacks-blockchain-api-types": "^7.9.0",
     "@stacks/transactions": "^6.12.1",
     "@stacks/wallet-sdk": "^6.12.1"
