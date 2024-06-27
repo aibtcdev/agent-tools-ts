@@ -1,12 +1,8 @@
-import { getAddressByName } from "../utilities";
-
-const NETWORK = Bun.env.network;
+import { CONFIG, getAddressByName } from "../utilities";
 
 async function queryAddressForName(name: string) {
-  const network = NETWORK;
-
   try {
-    const address = await getAddressByName(network, name);
+    const address = await getAddressByName(CONFIG.NETWORK, name);
     console.log(address);
   } catch (error) {
     console.error(`Error querying address for name: ${error}`);

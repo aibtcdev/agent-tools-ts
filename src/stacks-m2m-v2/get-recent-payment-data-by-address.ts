@@ -5,17 +5,13 @@ import {
   Cl,
 } from "@stacks/transactions";
 import { CONTRACT_NAME, DEPLOYER } from "../constants";
-import { deriveChildAccount } from "../utilities";
+import { CONFIG, deriveChildAccount } from "../utilities";
 import { InvoiceData } from "../types";
 
 // get recent payment data in contract
 // param: address
 
 // CONFIGURATION
-
-const NETWORK = Bun.env.network;
-const MNEMONIC = Bun.env.mnemonic;
-const ACCOUNT_INDEX = Bun.env.accountIndex;
 
 const FUNCTION_NAME = "get-recent-payment-data-by-address";
 const RESOURCE_NAME = "bitcoin-face";
@@ -24,9 +20,9 @@ const RESOURCE_NAME = "bitcoin-face";
 
 async function main() {
   // get account info
-  const network = NETWORK;
-  const mnemonic = MNEMONIC;
-  const accountIndex = ACCOUNT_INDEX;
+  const network = CONFIG.NETWORK;
+  const mnemonic = CONFIG.MNEMONIC;
+  const accountIndex = CONFIG.ACCOUNT_INDEX;
 
   // get address from mnemonic
   const { address: senderAddress } = await deriveChildAccount(

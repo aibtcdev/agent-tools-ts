@@ -1,8 +1,6 @@
 // CONFIGURATION
 
-import { getTransaction } from "../utilities";
-
-const NETWORK = Bun.env.network;
+import { CONFIG, getTransaction } from "../utilities";
 
 // MAIN SCRIPT (DO NOT EDIT)
 
@@ -14,12 +12,9 @@ async function main() {
     return;
   }
 
-  // get account info
-  const network = NETWORK;
-
   // get transaction info from API
   try {
-    const txResponse = await getTransaction(network, txId);
+    const txResponse = await getTransaction(CONFIG.NETWORK, txId);
     console.log(txResponse);
   } catch (error) {
     // report error

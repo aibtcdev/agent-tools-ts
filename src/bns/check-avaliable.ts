@@ -1,11 +1,8 @@
 import { canRegisterName } from "@stacks/bns";
-import { getNetwork } from "../utilities";
-
-const NETWORK = Bun.env.network;
+import { CONFIG, getNetwork } from "../utilities";
 
 async function queryNameAvailability(name: string) {
-  const network = NETWORK;
-  const networkObj = getNetwork(network);
+  const networkObj = getNetwork(CONFIG.NETWORK);
 
   try {
     const isAvailable = await canRegisterName({

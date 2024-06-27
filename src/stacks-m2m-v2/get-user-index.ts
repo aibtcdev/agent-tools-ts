@@ -4,7 +4,7 @@ import {
   cvToJSON,
   Cl,
 } from "@stacks/transactions";
-import { deriveChildAccount } from "../utilities";
+import { CONFIG, deriveChildAccount } from "../utilities";
 import { CONTRACT_NAME, DEPLOYER } from "../constants";
 
 // get user index in contract
@@ -12,19 +12,15 @@ import { CONTRACT_NAME, DEPLOYER } from "../constants";
 
 // CONFIGURATION
 
-const NETWORK = Bun.env.network;
-const MNEMONIC = Bun.env.mnemonic;
-const ACCOUNT_INDEX = Bun.env.accountIndex;
-
 const FUNCTION_NAME = "get-user-index";
 
 // MAIN SCRIPT (DO NOT EDIT)
 
 async function main() {
   // get account info
-  const network = NETWORK;
-  const mnemonic = MNEMONIC;
-  const accountIndex = ACCOUNT_INDEX;
+  const network = CONFIG.NETWORK;
+  const mnemonic = CONFIG.MNEMONIC;
+  const accountIndex = CONFIG.ACCOUNT_INDEX;
 
   // get address from mnemonic
   const { address: senderAddress } = await deriveChildAccount(

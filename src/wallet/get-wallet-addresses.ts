@@ -1,18 +1,13 @@
-import { deriveChildAccounts } from "../utilities";
+import { CONFIG, deriveChildAccounts } from "../utilities";
 
 // get first 10 account addresses from wallet
-
-// CONFIGURATION
-
-const NETWORK = Bun.env.network;
-const MNEMONIC = Bun.env.mnemonic;
 
 // MAIN SCRIPT (DO NOT EDIT BELOW)
 
 async function main() {
   // get account info from env
-  const network = NETWORK;
-  const mnemonic = MNEMONIC;
+  const network = CONFIG.NETWORK;
+  const mnemonic = CONFIG.MNEMONIC;
   const desiredIndex = 9; // hard-coded to return 10 addresses
 
   // check that values exist for each

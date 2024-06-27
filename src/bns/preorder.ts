@@ -1,3 +1,4 @@
+import { buildPreorderNameTx } from "@stacks/bns";
 import {
   TransactionSigner,
   broadcastTransaction,
@@ -5,39 +6,34 @@ import {
   pubKeyfromPrivKey,
   publicKeyToString,
 } from "@stacks/transactions";
-import { deriveChildAccount, getNetwork } from "../utilities";
-import { buildRegisterNameTx } from "@stacks/bns";
+import { CONFIG, deriveChildAccount, getNetwork } from "../utilities";
 
 // CONFIGURATION
-const NETWORK = Bun.env.network;
-const MNEMONIC = Bun.env.mnemonic;
-const ACCOUNT_INDEX = Bun.env.accountIndex;
 
-const network = NETWORK;
-const networkObj = getNetwork(network);
+const networkObj = getNetwork(CONFIG.NETWORK);
 
-async function registerName(
+async function preorderName(
   name: string,
-  zonefile: string = "",
-  salt: string = ""
+  salt: string = "",
+  stxToBurn: string = ""
 ) {
   try {
     // Derive child account from mnemonic
     const { address, key } = await deriveChildAccount(
-      NETWORK,
-      MNEMONIC,
-      ACCOUNT_INDEX
+      CONFIG.NETWORK,
+      CONFIG.MNEMONIC,
+      CONFIG.ACCOUNT_INDEX
     );
 
     const publicKey = publicKeyToString(pubKeyfromPrivKey(key));
 
-    // Build the transaction for registering the name
-    const unsignedTX = await buildRegisterNameTx({
+    // Build the transaction for preordering the name
+    const unsignedTX = await buildPreorderNameTx({
       fullyQualifiedName: name,
-      network: networkObj,
       publicKey,
       salt,
-      zonefile,
+      stxToBurn,
+      network: networkObj,
     });
 
     // Sign the transaction
@@ -47,8 +43,7 @@ async function registerName(
     // Broadcast the transaction
     const broadcastResponse = await broadcastTransaction(
       signer.transaction,
-      networkObj,
-      Buffer.from(zonefile)
+      networkObj
     );
 
     // Handle the response
@@ -73,17 +68,17 @@ async function registerName(
       console.log(`TXID: 0x${broadcastResponse.txid}`);
     }
   } catch (error) {
-    console.error(`Error registering name: ${error}`);
+    console.error(`Error preordering name: ${error}`);
   }
 }
 
-// Get the name, zonefile, and salt from command line arguments and call registerName
+// Get the name, salt, and stxToBurn from command line arguments and call preorderName
 const name = process.argv[2];
-const zonefile = process.argv[3] || ""; // Default to empty string if not provided
+const stxToBurn = process.argv[3] || "";
 const salt = process.argv[4] || ""; // Default to empty string if not provided
 
 if (name) {
-  registerName(name, zonefile, salt);
+  preorderName(name, salt, stxToBurn);
 } else {
-  console.error("Please provide a name as an argument.");
+  console.error("Please provide a name and stxToBurn as arguments.");
 }

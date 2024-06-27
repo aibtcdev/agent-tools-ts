@@ -5,16 +5,12 @@ import {
   cvToJSON,
 } from "@stacks/transactions";
 import { CONTRACT_NAME, DEPLOYER } from "../constants";
-import { deriveChildAccount } from "../utilities";
+import { CONFIG, deriveChildAccount } from "../utilities";
 import { ResourceData } from "../types";
 
 // get resource info by name
 
 // CONFIGURATION
-
-const NETWORK = Bun.env.network;
-const MNEMONIC = Bun.env.mnemonic;
-const ACCOUNT_INDEX = Bun.env.accountIndex;
 
 const RESOURCE_NAME = "bitcoin-face";
 const FUNCTION_NAME = "get-resource-by-name";
@@ -24,9 +20,9 @@ const FUNCTION_ARGS = [Cl.stringUtf8(RESOURCE_NAME)];
 
 async function main() {
   // get account info
-  const network = NETWORK;
-  const mnemonic = MNEMONIC;
-  const accountIndex = ACCOUNT_INDEX;
+  const network = CONFIG.NETWORK;
+  const mnemonic = CONFIG.MNEMONIC;
+  const accountIndex = CONFIG.ACCOUNT_INDEX;
 
   // get address from mnemonic
   const { address } = await deriveChildAccount(network, mnemonic, accountIndex);

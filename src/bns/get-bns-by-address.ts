@@ -1,12 +1,8 @@
-import { getNamesOwnedByAddress } from "../utilities";
-
-const NETWORK = Bun.env.network;
+import { CONFIG, getNamesOwnedByAddress } from "../utilities";
 
 async function queryNameForAddress(address: string) {
-  const network = NETWORK;
-
   try {
-    const names = await getNamesOwnedByAddress(network, address);
+    const names = await getNamesOwnedByAddress(CONFIG.NETWORK, address);
     console.log(names);
   } catch (error) {
     console.error(`Error querying names for address: ${error}`);

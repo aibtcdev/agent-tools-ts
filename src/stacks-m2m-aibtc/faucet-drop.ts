@@ -6,16 +6,12 @@ import {
   broadcastTransaction,
   makeContractCall,
 } from "@stacks/transactions";
-import { deriveChildAccount, getNextNonce } from "../utilities";
+import { CONFIG, deriveChildAccount, getNextNonce } from "../utilities";
 import { DEPLOYER, TOKEN_CONTRACT_NAME } from "../constants";
 
 // get 1_000_000 aiBTC from the faucet
 
 // CONFIGURATION
-
-const NETWORK = Bun.env.network;
-const MNEMONIC = Bun.env.mnemonic;
-const ACCOUNT_INDEX = Bun.env.accountIndex;
 
 const DEFAULT_FEE = 250_000; // 0.25 STX
 const FUNCTION_NAME = "faucet-drop";
@@ -24,9 +20,9 @@ const FUNCTION_NAME = "faucet-drop";
 
 async function main() {
   // get account info from env
-  const network = NETWORK;
-  const mnemonic = MNEMONIC;
-  const accountIndex = ACCOUNT_INDEX;
+  const network = CONFIG.NETWORK;
+  const mnemonic = CONFIG.MNEMONIC;
+  const accountIndex = CONFIG.ACCOUNT_INDEX;
 
   // get account address and private key
   const { address, key } = await deriveChildAccount(

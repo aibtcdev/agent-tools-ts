@@ -10,6 +10,52 @@ import type {
   Transaction,
 } from "@stacks/stacks-blockchain-api-types";
 
+// define types of networks we allow
+// matches string definitions in Stacks.js
+type NetworkType = "mainnet" | "testnet" | "devnet" | "mocknet";
+
+// validate network value
+function validateNetwork(network: string | undefined): NetworkType {
+  if (
+    network &&
+    ["mainnet", "testnet", "devnet", "mocknet"].includes(network)
+  ) {
+    return network as NetworkType;
+  }
+  return DEFAULT_CONFIG.NETWORK;
+}
+
+// define structure of app config
+interface AppConfig {
+  NETWORK: NetworkType;
+  MNEMONIC: string;
+  ACCOUNT_INDEX: number;
+}
+
+// define default values for app config
+const DEFAULT_CONFIG: AppConfig = {
+  NETWORK: "testnet",
+  MNEMONIC: "",
+  ACCOUNT_INDEX: 0,
+};
+
+// load configuration from environment variables
+function loadConfig(): AppConfig {
+  // Bun loads .env automatically
+  // so nothing to load here first
+
+  return {
+    NETWORK: validateNetwork(process.env.NETWORK),
+    MNEMONIC: process.env.MNEMONIC || DEFAULT_CONFIG.MNEMONIC,
+    ACCOUNT_INDEX: process.env.ACCOUNT_INDEX
+      ? parseInt(process.env.ACCOUNT_INDEX, 10)
+      : DEFAULT_CONFIG.ACCOUNT_INDEX,
+  };
+}
+
+// export the configuration object
+export const CONFIG = loadConfig();
+
 export function getNetwork(network: string) {
   switch (network) {
     case "mainnet":

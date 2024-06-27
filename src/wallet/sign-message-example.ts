@@ -24,16 +24,12 @@ import {
   tupleCV,
   uintCV,
 } from "@stacks/transactions";
-import { deriveChildAccount, getNetwork, getTxVersion } from "../utilities";
-
-// CONFIGURATION
-
-// @ts-ignore (env is injected by Bun)
-const NETWORK = Bun.env.network;
-// @ts-ignore (env is injected by Bun)
-const MNEMONIC = Bun.env.mnemonic;
-// @ts-ignore (env is injected by Bun)
-const ACCOUNT_INDEX = Bun.env.accountIndex;
+import {
+  CONFIG,
+  deriveChildAccount,
+  getNetwork,
+  getTxVersion,
+} from "../utilities";
 
 // MAIN SCRIPT (DO NOT EDIT BELOW)
 
@@ -41,9 +37,9 @@ async function main() {
   // ACCOUNT INFO
 
   // get account info from env
-  const network = NETWORK;
-  const mnemonic = MNEMONIC;
-  const accountIndex = ACCOUNT_INDEX;
+  const network = CONFIG.NETWORK;
+  const mnemonic = CONFIG.MNEMONIC;
+  const accountIndex = CONFIG.ACCOUNT_INDEX;
   // check that values exist for each
   if (!network) {
     throw new Error("No network provided in environment variables");

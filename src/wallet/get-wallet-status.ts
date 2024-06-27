@@ -1,20 +1,14 @@
-import { deriveChildAccount, getNextNonce } from "../utilities";
+import { CONFIG, deriveChildAccount, getNextNonce } from "../utilities";
 
 // get currently selected wallet info from env file
-
-// CONFIGURATION
-
-const NETWORK = Bun.env.network;
-const MNEMONIC = Bun.env.mnemonic;
-const ACCOUNT_INDEX = Bun.env.accountIndex;
 
 // MAIN SCRIPT (DO NOT EDIT BELOW)
 
 async function main() {
   // get account info from env
-  const network = NETWORK;
-  const mnemonic = MNEMONIC;
-  const accountIndex = ACCOUNT_INDEX;
+  const network = CONFIG.NETWORK;
+  const mnemonic = CONFIG.MNEMONIC;
+  const accountIndex = CONFIG.ACCOUNT_INDEX;
   // check that values exist for each
   if (!network) {
     throw new Error("No network provided in environment variables");
