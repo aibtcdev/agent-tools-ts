@@ -155,6 +155,10 @@ export async function getTransaction(network: string, txId: string) {
   return data as Transaction;
 }
 
+type NamesResponse = {
+  names: string[];
+};
+
 // gets names owned by address from the hiro API
 export async function getNamesOwnedByAddress(network: string, address: string) {
   const apiUrl = getApiUrl(network);
@@ -168,9 +172,21 @@ export async function getNamesOwnedByAddress(network: string, address: string) {
       `Failed to get names owned by address: ${response.statusText}`
     );
   }
-  const data = await response.json();
+  const data = (await response.json()) as NamesResponse;
   return data.names;
 }
+
+type NamesDataResponse = {
+  address: string;
+  blockchain: string;
+  expire_block?: number;
+  grace_period?: number;
+  last_txid?: string;
+  resolver?: string;
+  status?: string;
+  zonefile?: string;
+  zonefile_hash?: string;
+};
 
 // gets address by name from the hiro api
 export async function getAddressByName(network: string, name: string) {
@@ -183,7 +199,7 @@ export async function getAddressByName(network: string, name: string) {
   if (!response.ok) {
     throw new Error(`Failed to get address by name: ${response.statusText}`);
   }
-  const data = await response.json();
+  const data = (await response.json()) as NamesDataResponse;
   return data.address;
 }
 
