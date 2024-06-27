@@ -81,11 +81,11 @@ export function getTxVersion(network: string) {
 export function getApiUrl(network: string) {
   switch (network) {
     case "mainnet":
-      return "https://stacks-node-api.mainnet.stacks.co";
+      return "https://api.hiro.so";
     case "testnet":
-      return "https://stacks-node-api.testnet.stacks.co";
+      return "https://api.testnet.hiro.so";
     default:
-      return "https://stacks-node-api.testnet.stacks.co";
+      return "https://api.testnet.hiro.so";
   }
 }
 
