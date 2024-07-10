@@ -1,4 +1,4 @@
-// matches how a resource is defined in stacks-m2m-v2
+// matches how a resource is defined in the contract
 export type ResourceData = {
   createdAt: number;
   description: string;
@@ -9,14 +9,14 @@ export type ResourceData = {
   totalUsed: number;
 };
 
-// matches how a user is defined in stacks-m2m-v2
+// matches how a resource is defined in the contract
 export type UserData = {
   address: string;
   totalSpent: number;
   totalUsed: number;
 };
 
-// matches how an invoice is defined in stacks-m2m-v2
+// matches how a resource is defined in the contract
 export type InvoiceData = {
   amount: number;
   createdAt: number;
