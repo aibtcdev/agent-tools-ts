@@ -9,6 +9,7 @@ import type {
   AddressNonces,
   Transaction,
 } from "@stacks/stacks-blockchain-api-types";
+import { StackingClient } from "@stacks/stacking";
 
 // define types of networks we allow
 // matches string definitions in Stacks.js
@@ -221,4 +222,38 @@ export async function getNextNonce(network: string, address: string) {
   const nonces = await getNonces(network, address);
   const nextNonce = nonces.possible_next_nonce;
   return nextNonce;
+}
+
+// Function to get the balance of an address
+export async function getAddressBalance(network: string, address: string) {
+  const stacksNetwork = getNetwork(network);
+  const client = new StackingClient(address, stacksNetwork);
+
+  try {
+    const balance = await client.getAccountBalance();
+    const lockedBalance = await client.getAccountBalanceLocked();
+    const unlocked = balance - lockedBalance;
+    return {
+      total: balance.toString(),
+      locked: lockedBalance.toString(),
+      unlocked: unlocked.toString(),
+    };
+  } catch (error) {
+    throw new Error(`Failed to get address balance: ${error.message}`);
+  }
+}
+
+export async function getAddressBalanceDetailed(
+  network: string,
+  address: string
+) {
+  const stacksNetwork = getNetwork(network);
+  const client = new StackingClient(address, stacksNetwork);
+
+  try {
+    const detailedBalance = await client.getAccountExtendedBalances();
+    return detailedBalance;
+  } catch (error) {
+    throw new Error(`Failed to get address balance: ${error.message}`);
+  }
 }
