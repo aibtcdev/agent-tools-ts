@@ -2,34 +2,48 @@ import {
   makeSTXTokenTransfer,
   broadcastTransaction,
   AnchorMode,
-  createStacksPrivateKey,
 } from "@stacks/transactions";
 import { bytesToHex } from "@stacks/common";
-import { CONFIG, deriveChildAccount, getNetwork } from "../utilities";
+import {
+  CONFIG,
+  deriveChildAccount,
+  getNetwork,
+  getNextNonce,
+  stxToMicroStx,
+} from "../utilities";
 
 // CONFIGURATION
-
 const networkObj = getNetwork(CONFIG.NETWORK);
 
 async function transferToken(
   recipient: string,
   amount: bigint,
-  memo: string = "",
-  nonce: bigint = 0n,
-  fee: bigint = 200n
+  fee: bigint = 200n,
+  memo: string = ""
 ) {
   try {
-    // Derive child account from mnemonic
+    // get account info from env
+    const network = CONFIG.NETWORK;
+    const mnemonic = CONFIG.MNEMONIC;
+    const accountIndex = CONFIG.ACCOUNT_INDEX;
+
+    // get account address and private key
     const { address, key } = await deriveChildAccount(
-      CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
+      network,
+      mnemonic,
+      accountIndex
     );
 
-    // Build the transaction for transferring tokens
+    // get the next nonce for the account
+    const nonce = await getNextNonce(network, address);
+
+    // convert amount to microSTX
+    const convertedAmount = stxToMicroStx(Number(amount));
+
+    // build the transaction for transferring tokens
     const txOptions = {
       recipient,
-      amount,
+      amount: convertedAmount,
       senderKey: key,
       network: networkObj,
       memo,
@@ -80,12 +94,11 @@ async function transferToken(
 // Get the recipient, amount, memo, nonce, and fee from command line arguments and call transferToken
 const recipient = process.argv[2];
 const amount = BigInt(process.argv[3]);
-const memo = process.argv[4] || "";
-const nonce = BigInt(process.argv[5] || 0);
-const fee = BigInt(process.argv[6] || 200);
+const fee = BigInt(process.argv[4] || 200);
+const memo = process.argv[5] || "";
 
 if (recipient && amount) {
-  transferToken(recipient, amount, memo, nonce, fee);
+  transferToken(recipient, amount, fee, memo);
 } else {
   console.error("Please provide a recipient and amount as arguments.");
 }
