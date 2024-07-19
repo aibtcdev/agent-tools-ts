@@ -34,8 +34,8 @@ interface AppConfig {
 
 // define default values for app config
 const DEFAULT_CONFIG: AppConfig = {
-  NETWORK: "testnet",
-  MNEMONIC: "tip divert obtain divert cook visa soul cover clump dinner mean cool guitar way lawn month before room maple hero urban other life better",
+  NETWORK: "mainnet",
+  MNEMONIC: "",
   ACCOUNT_INDEX: 0,
 };
 
