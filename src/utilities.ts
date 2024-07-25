@@ -252,6 +252,32 @@ export async function getNextNonce(network: string, address: string) {
   return nextNonce;
 }
 
+interface ContractSourceResponse {
+  source: string;
+  publish_height: number;
+  proof: string;
+}
+
+export async function getContractSource(
+  network: string,
+  contractAddress: string,
+  contractName: string
+) {
+  const apiUrl = getApiUrl(network);
+  const response = await fetch(
+    `${apiUrl}/v2/contracts/source/${contractAddress}/${contractName}`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to get contract source: ${response.statusText}`);
+  }
+  const data = (await response.json()) as ContractSourceResponse;
+  return data.source;
+
 // Function to get the balance of an address
 export async function getAddressBalance(network: string, address: string) {
   const stacksNetwork = getNetwork(network);
@@ -284,4 +310,5 @@ export async function getAddressBalanceDetailed(
   } catch (error) {
     throw new Error(`Failed to get address balance: ${error.message}`);
   }
+
 }
