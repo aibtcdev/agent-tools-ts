@@ -10,6 +10,7 @@ import type {
   Transaction,
 } from "@stacks/stacks-blockchain-api-types";
 import { StackingClient } from "@stacks/stacking";
+import { logAndThrowError } from "./lib/logger";
 
 // define types of networks we allow
 // matches string definitions in Stacks.js
@@ -292,8 +293,8 @@ export async function getAddressBalance(network: string, address: string) {
       locked: lockedBalance.toString(),
       unlocked: unlocked.toString(),
     };
-  } catch (error : any) {
-    throw new Error(`Failed to get address balance: ${error.message}`);
+  } catch (error) {
+    logAndThrowError(error, `Failed to get address balance`);
   }
 }
 
@@ -307,8 +308,7 @@ export async function getAddressBalanceDetailed(
   try {
     const detailedBalance = await client.getAccountExtendedBalances();
     return detailedBalance;
-  } catch (error : any) {
-    throw new Error(`Failed to get address balance: ${error.message}`);
+  } catch (error) {
+    logAndThrowError(error, `Failed to get address balance`);
   }
-
 }
