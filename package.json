@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@stacks/bns": "^6.15.0",
+    "@stacks/stacking": "^6.16.1",
     "@stacks/stacks-blockchain-api-types": "^7.9.0",
     "@stacks/transactions": "^6.12.1",
     "@stacks/wallet-sdk": "^6.12.1"
