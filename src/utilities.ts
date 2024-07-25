@@ -9,6 +9,7 @@ import type {
   AddressNonces,
   Transaction,
 } from "@stacks/stacks-blockchain-api-types";
+import { StackingClient } from "@stacks/stacking";
 
 // define types of networks we allow
 // matches string definitions in Stacks.js
@@ -87,6 +88,34 @@ export function getApiUrl(network: string) {
     default:
       return "https://api.testnet.hiro.so";
   }
+}
+
+export const MICROSTX_IN_STX = 1_000_000;
+
+/**
+ * Convert μSTX (micro-STX) to STX denomination.
+ * `1 STX = 1,000,000 μSTX`
+ *
+ * @example
+ * ```ts
+ * microStxToStx(1000000n); // 1n
+ * ```
+ */
+export function microStxToStx(amountInMicroStx: number): number {
+  return amountInMicroStx / MICROSTX_IN_STX;
+}
+
+/**
+ * Convert STX to μSTX (micro-STX) denomination.
+ * `1 STX = 1,000,000 μSTX`
+ *
+ * @example
+ * ```ts
+ * stxToMicroStx(1); // 1000000
+ * ```
+ */
+export function stxToMicroStx(amountInStx: number): number {
+  return amountInStx * MICROSTX_IN_STX;
 }
 
 export async function deriveChildAccount(
@@ -248,4 +277,38 @@ export async function getContractSource(
   }
   const data = (await response.json()) as ContractSourceResponse;
   return data.source;
+
+// Function to get the balance of an address
+export async function getAddressBalance(network: string, address: string) {
+  const stacksNetwork = getNetwork(network);
+  const client = new StackingClient(address, stacksNetwork);
+
+  try {
+    const balance = await client.getAccountBalance();
+    const lockedBalance = await client.getAccountBalanceLocked();
+    const unlocked = balance - lockedBalance;
+    return {
+      total: balance.toString(),
+      locked: lockedBalance.toString(),
+      unlocked: unlocked.toString(),
+    };
+  } catch (error) {
+    throw new Error(`Failed to get address balance: ${error.message}`);
+  }
+}
+
+export async function getAddressBalanceDetailed(
+  network: string,
+  address: string
+) {
+  const stacksNetwork = getNetwork(network);
+  const client = new StackingClient(address, stacksNetwork);
+
+  try {
+    const detailedBalance = await client.getAccountExtendedBalances();
+    return detailedBalance;
+  } catch (error) {
+    throw new Error(`Failed to get address balance: ${error.message}`);
+  }
+
 }
