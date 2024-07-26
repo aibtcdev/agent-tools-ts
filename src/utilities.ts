@@ -277,6 +277,7 @@ export async function getContractSource(
   }
   const data = (await response.json()) as ContractSourceResponse;
   return data.source;
+}
 
 // Function to get the balance of an address
 export async function getAddressBalance(network: string, address: string) {
@@ -310,5 +311,4 @@ export async function getAddressBalanceDetailed(
   } catch (error) {
     throw new Error(`Failed to get address balance: ${error.message}`);
   }
-
 }
