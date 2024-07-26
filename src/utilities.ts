@@ -10,7 +10,6 @@ import type {
   Transaction,
 } from "@stacks/stacks-blockchain-api-types";
 import { StackingClient } from "@stacks/stacking";
-import { logAndThrowError } from "./lib/logger";
 
 // define types of networks we allow
 // matches string definitions in Stacks.js
@@ -310,5 +309,13 @@ export async function getAddressBalanceDetailed(
     return detailedBalance;
   } catch (error) {
     logAndThrowError(error, `Failed to get address balance`);
+  }
+}
+
+export function logAndThrowError(error: unknown, title = "Error:") {
+  if (error instanceof Error) {
+    throw new Error(`${title} ${error.message}`);
+  } else {
+    throw new Error(`${title} ${String(error)}`);
   }
 }
