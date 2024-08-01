@@ -277,7 +277,7 @@ export async function getContractSource(
   }
   const data = (await response.json()) as ContractSourceResponse;
   return data.source;
-
+}
 // Function to get the balance of an address
 export async function getAddressBalance(network: string, address: string) {
   const stacksNetwork = getNetwork(network);
@@ -293,7 +293,7 @@ export async function getAddressBalance(network: string, address: string) {
       unlocked: unlocked.toString(),
     };
   } catch (error) {
-    throw new Error(`Failed to get address balance: ${error.message}`);
+    logAndThrowError(error, `Failed to get address balance`);
   }
 }
 
@@ -308,7 +308,14 @@ export async function getAddressBalanceDetailed(
     const detailedBalance = await client.getAccountExtendedBalances();
     return detailedBalance;
   } catch (error) {
-    throw new Error(`Failed to get address balance: ${error.message}`);
+    logAndThrowError(error, `Failed to get address balance`);
   }
+}
 
+export function logAndThrowError(error: unknown, title = "Error:") {
+  if (error instanceof Error) {
+    throw new Error(`${title} ${error.message}`);
+  } else {
+    throw new Error(`${title} ${String(error)}`);
+  }
 }
