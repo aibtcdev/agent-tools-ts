@@ -35,7 +35,7 @@ interface AppConfig {
 
 // define default values for app config
 const DEFAULT_CONFIG: AppConfig = {
-  NETWORK: "testnet",
+  NETWORK: "mainnet",
   MNEMONIC: "",
   ACCOUNT_INDEX: 0,
 };
@@ -277,6 +277,7 @@ export async function getContractSource(
   }
   const data = (await response.json()) as ContractSourceResponse;
   return data.source;
+}
 
 // Function to get the balance of an address
 export async function getAddressBalance(network: string, address: string) {
