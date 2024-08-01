@@ -35,8 +35,8 @@ interface AppConfig {
 
 // define default values for app config
 const DEFAULT_CONFIG: AppConfig = {
-  NETWORK: "testnet",
-  MNEMONIC: "",
+  NETWORK: "mainnet",
+  MNEMONIC: "embrace tilt large budget version muscle skate inside endorse trouble dose naive cactus snake toddler hover canoe sorry figure matter wealth evolve quarter arrive",
   ACCOUNT_INDEX: 0,
 };
 
@@ -277,6 +277,7 @@ export async function getContractSource(
   }
   const data = (await response.json()) as ContractSourceResponse;
   return data.source;
+}
 
 // Function to get the balance of an address
 export async function getAddressBalance(network: string, address: string) {
