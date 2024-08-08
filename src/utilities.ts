@@ -16,7 +16,7 @@ import { StackingClient } from "@stacks/stacking";
 type NetworkType = "mainnet" | "testnet" | "devnet" | "mocknet";
 
 // validate network value
-function validateNetwork(network: string | undefined): NetworkType {
+export function validateNetwork(network: string | undefined): NetworkType {
   if (
     network &&
     ["mainnet", "testnet", "devnet", "mocknet"].includes(network)
@@ -277,7 +277,7 @@ export async function getContractSource(
   }
   const data = (await response.json()) as ContractSourceResponse;
   return data.source;
-
+}
 // Function to get the balance of an address
 export async function getAddressBalance(network: string, address: string) {
   const stacksNetwork = getNetwork(network);
@@ -293,7 +293,7 @@ export async function getAddressBalance(network: string, address: string) {
       unlocked: unlocked.toString(),
     };
   } catch (error) {
-    throw new Error(`Failed to get address balance: ${error.message}`);
+    throw new Error(`Failed to get address balance: ${error}`);
   }
 }
 
@@ -308,7 +308,6 @@ export async function getAddressBalanceDetailed(
     const detailedBalance = await client.getAccountExtendedBalances();
     return detailedBalance;
   } catch (error) {
-    throw new Error(`Failed to get address balance: ${error.message}`);
+    throw new Error(`Failed to get address balance: ${error}`);
   }
-
 }
