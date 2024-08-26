@@ -52,7 +52,7 @@ bun run <script-name>
 Replace <script-name> with the name of the script you want to execute. For example:
 
 ```bash
-bun run get-contract
+bun run src/stacks-wallet/get-wallet-status.ts
 ```
 
 ### Configuration
