@@ -340,3 +340,117 @@ export async function getFaucetDrop(
   const data = await response.json();
   return data;
 }
+
+interface TransactionResponse {
+  limit: number;
+  offset: number;
+  total: number;
+  results: Array<{
+    tx: {
+      tx_id: string;
+      nonce: number;
+      fee_rate: string;
+      sender_address: string;
+      sponsor_nonce: number;
+      sponsored: boolean;
+      sponsor_address: string;
+      post_condition_mode: string;
+      post_conditions: Array<{
+        principal: {
+          type_id: string;
+        };
+        condition_code: string;
+        amount: string;
+        type: string;
+      }>;
+      anchor_mode: string;
+      block_hash: string;
+      block_height: number;
+      block_time: number;
+      block_time_iso: string;
+      burn_block_height: number;
+      burn_block_time: number;
+      burn_block_time_iso: string;
+      parent_burn_block_time: number;
+      parent_burn_block_time_iso: string;
+      canonical: boolean;
+      tx_index: number;
+      tx_status: string;
+      tx_result: {
+        hex: string;
+        repr: string;
+      };
+      event_count: number;
+      parent_block_hash: string;
+      is_unanchored: boolean;
+      microblock_hash: string;
+      microblock_sequence: number;
+      microblock_canonical: boolean;
+      execution_cost_read_count: number;
+      execution_cost_read_length: number;
+      execution_cost_runtime: number;
+      execution_cost_write_count: number;
+      execution_cost_write_length: number;
+      events: Array<{
+        event_index: number;
+        event_type: string;
+        tx_id: string;
+        contract_log: {
+          contract_id: string;
+          topic: string;
+          value: {
+            hex: string;
+            repr: string;
+          };
+        };
+      }>;
+      tx_type: string;
+      token_transfer: {
+        recipient_address: string;
+        amount: string;
+        memo: string;
+      };
+    };
+    stx_sent: string;
+    stx_received: string;
+    events: {
+      stx: {
+        transfer: number;
+        mint: number;
+        burn: number;
+      };
+      ft: {
+        transfer: number;
+        mint: number;
+        burn: number;
+      };
+      nft: {
+        transfer: number;
+        mint: number;
+        burn: number;
+      };
+    };
+  }>;
+}
+
+export async function getTransactionsByAddress(
+  network: string,
+  address: string,
+  limit: number = 20,
+  offset: number = 0
+): Promise<TransactionResponse> {
+  const apiUrl = getApiUrl(network);
+  const response = await fetch(
+    `${apiUrl}/extended/v2/addresses/${address}/transactions?limit=${limit}&offset=${offset}`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to get transactions: ${response.statusText}`);
+  }
+  const data = (await response.json()) as any;
+  return data;
+}
