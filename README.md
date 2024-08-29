@@ -4,23 +4,67 @@
 
 ## Description
 
-This is a collection of TypeScript scripts that interact with a Bitcoin/Stacks wallet and the Stacks blockchain.
+This is a collection of TypeScript scripts that interact with a Bitcoin/Stacks wallet and the Stacks blockchain. These tools are designed to facilitate various operations such as fetching contract sources and retrieving wallet statuses.
 
 ## Development
 
-Tech stack:
+### Tech Stack
 
 - Bun.js
 - Stacks.js
 
-To run this locally:
+### Prerequisites
 
-1. Clone repository
-2. Install Bun globally
+- Node.js (for Bun.js)
+- Git
+
+### Installation
+
+To run this project locally, follow these steps:
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/aibtcdev/agent-tools-ts.git
+   cd agent-tools-ts
+   ```
+
+2. **Install Bun globally:**
+
+   ```bash
+   curl -fsSL https://bun.sh/install | bash
+   ```
+
+3. **Install dependencies:**
+
+   ```bash
+   bun install
+   ```
+
+### Running Scripts
+
+To run the scripts, use the following command:
 
 ```bash
-curl -fsSL https://bun.sh/install | bash
+bun run <script-name>
 ```
 
-3. Install dependencies: `bun install`
-4. Run scripts: `bun run <script-name>`
+Replace <script-name> with the name of the script you want to execute. For example:
+
+```bash
+bun run src/stacks-wallet/get-wallet-status.ts
+```
+
+### Configuration
+
+The project uses environment variables for configuration. Create a `.env` file in the root directory and add the following variables:
+
+```env
+NETWORK=testnet
+MNEMONIC=your-mnemonic-phrase
+ACCOUNT_INDEX=0
+```
+
+### Contact
+
+For any questions or feedback, please open an issue or contact us at [@aibtcdev](https://x.com/aibtcdev).
