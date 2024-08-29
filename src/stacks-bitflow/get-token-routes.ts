@@ -17,7 +17,7 @@ if (!tokenX || !tokenY) {
 
 try {
   const routes = await bitflow.getAllPossibleTokenYRoutes(tokenX, tokenY);
-  console.log(routes);
+  console.log(JSON.stringify(routes, null, 2));
 } catch (error) {
   console.log(error);
 }

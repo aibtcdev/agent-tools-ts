@@ -9,7 +9,7 @@ const bitflow = new BitflowSDK({
 
 try {
   const tokens = await bitflow.getAvailableTokens();
-  console.log(tokens);
+  console.log(JSON.stringify(tokens, null, 2));
 } catch (error) {
   console.log(error);
 }

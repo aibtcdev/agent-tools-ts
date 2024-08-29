@@ -16,7 +16,7 @@ if (!token) {
 
 try {
   const swapOptions = await bitflow.getPossibleSwaps(token);
-  console.log(swapOptions);
+  console.log(JSON.stringify(swapOptions, null, 2));
 } catch (error) {
   console.log(error);
 }

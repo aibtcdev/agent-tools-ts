@@ -18,7 +18,7 @@ if (!tokenX || !tokenY || !amount) {
 
 try {
   const routeQuote = await bitflow.getQuoteForRoute(tokenX, tokenY, amount);
-  console.log(routeQuote);
+  console.log(JSON.stringify(routeQuote, null, 2));
 } catch (error) {
   console.log(error);
 }

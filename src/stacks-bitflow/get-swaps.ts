@@ -16,7 +16,7 @@ if (!token) {
 
 try {
   const possibleTokens = await bitflow.getAllPossibleTokenY(token);
-  console.log(possibleTokens);
+  console.log(JSON.stringify(possibleTokens, null, 2));
 } catch (error) {
   console.log(error);
 }
