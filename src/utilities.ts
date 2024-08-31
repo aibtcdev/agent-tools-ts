@@ -405,6 +405,13 @@ interface TransactionResponse {
         };
       }>;
       tx_type: string;
+      contract_call: {
+        contract_id: string;
+        function_name: string;
+      };
+      smart_contract: {
+        contract_id: string;
+      };
       token_transfer: {
         recipient_address: string;
         amount: string;
