@@ -355,7 +355,6 @@ export async function getContractSource(
   return data.source;
 }
 
-}
 // Function to get the balance of an address
 export async function getAddressBalance(network: string, address: string) {
   const stacksNetwork = getNetwork(network);
@@ -388,25 +387,6 @@ export async function getAddressBalanceDetailed(
   } catch (error: any) {
     throw new Error(`Failed to get address balance: ${error.message}`);
   }
-
-  const apiUrl = getApiUrl(network);
-  const response = await fetch(
-    `${apiUrl}/extended/v1/faucets/stx?address=${address}&unanchored=${unanchored}`,
-    {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-      },
-    }
-  );
-
-
-  if (!response.ok) {
-    throw new Error(`Failed to get faucet drop: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data;
 }
 
 interface TransactionResponse {
