@@ -17,7 +17,7 @@ import { TxBroadcastResult } from "@stacks/transactions";
 export type NetworkType = "mainnet" | "testnet" | "devnet" | "mocknet";
 
 // validate network value
-function validateNetwork(network: string | undefined): NetworkType {
+export function validateNetwork(network: string | undefined): NetworkType {
   if (
     network &&
     ["mainnet", "testnet", "devnet", "mocknet"].includes(network)
@@ -25,6 +25,72 @@ function validateNetwork(network: string | undefined): NetworkType {
     return network as NetworkType;
   }
   return DEFAULT_CONFIG.NETWORK;
+}
+
+export async function logBroadCastResult(
+  broadcastResponse: TxBroadcastResult,
+  from?: string
+) {
+  if ("error" in broadcastResponse) {
+    console.error("Transaction failed to broadcast");
+    console.error(`Error: ${broadcastResponse.error}`);
+    if (broadcastResponse.reason) {
+      console.error(`Reason: ${broadcastResponse.reason}`);
+    }
+    if (broadcastResponse.reason_data) {
+      console.error(
+        `Reason Data: ${JSON.stringify(broadcastResponse.reason_data, null, 2)}`
+      );
+    }
+  } else {
+    console.log("Transaction broadcasted successfully!");
+    if (from) console.log(`FROM: ${from}`);
+    console.log(`TXID: 0x${broadcastResponse.txid}`);
+  }
+}
+
+export const stakingDaoContractAddress =
+  "SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG";
+export const stakingDaoContractNames = {
+  baseContract: `stacking-dao-core-v2`,
+  reserveContract: `reserve-v1`,
+  commissionContract: `commission-v1`,
+  stakingContract: `staking-v0`,
+  directHelpers: `direct-helpers-v1`,
+};
+/**
+ * returns joining address and name
+ */
+export function getStakingDaoContractID(name: string) {
+  return `${stakingDaoContractAddress}.${name}`;
+}
+
+export async function getFaucetDrop(
+  network: string,
+  address: string,
+  unanchored: boolean = true
+) {
+  if (network !== "testnet") {
+    throw new Error("Faucet drops are only available on the testnet.");
+  }
+
+  const apiUrl = getApiUrl(network);
+  const response = await fetch(
+    `${apiUrl}/extended/v1/faucets/stx?address=${address}&unanchored=${unanchored}`,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to get faucet drop: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data;
 }
 
 // define structure of app config
@@ -369,8 +435,8 @@ export async function getAddressBalance(network: string, address: string) {
       locked: lockedBalance.toString(),
       unlocked: unlocked.toString(),
     };
-  } catch (error: any) {
-    throw new Error(`Failed to get address balance: ${error.message}`);
+  } catch (error) {
+    throw new Error(`Failed to get address balance: ${error}`);
   }
 }
 
@@ -387,72 +453,6 @@ export async function getAddressBalanceDetailed(
   } catch (error: any) {
     throw new Error(`Failed to get address balance: ${error.message}`);
   }
-}
-
-export async function logBroadCastResult(
-  broadcastResponse: TxBroadcastResult,
-  from?: string
-) {
-  if ("error" in broadcastResponse) {
-    console.error("Transaction failed to broadcast");
-    console.error(`Error: ${broadcastResponse.error}`);
-    if (broadcastResponse.reason) {
-      console.error(`Reason: ${broadcastResponse.reason}`);
-    }
-    if (broadcastResponse.reason_data) {
-      console.error(
-        `Reason Data: ${JSON.stringify(broadcastResponse.reason_data, null, 2)}`
-      );
-    }
-  } else {
-    console.log("Transaction broadcasted successfully!");
-    if (from) console.log(`FROM: ${from}`);
-    console.log(`TXID: 0x${broadcastResponse.txid}`);
-  }
-}
-
-export const stakingDaoContractAddress =
-  "SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG";
-export const stakingDaoContractNames = {
-  baseContract: `stacking-dao-core-v2`,
-  reserveContract: `reserve-v1`,
-  commissionContract: `commission-v1`,
-  stakingContract: `staking-v0`,
-  directHelpers: `direct-helpers-v1`,
-};
-/**
- * returns joining address and name
- */
-export function getStakingDaoContractID(name: string) {
-  return `${stakingDaoContractAddress}.${name}`;
-}
-
-export async function getFaucetDrop(
-  network: string,
-  address: string,
-  unanchored: boolean = true
-) {
-  if (network !== "testnet") {
-    throw new Error("Faucet drops are only available on the testnet.");
-  }
-
-  const apiUrl = getApiUrl(network);
-  const response = await fetch(
-    `${apiUrl}/extended/v1/faucets/stx?address=${address}&unanchored=${unanchored}`,
-    {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to get faucet drop: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data;
 }
 
 interface TransactionResponse {
