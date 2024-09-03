@@ -1,4 +1,5 @@
-import { BitflowSDK } from "bitflow-sdk";
+import { BitflowSDK, SwapExecutionData } from "bitflow-sdk";
+import { CONFIG, deriveChildAccount } from "../utilities";
 
 const bitflow = new BitflowSDK({
   API_HOST: process.env.BITFLOW_API_HOST,
@@ -7,28 +8,37 @@ const bitflow = new BitflowSDK({
   READONLY_CALL_API_HOST: process.env.BITFLOW_READONLY_CALL_API_HOST,
 });
 
-const tokenX = process.argv[2];
-const tokenY = process.argv[3];
-const amount = Number(process.argv[4]);
-const address = process.argv[5];
-const slippage = Number(process.argv[6]) || 0.01; // 1%
+const slippage = Number(process.argv[2]) || 0.01; // 1%
+const swapExecutionDataString = process.argv[3];
+
+function isSwapExecutionData(data: any): data is SwapExecutionData {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "route" in data &&
+    "amount" in data &&
+    "tokenXDecimals" in data &&
+    "tokenYDecimals" in data
+  );
+}
 
 try {
-  const routes = await bitflow.getAllPossibleTokenYRoutes(tokenX, tokenY);
-  console.log(routes);
-  const swapExecutionData = {
-    route: routes[0],
-    amount: amount,
-    tokenXDecimals: routes[0].tokenXDecimals,
-    tokenYDecimals: routes[0].tokenYDecimals,
-  };
-  const senderAddress = address;
-  const slippageTolerance = slippage;
+  const { address, key } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+
+  const swapExecutionData = JSON.parse(swapExecutionDataString);
+
+  if (!isSwapExecutionData(swapExecutionData)) {
+    throw new Error("Invalid SwapExecutionData");
+  }
 
   await bitflow.executeSwap(
-    swapExecutionData,
-    senderAddress,
-    slippageTolerance,
+    swapExecutionData as SwapExecutionData,
+    address,
+    slippage,
     undefined,
     (data) => console.log("Swap executed:", data),
     () => console.log("Swap cancelled")
