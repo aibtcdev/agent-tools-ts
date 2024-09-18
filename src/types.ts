@@ -22,6 +22,7 @@ export type NamesDataResponse = {
   zonefile_hash?: string;
 };
 
+// TODO: can we get this from API types?
 export type Epoch = {
   epoch_id: string;
   start_height: number;
@@ -36,6 +37,7 @@ export type Epoch = {
   network_epoch: number;
 };
 
+// TODO: can we get this from API types?
 export type RewardCycle = {
   id: number;
   min_threshold_ustx: number;
@@ -43,6 +45,7 @@ export type RewardCycle = {
   is_pox_active: boolean;
 };
 
+// TODO: can we get this from API types?
 export type NextCycle = {
   id: number;
   min_threshold_ustx: number;
@@ -55,12 +58,15 @@ export type NextCycle = {
   ustx_until_pox_rejection: number | null;
 };
 
+// TODO: can we get this from API types?
 export type ContractVersion = {
   contract_id: string;
   activation_burnchain_block_height: number;
   first_reward_cycle_id: number;
 };
 
+// same as CoreRpcPoxInfo? how do we import?
+// https://github.com/hirosystems/stacks-blockchain-api/blob/054004e55c25b92cd5cdf255781b795a6404318b/src/core-rpc/client.ts#L36
 export type POXResponse = {
   contract_id: string;
   pox_activation_threshold_ustx: number;
