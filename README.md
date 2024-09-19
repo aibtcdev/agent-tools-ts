@@ -4,14 +4,14 @@
 
 ## Description
 
-This is a collection of TypeScript scripts that interact with a Bitcoin/Stacks wallet and the Stacks blockchain. These tools are designed to facilitate various operations such as fetching contract sources and retrieving wallet statuses.
+This repository contains a collection of TypeScript scripts that interact with a Bitcoin/Stacks wallet and the Stacks blockchain. These tools are designed to facilitate various operations such as fetching contract sources, retrieving wallet statuses, and performing blockchain transactions.
 
-## Development
+This project is intended to be used as a submodule within the [ai-agent-crew](https://github.com/aibtcdev/ai-agent-crew) project, providing low-level blockchain interactions for AI agents.
 
 ### Tech Stack
 
-- Bun.js
-- Stacks.js
+- [Bun.js](https://bun.sh) - JavaScript runtime and toolkit
+- [Stacks.js](https://github.com/hirosystems/stacks.js) - JavaScript library for interacting with the Stacks blockchain
 
 ### Prerequisites
 
@@ -19,8 +19,6 @@ This is a collection of TypeScript scripts that interact with a Bitcoin/Stacks w
 - Git
 
 ### Installation
-
-To run this project locally, follow these steps:
 
 1. **Clone the repository:**
 
@@ -35,36 +33,49 @@ To run this project locally, follow these steps:
    curl -fsSL https://bun.sh/install | bash
    ```
 
+   > [!NOTE] Instructions above are for Linux, see the [Bun Website](https://bun.sh) for installing with other operating systems
+
 3. **Install dependencies:**
 
    ```bash
    bun install
    ```
 
-### Running Scripts
+### Configuration
 
-To run the scripts, use the following command:
+Create an `.env` file in the root directory and add the following variables:
 
-```bash
-bun run <script-name>
+```env
+NETWORK=testnet               # or mainnet
+MNEMONIC=your-mnemonic-phrase # full wallet control
+ACCOUNT_INDEX=0               # select account in wallet
 ```
 
-Replace <script-name> with the name of the script you want to execute. For example:
+Replace `your-mnemonic-phrase` with your actual mnemonic phrase.
+
+> [!CAUTION] The scripts will have full access to any accounts related to the actual mnemonic phrase. Be sure to use a separate wallet from any other activities and only fund it with what you're willing to lose.
+
+### Running Scripts
+
+To run a script, use the following command:
+
+```bash
+bun run src/<script-group>/<script-name>.ts [arguments]
+```
+
+For example:
 
 ```bash
 bun run src/stacks-wallet/get-wallet-status.ts
+bun run src/stacks-bns/get-address-by-bns.ts probablyhuman.btc
+bun run src/sip-009/get-owner.ts contractAddress contractName tokenId
 ```
 
-### Configuration
+### Using as a Submodule
 
-The project uses environment variables for configuration. Create a `.env` file in the root directory and add the following variables:
-
-```env
-NETWORK=testnet
-MNEMONIC=your-mnemonic-phrase
-ACCOUNT_INDEX=0
-```
+When used as a submodule in the ai-agent-crew project, these scripts are typically invoked through the `BunScriptRunner` class in Python. Refer to the [ai-agent-crew documentation](https://github.com/aibtcdev/ai-agent-crew) for more details on this integration.
 
 ### Contact
 
 For any questions or feedback, please open an issue or contact us at [@aibtcdev](https://x.com/aibtcdev).
+If you have any questions about contributing, please open an issue, ask in the [AIBTC Discord](https://discord.gg/Z59Z3FNbEX) or reach out to us on X [@aibtcdev](https://x.com/aibtcdev).
