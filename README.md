@@ -77,5 +77,4 @@ When used as a submodule in the ai-agent-crew project, these scripts are typical
 
 ### Contact
 
-For any questions or feedback, please open an issue or contact us at [@aibtcdev](https://x.com/aibtcdev).
 If you have any questions about contributing, please open an issue, ask in the [AIBTC Discord](https://discord.gg/Z59Z3FNbEX) or reach out to us on X [@aibtcdev](https://x.com/aibtcdev).
