@@ -1,12 +1,9 @@
 import {
   AnchorMode,
   broadcastTransaction,
-  bufferCV,
-  bufferCVFromString,
   makeContractCall,
   noneCV,
   principalCV,
-  TxBroadcastResult,
 } from "@stacks/transactions";
 import { bytesToHex } from "@stacks/common";
 import {
@@ -17,9 +14,7 @@ import {
   getPOXDetails,
   logBroadCastResult,
   NetworkType,
-  stxToMicroStx,
-} from "../utilities";
-import { StackingClient } from "@stacks/stacking";
+} from "../../utilities";
 
 // CONFIGURATION
 const networkObj = getNetwork(CONFIG.NETWORK);

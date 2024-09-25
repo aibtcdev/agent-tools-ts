@@ -18,7 +18,13 @@ if (contractAddr) {
       );
       console.log(source);
     } catch (error) {
-      console.error(`Error fetching contract source: ${error.message}`);
+      if (error instanceof Error) {
+        console.error(`Error fetching contract source: ${error.message}`);
+      } else {
+        console.error(
+          `Error fetching contract source: ${JSON.stringify(error)}`
+        );
+      }
     }
   } else {
     console.error("The contract address must be separated by a period.");

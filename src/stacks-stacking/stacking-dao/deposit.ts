@@ -21,7 +21,7 @@ import {
 // CONFIGURATION
 const networkObj = getNetwork(CONFIG.NETWORK);
 
-//sends transaction to deposit on StakingDao contract 
+//sends transaction to deposit on StakingDao contract
 async function deposit(stxAmount: Number, referrer: string | null) {
   try {
     // get account info from env

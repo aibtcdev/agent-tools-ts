@@ -1,18 +1,10 @@
 import { sha256 } from "@noble/hashes/sha256";
-import { Point, Signature } from "@noble/secp256k1";
-import {
-  bytesToHex,
-  hexToBigInt,
-  parseRecoverableSignatureVrs,
-  signatureRsvToVrs,
-} from "@stacks/common";
+import { bytesToHex } from "@stacks/common";
 import {
   getPublicKeyFromPrivate,
   verifyMessageSignatureRsv,
 } from "@stacks/encryption";
 import {
-  PubKeyEncoding,
-  StructuredDataSignature,
   createStacksPrivateKey,
   cvToJSON,
   cvToValue,
