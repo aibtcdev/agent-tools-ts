@@ -1,6 +1,19 @@
 // CONFIGURATION
 
-import { CONFIG, getAddressBalanceDetailed } from "../utilities";
+import { StackingClient } from "@stacks/stacking";
+import { CONFIG, getNetwork } from "../utilities";
+
+async function getAddressBalanceDetailed(network: string, address: string) {
+  const stacksNetwork = getNetwork(network);
+  const client = new StackingClient(address, stacksNetwork);
+
+  try {
+    const detailedBalance = await client.getAccountExtendedBalances();
+    return detailedBalance;
+  } catch (error: any) {
+    throw new Error(`Failed to get address balance: ${error.message}`);
+  }
+}
 
 // Function to format and log balance details
 function logBalanceDetails(balance: any) {

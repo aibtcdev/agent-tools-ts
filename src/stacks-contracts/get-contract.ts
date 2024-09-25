@@ -1,4 +1,31 @@
-import { CONFIG, getContractSource } from "../utilities";
+import { CONFIG, getApiUrl } from "../utilities";
+
+interface ContractSourceResponse {
+  source: string;
+  publish_height: number;
+  proof: string;
+}
+
+export async function getContractSource(
+  network: string,
+  contractAddress: string,
+  contractName: string
+) {
+  const apiUrl = getApiUrl(network);
+  const response = await fetch(
+    `${apiUrl}/v2/contracts/source/${contractAddress}/${contractName}`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to get contract source: ${response.statusText}`);
+  }
+  const data = (await response.json()) as ContractSourceResponse;
+  return data.source;
+}
 
 // CONFIGURATION
 
