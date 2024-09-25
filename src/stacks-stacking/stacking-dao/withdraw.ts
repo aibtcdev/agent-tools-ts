@@ -14,7 +14,6 @@ import {
   logBroadCastResult,
   stakingDaoContractAddress,
   stakingDaoContractNames,
-  stxToMicroStx,
 } from "../../utilities";
 
 // CONFIGURATION

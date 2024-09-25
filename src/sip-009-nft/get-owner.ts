@@ -1,9 +1,17 @@
-import { callReadOnlyFunction, cvToJSON, uintCV, ClarityType } from "@stacks/transactions";
+import { callReadOnlyFunction, cvToJSON, uintCV } from "@stacks/transactions";
 import { CONFIG, getNetwork, deriveChildAccount } from "../utilities";
 
-async function getOwner(contractAddress: string, contractName: string, tokenId: number) {
+async function getOwner(
+  contractAddress: string,
+  contractName: string,
+  tokenId: number
+) {
   const network = getNetwork(CONFIG.NETWORK);
-  const { address } = await deriveChildAccount(CONFIG.NETWORK, CONFIG.MNEMONIC, CONFIG.ACCOUNT_INDEX);
+  const { address } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
 
   try {
     const result = await callReadOnlyFunction({
@@ -14,10 +22,13 @@ async function getOwner(contractAddress: string, contractName: string, tokenId: 
       network,
       senderAddress: address,
     });
-    
+
     const jsonResult = cvToJSON(result);
 
-    if (jsonResult.type === "(response (optional principal) UnknownType)" && jsonResult.success) {
+    if (
+      jsonResult.type === "(response (optional principal) UnknownType)" &&
+      jsonResult.success
+    ) {
       const ownerAddress = jsonResult.value.value.value;
       console.log(ownerAddress);
     } else {
@@ -32,7 +43,7 @@ async function getOwner(contractAddress: string, contractName: string, tokenId: 
   }
 }
 
-const [contractAddress, contractName] = process.argv[2]?.split('.') || [];
+const [contractAddress, contractName] = process.argv[2]?.split(".") || [];
 const tokenId = process.argv[3] ? parseInt(process.argv[3]) : null;
 
 if (contractAddress && contractName && tokenId !== null) {

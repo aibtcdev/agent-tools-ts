@@ -1,7 +1,11 @@
 import { callReadOnlyFunction, cvToJSON, uintCV } from "@stacks/transactions";
 import { CONFIG, getNetwork, deriveChildAccount } from "../utilities";
 
-async function getLastTokenId(contractAddress: string, contractName: string, senderAddress: string) {
+async function getLastTokenId(
+  contractAddress: string,
+  contractName: string,
+  senderAddress: string
+) {
   const network = getNetwork(CONFIG.NETWORK);
 
   try {
@@ -13,7 +17,7 @@ async function getLastTokenId(contractAddress: string, contractName: string, sen
       network,
       senderAddress,
     });
-    
+
     const jsonResult = cvToJSON(result);
     return parseInt(jsonResult.value);
   } catch (error: unknown) {
@@ -26,9 +30,17 @@ async function getLastTokenId(contractAddress: string, contractName: string, sen
   }
 }
 
-async function getTokenUri(contractAddress: string, contractName: string, tokenId: number | null) {
+async function getTokenUri(
+  contractAddress: string,
+  contractName: string,
+  tokenId: number | null
+) {
   const network = getNetwork(CONFIG.NETWORK);
-  const { address } = await deriveChildAccount(CONFIG.NETWORK, CONFIG.MNEMONIC, CONFIG.ACCOUNT_INDEX);
+  const { address } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
 
   if (tokenId === null) {
     tokenId = await getLastTokenId(contractAddress, contractName, address);
@@ -47,7 +59,7 @@ async function getTokenUri(contractAddress: string, contractName: string, tokenI
       network,
       senderAddress: address,
     });
-    
+
     const jsonResult = cvToJSON(result);
     console.log(`Token URI for token ID ${tokenId}:`);
     console.log(jsonResult.value);
@@ -60,11 +72,13 @@ async function getTokenUri(contractAddress: string, contractName: string, tokenI
   }
 }
 
-const [contractAddress, contractName] = process.argv[2]?.split('.') || [];
+const [contractAddress, contractName] = process.argv[2]?.split(".") || [];
 const tokenId = process.argv[3] ? parseInt(process.argv[3]) : null;
 
 if (contractAddress && contractName) {
   getTokenUri(contractAddress, contractName, tokenId);
 } else {
-  console.error("Please provide a contract address.name and optionally a token ID");
+  console.error(
+    "Please provide a contract address.name and optionally a token ID"
+  );
 }

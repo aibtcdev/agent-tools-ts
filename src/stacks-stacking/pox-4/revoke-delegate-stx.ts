@@ -4,8 +4,7 @@ import {
   deriveChildAccount,
   getNetwork,
   logBroadCastResult,
-  stxToMicroStx,
-} from "../utilities";
+} from "../../utilities";
 import { StackingClient } from "@stacks/stacking";
 
 // CONFIGURATION

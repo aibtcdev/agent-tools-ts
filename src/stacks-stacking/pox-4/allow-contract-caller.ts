@@ -1,25 +1,95 @@
 import {
   AnchorMode,
   broadcastTransaction,
-  bufferCV,
-  bufferCVFromString,
   makeContractCall,
   noneCV,
   principalCV,
-  TxBroadcastResult,
 } from "@stacks/transactions";
 import { bytesToHex } from "@stacks/common";
 import {
   CONFIG,
   deriveChildAccount,
+  getApiUrl,
   getNetwork,
   getNextNonce,
-  getPOXDetails,
   logBroadCastResult,
   NetworkType,
-  stxToMicroStx,
-} from "../utilities";
-import { StackingClient } from "@stacks/stacking";
+} from "../../utilities";
+
+type Epoch = {
+  epoch_id: string;
+  start_height: number;
+  end_height: number;
+  block_limit: {
+    write_length: number;
+    write_count: number;
+    read_length: number;
+    read_count: number;
+    runtime: number;
+  };
+  network_epoch: number;
+};
+
+type RewardCycle = {
+  id: number;
+  min_threshold_ustx: number;
+  stacked_ustx: number;
+  is_pox_active: boolean;
+};
+
+type NextCycle = {
+  id: number;
+  min_threshold_ustx: number;
+  min_increment_ustx: number;
+  stacked_ustx: number;
+  prepare_phase_start_block_height: number;
+  blocks_until_prepare_phase: number;
+  reward_phase_start_block_height: number;
+  blocks_until_reward_phase: number;
+  ustx_until_pox_rejection: number | null;
+};
+
+type ContractVersion = {
+  contract_id: string;
+  activation_burnchain_block_height: number;
+  first_reward_cycle_id: number;
+};
+
+type POXResponse = {
+  contract_id: string;
+  pox_activation_threshold_ustx: number;
+  first_burnchain_block_height: number;
+  current_burnchain_block_height: number;
+  prepare_phase_block_length: number;
+  reward_phase_block_length: number;
+  reward_slots: number;
+  rejection_fraction: number | null;
+  total_liquid_supply_ustx: number;
+  current_cycle: RewardCycle;
+  next_cycle: NextCycle;
+  epochs: Epoch[];
+  min_amount_ustx: number;
+  prepare_cycle_length: number;
+  reward_cycle_id: number;
+  reward_cycle_length: number;
+  rejection_votes_left_required: number | null;
+  next_reward_cycle_in: number;
+  contract_versions: ContractVersion[];
+};
+
+async function getPOXDetails(network: NetworkType) {
+  const apiUrl = getApiUrl(network);
+  const response = await fetch(`${apiUrl}/v2/pox`, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to get contract source: ${response.statusText}`);
+  }
+  const data = (await response.json()) as POXResponse;
+  return data;
+}
 
 // CONFIGURATION
 const networkObj = getNetwork(CONFIG.NETWORK);

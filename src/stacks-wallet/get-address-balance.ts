@@ -1,8 +1,26 @@
 // CONFIGURATION
 
-import { CONFIG, getAddressBalance } from "../utilities";
+import { StackingClient } from "@stacks/stacking";
+import { CONFIG, getNetwork } from "../utilities";
 
-// MAIN SCRIPT (DO NOT EDIT)
+// Function to get the balance of an address
+async function getAddressBalance(network: string, address: string) {
+  const stacksNetwork = getNetwork(network);
+  const client = new StackingClient(address, stacksNetwork);
+
+  try {
+    const balance = await client.getAccountBalance();
+    const lockedBalance = await client.getAccountBalanceLocked();
+    const unlocked = balance - lockedBalance;
+    return {
+      total: balance.toString(),
+      locked: lockedBalance.toString(),
+      unlocked: unlocked.toString(),
+    };
+  } catch (error) {
+    throw new Error(`Failed to get address balance: ${error}`);
+  }
+}
 
 async function main() {
   // expect txId as first argument

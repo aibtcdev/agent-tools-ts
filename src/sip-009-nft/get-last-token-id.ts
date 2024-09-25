@@ -3,7 +3,11 @@ import { CONFIG, getNetwork, deriveChildAccount } from "../utilities";
 
 async function getLastTokenId(contractAddress: string, contractName: string) {
   const network = getNetwork(CONFIG.NETWORK);
-  const { address } = await deriveChildAccount(CONFIG.NETWORK, CONFIG.MNEMONIC, CONFIG.ACCOUNT_INDEX);
+  const { address } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
 
   try {
     const result = await callReadOnlyFunction({
@@ -14,7 +18,7 @@ async function getLastTokenId(contractAddress: string, contractName: string) {
       network,
       senderAddress: address,
     });
-    
+
     const jsonResult = cvToJSON(result);
     console.log(jsonResult.value);
   } catch (error: unknown) {
@@ -26,7 +30,7 @@ async function getLastTokenId(contractAddress: string, contractName: string) {
   }
 }
 
-const [contractAddress, contractName] = process.argv[2]?.split('.') || [];
+const [contractAddress, contractName] = process.argv[2]?.split(".") || [];
 
 if (contractAddress && contractName) {
   getLastTokenId(contractAddress, contractName);
