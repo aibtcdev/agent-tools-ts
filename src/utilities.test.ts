@@ -14,6 +14,7 @@ import {
 
 const mnemonic = CONFIG.MNEMONIC;
 const stxAddress = "ST3GEF4KYM4V41FHC9NX0F7K0GW1VC6A4WPXNYQKS";
+const emptyStxAddress = "ST2JAE0SDW57TJ3VMJ8VA798GM2ZFDPGNYG3FFBMT";
 const stxBnsName = "probablyhuman.btc";
 
 describe("Utility Functions", () => {
@@ -149,10 +150,7 @@ describe("Utility Functions", () => {
     });
 
     test("handles zero balance", async () => {
-      const balance = await getAddressBalance(
-        "testnet",
-        "ST000000000000000000000000000000000"
-      );
+      const balance = await getAddressBalance("testnet", emptyStxAddress);
       expect(balance.total).toBe("0");
       expect(balance.locked).toBe("0");
       expect(balance.unlocked).toBe("0");
