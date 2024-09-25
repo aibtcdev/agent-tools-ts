@@ -6,11 +6,28 @@ import {
   getStxAddress,
 } from "@stacks/wallet-sdk";
 import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
-import { TxBroadcastResult } from "@stacks/transactions";
+import { TxBroadcastResult, validateStacksAddress } from "@stacks/transactions";
 
 // define types of networks we allow
 // matches string definitions in Stacks.js
 export type NetworkType = "mainnet" | "testnet" | "devnet" | "mocknet";
+
+// get network from principal
+// limited to just testnet/mainnet for now
+export function getNetworkByPrincipal(principal: string): NetworkType {
+  // test if principal is valid
+  if (validateStacksAddress(principal)) {
+    // detect network from address
+    const prefix = principal.substring(0, 2);
+    if (prefix === "SP" || prefix === "SM") {
+      return "mainnet";
+    } else if (prefix === "ST" || prefix === "SN") {
+      return "testnet";
+    }
+  }
+  console.log("Invalid principal, using testnet");
+  return "testnet";
+}
 
 // validate network value
 export function validateNetwork(network: string | undefined): NetworkType {
@@ -91,6 +108,9 @@ function loadConfig(): AppConfig {
 
 // export the configuration object
 export const CONFIG = loadConfig();
+
+// getNetworkByPrincipal() ?
+// roll into getConfig() for each below ?
 
 export function getNetwork(network: string) {
   switch (network) {

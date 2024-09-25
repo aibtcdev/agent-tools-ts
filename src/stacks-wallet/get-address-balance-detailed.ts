@@ -1,10 +1,11 @@
 // CONFIGURATION
 
 import { StackingClient } from "@stacks/stacking";
-import { CONFIG, getNetwork } from "../utilities";
+import { getNetwork, getNetworkByPrincipal } from "../utilities";
 
-async function getAddressBalanceDetailed(network: string, address: string) {
-  const stacksNetwork = getNetwork(network);
+async function getAddressBalanceDetailed(address: string) {
+  const networkFromAddress = getNetworkByPrincipal(address);
+  const stacksNetwork = getNetwork(networkFromAddress);
   const client = new StackingClient(address, stacksNetwork);
 
   try {
@@ -67,7 +68,7 @@ async function main() {
 
   // get transaction info from API
   try {
-    const balance = await getAddressBalanceDetailed(CONFIG.NETWORK, addr);
+    const balance = await getAddressBalanceDetailed(addr);
     logBalanceDetails(balance);
   } catch (error) {
     // report error

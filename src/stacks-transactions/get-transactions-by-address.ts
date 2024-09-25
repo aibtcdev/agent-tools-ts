@@ -1,6 +1,6 @@
 // CONFIGURATION
 
-import { CONFIG, getApiUrl } from "../utilities";
+import { getApiUrl, getNetworkByPrincipal } from "../utilities";
 
 interface TransactionResponse {
   limit: number;
@@ -102,12 +102,12 @@ interface TransactionResponse {
 }
 
 async function getTransactionsByAddress(
-  network: string,
   address: string,
   limit: number = 20,
   offset: number = 0
 ): Promise<TransactionResponse> {
-  const apiUrl = getApiUrl(network);
+  const networkFromAddress = getNetworkByPrincipal(address);
+  const apiUrl = getApiUrl(networkFromAddress);
   const response = await fetch(
     `${apiUrl}/extended/v2/addresses/${address}/transactions?limit=${limit}&offset=${offset}`,
     {
@@ -136,12 +136,7 @@ async function main() {
 
   // get transaction info from API
   try {
-    const response = await getTransactionsByAddress(
-      CONFIG.NETWORK,
-      address,
-      limit,
-      offset
-    );
+    const response = await getTransactionsByAddress(address, limit, offset);
     // for x in response
     for (let i = 0; i < response.results.length; i++) {
       console.log("START TRANSACTION");

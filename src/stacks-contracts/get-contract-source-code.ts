@@ -1,4 +1,4 @@
-import { CONFIG, getApiUrl } from "../utilities";
+import { getApiUrl, getNetworkByPrincipal } from "../utilities";
 
 interface ContractSourceResponse {
   source: string;
@@ -7,11 +7,11 @@ interface ContractSourceResponse {
 }
 
 export async function getContractSource(
-  network: string,
   contractAddress: string,
   contractName: string
 ) {
-  const apiUrl = getApiUrl(network);
+  const networkFromAddress = getNetworkByPrincipal(contractAddress);
+  const apiUrl = getApiUrl(networkFromAddress);
   const response = await fetch(
     `${apiUrl}/v2/contracts/source/${contractAddress}/${contractName}`,
     {
@@ -29,8 +29,6 @@ export async function getContractSource(
 
 // CONFIGURATION
 
-const network = CONFIG.NETWORK;
-
 const contractAddr = process.argv[2];
 
 if (contractAddr) {
@@ -38,11 +36,7 @@ if (contractAddr) {
     const [contractAddress, contractName] = contractAddr.split(".");
 
     try {
-      const source = await getContractSource(
-        network,
-        contractAddress,
-        contractName
-      );
+      const source = await getContractSource(contractAddress, contractName);
       console.log(source);
     } catch (error) {
       if (error instanceof Error) {
