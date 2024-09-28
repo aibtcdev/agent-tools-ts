@@ -15,7 +15,7 @@ type NamesDataResponse = {
 // gets address by name from the hiro api
 async function getAddressByName(network: string, name: string) {
   const apiUrl = getApiUrl(network);
-  const response = await fetch(`${apiUrl}/v1/names/${name}`, {
+  const response = await fetch(`${apiUrl}/v1/names/${name.toLowerCase()}`, {
     headers: {
       Accept: "application/json",
     },
