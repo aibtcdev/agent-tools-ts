@@ -58,7 +58,6 @@ const networkObj = getNetwork(CONFIG.NETWORK);
       address,
       networkObj,
       anchorMode: AnchorMode.Any,
-      // postConditionMode: PostConditionMode.Allow,
       postConditionMode: PostConditionMode.Deny,
       postConditions: swapParams.postConditions,
       onFinish: (data: any) => {
