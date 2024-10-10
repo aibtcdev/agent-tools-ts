@@ -17,37 +17,23 @@ const slippage = Number(process.argv[2]) || 0.01; // 1%
 const amount = Number(process.argv[3]);
 const tokenX = process.argv[4];
 const tokenY = process.argv[5];
-const routes = await bitflow.getAllPossibleTokenYRoutes(tokenX, tokenY);
-const networkObj = getNetwork(CONFIG.NETWORK);
 
-const tokens = await bitflow.getAvailableTokens();
+console.log("Slippage:", slippage);
+console.log("Amount:", amount);
+console.log("TokenX:", tokenX);
+console.log("TokenY:", tokenY);
 
-let tokenXDecimals: number | undefined;
-let tokenYDecimals: number | undefined;
+const quote = await bitflow.getQuoteForRoute(tokenX, tokenY, amount);
+const bestRoute = quote.bestRoute;
 
-// Loop over the available tokens to find decimals for tokenX and tokenY
-for (const token of tokens) {
-  if (token.tokenId === tokenX) {
-    tokenXDecimals = token.tokenDecimals;
-  }
-  if (token.tokenId === tokenY) {
-    tokenYDecimals = token.tokenDecimals;
-  }
-  // If both decimals are found, no need to continue the loop
-  if (tokenXDecimals !== undefined && tokenYDecimals !== undefined) {
-    break;
-  }
-}
-
-if (tokenXDecimals === undefined || tokenYDecimals === undefined) {
-  console.error("Could not find decimals for one or both tokens.");
-} else {
-  console.log(`Decimals for ${tokenX}: ${tokenXDecimals}`);
-  console.log(`Decimals for ${tokenY}: ${tokenYDecimals}`);
+if (!bestRoute) {
+  console.log("Unable to find route, exiting.");
+  process.exit(1);
 }
 
 (async () => {
   try {
+    const networkObj = getNetwork(CONFIG.NETWORK);
     const { address, key } = await deriveChildAccount(
       CONFIG.NETWORK,
       CONFIG.MNEMONIC,
@@ -55,17 +41,24 @@ if (tokenXDecimals === undefined || tokenYDecimals === undefined) {
     );
 
     const swapExecutionData = {
-      route: routes[0],
+      route: bestRoute.route,
       amount: amount,
-      tokenXDecimals: Number(tokenXDecimals),
-      tokenYDecimals: Number(tokenYDecimals),
+      tokenXDecimals: bestRoute.tokenXDecimals,
+      tokenYDecimals: bestRoute.tokenYDecimals,
     };
+
+    console.log("===== SWAP EXECUTION DATA =====");
+    console.log("quoteData: ", swapExecutionData.route.quoteData);
+    console.log("swapData: ", swapExecutionData.route.swapData);
 
     const swapParams = await bitflow.getSwapParams(
       swapExecutionData,
       address,
       slippage
     );
+
+    console.log("===== SWAP PARAMS =====");
+    console.log(swapParams);
 
     const txOptions = {
       contractAddress: swapParams.contractAddress,
@@ -86,15 +79,27 @@ if (tokenXDecimals === undefined || tokenYDecimals === undefined) {
       },
     };
 
+    console.log("===== TRANSACTION OPTIONS =====");
+    console.log(txOptions);
+
     const transaction = await makeContractCall(txOptions);
+
+    console.log("===== TRANSACTION =====");
+    console.log(transaction);
 
     const broadcastResponse = await broadcastTransaction(
       transaction,
       networkObj
     );
-    const txId = broadcastResponse.txid;
+    console.log("===== BROADCAST RESPONSE =====");
+    console.log(broadcastResponse);
 
-    console.log(txId);
+    console.log("Transaction ID:", broadcastResponse.txid);
+    console.log(
+      `https://explorer.hiro.so/txid/0x${
+        broadcastResponse.txid
+      }?chain=${CONFIG.NETWORK.toLowerCase()}`
+    );
   } catch (error) {
     console.log(error);
   }
