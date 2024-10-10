@@ -14,20 +14,37 @@ const bitflow = new BitflowSDK({
 });
 
 const slippage = Number(process.argv[2]) || 0.01; // 1%
-const swapExecutionDataString = process.argv[3];
+const amount = Number(process.argv[3]);
+const tokenX = process.argv[4];
+const tokenY = process.argv[5];
+const routes = await bitflow.getAllPossibleTokenYRoutes(tokenX, tokenY);
+const networkObj = getNetwork(CONFIG.NETWORK);
 
-function isSwapExecutionData(data: any): data is SwapExecutionData {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "route" in data &&
-    "amount" in data &&
-    "tokenXDecimals" in data &&
-    "tokenYDecimals" in data
-  );
+const tokens = await bitflow.getAvailableTokens();
+
+let tokenXDecimals: number | undefined;
+let tokenYDecimals: number | undefined;
+
+// Loop over the available tokens to find decimals for tokenX and tokenY
+for (const token of tokens) {
+  if (token.tokenId === tokenX) {
+    tokenXDecimals = token.tokenDecimals;
+  }
+  if (token.tokenId === tokenY) {
+    tokenYDecimals = token.tokenDecimals;
+  }
+  // If both decimals are found, no need to continue the loop
+  if (tokenXDecimals !== undefined && tokenYDecimals !== undefined) {
+    break;
+  }
 }
 
-const networkObj = getNetwork(CONFIG.NETWORK);
+if (tokenXDecimals === undefined || tokenYDecimals === undefined) {
+  console.error("Could not find decimals for one or both tokens.");
+} else {
+  console.log(`Decimals for ${tokenX}: ${tokenXDecimals}`);
+  console.log(`Decimals for ${tokenY}: ${tokenYDecimals}`);
+}
 
 (async () => {
   try {
@@ -37,11 +54,12 @@ const networkObj = getNetwork(CONFIG.NETWORK);
       CONFIG.ACCOUNT_INDEX
     );
 
-    const swapExecutionData = JSON.parse(swapExecutionDataString);
-
-    if (!isSwapExecutionData(swapExecutionData)) {
-      throw new Error("Invalid SwapExecutionData");
-    }
+    const swapExecutionData = {
+      route: routes[0],
+      amount: amount,
+      tokenXDecimals: Number(tokenXDecimals),
+      tokenYDecimals: Number(tokenYDecimals),
+    };
 
     const swapParams = await bitflow.getSwapParams(
       swapExecutionData,
