@@ -1,10 +1,15 @@
-import { BitflowSDK, SwapExecutionData } from "bitflow-sdk";
-import { CONFIG, deriveChildAccount } from "../utilities";
+import { BitflowSDK, SwapExecutionData } from "@bitflowlabs/core-sdk";
+import { CONFIG, deriveChildAccount, getNetwork } from "../utilities";
+import {
+  makeContractCall,
+  broadcastTransaction,
+  AnchorMode,
+  PostConditionMode,
+} from "@stacks/transactions";
 
 const bitflow = new BitflowSDK({
-  API_HOST: process.env.BITFLOW_API_HOST,
-  API_KEY: process.env.BITFLOW_API_KEY,
-  STACKS_API_HOST: process.env.BITFLOW_STACKS_API_HOST,
+  BITFLOW_API_HOST: process.env.BITFLOW_API_HOST,
+  BITFLOW_API_KEY: process.env.BITFLOW_API_KEY,
   READONLY_CALL_API_HOST: process.env.BITFLOW_READONLY_CALL_API_HOST,
 });
 
@@ -22,27 +27,57 @@ function isSwapExecutionData(data: any): data is SwapExecutionData {
   );
 }
 
-try {
-  const { address, key } = await deriveChildAccount(
-    CONFIG.NETWORK,
-    CONFIG.MNEMONIC,
-    CONFIG.ACCOUNT_INDEX
-  );
+const networkObj = getNetwork(CONFIG.NETWORK);
 
-  const swapExecutionData = JSON.parse(swapExecutionDataString);
+(async () => {
+  try {
+    const { address, key } = await deriveChildAccount(
+      CONFIG.NETWORK,
+      CONFIG.MNEMONIC,
+      CONFIG.ACCOUNT_INDEX
+    );
 
-  if (!isSwapExecutionData(swapExecutionData)) {
-    throw new Error("Invalid SwapExecutionData");
+    const swapExecutionData = JSON.parse(swapExecutionDataString);
+
+    if (!isSwapExecutionData(swapExecutionData)) {
+      throw new Error("Invalid SwapExecutionData");
+    }
+
+    const swapParams = await bitflow.getSwapParams(
+      swapExecutionData,
+      address,
+      slippage
+    );
+
+    const txOptions = {
+      contractAddress: swapParams.contractAddress,
+      contractName: swapParams.contractName,
+      functionName: swapParams.functionName,
+      functionArgs: swapParams.functionArgs,
+      senderKey: key,
+      address,
+      networkObj,
+      anchorMode: AnchorMode.Any,
+      postConditionMode: PostConditionMode.Deny,
+      postConditions: swapParams.postConditions,
+      onFinish: (data: any) => {
+        console.log("Transaction submitted:", data);
+      },
+      onCancel: () => {
+        console.log("Transaction canceled");
+      },
+    };
+
+    const transaction = await makeContractCall(txOptions);
+
+    const broadcastResponse = await broadcastTransaction(
+      transaction,
+      networkObj
+    );
+    const txId = broadcastResponse.txid;
+
+    console.log(txId);
+  } catch (error) {
+    console.log(error);
   }
-
-  await bitflow.executeSwap(
-    swapExecutionData as SwapExecutionData,
-    address,
-    slippage,
-    undefined,
-    (data) => console.log("Swap executed:", data),
-    () => console.log("Swap cancelled")
-  );
-} catch (error) {
-  console.log(error);
-}
+})();
