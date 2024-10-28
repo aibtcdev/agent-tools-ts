@@ -1,5 +1,10 @@
 import { BitflowSDK, SwapExecutionData } from "@bitflowlabs/core-sdk";
-import { CONFIG, deriveChildAccount, getNetwork } from "../utilities";
+import {
+  CONFIG,
+  deriveChildAccount,
+  getNetwork,
+  getNextNonce,
+} from "../utilities";
 import {
   makeContractCall,
   broadcastTransaction,
@@ -47,19 +52,13 @@ if (!bestRoute) {
       tokenYDecimals: bestRoute.tokenYDecimals,
     };
 
-    console.log("===== SWAP EXECUTION DATA =====");
-    console.log("quoteData: ", swapExecutionData.route.quoteData);
-    console.log("swapData: ", swapExecutionData.route.swapData);
-
     const swapParams = await bitflow.getSwapParams(
       swapExecutionData,
       address,
       slippage
     );
 
-    console.log("===== SWAP PARAMS =====");
-    console.log(swapParams);
-
+    const nonce = await getNextNonce(CONFIG.NETWORK, address);
     const txOptions = {
       contractAddress: swapParams.contractAddress,
       contractName: swapParams.contractName,
@@ -68,6 +67,7 @@ if (!bestRoute) {
       senderKey: key,
       address,
       networkObj,
+      nonce: nonce,
       anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Deny,
       postConditions: swapParams.postConditions,
@@ -79,13 +79,7 @@ if (!bestRoute) {
       },
     };
 
-    console.log("===== TRANSACTION OPTIONS =====");
-    console.log(txOptions);
-
     const transaction = await makeContractCall(txOptions);
-
-    console.log("===== TRANSACTION =====");
-    console.log(transaction);
 
     const broadcastResponse = await broadcastTransaction(
       transaction,
