@@ -1,4 +1,4 @@
-import { CONFIG, deriveChildAccounts } from "../utilities";
+import { CONFIG, deriveChildAccount } from "../utilities";
 
 // get first 10 account addresses from wallet
 
@@ -19,12 +19,10 @@ async function main() {
   }
 
   // get account addresses
-  const addresses = await deriveChildAccounts(network, mnemonic, accountIndex);
+  const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
 
   // log account addresses with their index
-  addresses.forEach((address, index) => {
-    console.log(`${index}: ${address}`);
-  });
+  console.log(`${accountIndex}: ${address}`);
 }
 
 main();
