@@ -8,7 +8,7 @@ async function main() {
   // get account info from env
   const network = CONFIG.NETWORK;
   const mnemonic = CONFIG.MNEMONIC;
-  const desiredIndex = 9; // hard-coded to return 10 addresses
+  const accountIndex = CONFIG.ACCOUNT_INDEX;
 
   // check that values exist for each
   if (!network) {
@@ -19,7 +19,7 @@ async function main() {
   }
 
   // get account addresses
-  const addresses = await deriveChildAccounts(network, mnemonic, desiredIndex);
+  const addresses = await deriveChildAccounts(network, mnemonic, accountIndex);
 
   // log account addresses with their index
   addresses.forEach((address, index) => {
