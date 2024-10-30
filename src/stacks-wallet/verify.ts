@@ -55,7 +55,7 @@ async function verifyMessage(signedMessageData: string, address: string) {
 
     // Ensure the derived address matches the expected address
     if (address !== derivedAddress) {
-      throw new Error("Address does not match the signature.");
+      throw new Error("Derived address does not match the signing address.");
     }
 
     // Verify the signature with the recovered public key
@@ -68,7 +68,8 @@ async function verifyMessage(signedMessageData: string, address: string) {
     console.log(`Signature Verified: ${isValid}`);
     process.exit(isValid ? 0 : 1); // Exit with code 0 if valid, 1 if not
   } catch (error) {
-    console.error(`Verification failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`Verification failed: ${errorMessage}`);
     process.exit(1); // Exit with error code on failure
   }
 }

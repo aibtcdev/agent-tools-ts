@@ -22,8 +22,6 @@ async function signMessage() {
     ACCOUNT_INDEX
   );
 
-  console.log(`Signing message for address: ${address}`);
-
   const privateKey = createStacksPrivateKey(privateKeyString);
 
   // Domain and message values
@@ -46,7 +44,7 @@ async function signMessage() {
 
 signMessage()
   .then(({ signedMessage, address }) => {
-    console.log(`Signed Message: ${JSON.stringify(signedMessage.data)}`);
-    console.log(`Address: ${address}`);
+    console.log(`Signed Message: ${signedMessage.data}`);
+    console.log(`Signed By: ${address}`);
   })
   .catch(console.error);
