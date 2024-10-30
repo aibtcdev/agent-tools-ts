@@ -11,8 +11,14 @@ async function signMessage() {
   const { NETWORK, MNEMONIC, ACCOUNT_INDEX } = CONFIG;
 
   // Ensure config values are present
-  if (!NETWORK || !MNEMONIC) {
-    throw new Error("Missing network or mnemonic configuration");
+  if (!NETWORK) {
+    throw new Error("No network provided in environment variables");
+  }
+  if (!MNEMONIC) {
+    throw new Error("No mnemonic provided in environment variables");
+  }
+  if (!ACCOUNT_INDEX) {
+    throw new Error("No account index provided in environment variables");
   }
 
   const networkObj = getNetwork(NETWORK);
