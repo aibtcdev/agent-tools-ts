@@ -1,8 +1,6 @@
 import { CONFIG, deriveChildAccount } from "../utilities";
 
-// get first 10 account addresses from wallet
-
-// MAIN SCRIPT (DO NOT EDIT BELOW)
+// get address for a given account index in the wallet
 
 async function main() {
   // get account info from env
@@ -17,11 +15,14 @@ async function main() {
   if (!mnemonic) {
     throw new Error("No mnemonic provided in environment variables");
   }
+  if (!accountIndex) {
+    throw new Error("No account index provided in environment variables");
+  }
 
-  // get account addresses
+  // get account address
   const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
 
-  // log account addresses with their index
+  // log account address with account index
   console.log(`${accountIndex}: ${address}`);
 }
 
