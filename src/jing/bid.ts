@@ -121,7 +121,7 @@ if (!pair || !ustxAmount || !tokenAmount) {
   process.exit(1);
 }
 
-// bun run src/jing/bid-offer.ts PEPE-STX 1000000 100000000
+// bun run src/jing/bid.ts PEPE-STX 1000000 100000000
 createBidOffer(
   pair,
   parseInt(ustxAmount),
