@@ -67,6 +67,7 @@ async function repriceAsk(
     throw new Error(`Failed to get token info for pair: ${pair}`);
   }
 
+  const tokenSymbol = pair.split("-")[0]; // Get token symbol from pair (e.g., "PEPE" from "PEPE-STX")
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -79,9 +80,13 @@ async function repriceAsk(
   const askDetails = await getAskDetails(swapId);
   console.log(`\nAsk details:`);
   console.log(`- Creator: ${askDetails.ftSender}`);
-  console.log(`- Current amount: ${askDetails.amount}`);
   console.log(
-    `- STX: ${askDetails.ustx / 1_000_000} STX (${askDetails.ustx} μSTX)`
+    `- Current amount: ${askDetails.amount} ${tokenSymbol} (in μ units)`
+  );
+  console.log(
+    `- Current price: ${askDetails.ustx / 1_000_000} STX (${
+      askDetails.ustx
+    } μSTX)`
   );
 
   if (askDetails.ftSender !== address) {
@@ -94,7 +99,7 @@ async function repriceAsk(
   }
 
   console.log(`\nReprice details:`);
-  console.log(`- New STX amount: ${newUstx} μSTX (${newUstx / 1_000_000} STX)`);
+  console.log(`- New price: ${newUstx / 1_000_000} STX (${newUstx} μSTX)`);
   if (recipient) console.log(`- Making private offer to: ${recipient}`);
   if (expiry) console.log(`- Setting expiry to block: ${expiry}`);
 
@@ -151,9 +156,11 @@ if (!swapId || !newUstx || !pair) {
   console.error(
     "Usage: bun run src/jing/reprice-ask.ts <swap_id> <new_ustx> <pair> [recipient] [expiry] [account_index]"
   );
-  console.error("Example: bun run src/jing/reprice-ask.ts 4 2000000 PEPE-STX");
   console.error(
-    "Example with private offer: bun run src/jing/reprice-ask.ts 1 2000000 PEPE-STX SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS 100000"
+    "Example: bun run src/jing/reprice-ask.ts 1 200000000 PEPE-STX"
+  );
+  console.error(
+    "Example with private offer: bun run src/jing/reprice-ask.ts 1 200000000 PEPE-STX SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS 100000"
   );
   process.exit(1);
 }

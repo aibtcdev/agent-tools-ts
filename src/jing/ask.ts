@@ -62,7 +62,7 @@ async function createAskOffer(
   console.log(`- Token amount: ${amount} (in μ units)`);
   console.log(`- STX amount: ${ustx / 1_000_000} STX (${ustx} μSTX)`);
   if (recipient) console.log(`- Private offer to: ${recipient}`);
-  if (expiry) console.log(`- Expires at block: ${expiry}`);
+  if (expiry) console.log(`- Expires in: ${expiry} blocks`);
   if (accountIndex !== 0) console.log(`- Using account index: ${accountIndex}`);
   console.log(`- Fee: ${fees} ${pair.split("-")[0]} (in μ units)`);
 
@@ -151,7 +151,7 @@ if (!pair || !amount || !ustxAmount) {
   console.error("   bun run src/jing/ask.ts PEPE-STX 100000000 1000000");
   console.error("\n2. Private ask to specific address with 1000 block expiry:");
   console.error(
-    "   bun run src/jing/ask.ts PEPE-STX 100000000 1000000 SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS 1000"
+    "   bun run src/jing/ask.ts PEPE-STX 100000000 1000000 SP29D6YMDNAKN1P045T6Z817RTE1AC0JAA99WAX2B 1000"
   );
   console.error("\nSupported pairs:", SupportedPairs.join(", "));
   process.exit(1);

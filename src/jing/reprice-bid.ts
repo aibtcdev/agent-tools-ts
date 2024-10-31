@@ -69,6 +69,7 @@ async function repriceBid(
     throw new Error(`Failed to get token info for pair: ${pair}`);
   }
 
+  const tokenSymbol = pair.split("-")[0]; // Get token symbol from pair
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -81,7 +82,9 @@ async function repriceBid(
   const bidDetails = await getBidDetails(swapId);
   console.log(`\nBid details:`);
   console.log(`- Creator: ${bidDetails.stxSender}`);
-  console.log(`- Current amount: ${bidDetails.amount}`);
+  console.log(
+    `- Current amount: ${bidDetails.amount} ${tokenSymbol} (in μ units)`
+  );
   console.log(
     `- STX: ${bidDetails.ustx / 1_000_000} STX (${bidDetails.ustx} μSTX)`
   );

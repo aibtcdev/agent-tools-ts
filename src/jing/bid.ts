@@ -65,7 +65,7 @@ async function createBidOffer(
   console.log(`- STX amount: ${ustx / 1_000_000} STX (${ustx} μSTX)`);
   console.log(`- Token amount: ${amount} (in μ units)`);
   if (recipient) console.log(`- Private offer to: ${recipient}`);
-  if (expiry) console.log(`- Expires at block: ${expiry}`);
+  if (expiry) console.log(`- Expires in: ${expiry} blocks`);
   if (accountIndex !== 0) console.log(`- Using account index: ${accountIndex}`);
   console.log(`- Fee: 0.01 STX (10000 μSTX)`);
 
