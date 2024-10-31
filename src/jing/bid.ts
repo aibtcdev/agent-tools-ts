@@ -1,4 +1,4 @@
-// jing/bid-offer.ts
+// jing/bid.ts
 
 import {
   makeContractCall,
