@@ -120,6 +120,10 @@ export const JING_CONTRACTS = {
     address: "SP1PF5HTB4HQN1RGJH0PCGY718Q652841N4XVVFMF",
     name: "yin",
   },
+  YANG: {
+    address: "SP1PF5HTB4HQN1RGJH0PCGY718Q652841N4XVVFMF",
+    name: "yang",
+  },
 };
 
 export function calculateBidFees(ustx: number): number {
@@ -130,4 +134,8 @@ export function calculateBidFees(ustx: number): number {
   } else {
     return Math.ceil(ustx / 133); // 0.75% fee for <=5,000 STX
   }
+}
+// Same as calculateFeesFT in StxSwap - always 0.25%
+export function calculateAskFees(amount: number): number {
+  return Math.ceil(amount / 400);
 }
