@@ -5,11 +5,12 @@ import {
   PostConditionMode,
   uintCV,
   contractPrincipalCV,
-  standardPrincipalCV,
-  someCV,
-  noneCV,
+  makeStandardSTXPostCondition,
+  makeContractFungiblePostCondition,
+  FungibleConditionCode,
   callReadOnlyFunction,
   cvToJSON,
+  createAssetInfo,
 } from "@stacks/transactions";
 import {
   CONFIG,
@@ -17,16 +18,13 @@ import {
   deriveChildAccount,
   getNextNonce,
 } from "../utilities";
-import { getTokenInfo, JING_CONTRACTS } from "./utils-token-pairs";
+import {
+  getTokenInfo,
+  JING_CONTRACTS,
+  calculateAskFees,
+} from "./utils-token-pairs";
 
-interface AskDetails {
-  ustx: number;
-  amount: number;
-  ft: string;
-  ftSender: string;
-}
-
-async function getAskDetails(swapId: number): Promise<AskDetails> {
+async function getAskDetails(swapId: number) {
   const network = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -50,16 +48,12 @@ async function getAskDetails(swapId: number): Promise<AskDetails> {
     ustx: parseInt(jsonResult.value.value.ustx.value),
     amount: parseInt(jsonResult.value.value.amount.value),
     ft: jsonResult.value.value.ft.value,
-    ftSender: jsonResult.value.value["ft-sender"].value,
   };
 }
 
-async function repriceAsk(
+async function submitAsk(
   swapId: number,
-  newUstx: number,
   pair: string,
-  recipient?: string,
-  expiry?: number,
   accountIndex: number = 0
 ) {
   const tokenInfo = getTokenInfo(pair);
@@ -67,7 +61,6 @@ async function repriceAsk(
     throw new Error(`Failed to get token info for pair: ${pair}`);
   }
 
-  const tokenSymbol = pair.split("-")[0]; // Get token symbol from pair (e.g., "PEPE" from "PEPE-STX")
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -76,37 +69,47 @@ async function repriceAsk(
   );
   const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // Get current ask details and verify ownership
+  // Get ask details for post conditions
   const askDetails = await getAskDetails(swapId);
-  console.log(`\nAsk details:`);
-  console.log(`- Creator: ${askDetails.ftSender}`);
-  console.log(
-    `- Current amount: ${askDetails.amount} ${tokenSymbol} (in μ units)`
-  );
-  console.log(
-    `- Current price: ${askDetails.ustx / 1_000_000} STX (${
+  const fees = calculateAskFees(askDetails.amount);
+
+  const postConditions = [
+    // You send STX
+    makeStandardSTXPostCondition(
+      address,
+      FungibleConditionCode.Equal,
       askDetails.ustx
-    } μSTX)`
-  );
-
-  if (askDetails.ftSender !== address) {
-    console.log(`\nError: Cannot reprice ask`);
-    console.log(`- Your address: ${address}`);
-    console.log(`- Required address: ${askDetails.ftSender}`);
-    throw new Error(
-      `Only the ask creator (${askDetails.ftSender}) can reprice this ask`
-    );
-  }
-
-  console.log(`\nReprice details:`);
-  console.log(`- New price: ${newUstx / 1_000_000} STX (${newUstx} μSTX)`);
-  if (recipient) console.log(`- Making private offer to: ${recipient}`);
-  if (expiry) console.log(`- Setting expiry in: ${expiry} blocks`);
+    ),
+    // Contract sends FT
+    makeContractFungiblePostCondition(
+      JING_CONTRACTS.ASK.address,
+      JING_CONTRACTS.ASK.name,
+      FungibleConditionCode.Equal,
+      askDetails.amount,
+      createAssetInfo(
+        tokenInfo.contractAddress,
+        tokenInfo.contractName,
+        tokenInfo.assetName
+      )
+    ),
+    // Fees from YANG contract
+    makeContractFungiblePostCondition(
+      JING_CONTRACTS.ASK.address,
+      JING_CONTRACTS.YANG.name,
+      FungibleConditionCode.LessEqual,
+      fees,
+      createAssetInfo(
+        tokenInfo.contractAddress,
+        tokenInfo.contractName,
+        tokenInfo.assetName
+      )
+    ),
+  ];
 
   const txOptions = {
     contractAddress: JING_CONTRACTS.ASK.address,
     contractName: JING_CONTRACTS.ASK.name,
-    functionName: "re-price",
+    functionName: "submit-swap",
     functionArgs: [
       uintCV(swapId),
       contractPrincipalCV(tokenInfo.contractAddress, tokenInfo.contractName),
@@ -114,21 +117,30 @@ async function repriceAsk(
         JING_CONTRACTS.YANG.address,
         JING_CONTRACTS.YANG.name
       ),
-      uintCV(newUstx),
-      expiry ? someCV(uintCV(expiry)) : noneCV(),
-      recipient ? someCV(standardPrincipalCV(recipient)) : noneCV(),
     ],
     senderKey: key,
     validateWithAbi: true,
     network,
     anchorMode: AnchorMode.Any,
-    postConditionMode: PostConditionMode.Allow,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
     nonce,
-    fee: 10000,
+    fee: 30000,
   };
 
   try {
     console.log("Creating contract call...");
+    console.log(`Submitting swap for ask ${swapId}:`);
+    console.log(`- You send: ${askDetails.ustx / 1_000_000} STX`);
+    console.log(
+      `- You receive: ${askDetails.amount} ${pair.split("-")[0]} (in μ units)`
+    );
+    console.log(
+      `- Transaction includes ${fees} ${
+        pair.split("-")[0]
+      } fee (in μ units) from YANG contract`
+    );
+
     const transaction = await makeContractCall(txOptions);
     console.log("Broadcasting transaction...");
     const broadcastResponse = await broadcastTransaction(transaction, network);
@@ -140,38 +152,25 @@ async function repriceAsk(
     return broadcastResponse;
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(`Error repricing ask: ${error.message}`);
+      console.error(`Error submitting swap: ${error.message}`);
     } else {
-      console.error("An unknown error occurred while repricing ask");
+      console.error("An unknown error occurred while submitting swap");
     }
     throw error;
   }
 }
 
 // Parse command line arguments
-const [swapId, newUstx, pair, recipient, expiry, accountIndex] =
-  process.argv.slice(2);
+const [swapId, pair, accountIndex] = process.argv.slice(2);
 
-if (!swapId || !newUstx || !pair) {
+if (!swapId || !pair) {
   console.error(
-    "Usage: bun run src/jing/reprice-ask.ts <swap_id> <new_ustx> <pair> [recipient] [expiry] [account_index]"
+    "Usage: bun run src/jing/submit-ask.ts <swap_id> <pair> [account_index]"
   );
-  console.error(
-    "Example: bun run src/jing/reprice-ask.ts 1 200000000 PEPE-STX"
-  );
-  console.error(
-    "Example with private offer: bun run src/jing/reprice-ask.ts 1 2000000 PEPE-STX SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22 69"
-  );
+  console.error("Example: bun run src/jing/submit-ask.ts 12 PEPE-STX");
   process.exit(1);
 }
 
-repriceAsk(
-  parseInt(swapId),
-  parseInt(newUstx),
-  pair,
-  recipient,
-  expiry ? parseInt(expiry) : undefined,
-  accountIndex ? parseInt(accountIndex) : 0
-)
+submitAsk(parseInt(swapId), pair, accountIndex ? parseInt(accountIndex) : 0)
   .then(() => process.exit(0))
   .catch(() => process.exit(1));

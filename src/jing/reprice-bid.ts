@@ -101,7 +101,7 @@ async function repriceBid(
   console.log(`\nReprice details:`);
   console.log(`- New amount: ${newAmount}`);
   if (recipient) console.log(`- Making private offer to: ${recipient}`);
-  if (expiry) console.log(`- Setting expiry to block: ${expiry}`);
+  if (expiry) console.log(`- Setting expiry in: ${expiry} blocks`);
 
   const txOptions = {
     contractAddress: JING_CONTRACTS.BID.address,
