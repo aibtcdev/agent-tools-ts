@@ -1,4 +1,4 @@
-// src/jing/cancel-bid.ts
+// src/jing/submit-swap.ts
 
 import {
   makeContractCall,
@@ -7,10 +7,13 @@ import {
   PostConditionMode,
   uintCV,
   contractPrincipalCV,
+  makeStandardSTXPostCondition,
   makeContractSTXPostCondition,
   FungibleConditionCode,
   callReadOnlyFunction,
   cvToJSON,
+  createAssetInfo,
+  makeStandardFungiblePostCondition,
 } from "@stacks/transactions";
 import {
   CONFIG,
@@ -47,11 +50,11 @@ async function getBidDetails(swapId: number) {
   return {
     ustx: parseInt(jsonResult.value.value.ustx.value),
     amount: parseInt(jsonResult.value.value.amount.value),
-    stxSender: jsonResult.value.value["stx-sender"].value,
+    ft: jsonResult.value.value.ft.value,
   };
 }
 
-async function cancelBid(
+async function submitSwap(
   swapId: number,
   pair: string,
   accountIndex: number = 0
@@ -69,36 +72,30 @@ async function cancelBid(
   );
   const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  console.log(`Preparing to cancel bid ${swapId} from account ${address}`);
-
   // Get bid details for post conditions
   const bidDetails = await getBidDetails(swapId);
-  console.log(`Bid details:`);
-  console.log(`- Creator: ${bidDetails.stxSender}`);
-  console.log(`- Amount: ${bidDetails.amount}`);
-  console.log(
-    `- STX: ${bidDetails.ustx / 1_000_000} STX (${bidDetails.ustx} μSTX)`
-  );
-
-  if (bidDetails.stxSender !== address) {
-    console.log(`\nError: Cannot cancel bid`);
-    console.log(`- Your address: ${address}`);
-    console.log(`- Required address: ${bidDetails.stxSender}`);
-    throw new Error(
-      `Only the bid creator (${bidDetails.stxSender}) can cancel this bid`
-    );
-  }
   const fees = calculateBidFees(bidDetails.ustx);
 
   const postConditions = [
-    // Return STX from bid
+    // You send the FT
+    makeStandardFungiblePostCondition(
+      address,
+      FungibleConditionCode.Equal,
+      bidDetails.amount,
+      createAssetInfo(
+        tokenInfo.contractAddress,
+        tokenInfo.contractName,
+        tokenInfo.assetName
+      )
+    ),
+    // Contract sends STX
     makeContractSTXPostCondition(
       JING_CONTRACTS.BID.address,
       JING_CONTRACTS.BID.name,
       FungibleConditionCode.Equal,
       bidDetails.ustx
     ),
-    // Return fees from YIN contract
+    // Fees from YIN contract
     makeContractSTXPostCondition(
       JING_CONTRACTS.BID.address,
       JING_CONTRACTS.YIN.name,
@@ -110,7 +107,7 @@ async function cancelBid(
   const txOptions = {
     contractAddress: JING_CONTRACTS.BID.address,
     contractName: JING_CONTRACTS.BID.name,
-    functionName: "cancel",
+    functionName: "submit-swap",
     functionArgs: [
       uintCV(swapId),
       contractPrincipalCV(tokenInfo.contractAddress, tokenInfo.contractName),
@@ -123,11 +120,17 @@ async function cancelBid(
     postConditionMode: PostConditionMode.Deny,
     postConditions,
     nonce,
-    fee: 10000, // 0.01 STX
+    fee: 30000,
   };
 
   try {
     console.log("Creating contract call...");
+    console.log(`Submitting swap for bid ${swapId}:`);
+    console.log(
+      `- You send: ${bidDetails.amount} ${pair.split("-")[0]} (in μ units)`
+    );
+    console.log(`- You receive: ${bidDetails.ustx / 1_000_000} STX`);
+
     const transaction = await makeContractCall(txOptions);
     console.log("Broadcasting transaction...");
     const broadcastResponse = await broadcastTransaction(transaction, network);
@@ -139,9 +142,9 @@ async function cancelBid(
     return broadcastResponse;
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(`Error cancelling bid: ${error.message}`);
+      console.error(`Error submitting swap: ${error.message}`);
     } else {
-      console.error("An unknown error occurred while cancelling bid");
+      console.error("An unknown error occurred while submitting swap");
     }
     throw error;
   }
@@ -152,12 +155,12 @@ const [swapId, pair, accountIndex] = process.argv.slice(2);
 
 if (!swapId || !pair) {
   console.error(
-    "Usage: bun run src/jing/cancel-bid.ts <swap_id> <pair> [account_index]"
+    "Usage: bun run src/jing/submit-bid.ts <swap_id> <pair> [account_index]"
   );
-  console.error("Example: bun run src/jing/cancel-bid.ts 1 PEPE-STX");
+  console.error("Example: bun run src/jing/submit-bid.ts 12 PEPE-STX");
   process.exit(1);
 }
 
-cancelBid(parseInt(swapId), pair, accountIndex ? parseInt(accountIndex) : 0)
+submitSwap(parseInt(swapId), pair, accountIndex ? parseInt(accountIndex) : 0)
   .then(() => process.exit(0))
   .catch(() => process.exit(1));
