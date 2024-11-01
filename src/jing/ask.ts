@@ -163,7 +163,9 @@ if (!pair || !tokenAmount || !stxAmount) {
   console.error(
     "- recipient: (Optional) Make private offer to specific address"
   );
-  console.error("- expiry: (Optional) Block height when offer expires");
+  console.error(
+    "- expiry: (Optional) Number of blocks from now until expiration (e.g., 100 for expiry in 100 blocks)"
+  );
   console.error(
     "- account_index: (Optional) Account index to use, defaults to 0"
   );
