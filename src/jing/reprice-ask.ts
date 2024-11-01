@@ -17,13 +17,18 @@ import {
   deriveChildAccount,
   getNextNonce,
 } from "../utilities";
-import { getTokenInfo, JING_CONTRACTS } from "./utils-token-pairs";
+import {
+  getTokenInfo,
+  JING_CONTRACTS,
+  getTokenDecimals,
+} from "./utils-token-pairs";
 
 interface AskDetails {
   ustx: number;
   amount: number;
   ft: string;
   ftSender: string;
+  tokenDecimals?: number;
 }
 
 async function getAskDetails(swapId: number): Promise<AskDetails> {
@@ -56,7 +61,7 @@ async function getAskDetails(swapId: number): Promise<AskDetails> {
 
 async function repriceAsk(
   swapId: number,
-  newUstx: number,
+  newStxAmount: number, // Regular STX amount
   pair: string,
   recipient?: string,
   expiry?: number,
@@ -67,7 +72,13 @@ async function repriceAsk(
     throw new Error(`Failed to get token info for pair: ${pair}`);
   }
 
-  const tokenSymbol = pair.split("-")[0]; // Get token symbol from pair (e.g., "PEPE" from "PEPE-STX")
+  // Convert STX to micro units
+  const newUstx = Math.floor(newStxAmount * 1_000_000);
+  const tokenSymbol = pair.split("-")[0];
+
+  // Get token decimals
+  const tokenDecimals = await getTokenDecimals(tokenInfo);
+
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -78,10 +89,15 @@ async function repriceAsk(
 
   // Get current ask details and verify ownership
   const askDetails = await getAskDetails(swapId);
+  askDetails.tokenDecimals = tokenDecimals;
+
+  const regularTokenAmount = askDetails.amount / Math.pow(10, tokenDecimals);
+
   console.log(`\nAsk details:`);
   console.log(`- Creator: ${askDetails.ftSender}`);
+  console.log(`- Token decimals: ${tokenDecimals}`);
   console.log(
-    `- Current amount: ${askDetails.amount} ${tokenSymbol} (in μ units)`
+    `- Current amount: ${regularTokenAmount} ${tokenSymbol} (${askDetails.amount} μ${tokenSymbol})`
   );
   console.log(
     `- Current price: ${askDetails.ustx / 1_000_000} STX (${
@@ -98,10 +114,23 @@ async function repriceAsk(
     );
   }
 
+  // Calculate and display the price change
+  const oldPrice = askDetails.ustx / askDetails.amount;
+  const newPrice = newUstx / askDetails.amount;
+  const oldAdjustedPrice = oldPrice * Math.pow(10, tokenDecimals - 6);
+  const newAdjustedPrice = newPrice * Math.pow(10, tokenDecimals - 6);
+
   console.log(`\nReprice details:`);
-  console.log(`- New price: ${newUstx / 1_000_000} STX (${newUstx} μSTX)`);
+  console.log(`- New STX price: ${newStxAmount} STX (${newUstx} μSTX)`);
+  console.log(
+    `- Old price per ${tokenSymbol}: ${oldAdjustedPrice.toFixed(8)} STX`
+  );
+  console.log(
+    `- New price per ${tokenSymbol}: ${newAdjustedPrice.toFixed(8)} STX`
+  );
   if (recipient) console.log(`- Making private offer to: ${recipient}`);
   if (expiry) console.log(`- Setting expiry in: ${expiry} blocks`);
+  console.log(`- Gas fee: ${10000 / 1_000_000} STX`);
 
   const txOptions = {
     contractAddress: JING_CONTRACTS.ASK.address,
@@ -128,7 +157,7 @@ async function repriceAsk(
   };
 
   try {
-    console.log("Creating contract call...");
+    console.log("\nCreating contract call...");
     const transaction = await makeContractCall(txOptions);
     console.log("Broadcasting transaction...");
     const broadcastResponse = await broadcastTransaction(transaction, network);
@@ -149,29 +178,48 @@ async function repriceAsk(
 }
 
 // Parse command line arguments
-const [swapId, newUstx, pair, recipient, expiry, accountIndex] =
+const [swapId, newStxAmount, pair, recipient, expiry, accountIndex] =
   process.argv.slice(2);
 
-if (!swapId || !newUstx || !pair) {
+if (!swapId || !newStxAmount || !pair) {
+  console.error("\nUsage:");
   console.error(
-    "Usage: bun run src/jing/reprice-ask.ts <swap_id> <new_ustx> <pair> [recipient] [expiry] [account_index]"
+    "bun run src/jing/reprice-ask.ts <swap_id> <new_stx_amount> <pair> [recipient] [expiry] [account_index]"
   );
+  console.error("\nParameters:");
+  console.error("- swap_id: ID of the ask to reprice");
+  console.error("- new_stx_amount: New STX price (e.g., 1.5 for 1.5 STX)");
+  console.error("- pair: Trading pair (e.g., PEPE-STX)");
   console.error(
-    "Example: bun run src/jing/reprice-ask.ts 1 200000000 PEPE-STX"
+    "- recipient: (Optional) Make private offer to specific address"
   );
+  console.error("- expiry: (Optional) Blocks until expiry");
   console.error(
-    "Example with private offer: bun run src/jing/reprice-ask.ts 1 2000000 PEPE-STX SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22 69"
+    "- account_index: (Optional) Account index to use, defaults to 0"
+  );
+  console.error("\nExamples:");
+  console.error("1. Public reprice:");
+  console.error("   bun run src/jing/reprice-ask.ts 9 0.69 PEPE-STX");
+  console.error("\n2. Private offer with expiry:");
+  console.error(
+    "   bun run src/jing/reprice-ask.ts 1 1.5 PEPE-STX SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22 69"
   );
   process.exit(1);
 }
 
 repriceAsk(
   parseInt(swapId),
-  parseInt(newUstx),
+  parseFloat(newStxAmount),
   pair,
   recipient,
   expiry ? parseInt(expiry) : undefined,
   accountIndex ? parseInt(accountIndex) : 0
 )
   .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+  .catch((error) => {
+    console.error(
+      "\nError:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    process.exit(1);
+  });

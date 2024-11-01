@@ -1,5 +1,3 @@
-// src/jing/ask.ts
-
 import {
   makeContractCall,
   broadcastTransaction,
@@ -25,12 +23,13 @@ import {
   JING_CONTRACTS,
   SupportedPairs,
   calculateAskFees,
+  getTokenDecimals,
 } from "./utils-token-pairs";
 
 async function createAskOffer(
   pair: string,
-  amount: number,
-  ustx: number,
+  tokenAmount: number, // Regular token amount
+  stxAmount: number, // Regular STX amount
   recipient?: string,
   expiry?: number,
   accountIndex: number = 0
@@ -46,6 +45,16 @@ async function createAskOffer(
     throw new Error(`Failed to get token info for pair: ${pair}`);
   }
 
+  // Get token decimals and convert amounts
+  const tokenDecimals = await getTokenDecimals(tokenInfo);
+  const tokenSymbol = pair.split("-")[0];
+
+  // Convert to micro units
+  const microTokenAmount = Math.floor(
+    tokenAmount * Math.pow(10, tokenDecimals)
+  );
+  const ustx = Math.floor(stxAmount * 1_000_000); // STX always has 6 decimals
+
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -55,24 +64,34 @@ async function createAskOffer(
   const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Calculate fees (in FT)
-  const fees = calculateAskFees(amount);
+  const microFees = calculateAskFees(microTokenAmount);
+  const fees = microFees / Math.pow(10, tokenDecimals);
 
   console.log("\nAsk details:");
   console.log(`- Pair: ${pair}`);
-  console.log(`- Token amount: ${amount} (in μ units)`);
-  console.log(`- STX amount: ${ustx / 1_000_000} STX (${ustx} μSTX)`);
+  console.log(`- Token decimals: ${tokenDecimals}`);
+  console.log(
+    `- Token amount: ${tokenAmount} ${tokenSymbol} (${microTokenAmount} μ${tokenSymbol})`
+  );
+  console.log(`- STX price: ${stxAmount} STX (${ustx} μSTX)`);
   if (recipient) console.log(`- Private offer to: ${recipient}`);
   if (expiry) console.log(`- Expires in: ${expiry} blocks`);
   if (accountIndex !== 0) console.log(`- Using account index: ${accountIndex}`);
-  console.log(`- Fee: ${fees} ${pair.split("-")[0]} (in μ units)`);
+  console.log(`- Fee: ${fees} ${tokenSymbol} (${microFees} μ${tokenSymbol})`);
+  console.log(`- Gas fee: ${10000 / 1_000_000} STX`);
+
+  // Calculate and display the effective price
+  const price = ustx / microTokenAmount;
+  const adjustedPrice = price * Math.pow(10, tokenDecimals - 6);
+  console.log(`- Price per ${tokenSymbol}: ${adjustedPrice.toFixed(8)} STX`);
 
   const txOptions = {
     contractAddress: JING_CONTRACTS.ASK.address,
     contractName: JING_CONTRACTS.ASK.name,
     functionName: "offer",
     functionArgs: [
-      uintCV(amount), // Token amount
-      uintCV(ustx), // STX amount to receive
+      uintCV(microTokenAmount), // Token amount in micro units
+      uintCV(ustx), // STX amount in micro units
       recipient ? someCV(standardPrincipalCV(recipient)) : noneCV(),
       contractPrincipalCV(tokenInfo.contractAddress, tokenInfo.contractName),
       contractPrincipalCV(
@@ -87,11 +106,11 @@ async function createAskOffer(
     anchorMode: AnchorMode.Any,
     postConditionMode: PostConditionMode.Deny,
     postConditions: [
-      // Token amount + fees in FT
+      // Token amount + fees in FT (using micro units)
       makeStandardFungiblePostCondition(
         address,
         FungibleConditionCode.LessEqual,
-        amount + fees,
+        microTokenAmount + microFees,
         createAssetInfo(
           tokenInfo.contractAddress,
           tokenInfo.contractName,
@@ -104,7 +123,7 @@ async function createAskOffer(
   };
 
   try {
-    console.log("Creating contract call...");
+    console.log("\nCreating contract call...");
     const transaction = await makeContractCall(txOptions);
     console.log("Broadcasting transaction...");
     const broadcastResponse = await broadcastTransaction(transaction, network);
@@ -125,19 +144,21 @@ async function createAskOffer(
 }
 
 // Parse command line arguments
-const [pair, amount, ustxAmount, recipient, expiry, accountIndex] =
+const [pair, tokenAmount, stxAmount, recipient, expiry, accountIndex] =
   process.argv.slice(2);
 
-if (!pair || !amount || !ustxAmount) {
+if (!pair || !tokenAmount || !stxAmount) {
   console.error("\nUsage:");
   console.error(
-    "bun run src/jing/ask.ts <pair> <token_amount> <ustx_amount> [recipient] [expiry] [account_index]"
+    "bun run src/jing/ask.ts <pair> <token_amount> <stx_amount> [recipient] [expiry] [account_index]"
   );
   console.error("\nParameters:");
   console.error("- pair: Trading pair (e.g., PEPE-STX)");
-  console.error("- token_amount: Amount of tokens to sell (in μ units)");
   console.error(
-    "- ustx_amount: Amount of STX to receive in micro-STX (1 STX = 1,000,000 μSTX)"
+    "- token_amount: Amount of tokens to sell (e.g., 100 for 100 PEPE)"
+  );
+  console.error(
+    "- stx_amount: Amount of STX to receive (e.g., 1.5 for 1.5 STX)"
   );
   console.error(
     "- recipient: (Optional) Make private offer to specific address"
@@ -148,10 +169,10 @@ if (!pair || !amount || !ustxAmount) {
   );
   console.error("\nExamples:");
   console.error("1. Public ask:");
-  console.error("   bun run src/jing/ask.ts PEPE-STX 100000000 1000000");
+  console.error("   bun run src/jing/ask.ts PEPE-STX 100000 1.5");
   console.error("\n2. Private ask to specific address with 1000 block expiry:");
   console.error(
-    "   bun run src/jing/ask.ts PEPE-STX 100000000 1000000 SP29D6YMDNAKN1P045T6Z817RTE1AC0JAA99WAX2B 1000"
+    "   bun run src/jing/ask.ts PEPE-STX 100000 1.5 SP29D6YMDNAKN1P045T6Z817RTE1AC0JAA99WAX2B 1000"
   );
   console.error("\nSupported pairs:", SupportedPairs.join(", "));
   process.exit(1);
@@ -159,11 +180,17 @@ if (!pair || !amount || !ustxAmount) {
 
 createAskOffer(
   pair,
-  parseInt(amount),
-  parseInt(ustxAmount),
+  parseFloat(tokenAmount),
+  parseFloat(stxAmount),
   recipient,
   expiry ? parseInt(expiry) : undefined,
   accountIndex ? parseInt(accountIndex) : 0
 )
   .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+  .catch((error) => {
+    console.error(
+      "\nError:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    process.exit(1);
+  });

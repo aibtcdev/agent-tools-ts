@@ -1,6 +1,11 @@
 import { callReadOnlyFunction, cvToJSON, uintCV } from "@stacks/transactions";
 import { CONFIG, getNetwork, deriveChildAccount } from "../utilities";
-import { JING_CONTRACTS, getTokenSymbol } from "./utils-token-pairs";
+import {
+  JING_CONTRACTS,
+  getTokenSymbol,
+  getTokenInfo,
+  getTokenDecimals,
+} from "./utils-token-pairs";
 
 interface SwapDetails {
   ustx: number;
@@ -11,6 +16,7 @@ interface SwapDetails {
   ft: string;
   fees: string;
   expiredHeight: number | null;
+  tokenDecimals?: number;
 }
 
 function formatSwapResponse(rawResponse: any): SwapDetails | null {
@@ -30,31 +36,68 @@ function formatSwapResponse(rawResponse: any): SwapDetails | null {
   };
 }
 
-function formatOutput(swap: SwapDetails) {
-  const stxAmount = (swap.ustx / 1_000_000).toFixed(6);
+async function formatOutput(swap: SwapDetails) {
   const tokenSymbol = getTokenSymbol(swap.ft);
+
+  // Get token decimals
+  const tokenInfo = getTokenInfo(`${tokenSymbol}-STX`);
+  if (tokenInfo) {
+    try {
+      swap.tokenDecimals = await getTokenDecimals(tokenInfo);
+    } catch (error: unknown) {
+      console.warn(
+        `Warning: Could not get token decimals: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+      swap.tokenDecimals = undefined;
+    }
+  }
+
+  const stxAmount = (swap.ustx / 1_000_000).toFixed(6);
+  const formattedTokenAmount =
+    swap.tokenDecimals !== undefined
+      ? `${(swap.amount / Math.pow(10, swap.tokenDecimals)).toFixed(
+          swap.tokenDecimals
+        )} ${tokenSymbol} (${swap.amount} μ${tokenSymbol})`
+      : `${swap.amount} μ${tokenSymbol}`;
 
   console.log("\nSwap Details:");
   console.log("=============");
   console.log(`Type: Ask`);
   console.log(`Status: ${swap.open ? "Open" : "Closed"}`);
+
   console.log(`\nAmounts:`);
-  console.log(`- ${swap.amount} ${tokenSymbol} (in μ units)`);
-  console.log(`- ${stxAmount} STX (${swap.ustx} μSTX)`);
+  console.log(`- Token: ${formattedTokenAmount}`);
+  console.log(`- STX: ${stxAmount} STX (${swap.ustx} μSTX)`);
+
+  if (swap.tokenDecimals !== undefined) {
+    console.log(`- Token Decimals: ${swap.tokenDecimals}`);
+  }
+
+  // Calculate and display price
+  const price = swap.ustx / swap.amount;
+  const adjustedPrice =
+    swap.tokenDecimals !== undefined
+      ? (price * Math.pow(10, swap.tokenDecimals - 6)).toFixed(8)
+      : (price / 1_000_000).toFixed(8);
+  console.log(`- Price per ${tokenSymbol}: ${adjustedPrice} STX`);
+
   console.log(`\nCounterparties:`);
   console.log(`- FT Sender: ${swap.ftSender}`);
   console.log(`- STX Sender: ${swap.stxSender || "Any"}`);
+
   console.log(`\nContracts:`);
   console.log(`- Token: ${swap.ft}`);
   console.log(
     `- Ask Contract: ${JING_CONTRACTS.ASK.address}.${JING_CONTRACTS.ASK.name}`
   );
+  console.log(`- Gas fee: ${10000 / 1_000_000} STX`);
 
   if (swap.expiredHeight) {
     console.log(`\nExpires at block: ${swap.expiredHeight}`);
   } else {
-    console.log(`\nExpires:`);
-    console.log(`- Never unless cancelled`);
+    console.log(`\nExpires: Never unless cancelled`);
   }
 }
 
@@ -80,7 +123,7 @@ async function getSwap(swapId: number) {
     const formattedSwap = formatSwapResponse(jsonResult);
 
     if (formattedSwap) {
-      formatOutput(formattedSwap);
+      await formatOutput(formattedSwap);
       return formattedSwap;
     } else {
       console.error("Failed to parse swap details");
@@ -100,8 +143,13 @@ async function getSwap(swapId: number) {
 const rawSwapId = process.argv[2];
 
 if (rawSwapId === undefined || isNaN(parseInt(rawSwapId))) {
-  console.error("Usage: bun run src/jing/get-ask.ts <swap_id>");
-  console.error("Example: bun run src/jing/get-ask.ts 1");
+  console.error("\nUsage:");
+  console.error("bun run src/jing/get-ask.ts <swap_id>");
+  console.error("\nParameters:");
+  console.error("- swap_id: ID of the ask to query");
+  console.error("\nExample:");
+  console.error("bun run src/jing/get-ask.ts 1");
+  console.error("");
   process.exit(1);
 }
 
@@ -109,4 +157,10 @@ const swapId = parseInt(rawSwapId);
 
 getSwap(swapId)
   .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+  .catch((error) => {
+    console.error(
+      "\nError:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    process.exit(1);
+  });

@@ -1,5 +1,3 @@
-// src/jing/submit-swap.ts
-
 import {
   makeContractCall,
   broadcastTransaction,
@@ -25,9 +23,17 @@ import {
   getTokenInfo,
   JING_CONTRACTS,
   calculateBidFees,
+  getTokenDecimals,
 } from "./utils-token-pairs";
 
-async function getBidDetails(swapId: number) {
+interface BidDetails {
+  ustx: number;
+  amount: number;
+  ft: string;
+  tokenDecimals?: number;
+}
+
+async function getBidDetails(swapId: number): Promise<BidDetails> {
   const network = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -63,6 +69,10 @@ async function submitSwap(
   if (!tokenInfo) {
     throw new Error(`Failed to get token info for pair: ${pair}`);
   }
+
+  // Get token decimals
+  const tokenDecimals = await getTokenDecimals(tokenInfo);
+  const tokenSymbol = pair.split("-")[0];
 
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -125,14 +135,37 @@ async function submitSwap(
 
   try {
     console.log("Creating contract call...");
-    console.log(`Submitting swap for bid ${swapId}:`);
+    console.log(`\nSubmitting swap for bid ${swapId}:`);
+
+    // Calculate regular units for display
+    const regularTokenAmount = bidDetails.amount / Math.pow(10, tokenDecimals);
+
+    console.log("\nSwap Details:");
+    console.log(`- Token decimals: ${tokenDecimals}`);
     console.log(
-      `- You send: ${bidDetails.amount} ${pair.split("-")[0]} (in μ units)`
+      `- You send: ${regularTokenAmount} ${tokenSymbol} (${bidDetails.amount} μ${tokenSymbol})`
     );
-    console.log(`- You receive: ${bidDetails.ustx / 1_000_000} STX`);
+    console.log(
+      `- You receive: ${bidDetails.ustx / 1_000_000} STX (${
+        bidDetails.ustx
+      } μSTX)`
+    );
+    console.log(`- Network fee: ${30000 / 1_000_000} STX (${30000} μSTX)`);
+
+    // Calculate and display the effective price
+    const price = bidDetails.ustx / bidDetails.amount;
+    const adjustedPrice = price * Math.pow(10, tokenDecimals - 6);
+    console.log(`- Price per ${tokenSymbol}: ${adjustedPrice.toFixed(8)} STX`);
+
+    console.log("\nPost Conditions:");
+    console.log(
+      `- Your ${tokenSymbol} transfer: ${bidDetails.amount} μ${tokenSymbol}`
+    );
+    console.log(`- Contract STX transfer: ${bidDetails.ustx} μSTX`);
+    console.log(`- Maximum fees: ${fees} μSTX`);
 
     const transaction = await makeContractCall(txOptions);
-    console.log("Broadcasting transaction...");
+    console.log("\nBroadcasting transaction...");
     const broadcastResponse = await broadcastTransaction(transaction, network);
     console.log("Transaction broadcast successfully!");
     console.log("Transaction ID:", broadcastResponse.txid);
@@ -154,13 +187,28 @@ async function submitSwap(
 const [swapId, pair, accountIndex] = process.argv.slice(2);
 
 if (!swapId || !pair) {
+  console.error("\nUsage:");
   console.error(
-    "Usage: bun run src/jing/submit-bid.ts <swap_id> <pair> [account_index]"
+    "bun run src/jing/submit-bid.ts <swap_id> <pair> [account_index]"
   );
-  console.error("Example: bun run src/jing/submit-bid.ts 12 PEPE-STX");
+  console.error("\nParameters:");
+  console.error("- swap_id: ID of the bid to submit swap for");
+  console.error("- pair: Trading pair (e.g., PEPE-STX)");
+  console.error(
+    "- account_index: (Optional) Account index to use, defaults to 0"
+  );
+  console.error("\nExample:");
+  console.error("bun run src/jing/submit-bid.ts 12 PEPE-STX");
+  console.error("");
   process.exit(1);
 }
 
 submitSwap(parseInt(swapId), pair, accountIndex ? parseInt(accountIndex) : 0)
   .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+  .catch((error) => {
+    console.error(
+      "\nError:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    process.exit(1);
+  });
