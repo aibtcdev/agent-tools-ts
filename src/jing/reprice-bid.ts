@@ -1,5 +1,3 @@
-// src/jing/reprice-bid.ts
-
 import {
   makeContractCall,
   broadcastTransaction,
@@ -19,13 +17,18 @@ import {
   deriveChildAccount,
   getNextNonce,
 } from "../utilities";
-import { getTokenInfo, JING_CONTRACTS } from "./utils-token-pairs";
+import {
+  getTokenInfo,
+  JING_CONTRACTS,
+  getTokenDecimals,
+} from "./utils-token-pairs";
 
 interface BidDetails {
   ustx: number;
   amount: number;
   ft: string;
-  stxSender: string; // Add this
+  stxSender: string;
+  tokenDecimals?: number;
 }
 
 async function getBidDetails(swapId: number): Promise<BidDetails> {
@@ -58,7 +61,7 @@ async function getBidDetails(swapId: number): Promise<BidDetails> {
 
 async function repriceBid(
   swapId: number,
-  newAmount: number,
+  newTokenAmount: number, // Regular token amount
   pair: string,
   recipient?: string,
   expiry?: number,
@@ -69,7 +72,13 @@ async function repriceBid(
     throw new Error(`Failed to get token info for pair: ${pair}`);
   }
 
-  const tokenSymbol = pair.split("-")[0]; // Get token symbol from pair
+  // Get token decimals and convert amounts
+  const tokenDecimals = await getTokenDecimals(tokenInfo);
+  const tokenSymbol = pair.split("-")[0];
+  const microTokenAmount = Math.floor(
+    newTokenAmount * Math.pow(10, tokenDecimals)
+  );
+
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -80,14 +89,19 @@ async function repriceBid(
 
   // Get current bid details and verify ownership
   const bidDetails = await getBidDetails(swapId);
+  bidDetails.tokenDecimals = tokenDecimals;
+
   console.log(`\nBid details:`);
   console.log(`- Creator: ${bidDetails.stxSender}`);
   console.log(
-    `- Current amount: ${bidDetails.amount} ${tokenSymbol} (in μ units)`
+    `- Current amount: ${
+      bidDetails.amount / Math.pow(10, tokenDecimals)
+    } ${tokenSymbol} (${bidDetails.amount} μ${tokenSymbol})`
   );
   console.log(
     `- STX: ${bidDetails.ustx / 1_000_000} STX (${bidDetails.ustx} μSTX)`
   );
+  console.log(`- Token decimals: ${tokenDecimals}`);
 
   if (bidDetails.stxSender !== address) {
     console.log(`\nError: Cannot reprice bid`);
@@ -99,9 +113,12 @@ async function repriceBid(
   }
 
   console.log(`\nReprice details:`);
-  console.log(`- New amount: ${newAmount}`);
+  console.log(
+    `- New amount: ${newTokenAmount} ${tokenSymbol} (${microTokenAmount} μ${tokenSymbol})`
+  );
   if (recipient) console.log(`- Making private offer to: ${recipient}`);
   if (expiry) console.log(`- Setting expiry in: ${expiry} blocks`);
+  console.log(`- Gas fee: ${10000 / 1_000_000} STX`);
 
   const txOptions = {
     contractAddress: JING_CONTRACTS.BID.address,
@@ -111,7 +128,7 @@ async function repriceBid(
       uintCV(swapId),
       contractPrincipalCV(tokenInfo.contractAddress, tokenInfo.contractName),
       contractPrincipalCV(JING_CONTRACTS.YIN.address, JING_CONTRACTS.YIN.name),
-      uintCV(newAmount),
+      uintCV(microTokenAmount),
       expiry ? someCV(uintCV(expiry)) : noneCV(),
       recipient ? someCV(standardPrincipalCV(recipient)) : noneCV(),
     ],
@@ -153,22 +170,40 @@ if (!swapId || !newAmount || !pair) {
   console.error(
     "Usage: bun run src/jing/reprice-bid.ts <swap_id> <new_amount> <pair> [recipient] [expiry] [account_index]"
   );
+  console.error("\nParameters:");
+  console.error("- swap_id: ID of the bid to reprice");
+  console.error(`- new_amount: New token amount (e.g., 100 for 100 tokens)`);
+  console.error("- pair: Trading pair (e.g., PEPE-STX)");
   console.error(
-    "Example: bun run src/jing/reprice-bid.ts 1 200000000 PEPE-STX"
+    "- recipient: (Optional) Make private offer to specific address"
   );
+  console.error("- expiry: (Optional) Blocks until expiry");
   console.error(
-    "Example with private offer: bun run src/jing/reprice-bid.ts 1 200000000 PEPE-STX SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS 100000"
+    "- account_index: (Optional) Account index to use, defaults to 0"
+  );
+  console.error("\nExamples:");
+  console.error("1. Public reprice:");
+  console.error("   bun run src/jing/reprice-bid.ts 1 100 PEPE-STX");
+  console.error("\n2. Private offer with expiry:");
+  console.error(
+    "   bun run src/jing/reprice-bid.ts 1 100 PEPE-STX SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS 100000"
   );
   process.exit(1);
 }
 
 repriceBid(
   parseInt(swapId),
-  parseInt(newAmount),
+  parseFloat(newAmount),
   pair,
   recipient,
   expiry ? parseInt(expiry) : undefined,
   accountIndex ? parseInt(accountIndex) : 0
 )
   .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+  .catch((error) => {
+    console.error(
+      "\nError:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    process.exit(1);
+  });

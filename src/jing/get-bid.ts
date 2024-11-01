@@ -1,8 +1,11 @@
-// src/jing/get-bid.ts
-
 import { callReadOnlyFunction, cvToJSON, uintCV } from "@stacks/transactions";
 import { CONFIG, getNetwork, deriveChildAccount } from "../utilities";
-import { JING_CONTRACTS, getTokenSymbol } from "./utils-token-pairs";
+import {
+  JING_CONTRACTS,
+  getTokenSymbol,
+  getTokenInfo,
+  getTokenDecimals,
+} from "./utils-token-pairs";
 
 interface SwapDetails {
   ustx: number;
@@ -13,6 +16,7 @@ interface SwapDetails {
   ft: string;
   fees: string;
   expiredHeight: number | null;
+  tokenDecimals?: number;
 }
 
 function formatSwapResponse(rawResponse: any): SwapDetails | null {
@@ -32,31 +36,68 @@ function formatSwapResponse(rawResponse: any): SwapDetails | null {
   };
 }
 
-function formatOutput(swap: SwapDetails) {
+async function formatOutput(swap: SwapDetails) {
   const stxAmount = (swap.ustx / 1_000_000).toFixed(6);
   const tokenSymbol = getTokenSymbol(swap.ft);
+
+  // Get token decimals
+  const tokenInfo = getTokenInfo(`${tokenSymbol}-STX`);
+  if (tokenInfo) {
+    try {
+      swap.tokenDecimals = await getTokenDecimals(tokenInfo);
+    } catch (error) {
+      console.warn(
+        `Warning: Could not get token decimals: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+      swap.tokenDecimals = undefined;
+    }
+  }
+
+  // Format token amount with decimals if available
+  const formattedTokenAmount =
+    swap.tokenDecimals !== undefined
+      ? `${(swap.amount / Math.pow(10, swap.tokenDecimals)).toFixed(
+          swap.tokenDecimals
+        )} ${tokenSymbol} (${swap.amount} μ${tokenSymbol})`
+      : `${swap.amount} μ${tokenSymbol}`;
 
   console.log("\nSwap Details:");
   console.log("=============");
   console.log(`Type: Bid`);
   console.log(`Status: ${swap.open ? "Open" : "Closed"}`);
+
   console.log(`\nAmounts:`);
-  console.log(`- ${stxAmount} STX (${swap.ustx} μSTX)`);
-  console.log(`- ${swap.amount} ${tokenSymbol} (in μ units)`);
+  console.log(`- STX: ${stxAmount} STX (${swap.ustx} μSTX)`);
+  console.log(`- Token: ${formattedTokenAmount}`);
+
+  if (swap.tokenDecimals !== undefined) {
+    console.log(`- Token Decimals: ${swap.tokenDecimals}`);
+  }
+
+  const price = swap.ustx / swap.amount;
+  const formattedPrice =
+    swap.tokenDecimals !== undefined
+      ? (price / Math.pow(10, 6 - swap.tokenDecimals)).toFixed(8)
+      : (price / 1_000_000).toFixed(8);
+  console.log(`- Price per token: ${formattedPrice} STX`);
+
   console.log(`\nCounterparties:`);
   console.log(`- STX Sender: ${swap.stxSender}`);
   console.log(`- FT Sender: ${swap.ftSender || "Any"}`);
+
   console.log(`\nContracts:`);
   console.log(`- Token: ${swap.ft}`);
   console.log(
     `- Bid Contract: ${JING_CONTRACTS.BID.address}.${JING_CONTRACTS.BID.name}`
   );
+  console.log(`- Gas fee: ${10000 / 1_000_000} STX`);
 
   if (swap.expiredHeight) {
     console.log(`\nExpires at block: ${swap.expiredHeight}`);
   } else {
-    console.log(`\nExpires:`);
-    console.log(`- Never unless cancelled`);
+    console.log(`\nExpires: Never unless cancelled`);
   }
 }
 
@@ -82,7 +123,7 @@ async function getSwap(swapId: number) {
     const formattedSwap = formatSwapResponse(jsonResult);
 
     if (formattedSwap) {
-      formatOutput(formattedSwap);
+      await formatOutput(formattedSwap);
       return formattedSwap;
     } else {
       console.error("Failed to parse swap details");
