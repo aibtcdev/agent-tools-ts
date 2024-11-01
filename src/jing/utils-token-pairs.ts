@@ -1,3 +1,6 @@
+import { callReadOnlyFunction, cvToJSON } from "@stacks/transactions";
+import { CONFIG, getNetwork, deriveChildAccount } from "../utilities";
+
 export interface TokenInfo {
   ft: string; // Full token identifier including asset name
   contractAddress: string; // Contract address
@@ -139,3 +142,69 @@ export function calculateBidFees(ustx: number): number {
 export function calculateAskFees(amount: number): number {
   return Math.ceil(amount / 400);
 }
+
+export async function getTokenDecimals(tokenInfo: TokenInfo): Promise<number> {
+  const network = getNetwork(CONFIG.NETWORK);
+  const { address } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+
+  const baseContractName = tokenInfo.contractName.split("::")[0];
+
+  try {
+    const result = await callReadOnlyFunction({
+      contractAddress: tokenInfo.contractAddress,
+      contractName: baseContractName,
+      functionName: "get-decimals",
+      functionArgs: [],
+      network,
+      senderAddress: address,
+    });
+
+    const jsonResult = cvToJSON(result);
+
+    // Handle the nested response structure
+    if (jsonResult.success && jsonResult.value?.value) {
+      const decimals = parseInt(jsonResult.value.value);
+      if (isNaN(decimals)) {
+        throw new Error(
+          `Invalid decimal value returned from contract: ${jsonResult.value.value}`
+        );
+      }
+      return decimals;
+    }
+
+    throw new Error(`Unexpected response format from contract ${tokenInfo.ft}`);
+  } catch (error) {
+    throw new Error(
+      `Failed to read decimals from token contract ${
+        tokenInfo.contractAddress
+      }.${baseContractName}: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+  }
+}
+
+export function toMicroUnits(amount: number, decimals: number): number {
+  return Math.floor(amount * Math.pow(10, decimals));
+}
+
+export function fromMicroUnits(microAmount: number, decimals: number): number {
+  return microAmount / Math.pow(10, decimals);
+}
+
+// Helper function to format amounts with proper units
+export function formatAmount(
+  amount: number,
+  decimals: number,
+  symbol: string
+): string {
+  const regular = fromMicroUnits(amount, decimals);
+  return `${regular} ${symbol} (${amount} μ${symbol})`;
+}
+
+// Constants
+export const STX_DECIMALS = 6;

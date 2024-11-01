@@ -170,7 +170,7 @@ if (!swapId || !pair) {
   console.error("Example: bun run src/jing/submit-ask.ts 12 PEPE-STX");
   process.exit(1);
 }
-
+// bun run src/jing/submit-ask.ts 5 PEPE-STX
 submitAsk(parseInt(swapId), pair, accountIndex ? parseInt(accountIndex) : 0)
   .then(() => process.exit(0))
   .catch(() => process.exit(1));
