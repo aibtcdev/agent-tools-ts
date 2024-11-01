@@ -1,5 +1,3 @@
-// src/jing/cancel-bid.ts
-
 import {
   makeContractCall,
   broadcastTransaction,
@@ -22,9 +20,17 @@ import {
   getTokenInfo,
   JING_CONTRACTS,
   calculateBidFees,
+  getTokenDecimals,
 } from "./utils-token-pairs";
 
-async function getBidDetails(swapId: number) {
+interface BidDetails {
+  ustx: number;
+  amount: number;
+  stxSender: string;
+  tokenDecimals?: number;
+}
+
+async function getBidDetails(swapId: number): Promise<BidDetails> {
   const network = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -61,6 +67,10 @@ async function cancelBid(
     throw new Error(`Failed to get token info for pair: ${pair}`);
   }
 
+  // Get token decimals
+  const tokenDecimals = await getTokenDecimals(tokenInfo);
+  const tokenSymbol = pair.split("-")[0];
+
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -73,12 +83,25 @@ async function cancelBid(
 
   // Get bid details for post conditions
   const bidDetails = await getBidDetails(swapId);
-  console.log(`Bid details:`);
+  const regularTokenAmount = bidDetails.amount / Math.pow(10, tokenDecimals);
+  const fees = calculateBidFees(bidDetails.ustx);
+
+  // Calculate price per token
+  const price = bidDetails.ustx / bidDetails.amount;
+  const adjustedPrice = price * Math.pow(10, tokenDecimals - 6);
+
+  console.log(`\nBid details:`);
   console.log(`- Creator: ${bidDetails.stxSender}`);
-  console.log(`- Amount: ${bidDetails.amount}`);
+  console.log(`- Token decimals: ${tokenDecimals}`);
   console.log(
-    `- STX: ${bidDetails.ustx / 1_000_000} STX (${bidDetails.ustx} μSTX)`
+    `- Amount: ${regularTokenAmount} ${tokenSymbol} (${bidDetails.amount} μ${tokenSymbol})`
   );
+  console.log(
+    `- STX amount: ${bidDetails.ustx / 1_000_000} STX (${bidDetails.ustx} μSTX)`
+  );
+  console.log(`- Price per ${tokenSymbol}: ${adjustedPrice.toFixed(8)} STX`);
+  console.log(`- Refundable STX fees: ${fees / 1_000_000} STX (${fees} μSTX)`);
+  console.log(`- Gas fee: ${10000 / 1_000_000} STX (${10000} μSTX)`);
 
   if (bidDetails.stxSender !== address) {
     console.log(`\nError: Cannot cancel bid`);
@@ -88,7 +111,6 @@ async function cancelBid(
       `Only the bid creator (${bidDetails.stxSender}) can cancel this bid`
     );
   }
-  const fees = calculateBidFees(bidDetails.ustx);
 
   const postConditions = [
     // Return STX from bid
@@ -107,6 +129,10 @@ async function cancelBid(
     ),
   ];
 
+  console.log("\nPost Conditions:");
+  console.log(`- Contract returns: ${bidDetails.ustx / 1_000_000} STX`);
+  console.log(`- YIN contract returns up to: ${fees / 1_000_000} STX`);
+
   const txOptions = {
     contractAddress: JING_CONTRACTS.BID.address,
     contractName: JING_CONTRACTS.BID.name,
@@ -123,11 +149,11 @@ async function cancelBid(
     postConditionMode: PostConditionMode.Deny,
     postConditions,
     nonce,
-    fee: 10000, // 0.01 STX
+    fee: 10000,
   };
 
   try {
-    console.log("Creating contract call...");
+    console.log("\nCreating contract call...");
     const transaction = await makeContractCall(txOptions);
     console.log("Broadcasting transaction...");
     const broadcastResponse = await broadcastTransaction(transaction, network);
@@ -151,13 +177,28 @@ async function cancelBid(
 const [swapId, pair, accountIndex] = process.argv.slice(2);
 
 if (!swapId || !pair) {
+  console.error("\nUsage:");
   console.error(
-    "Usage: bun run src/jing/cancel-bid.ts <swap_id> <pair> [account_index]"
+    "bun run src/jing/cancel-bid.ts <swap_id> <pair> [account_index]"
   );
-  console.error("Example: bun run src/jing/cancel-bid.ts 1 PEPE-STX");
+  console.error("\nParameters:");
+  console.error("- swap_id: ID of the bid to cancel");
+  console.error("- pair: Trading pair (e.g., PEPE-STX)");
+  console.error(
+    "- account_index: (Optional) Account index to use, defaults to 0"
+  );
+  console.error("\nExample:");
+  console.error("bun run src/jing/cancel-bid.ts 1 PEPE-STX");
+  console.error("");
   process.exit(1);
 }
 
 cancelBid(parseInt(swapId), pair, accountIndex ? parseInt(accountIndex) : 0)
   .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+  .catch((error) => {
+    console.error(
+      "\nError:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    process.exit(1);
+  });

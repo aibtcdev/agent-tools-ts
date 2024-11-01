@@ -153,7 +153,7 @@ if (!pair || !stxAmount || !tokenAmount) {
   );
   console.error("\nExamples:");
   console.error("1. Public bid:");
-  console.error("   bun run src/jing/bid.ts PEPE-STX 1 100");
+  console.error("   bun run src/jing/bid.ts PEPE-STX 1 100000");
   console.error("\n2. Private bid to specific address with 1000 block expiry:");
   console.error(
     "   bun run src/jing/bid.ts PEPE-STX 1 100 SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS 1000"

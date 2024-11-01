@@ -1,5 +1,3 @@
-// src/jing/cancel-ask.ts
-
 import {
   makeContractCall,
   broadcastTransaction,
@@ -23,9 +21,17 @@ import {
   getTokenInfo,
   JING_CONTRACTS,
   calculateAskFees,
+  getTokenDecimals,
 } from "./utils-token-pairs";
 
-async function getAskDetails(swapId: number) {
+interface AskDetails {
+  ustx: number;
+  amount: number;
+  ftSender: string;
+  tokenDecimals?: number;
+}
+
+async function getAskDetails(swapId: number): Promise<AskDetails> {
   const network = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -62,6 +68,10 @@ async function cancelAsk(
     throw new Error(`Failed to get token info for pair: ${pair}`);
   }
 
+  // Get token decimals
+  const tokenDecimals = await getTokenDecimals(tokenInfo);
+  const tokenSymbol = pair.split("-")[0];
+
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -74,12 +84,28 @@ async function cancelAsk(
 
   // Get ask details and validate ownership
   const askDetails = await getAskDetails(swapId);
+  const regularTokenAmount = askDetails.amount / Math.pow(10, tokenDecimals);
+  const fees = calculateAskFees(askDetails.amount);
+  const regularFees = fees / Math.pow(10, tokenDecimals);
+
+  // Calculate price per token
+  const price = askDetails.ustx / askDetails.amount;
+  const adjustedPrice = price * Math.pow(10, tokenDecimals - 6);
+
   console.log(`\nAsk details:`);
   console.log(`- Creator: ${askDetails.ftSender}`);
-  console.log(`- Amount: ${askDetails.amount} ${pair.split("-")[0]}`);
+  console.log(`- Token decimals: ${tokenDecimals}`);
+  console.log(
+    `- Amount: ${regularTokenAmount} ${tokenSymbol} (${askDetails.amount} μ${tokenSymbol})`
+  );
   console.log(
     `- STX price: ${askDetails.ustx / 1_000_000} STX (${askDetails.ustx} μSTX)`
   );
+  console.log(`- Price per ${tokenSymbol}: ${adjustedPrice.toFixed(8)} STX`);
+  console.log(
+    `- Refundable fees: ${regularFees} ${tokenSymbol} (${fees} μ${tokenSymbol})`
+  );
+  console.log(`- Gas fee: ${10000 / 1_000_000} STX (${10000} μSTX)`);
 
   if (askDetails.ftSender !== address) {
     console.log(`\nError: Cannot cancel ask`);
@@ -89,8 +115,6 @@ async function cancelAsk(
       `Only the ask creator (${askDetails.ftSender}) can cancel this ask`
     );
   }
-
-  const fees = calculateAskFees(askDetails.amount);
 
   const postConditions = [
     // Return fees from YANG contract (in FT)
@@ -119,6 +143,10 @@ async function cancelAsk(
     ),
   ];
 
+  console.log("\nPost Conditions:");
+  console.log(`- Contract returns: ${regularTokenAmount} ${tokenSymbol}`);
+  console.log(`- YANG contract returns up to: ${regularFees} ${tokenSymbol}`);
+
   const txOptions = {
     contractAddress: JING_CONTRACTS.ASK.address,
     contractName: JING_CONTRACTS.ASK.name,
@@ -138,11 +166,11 @@ async function cancelAsk(
     postConditionMode: PostConditionMode.Deny,
     postConditions,
     nonce,
-    fee: 10000, // 0.01 STX
+    fee: 10000,
   };
 
   try {
-    console.log("Creating contract call...");
+    console.log("\nCreating contract call...");
     const transaction = await makeContractCall(txOptions);
     console.log("Broadcasting transaction...");
     const broadcastResponse = await broadcastTransaction(transaction, network);
@@ -166,13 +194,28 @@ async function cancelAsk(
 const [swapId, pair, accountIndex] = process.argv.slice(2);
 
 if (!swapId || !pair) {
+  console.error("\nUsage:");
   console.error(
-    "Usage: bun run src/jing/cancel-ask.ts <swap_id> <pair> [account_index]"
+    "bun run src/jing/cancel-ask.ts <swap_id> <pair> [account_index]"
   );
-  console.error("Example: bun run src/jing/cancel-ask.ts 1 PEPE-STX");
+  console.error("\nParameters:");
+  console.error("- swap_id: ID of the ask to cancel");
+  console.error("- pair: Trading pair (e.g., PEPE-STX)");
+  console.error(
+    "- account_index: (Optional) Account index to use, defaults to 0"
+  );
+  console.error("\nExample:");
+  console.error("bun run src/jing/cancel-ask.ts 10 PEPE-STX");
+  console.error("");
   process.exit(1);
 }
 
 cancelAsk(parseInt(swapId), pair, accountIndex ? parseInt(accountIndex) : 0)
   .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+  .catch((error) => {
+    console.error(
+      "\nError:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    process.exit(1);
+  });
