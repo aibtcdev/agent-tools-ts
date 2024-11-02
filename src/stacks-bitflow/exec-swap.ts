@@ -1,5 +1,10 @@
 import { BitflowSDK, SwapExecutionData } from "@bitflowlabs/core-sdk";
-import { CONFIG, deriveChildAccount, getNetwork } from "../utilities";
+import {
+  CONFIG,
+  deriveChildAccount,
+  getNetwork,
+  getNextNonce,
+} from "../utilities";
 import {
   makeContractCall,
   broadcastTransaction,
@@ -14,34 +19,38 @@ const bitflow = new BitflowSDK({
 });
 
 const slippage = Number(process.argv[2]) || 0.01; // 1%
-const swapExecutionDataString = process.argv[3];
+const amount = Number(process.argv[3]);
+const tokenX = process.argv[4];
+const tokenY = process.argv[5];
 
-function isSwapExecutionData(data: any): data is SwapExecutionData {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "route" in data &&
-    "amount" in data &&
-    "tokenXDecimals" in data &&
-    "tokenYDecimals" in data
-  );
+console.log("Slippage:", slippage);
+console.log("Amount:", amount);
+console.log("TokenX:", tokenX);
+console.log("TokenY:", tokenY);
+
+const quote = await bitflow.getQuoteForRoute(tokenX, tokenY, amount);
+const bestRoute = quote.bestRoute;
+
+if (!bestRoute) {
+  console.log("Unable to find route, exiting.");
+  process.exit(1);
 }
-
-const networkObj = getNetwork(CONFIG.NETWORK);
 
 (async () => {
   try {
+    const networkObj = getNetwork(CONFIG.NETWORK);
     const { address, key } = await deriveChildAccount(
       CONFIG.NETWORK,
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
     );
 
-    const swapExecutionData = JSON.parse(swapExecutionDataString);
-
-    if (!isSwapExecutionData(swapExecutionData)) {
-      throw new Error("Invalid SwapExecutionData");
-    }
+    const swapExecutionData = {
+      route: bestRoute.route,
+      amount: amount,
+      tokenXDecimals: bestRoute.tokenXDecimals,
+      tokenYDecimals: bestRoute.tokenYDecimals,
+    };
 
     const swapParams = await bitflow.getSwapParams(
       swapExecutionData,
@@ -49,6 +58,7 @@ const networkObj = getNetwork(CONFIG.NETWORK);
       slippage
     );
 
+    const nonce = await getNextNonce(CONFIG.NETWORK, address);
     const txOptions = {
       contractAddress: swapParams.contractAddress,
       contractName: swapParams.contractName,
@@ -57,6 +67,7 @@ const networkObj = getNetwork(CONFIG.NETWORK);
       senderKey: key,
       address,
       networkObj,
+      nonce: nonce,
       anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Deny,
       postConditions: swapParams.postConditions,
@@ -74,9 +85,15 @@ const networkObj = getNetwork(CONFIG.NETWORK);
       transaction,
       networkObj
     );
-    const txId = broadcastResponse.txid;
+    console.log("===== BROADCAST RESPONSE =====");
+    console.log(broadcastResponse);
 
-    console.log(txId);
+    console.log("Transaction ID:", broadcastResponse.txid);
+    console.log(
+      `https://explorer.hiro.so/txid/0x${
+        broadcastResponse.txid
+      }?chain=${CONFIG.NETWORK.toLowerCase()}`
+    );
   } catch (error) {
     console.log(error);
   }

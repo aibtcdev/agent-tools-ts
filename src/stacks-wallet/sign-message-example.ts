@@ -32,6 +32,7 @@ async function main() {
   const network = CONFIG.NETWORK;
   const mnemonic = CONFIG.MNEMONIC;
   const accountIndex = CONFIG.ACCOUNT_INDEX;
+  console.log(accountIndex);
   // check that values exist for each
   if (!network) {
     throw new Error("No network provided in environment variables");
