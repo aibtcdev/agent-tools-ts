@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@bitflowlabs/core-sdk": "^1.0.1",
+    "@jingcash/core-sdk": "^0.1.0",
     "@stacks/bns": "^6.15.0",
     "@stacks/connect": "^7.7.1",
     "@stacks/stacking": "^6.16.1",

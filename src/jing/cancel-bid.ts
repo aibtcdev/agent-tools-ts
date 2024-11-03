@@ -188,7 +188,7 @@ if (!swapId || !pair) {
     "- account_index: (Optional) Account index to use, defaults to 0"
   );
   console.error("\nExample:");
-  console.error("bun run src/jing/cancel-bid.ts 1 PEPE-STX");
+  console.error("bun run src/jing/cancel-bid.ts 10 PEPE-STX");
   console.error("");
   process.exit(1);
 }
