@@ -5,12 +5,12 @@ if (!process.env.JING_API_URL || !process.env.JING_API_KEY) {
   process.exit(1);
 }
 
-const [pair, userAddress, ftContract] = process.argv.slice(2);
+const [pair, userAddress] = process.argv.slice(2);
 
-if (!pair || !userAddress || !ftContract) {
-  console.log("Usage: get-user-offers <pair> <userAddress> <ftContract>");
+if (!pair || !userAddress) {
+  console.log("Usage: get-user-offers <pair> <userAddress>");
   console.log(
-    "Example: bun src/jing/get-user-offers.ts PEPE-STX SP29D6YMDNAKN1P045T6Z817RTE1AC0JAA99WAX2B SP1Z92MPDQEWZXW36VX71Q25HKF5K2EPCJ304F275.tokensoft-token-v4k68639zxz"
+    "Example: bun src/jing/get-user-offers.ts PEPE-STX SP29D6YMDNAKN1P045T6Z817RTE1AC0JAA99WAX2B"
   );
   process.exit(1);
 }
@@ -21,11 +21,7 @@ const jingcash = new JingCashSDK({
 });
 
 try {
-  const userOffers = await jingcash.getUserOffers(
-    pair,
-    userAddress,
-    ftContract
-  );
+  const userOffers = await jingcash.getUserOffers(pair, userAddress);
   console.log(JSON.stringify(userOffers, null, 2));
 } catch (error) {
   console.log(error);
