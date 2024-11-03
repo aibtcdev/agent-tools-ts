@@ -4,6 +4,7 @@ import {
   broadcastTransaction,
   AnchorMode,
   SignedContractDeployOptions,
+  PostConditionMode,
 } from "@stacks/transactions";
 import {
   CONFIG,
@@ -38,6 +39,7 @@ async function deployContract(sourceCode: string, contractName: string) {
       senderKey: key,
       nonce: nextPossibleNonce,
       anchorMode: AnchorMode.Any,
+      postConditionMode: PostConditionMode.Allow,
       fee: BigInt(1_000_000), // 1 STX
     };
 
