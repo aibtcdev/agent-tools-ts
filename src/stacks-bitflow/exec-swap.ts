@@ -71,6 +71,7 @@ if (!bestRoute) {
       anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Deny,
       postConditions: swapParams.postConditions,
+      fee: BigInt(1_000_000),
       onFinish: (data: any) => {
         console.log("Transaction submitted:", data);
       },
