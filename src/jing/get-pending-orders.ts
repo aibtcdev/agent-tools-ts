@@ -1,4 +1,9 @@
-import { JingCashSDK } from "@jingcash/core-sdk";
+import {
+  JingCashSDK,
+  FormattedOrder,
+  DisplayOrder,
+  DisplayBid,
+} from "@jingcash/core-sdk";
 
 if (!process.env.JING_API_URL || !process.env.JING_API_KEY) {
   console.log("Please set JING_API_URL and JING_API_KEY in your .env file");
@@ -13,28 +18,43 @@ const sdk = new JingCashSDK({
 try {
   const pendingOrders = await sdk.getPendingOrders();
 
-  // Process and display the results
-  console.log("\nPending Orders Summary:");
-  console.log(`Total Pending Orders: ${pendingOrders.results.length}`);
+  const asks = pendingOrders.results.filter(
+    (order: FormattedOrder) => order.type === "Ask"
+  );
+  const bids = pendingOrders.results.filter(
+    (order: FormattedOrder) => order.type === "Bid"
+  );
 
-  // Detailed orders
+  console.log("\nOrder Summary:");
+  console.log(`Total Orders: ${pendingOrders.results.length}`);
+  console.log(`Total Asks: ${asks.length}`);
+  console.log(`Total Bids: ${bids.length}`);
+
   console.log("\nDetailed Orders:");
-  pendingOrders.results.forEach((order) => {
-    const type = "ftSender" in order ? "Ask" : "Bid";
-    const amount = order.amount;
-    const ustx = order.ustx;
-    const price = ustx / amount;
-    const status = order.status;
-    const processedAt = new Date(order.processedAt || 0).toISOString();
+  pendingOrders.results.forEach((order: FormattedOrder) => {
+    console.log(`\nSwap ID: ${order.id}`);
+    console.log(`Type: ${order.type}`);
+    console.log(`Market: ${order.market}`);
 
-    console.log(`
-    Type: ${type}
-    Amount: ${amount} (μTokens)
-    Price: ${price} μSTX/Token
-    Status: ${status}
-    Processed At: ${processedAt}
-    TX ID: ${order.txId || "N/A"}
-    `);
+    // For Bids: STX first, then Token
+    if (order.type === "Bid") {
+      console.log(`${order.displayStxAmount}`);
+      console.log(`${order.displayAmount}`);
+    }
+    // For Asks: Token first, then STX
+    else {
+      console.log(`${order.displayAmount}`);
+      console.log(`${order.displayStxAmount}`);
+    }
+
+    console.log(`${order.displayPrice}`);
+    console.log(`Status: ${order.status}`);
+    if (order.processedAt) {
+      console.log(`Processed At: ${new Date(order.processedAt).toISOString()}`);
+    }
+    if (order.txId) {
+      console.log(`TX ID: ${order.txId}`);
+    }
   });
 } catch (error) {
   console.log(error);
