@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-
 import { CONFIG, deriveChildAccount } from "../utilities";
 import { JingCashSDK } from "@jingcash/core-sdk";
 
@@ -15,6 +13,10 @@ async function createAskOffer(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     accountIndex
+  );
+
+  console.log(
+    `Preparing ask offer from account index ${accountIndex} (${address})`
   );
 
   const sdk = new JingCashSDK({
@@ -47,7 +49,7 @@ async function createAskOffer(
     console.log(`- Pair: ${pair}`);
     console.log(`- Token decimals: ${response.details.tokenDecimals}`);
     console.log(
-      `- Token amount: ${tokenAmount} ${tokenSymbol} (${response.details.microTokenAmount} μ${tokenSymbol})`
+      `- ${tokenSymbol} amount: ${tokenAmount} ${tokenSymbol} (${response.details.microTokenAmount} μ${tokenSymbol})`
     );
     console.log(
       `- STX price: ${stxAmount} STX (${response.details.ustx} μSTX)`
@@ -57,7 +59,9 @@ async function createAskOffer(
     if (accountIndex !== 0)
       console.log(`- Using account index: ${accountIndex}`);
     console.log(
-      `- Fee: ${response.details.fees} ${tokenSymbol} (${response.details.microTokenAmount} μ${tokenSymbol})`
+      `- Fee: ${response.details.fees} ${tokenSymbol} (${
+        response.details.fees * Math.pow(10, response.details.tokenDecimals)
+      } μ${tokenSymbol})`
     );
     console.log(`- Gas fee: ${response.details.gasFee} STX`);
     console.log(`- Price per ${tokenSymbol}: ${adjustedPrice.toFixed(8)} STX`);
