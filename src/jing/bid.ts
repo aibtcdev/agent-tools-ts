@@ -1,126 +1,69 @@
-import {
-  makeContractCall,
-  broadcastTransaction,
-  AnchorMode,
-  PostConditionMode,
-  uintCV,
-  standardPrincipalCV,
-  contractPrincipalCV,
-  FungibleConditionCode,
-  makeStandardSTXPostCondition,
-  someCV,
-  noneCV,
-} from "@stacks/transactions";
-import {
-  CONFIG,
-  getNetwork,
-  deriveChildAccount,
-  getNextNonce,
-} from "../utilities";
-import {
-  getTokenInfo,
-  JING_CONTRACTS,
-  SupportedPairs,
-  calculateBidFees,
-  getTokenDecimals,
-} from "./utils-token-pairs";
+#!/usr/bin/env bun
+
+import { CONFIG, deriveChildAccount } from "../utilities";
+import { JingCashSDK } from "@jingcash/core-sdk";
 
 async function createBidOffer(
   pair: string,
-  stxAmount: number, // Regular STX amount (e.g., 1 for 1 STX)
-  tokenAmount: number, // Regular token amount (e.g., 100 for 100 PEPE)
+  stxAmount: number,
+  tokenAmount: number,
   recipient?: string,
   expiry?: number,
   accountIndex: number = 0
 ) {
-  // Validate pair is supported
-  if (!SupportedPairs.includes(pair)) {
-    throw new Error(`Unsupported trading pair: ${pair}`);
-  }
-
-  // Get token info
-  const tokenInfo = getTokenInfo(pair);
-  if (!tokenInfo) {
-    throw new Error(`Failed to get token info for pair: ${pair}`);
-  }
-
-  // Get token decimals - will throw if decimals can't be read
-  const tokenDecimals = await getTokenDecimals(tokenInfo);
-  const tokenSymbol = pair.split("-")[0];
-
-  // Convert to micro units
-  const ustx = Math.floor(stxAmount * 1_000_000); // STX always has 6 decimals
-  const microTokenAmount = Math.floor(
-    tokenAmount * Math.pow(10, tokenDecimals)
-  );
-
-  const network = getNetwork(CONFIG.NETWORK);
-  const { address, key } = await deriveChildAccount(
+  const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     accountIndex
   );
-  const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
   console.log(
     `Preparing bid offer from account index ${accountIndex} (${address})`
   );
 
-  // Calculate fees
-  const fees = calculateBidFees(ustx);
-
-  console.log("\nBid details:");
-  console.log(`- Pair: ${pair}`);
-  console.log(`- STX amount: ${stxAmount} STX (${ustx} μSTX)`);
-  console.log(
-    `- Token amount: ${tokenAmount} ${tokenSymbol} (${microTokenAmount} μ${tokenSymbol})`
-  );
-  if (recipient) console.log(`- Private offer to: ${recipient}`);
-  if (expiry) console.log(`- Expires in: ${expiry} blocks`);
-  if (accountIndex !== 0) console.log(`- Using account index: ${accountIndex}`);
-  console.log(`- Fee: ${fees / 1_000_000} STX`);
-  console.log(`- Token decimals: ${tokenDecimals}`);
-  console.log(`- Gas fee: ${10000 / 1_000_000} STX`);
-
-  const txOptions = {
-    contractAddress: JING_CONTRACTS.BID.address,
-    contractName: JING_CONTRACTS.BID.name,
-    functionName: "offer",
-    functionArgs: [
-      uintCV(ustx), // STX amount
-      uintCV(microTokenAmount), // Token amount
-      recipient ? someCV(standardPrincipalCV(recipient)) : noneCV(), // Optional counterparty
-      contractPrincipalCV(tokenInfo.contractAddress, tokenInfo.contractName), // FT contract
-      contractPrincipalCV(JING_CONTRACTS.YIN.address, JING_CONTRACTS.YIN.name), // YIN token
-      expiry ? someCV(uintCV(expiry)) : noneCV(), // Optional expiry
-    ],
-    senderKey: key,
-    validateWithAbi: true,
-    network,
-    anchorMode: AnchorMode.Any,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions: [
-      makeStandardSTXPostCondition(
-        address,
-        FungibleConditionCode.LessEqual,
-        ustx + fees
-      ),
-    ],
-    nonce,
-    fee: 10000,
-  };
+  const sdk = new JingCashSDK({
+    API_HOST:
+      process.env.JING_API_URL || "https://backend-neon-ecru.vercel.app/api",
+    API_KEY: process.env.JING_API_KEY || "dev-api-token",
+    defaultAddress: address,
+    network: CONFIG.NETWORK,
+  });
 
   try {
-    console.log("Creating contract call...");
-    const transaction = await makeContractCall(txOptions);
-    console.log("Broadcasting transaction...");
-    const broadcastResponse = await broadcastTransaction(transaction, network);
-    console.log("Transaction broadcast successfully!");
-    console.log("Transaction ID:", broadcastResponse.txid);
+    const tokenSymbol = pair.split("-")[0];
+    const response = await sdk.createBidOffer({
+      pair,
+      stxAmount,
+      tokenAmount,
+      gasFee: 10000,
+      recipient,
+      expiry,
+      accountIndex,
+      mnemonic: CONFIG.MNEMONIC,
+    });
+
+    console.log("\nBid details:");
+    console.log(`- Pair: ${pair}`);
     console.log(
-      `Bid offer initiated. Monitor status at: https://explorer.stacks.co/txid/${broadcastResponse.txid}`
+      `- STX amount: ${stxAmount} STX (${stxAmount * 1_000_000} μSTX)`
     );
-    return broadcastResponse;
+    console.log(
+      `- ${tokenSymbol} amount: ${tokenAmount} ${tokenSymbol} (${response.details.tokenAmount} μ${tokenSymbol})`
+    );
+    if (recipient) console.log(`- Private offer to: ${recipient}`);
+    if (expiry) console.log(`- Expires in: ${expiry} blocks`);
+    if (accountIndex !== 0)
+      console.log(`- Using account index: ${accountIndex}`);
+    console.log(`- Fee: ${response.details.fees} STX`);
+    console.log(`- Gas fee: ${response.details.gasFee} STX`);
+
+    console.log("\nTransaction broadcast successfully!");
+    console.log("Transaction ID:", response.txid);
+    console.log(
+      `Bid offer initiated. Monitor status at: https://explorer.stacks.co/txid/${response.txid}`
+    );
+
+    return response;
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error(`Error creating bid offer: ${error.message}`);
@@ -147,9 +90,7 @@ if (!pair || !stxAmount || !tokenAmount) {
   console.error(
     "- recipient: (Optional) Make private offer to specific address"
   );
-  console.error(
-    "- expiry: (Optional) Number of blocks from now until expiration (e.g., 100 for expiry in 100 blocks)"
-  );
+  console.error("- expiry: (Optional) Number of blocks until expiration");
   console.error(
     "- account_index: (Optional) Account index to use, defaults to 0"
   );
@@ -160,14 +101,13 @@ if (!pair || !stxAmount || !tokenAmount) {
   console.error(
     "   bun run src/jing/bid.ts PEPE-STX 1 100 SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS 1000"
   );
-  console.error("\nSupported pairs:", SupportedPairs.join(", "));
   process.exit(1);
 }
 
 createBidOffer(
   pair,
-  parseFloat(stxAmount), // Parse as float since we're accepting regular units
-  parseFloat(tokenAmount), // Parse as float since we're accepting regular units
+  parseFloat(stxAmount),
+  parseFloat(tokenAmount),
   recipient,
   expiry ? parseInt(expiry) : undefined,
   accountIndex ? parseInt(accountIndex) : 0
