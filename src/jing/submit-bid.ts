@@ -1,144 +1,35 @@
-import {
-  makeContractCall,
-  broadcastTransaction,
-  AnchorMode,
-  PostConditionMode,
-  uintCV,
-  contractPrincipalCV,
-  makeStandardSTXPostCondition,
-  makeContractSTXPostCondition,
-  FungibleConditionCode,
-  callReadOnlyFunction,
-  cvToJSON,
-  createAssetInfo,
-  makeStandardFungiblePostCondition,
-} from "@stacks/transactions";
-import {
-  CONFIG,
-  getNetwork,
-  deriveChildAccount,
-  getNextNonce,
-} from "../utilities";
-import {
-  getTokenInfo,
-  JING_CONTRACTS,
-  calculateBidFees,
-  getTokenDecimals,
-} from "./utils-token-pairs";
+import { CONFIG, deriveChildAccount } from "../utilities";
+import { JingCashSDK } from "@jingcash/core-sdk";
 
-interface BidDetails {
-  ustx: number;
-  amount: number;
-  ft: string;
-  tokenDecimals?: number;
-}
-
-async function getBidDetails(swapId: number): Promise<BidDetails> {
-  const network = getNetwork(CONFIG.NETWORK);
+async function submitBid(swapId: number, accountIndex: number = 0) {
   const { address } = await deriveChildAccount(
-    CONFIG.NETWORK,
-    CONFIG.MNEMONIC,
-    CONFIG.ACCOUNT_INDEX
-  );
-
-  const result = await callReadOnlyFunction({
-    contractAddress: JING_CONTRACTS.BID.address,
-    contractName: JING_CONTRACTS.BID.name,
-    functionName: "get-swap",
-    functionArgs: [uintCV(swapId)],
-    network,
-    senderAddress: address,
-  });
-
-  const jsonResult = cvToJSON(result);
-  if (!jsonResult.success) throw new Error("Failed to get bid details");
-
-  return {
-    ustx: parseInt(jsonResult.value.value.ustx.value),
-    amount: parseInt(jsonResult.value.value.amount.value),
-    ft: jsonResult.value.value.ft.value,
-  };
-}
-
-async function submitSwap(
-  swapId: number,
-  pair: string,
-  accountIndex: number = 0
-) {
-  const tokenInfo = getTokenInfo(pair);
-  if (!tokenInfo) {
-    throw new Error(`Failed to get token info for pair: ${pair}`);
-  }
-
-  // Get token decimals
-  const tokenDecimals = await getTokenDecimals(tokenInfo);
-  const tokenSymbol = pair.split("-")[0];
-
-  const network = getNetwork(CONFIG.NETWORK);
-  const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     accountIndex
   );
-  const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // Get bid details for post conditions
-  const bidDetails = await getBidDetails(swapId);
-  const fees = calculateBidFees(bidDetails.ustx);
+  console.log(`Preparing to submit bid ${swapId} from account ${address}`);
 
-  const postConditions = [
-    // You send the FT
-    makeStandardFungiblePostCondition(
-      address,
-      FungibleConditionCode.Equal,
-      bidDetails.amount,
-      createAssetInfo(
-        tokenInfo.contractAddress,
-        tokenInfo.contractName,
-        tokenInfo.assetName
-      )
-    ),
-    // Contract sends STX
-    makeContractSTXPostCondition(
-      JING_CONTRACTS.BID.address,
-      JING_CONTRACTS.BID.name,
-      FungibleConditionCode.Equal,
-      bidDetails.ustx
-    ),
-    // Fees from YIN contract
-    makeContractSTXPostCondition(
-      JING_CONTRACTS.BID.address,
-      JING_CONTRACTS.YIN.name,
-      FungibleConditionCode.LessEqual,
-      fees
-    ),
-  ];
-
-  const txOptions = {
-    contractAddress: JING_CONTRACTS.BID.address,
-    contractName: JING_CONTRACTS.BID.name,
-    functionName: "submit-swap",
-    functionArgs: [
-      uintCV(swapId),
-      contractPrincipalCV(tokenInfo.contractAddress, tokenInfo.contractName),
-      contractPrincipalCV(JING_CONTRACTS.YIN.address, JING_CONTRACTS.YIN.name),
-    ],
-    senderKey: key,
-    validateWithAbi: true,
-    network,
-    anchorMode: AnchorMode.Any,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions,
-    nonce,
-    fee: 30000,
-  };
+  const sdk = new JingCashSDK({
+    API_HOST:
+      process.env.JING_API_URL || "https://backend-neon-ecru.vercel.app/api",
+    API_KEY: process.env.JING_API_KEY || "dev-api-token",
+    defaultAddress: address,
+    network: CONFIG.NETWORK,
+  });
 
   try {
-    console.log("Creating contract call...");
-    console.log(`\nSubmitting swap for bid ${swapId}:`);
+    const response = await sdk.submitBid({
+      swapId,
+      gasFee: 30000,
+      accountIndex,
+      mnemonic: CONFIG.MNEMONIC,
+    });
 
-    // Calculate regular units for display
+    const { bidDetails, tokenDecimals, tokenSymbol } = response.details;
     const regularTokenAmount = bidDetails.amount / Math.pow(10, tokenDecimals);
+    const price = bidDetails.ustx / bidDetails.amount;
+    const adjustedPrice = price * Math.pow(10, tokenDecimals - 6);
 
     console.log("\nSwap Details:");
     console.log(`- Token decimals: ${tokenDecimals}`);
@@ -150,11 +41,7 @@ async function submitSwap(
         bidDetails.ustx
       } μSTX)`
     );
-    console.log(`- Network fee: ${30000 / 1_000_000} STX (${30000} μSTX)`);
-
-    // Calculate and display the effective price
-    const price = bidDetails.ustx / bidDetails.amount;
-    const adjustedPrice = price * Math.pow(10, tokenDecimals - 6);
+    console.log(`- Network fee: ${response.details.gasFee} STX`);
     console.log(`- Price per ${tokenSymbol}: ${adjustedPrice.toFixed(8)} STX`);
 
     console.log("\nPost Conditions:");
@@ -162,53 +49,44 @@ async function submitSwap(
       `- Your ${tokenSymbol} transfer: ${bidDetails.amount} μ${tokenSymbol}`
     );
     console.log(`- Contract STX transfer: ${bidDetails.ustx} μSTX`);
-    console.log(`- Maximum fees: ${fees} μSTX`);
+    console.log(`- Maximum fees: ${response.details.fees} STX`);
 
-    const transaction = await makeContractCall(txOptions);
-    console.log("\nBroadcasting transaction...");
-    const broadcastResponse = await broadcastTransaction(transaction, network);
-    console.log("Transaction broadcast successfully!");
-    console.log("Transaction ID:", broadcastResponse.txid);
+    console.log("\nTransaction broadcast successfully!");
+    console.log("Transaction ID:", response.txid);
     console.log(
-      `Monitor status at: https://explorer.stacks.co/txid/${broadcastResponse.txid}`
+      `Monitor status at: https://explorer.stacks.co/txid/${response.txid}`
     );
-    return broadcastResponse;
+
+    return response;
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(`Error submitting swap: ${error.message}`);
+      console.error(`Error submitting bid: ${error.message}`);
     } else {
-      console.error("An unknown error occurred while submitting swap");
+      console.error("An unknown error occurred while submitting bid");
     }
     throw error;
   }
 }
 
 // Parse command line arguments
-const [swapId, pair, accountIndex] = process.argv.slice(2);
+const [swapId, accountIndex] = process.argv.slice(2);
 
-if (!swapId || !pair) {
+if (!swapId) {
   console.error("\nUsage:");
-  console.error(
-    "bun run src/jing/submit-bid.ts <swap_id> <pair> [account_index]"
-  );
+  console.error("bun run src/jing/submit-bid.ts <swap_id> [account_index]");
   console.error("\nParameters:");
   console.error("- swap_id: ID of the bid to submit swap for");
-  console.error("- pair: Trading pair (e.g., PEPE-STX)");
   console.error(
     "- account_index: (Optional) Account index to use, defaults to 0"
   );
   console.error("\nExample:");
-  console.error("bun run src/jing/submit-bid.ts 12 PEPE-STX");
-  console.error("");
+  console.error("bun run src/jing/submit-bid.ts 12");
   process.exit(1);
 }
 
-submitSwap(parseInt(swapId), pair, accountIndex ? parseInt(accountIndex) : 0)
+submitBid(parseInt(swapId), accountIndex ? parseInt(accountIndex) : 0)
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error(
-      "\nError:",
-      error instanceof Error ? error.message : "Unknown error"
-    );
+    console.error("\nError:", error.message);
     process.exit(1);
   });
