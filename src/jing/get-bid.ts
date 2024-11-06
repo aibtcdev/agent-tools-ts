@@ -1,11 +1,7 @@
-import { JingCashSDK } from "@jingcash/core-sdk";
+// get-bid.ts
 
+import { JingCashSDK } from "@jingcash/core-sdk";
 import { CONFIG, deriveChildAccount } from "../utilities";
-import {
-  getTokenSymbol,
-  getTokenInfo,
-  getTokenDecimals,
-} from "./utils-token-pairs";
 
 export interface SwapDetails {
   ustx: number;
@@ -17,34 +13,19 @@ export interface SwapDetails {
   fees: string;
   expiredHeight: number | null;
   tokenDecimals?: number;
+  tokenSymbol: string;
 }
 
 async function formatOutput(
   swap: SwapDetails & { contract: { address: string; name: string } }
 ) {
   const stxAmount = (swap.ustx / 1_000_000).toFixed(6);
-  const tokenSymbol = getTokenSymbol(swap.ft);
-
-  const tokenInfo = getTokenInfo(`${tokenSymbol}-STX`);
-  if (tokenInfo) {
-    try {
-      swap.tokenDecimals = await getTokenDecimals(tokenInfo);
-    } catch (error) {
-      console.warn(
-        `Warning: Could not get token decimals: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-      swap.tokenDecimals = undefined;
-    }
-  }
-
-  const formattedTokenAmount =
-    swap.tokenDecimals !== undefined
-      ? `${(swap.amount / Math.pow(10, swap.tokenDecimals)).toFixed(
-          swap.tokenDecimals
-        )} ${tokenSymbol} (${swap.amount} μ${tokenSymbol})`
-      : `${swap.amount} μ${tokenSymbol}`;
+  const tokenDecimals = swap.tokenDecimals ?? 6; // Default to 6 if undefined
+  const formattedTokenAmount = `${(
+    swap.amount / Math.pow(10, tokenDecimals)
+  ).toFixed(tokenDecimals)} ${swap.tokenSymbol} (${swap.amount} μ${
+    swap.tokenSymbol
+  })`;
 
   console.log("\nSwap Details:");
   console.log("=============");
@@ -54,20 +35,13 @@ async function formatOutput(
   console.log(`- STX: ${stxAmount} STX (${swap.ustx} μSTX)`);
   console.log(`- Token: ${formattedTokenAmount}`);
 
-  if (swap.tokenDecimals !== undefined) {
-    console.log(`- Token Decimals: ${swap.tokenDecimals}`);
-  }
-
   const price = swap.ustx / swap.amount;
-  const formattedPrice =
-    swap.tokenDecimals !== undefined
-      ? (price / Math.pow(10, 6 - swap.tokenDecimals)).toFixed(8)
-      : (price / 1_000_000).toFixed(8);
-  console.log(`- Price per token: ${formattedPrice} STX`);
+  const adjustedPrice = (price * Math.pow(10, tokenDecimals - 6)).toFixed(8);
+  console.log(`- Price per ${swap.tokenSymbol}: ${adjustedPrice} STX`);
 
   console.log(`\nCounterparties:`);
-  console.log(`- STX Sender: ${swap.stxSender}`);
-  console.log(`- FT Sender: ${swap.ftSender || "Any"}`);
+  console.log(`- FT Sender: ${swap.ftSender}`);
+  console.log(`- STX Sender: ${swap.stxSender || "Any"}`);
 
   console.log(`\nContracts:`);
   console.log(`- Token: ${swap.ft}`);
@@ -99,13 +73,17 @@ async function getBid(swapId: number) {
     const formattedSwap = await sdk.getBid(swapId);
 
     if (formattedSwap) {
-      await formatOutput(formattedSwap);
+      await formatOutput(
+        formattedSwap as SwapDetails & {
+          contract: { address: string; name: string };
+        }
+      );
       return formattedSwap;
     } else {
       console.error("Failed to parse swap details");
       return null;
     }
-  } catch (error: unknown) {
+  } catch (error) {
     console.error(
       `Error fetching bid: ${
         error instanceof Error ? error.message : "Unknown error"
