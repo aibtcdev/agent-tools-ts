@@ -1,157 +1,71 @@
-import {
-  makeContractCall,
-  broadcastTransaction,
-  AnchorMode,
-  PostConditionMode,
-  uintCV,
-  contractPrincipalCV,
-  standardPrincipalCV,
-  someCV,
-  noneCV,
-  callReadOnlyFunction,
-  cvToJSON,
-} from "@stacks/transactions";
-import {
-  CONFIG,
-  getNetwork,
-  deriveChildAccount,
-  getNextNonce,
-} from "../utilities";
-import {
-  getTokenInfo,
-  JING_CONTRACTS,
-  getTokenDecimals,
-} from "./utils-token-pairs";
-
-interface BidDetails {
-  ustx: number;
-  amount: number;
-  ft: string;
-  stxSender: string;
-  tokenDecimals?: number;
-}
-
-async function getBidDetails(swapId: number): Promise<BidDetails> {
-  const network = getNetwork(CONFIG.NETWORK);
-  const { address } = await deriveChildAccount(
-    CONFIG.NETWORK,
-    CONFIG.MNEMONIC,
-    CONFIG.ACCOUNT_INDEX
-  );
-
-  const result = await callReadOnlyFunction({
-    contractAddress: JING_CONTRACTS.BID.address,
-    contractName: JING_CONTRACTS.BID.name,
-    functionName: "get-swap",
-    functionArgs: [uintCV(swapId)],
-    network,
-    senderAddress: address,
-  });
-
-  const jsonResult = cvToJSON(result);
-  if (!jsonResult.success) throw new Error("Failed to get bid details");
-
-  return {
-    ustx: parseInt(jsonResult.value.value.ustx.value),
-    amount: parseInt(jsonResult.value.value.amount.value),
-    ft: jsonResult.value.value.ft.value,
-    stxSender: jsonResult.value.value["stx-sender"].value,
-  };
-}
+import { CONFIG, deriveChildAccount } from "../utilities";
+import { JingCashSDK } from "@jingcash/core-sdk";
 
 async function repriceBid(
   swapId: number,
-  newTokenAmount: number, // Regular token amount
+  newTokenAmount: number,
   pair: string,
   recipient?: string,
   expiry?: number,
   accountIndex: number = 0
 ) {
-  const tokenInfo = getTokenInfo(pair);
-  if (!tokenInfo) {
-    throw new Error(`Failed to get token info for pair: ${pair}`);
-  }
-
-  // Get token decimals and convert amounts
-  const tokenDecimals = await getTokenDecimals(tokenInfo);
-  const tokenSymbol = pair.split("-")[0];
-  const microTokenAmount = Math.floor(
-    newTokenAmount * Math.pow(10, tokenDecimals)
-  );
-
-  const network = getNetwork(CONFIG.NETWORK);
-  const { address, key } = await deriveChildAccount(
+  const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     accountIndex
   );
-  const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // Get current bid details and verify ownership
-  const bidDetails = await getBidDetails(swapId);
-  bidDetails.tokenDecimals = tokenDecimals;
+  console.log(`Preparing to reprice bid ${swapId} from account ${address}`);
 
-  console.log(`\nBid details:`);
-  console.log(`- Creator: ${bidDetails.stxSender}`);
-  console.log(
-    `- Current amount: ${
-      bidDetails.amount / Math.pow(10, tokenDecimals)
-    } ${tokenSymbol} (${bidDetails.amount} μ${tokenSymbol})`
-  );
-  console.log(
-    `- STX: ${bidDetails.ustx / 1_000_000} STX (${bidDetails.ustx} μSTX)`
-  );
-  console.log(`- Token decimals: ${tokenDecimals}`);
-
-  if (bidDetails.stxSender !== address) {
-    console.log(`\nError: Cannot reprice bid`);
-    console.log(`- Your address: ${address}`);
-    console.log(`- Required address: ${bidDetails.stxSender}`);
-    throw new Error(
-      `Only the bid creator (${bidDetails.stxSender}) can reprice this bid`
-    );
-  }
-
-  console.log(`\nReprice details:`);
-  console.log(
-    `- New amount: ${newTokenAmount} ${tokenSymbol} (${microTokenAmount} μ${tokenSymbol})`
-  );
-  if (recipient) console.log(`- Making private offer to: ${recipient}`);
-  if (expiry) console.log(`- Setting expiry in: ${expiry} blocks`);
-  console.log(`- Gas fee: ${10000 / 1_000_000} STX`);
-
-  const txOptions = {
-    contractAddress: JING_CONTRACTS.BID.address,
-    contractName: JING_CONTRACTS.BID.name,
-    functionName: "re-price",
-    functionArgs: [
-      uintCV(swapId),
-      contractPrincipalCV(tokenInfo.contractAddress, tokenInfo.contractName),
-      contractPrincipalCV(JING_CONTRACTS.YIN.address, JING_CONTRACTS.YIN.name),
-      uintCV(microTokenAmount),
-      expiry ? someCV(uintCV(expiry)) : noneCV(),
-      recipient ? someCV(standardPrincipalCV(recipient)) : noneCV(),
-    ],
-    senderKey: key,
-    validateWithAbi: true,
-    network,
-    anchorMode: AnchorMode.Any,
-    postConditionMode: PostConditionMode.Allow,
-    nonce,
-    fee: 10000,
-  };
+  const sdk = new JingCashSDK({
+    API_HOST:
+      process.env.JING_API_URL || "https://backend-neon-ecru.vercel.app/api",
+    API_KEY: process.env.JING_API_KEY || "dev-api-token",
+    defaultAddress: address,
+    network: CONFIG.NETWORK,
+  });
 
   try {
-    console.log("Creating contract call...");
-    const transaction = await makeContractCall(txOptions);
-    console.log("Broadcasting transaction...");
-    const broadcastResponse = await broadcastTransaction(transaction, network);
-    console.log("Transaction broadcast successfully!");
-    console.log("Transaction ID:", broadcastResponse.txid);
+    const response = await sdk.repriceBid({
+      swapId,
+      newTokenAmount,
+      pair,
+      recipient,
+      expiry,
+      accountIndex,
+      mnemonic: CONFIG.MNEMONIC,
+    });
+
+    const { bidDetails, tokenDecimals, tokenSymbol } = response.details;
+    const regularTokenAmount = bidDetails.amount / Math.pow(10, tokenDecimals);
+    const newRegularAmount =
+      response.details.newAmount / Math.pow(10, tokenDecimals);
+
+    console.log(`\nBid details:`);
+    console.log(`- Creator: ${bidDetails.stxSender}`);
     console.log(
-      `Monitor status at: https://explorer.stacks.co/txid/${broadcastResponse.txid}`
+      `- Current amount: ${regularTokenAmount} ${tokenSymbol} (${bidDetails.amount} μ${tokenSymbol})`
     );
-    return broadcastResponse;
+    console.log(
+      `- STX: ${bidDetails.ustx / 1_000_000} STX (${bidDetails.ustx} μSTX)`
+    );
+    console.log(`- Token decimals: ${tokenDecimals}`);
+
+    console.log(`\nReprice details:`);
+    console.log(
+      `- New amount: ${newRegularAmount} ${tokenSymbol} (${response.details.newAmount} μ${tokenSymbol})`
+    );
+    if (recipient) console.log(`- Making private offer to: ${recipient}`);
+    if (expiry) console.log(`- Setting expiry in: ${expiry} blocks`);
+    console.log(`- Gas fee: ${response.details.gasFee} STX`);
+
+    console.log("\nTransaction broadcast successfully!");
+    console.log("Transaction ID:", response.txid);
+    console.log(
+      `Monitor status at: https://explorer.stacks.co/txid/${response.txid}`
+    );
+
+    return response;
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error(`Error repricing bid: ${error.message}`);
@@ -201,9 +115,6 @@ repriceBid(
 )
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error(
-      "\nError:",
-      error instanceof Error ? error.message : "Unknown error"
-    );
+    console.error("\nError:", error.message);
     process.exit(1);
   });

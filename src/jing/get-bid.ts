@@ -1,13 +1,13 @@
-import { callReadOnlyFunction, cvToJSON, uintCV } from "@stacks/transactions";
-import { CONFIG, getNetwork, deriveChildAccount } from "../utilities";
+import { JingCashSDK } from "@jingcash/core-sdk";
+
+import { CONFIG, deriveChildAccount } from "../utilities";
 import {
-  JING_CONTRACTS,
   getTokenSymbol,
   getTokenInfo,
   getTokenDecimals,
 } from "./utils-token-pairs";
 
-interface SwapDetails {
+export interface SwapDetails {
   ustx: number;
   stxSender: string;
   amount: number;
@@ -19,28 +19,12 @@ interface SwapDetails {
   tokenDecimals?: number;
 }
 
-function formatSwapResponse(rawResponse: any): SwapDetails | null {
-  if (!rawResponse.success) return null;
-
-  const value = rawResponse.value.value;
-
-  return {
-    ustx: parseInt(value.ustx.value),
-    stxSender: value["stx-sender"].value,
-    amount: parseInt(value.amount.value),
-    ftSender: value["ft-sender"].value,
-    open: value.open.value,
-    ft: value.ft.value,
-    fees: value.fees.value,
-    expiredHeight: value["expired-height"].value,
-  };
-}
-
-async function formatOutput(swap: SwapDetails) {
+async function formatOutput(
+  swap: SwapDetails & { contract: { address: string; name: string } }
+) {
   const stxAmount = (swap.ustx / 1_000_000).toFixed(6);
   const tokenSymbol = getTokenSymbol(swap.ft);
 
-  // Get token decimals
   const tokenInfo = getTokenInfo(`${tokenSymbol}-STX`);
   if (tokenInfo) {
     try {
@@ -55,7 +39,6 @@ async function formatOutput(swap: SwapDetails) {
     }
   }
 
-  // Format token amount with decimals if available
   const formattedTokenAmount =
     swap.tokenDecimals !== undefined
       ? `${(swap.amount / Math.pow(10, swap.tokenDecimals)).toFixed(
@@ -67,7 +50,6 @@ async function formatOutput(swap: SwapDetails) {
   console.log("=============");
   console.log(`Type: Bid`);
   console.log(`Status: ${swap.open ? "Open" : "Closed"}`);
-
   console.log(`\nAmounts:`);
   console.log(`- STX: ${stxAmount} STX (${swap.ustx} μSTX)`);
   console.log(`- Token: ${formattedTokenAmount}`);
@@ -89,9 +71,7 @@ async function formatOutput(swap: SwapDetails) {
 
   console.log(`\nContracts:`);
   console.log(`- Token: ${swap.ft}`);
-  console.log(
-    `- Bid Contract: ${JING_CONTRACTS.BID.address}.${JING_CONTRACTS.BID.name}`
-  );
+  console.log(`- Bid Contract: ${swap.contract.address}.${swap.contract.name}`);
   console.log(`- Gas fee: ${10000 / 1_000_000} STX`);
 
   if (swap.expiredHeight) {
@@ -101,26 +81,22 @@ async function formatOutput(swap: SwapDetails) {
   }
 }
 
-async function getSwap(swapId: number) {
-  const network = getNetwork(CONFIG.NETWORK);
+async function getBid(swapId: number) {
   const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  const sdk = new JingCashSDK({
+    API_HOST:
+      process.env.JING_API_URL || "https://backend-neon-ecru.vercel.app/api",
+    API_KEY: process.env.JING_API_KEY || "dev-api-token",
+    defaultAddress: address,
+    network: CONFIG.NETWORK,
+  });
 
   try {
-    const result = await callReadOnlyFunction({
-      contractAddress: JING_CONTRACTS.BID.address,
-      contractName: JING_CONTRACTS.BID.name,
-      functionName: "get-swap",
-      functionArgs: [uintCV(swapId)],
-      network,
-      senderAddress: address,
-    });
-
-    const jsonResult = cvToJSON(result);
-    const formattedSwap = formatSwapResponse(jsonResult);
+    const formattedSwap = await sdk.getBid(swapId);
 
     if (formattedSwap) {
       await formatOutput(formattedSwap);
@@ -130,11 +106,11 @@ async function getSwap(swapId: number) {
       return null;
     }
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error(`Error fetching swap: ${error.message}`);
-    } else {
-      console.error("An unknown error occurred while fetching swap");
-    }
+    console.error(
+      `Error fetching bid: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
     throw error;
   }
 }
@@ -150,6 +126,6 @@ if (rawSwapId === undefined || isNaN(parseInt(rawSwapId))) {
 
 const swapId = parseInt(rawSwapId);
 
-getSwap(swapId)
+getBid(swapId)
   .then(() => process.exit(0))
   .catch(() => process.exit(1));

@@ -1,3 +1,4 @@
+import { CONFIG, deriveChildAccount } from "../utilities";
 import { JingCashSDK } from "@jingcash/core-sdk";
 
 if (!process.env.JING_API_URL || !process.env.JING_API_KEY) {
@@ -15,9 +16,17 @@ if (!pair || !userAddress) {
   process.exit(1);
 }
 
+const { address } = await deriveChildAccount(
+  CONFIG.NETWORK,
+  CONFIG.MNEMONIC,
+  CONFIG.ACCOUNT_INDEX
+);
+
 const jingcash = new JingCashSDK({
   API_HOST: process.env.JING_API_URL,
   API_KEY: process.env.JING_API_KEY,
+  defaultAddress: address,
+  network: CONFIG.NETWORK,
 });
 
 try {

@@ -1,10 +1,30 @@
+import { CONFIG, deriveChildAccount } from "../utilities";
 import { JingCashSDK } from "@jingcash/core-sdk";
 
-if (!process.env.JING_API_URL || !process.env.JING_API_KEY) {
-  console.log("Please set JING_API_URL and JING_API_KEY in your .env file");
-  process.exit(1);
+async function getPrivateOffers(pair: string, userAddress: string) {
+  const { address } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+
+  const sdk = new JingCashSDK({
+    API_HOST:
+      process.env.JING_API_URL || "https://backend-neon-ecru.vercel.app/api",
+    API_KEY: process.env.JING_API_KEY || "dev-api-token",
+    defaultAddress: address,
+    network: CONFIG.NETWORK,
+  });
+
+  try {
+    const privateOffers = await sdk.getPrivateOffers(pair, userAddress);
+    console.log(JSON.stringify(privateOffers, null, 2));
+  } catch (error) {
+    console.log(error);
+  }
 }
 
+// Parse command line arguments
 const [pair, userAddress] = process.argv.slice(2);
 
 if (!pair || !userAddress) {
@@ -15,14 +35,9 @@ if (!pair || !userAddress) {
   process.exit(1);
 }
 
-const jingcash = new JingCashSDK({
-  API_HOST: process.env.JING_API_URL,
-  API_KEY: process.env.JING_API_KEY,
-});
-
-try {
-  const privateOffers = await jingcash.getPrivateOffers(pair, userAddress);
-  console.log(JSON.stringify(privateOffers, null, 2));
-} catch (error) {
-  console.log(error);
-}
+getPrivateOffers(pair, userAddress)
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("\nError:", error.message);
+    process.exit(1);
+  });
