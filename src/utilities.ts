@@ -12,6 +12,36 @@ import { TxBroadcastResult, validateStacksAddress } from "@stacks/transactions";
 // matches string definitions in Stacks.js
 export type NetworkType = "mainnet" | "testnet" | "devnet" | "mocknet";
 
+type Metrics = {
+  price_usd: number;
+  holder_count: number;
+  swap_count: number;
+  transfer_count: number;
+  liquidity_usd: number;
+};
+
+type TokenDetails = {
+  contract_id: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  total_supply: number | string;
+  circulating_supply: number | string;
+  image_url: string;
+  header_image_url?: string | null;
+  metrics: Metrics;
+  amms: string[];
+  description: string;
+  homepage?: string;
+  telegram?: string;
+  xlink?: string;
+  discord?: string;
+  verified?: boolean;
+  socials?: any[];
+};
+
+type TokenDetailsArray = TokenDetails[];
+
 // get network from principal
 // limited to just testnet/mainnet for now
 export function getNetworkByPrincipal(principal: string): NetworkType {
@@ -240,6 +270,17 @@ export async function getNonces(network: string, address: string) {
   }
   const data = await response.json();
   return data as AddressNonces;
+}
+
+export async function getTradableDetails() {
+  const response = await fetch(
+    `https://stx.city/api/tokens/tradable-full-details-tokens`
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to get nonce: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data as TokenDetailsArray;
 }
 
 export async function getNextNonce(network: string, address: string) {
