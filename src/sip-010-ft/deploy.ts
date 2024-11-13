@@ -70,13 +70,13 @@ async function deployContract(sourceCode: string, contractName: string) {
     );
 
     if ("error" in broadcastResponse) {
-      console.error("Transaction failed to broadcast");
-      console.error(`Error: ${broadcastResponse.error}`);
+      console.log("Transaction failed to broadcast");
+      console.log(`Error: ${broadcastResponse.error}`);
       if (broadcastResponse.reason) {
-        console.error(`Reason: ${broadcastResponse.reason}`);
+        console.log(`Reason: ${broadcastResponse.reason}`);
       }
       if (broadcastResponse.reason_data) {
-        console.error(
+        console.log(
           `Reason Data: ${JSON.stringify(
             broadcastResponse.reason_data,
             null,
@@ -91,7 +91,7 @@ async function deployContract(sourceCode: string, contractName: string) {
       console.log(`CONTRACT: ${address}.${formattedContractName}`);
     }
   } catch (error) {
-    console.error(`Error deploying contract: ${error}`);
+    console.log(`Error deploying contract: ${error}`);
   }
 }
 
@@ -114,5 +114,5 @@ if (tokenName && tokenSymbol && tokenDecimals && tokenUri && tokenMaxSupply) {
     tokenName
   );
 } else {
-  console.error("Please provide the contract source code as an argument.");
+  console.log("Please provide the contract source code as an argument.");
 }
