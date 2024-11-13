@@ -46,6 +46,7 @@ async function deployContract(sourceCode: string, contractName: string) {
 
     const formattedContractName = contractName
       .replace(/([a-z])([A-Z])/g, "$1-$2")
+      .replace(/\s+/g, "-")
       .toLowerCase();
     const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
     const nextPossibleNonce = await getNextNonce(network, senderAddress);
