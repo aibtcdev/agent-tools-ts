@@ -288,3 +288,47 @@ export async function getNextNonce(network: string, address: string) {
   const nextNonce = nonces.possible_next_nonce;
   return nextNonce;
 }
+
+// Type definition for Hiro token metadata response
+export type HiroTokenMetadata = {
+  tx_id: string;
+  sender_address: string;
+  asset_identifier: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  total_supply: string;
+  token_uri: string;
+  description: string;
+  image_uri: string;
+  image_thumbnail_uri: string;
+  image_canonical_uri: string;
+  metadata: {
+    sip: number;
+    name: string;
+    description: string;
+    image: string;
+    cached_image: string;
+    cached_thumbnail_image: string;
+  };
+};
+
+export async function getHiroTokenMetadata(contractId: string): Promise<HiroTokenMetadata> {
+  try {
+    const baseUrl = getApiUrl(CONFIG.NETWORK);
+    const response = await fetch(`${baseUrl}/metadata/v1/ft/${contractId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json() as HiroTokenMetadata;
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching token metadata:', error.message);
+    throw error;
+  }
+}
+
+export function getAssetNameFromIdentifier(assetIdentifier: string): string {
+  const parts = assetIdentifier.split("::");
+  return parts.length === 2 ? parts[1] : "";
+}
