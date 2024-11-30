@@ -20,14 +20,13 @@ async function transfer(
   contractAddress: string,
   contractName: string,
   recipient: string,
-  amount: number,
-  accountIndex: number
+  amount: number
 ) {
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
-    accountIndex
+    CONFIG.ACCOUNT_INDEX
   );
   const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
@@ -75,10 +74,9 @@ async function transfer(
 const [contractAddress, contractName] = process.argv[2]?.split(".") || [];
 const recipient = process.argv[3];
 const amount = process.argv[4] ? parseInt(process.argv[4]) : null;
-const accountIndex = process.argv[5] ? parseInt(process.argv[5]) : 0;
 
 if (contractAddress && contractName && recipient && amount !== null) {
-  transfer(contractAddress, contractName, recipient, amount, accountIndex);
+  transfer(contractAddress, contractName, recipient, amount);
 } else {
   console.error(
     "Please provide: contract address.name, recipient address, amount, and optionally account index"
