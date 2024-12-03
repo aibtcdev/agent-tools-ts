@@ -337,3 +337,16 @@ export function getAssetNameFromIdentifier(assetIdentifier: string): string {
   const parts = assetIdentifier.split("::");
   return parts.length === 2 ? parts[1] : "";
 }
+
+/**
+ * Get hash from STX City API for the given data
+ * @param data - The data to be hashed
+ * @returns Promise<string> - The hashed data with quotes removed
+ */
+export async function getStxCityHash(data: string): Promise<string> {
+  const { STXCITY_API_HOST } = CONFIG;
+  const response = await fetch(`${STXCITY_API_HOST}/api/hashing?data=${data}`);
+  const hashText = await response.text();
+  // Remove quotes from the response
+  return hashText.replace(/^"|"$/g, '');
+}

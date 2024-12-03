@@ -11,6 +11,7 @@
     "@stacks/transactions": "^6.12.1",
     "@stacks/wallet-sdk": "^6.12.1",
     "bitflow-sdk": "^1.6.1",
+    "eta": "^3.5.0",
     "stxcity-sdk": "^1.0.10",
     "tslib": "^2.7.0"
   },
