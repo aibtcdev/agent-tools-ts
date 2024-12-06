@@ -52,11 +52,11 @@
   (ok (ft-get-balance <%= it.token_symbol %> owner))
 )
 (define-read-only (get-name)
-  (ok <%= it.token_name %>)
+  (ok "<%= it.token_name %>")
 )
 
 (define-read-only (get-symbol)
-  (ok <%= it.token_symbol %>)
+  (ok "<%= it.token_symbol %>")
 )
 
 (define-read-only (get-decimals)
