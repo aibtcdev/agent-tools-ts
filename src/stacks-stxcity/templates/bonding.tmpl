@@ -120,7 +120,7 @@
 (begin
     (try! (send-stx '<%= it.send_address_1 %> u1000000))
     (try! (ft-mint? <%= it.token_symbol %> u<%= it.dex_token_amount %> '<%= it.creator %>.<%= it.token_symbol %>-stxcity-dex))
-    (try! (ft-mint? <%= it.token_symbol %> u<%= it.owner_token_amount %> '<%= it.creator %>'))
+    (try! (ft-mint? <%= it.token_symbol %> u<%= it.owner_token_amount %> '<%= it.creator %>))
     
     (try! (send-stx '<%= it.creator %>.<%= it.token_symbol %>-stxcity-dex u<%= it.dex_stx_amount %>))
     (try! (send-stx '<%= it.send_address_2 %> u10000))
