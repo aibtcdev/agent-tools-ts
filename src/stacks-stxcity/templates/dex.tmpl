@@ -5,7 +5,7 @@
 ;; @dev The deployer has no ownership privileges or control over the contract's operations.
 ;; @version 2.0
 
-(use-trait sip-010-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait) 
+(use-trait sip-010-trait '<%= it.sip10_trait %>) 
 
 ;; error constants
 (define-constant ERR-UNAUTHORIZED (err u401))
@@ -187,6 +187,6 @@
   (var-set tradable true)
   (var-set burn-percent u<%= it.burn_percent %>)
   (var-set deployer-percent u<%= it.deployer_percent %>) ;; based on the burn-amount. It's about ~0.1 to 0.5% supply
-  (try! (stx-transfer? u1000000 tx-sender 'SP1WG62TA0D3K980WGSTZ0QA071TZD4ZXNKP0FQZ7))
+  (try! (stx-transfer? u1000000 tx-sender '<%= it.send_address %>))
   (ok true)
 )
