@@ -7,10 +7,8 @@ import {
 } from "@stacks/wallet-sdk";
 import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
 import { TxBroadcastResult, validateStacksAddress } from "@stacks/transactions";
-
-// define types of networks we allow
-// matches string definitions in Stacks.js
-export type NetworkType = "mainnet" | "testnet" | "devnet" | "mocknet";
+import { NetworkType, TraitDefinition, TraitType } from "./types";
+import { TRAITS } from "./constants";
 
 type Metrics = {
   price_usd: number;
@@ -131,9 +129,11 @@ function loadConfig(): AppConfig {
   return {
     NETWORK: validateNetwork(process.env.NETWORK),
     MNEMONIC: process.env.MNEMONIC || DEFAULT_CONFIG.MNEMONIC,
-    ACCOUNT_INDEX: Number(process.env.ACCOUNT_INDEX) || DEFAULT_CONFIG.ACCOUNT_INDEX,
+    ACCOUNT_INDEX:
+      Number(process.env.ACCOUNT_INDEX) || DEFAULT_CONFIG.ACCOUNT_INDEX,
     HIRO_API_KEY: process.env.HIRO_API_KEY || DEFAULT_CONFIG.HIRO_API_KEY,
-    STXCITY_API_HOST: process.env.STXCITY_API_HOST || DEFAULT_CONFIG.STXCITY_API_HOST,
+    STXCITY_API_HOST:
+      process.env.STXCITY_API_HOST || DEFAULT_CONFIG.STXCITY_API_HOST,
   };
 }
 
@@ -314,7 +314,9 @@ export type HiroTokenMetadata = {
   };
 };
 
-export async function getHiroTokenMetadata(contractId: string): Promise<HiroTokenMetadata> {
+export async function getHiroTokenMetadata(
+  contractId: string
+): Promise<HiroTokenMetadata> {
   try {
     const baseUrl = getApiUrl(CONFIG.NETWORK);
     const response = await fetch(`${baseUrl}/metadata/v1/ft/${contractId}`, {
@@ -325,10 +327,10 @@ export async function getHiroTokenMetadata(contractId: string): Promise<HiroToke
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.json() as HiroTokenMetadata;
+    const data = (await response.json()) as HiroTokenMetadata;
     return data;
   } catch (error: any) {
-    console.error('Error fetching token metadata:', error.message);
+    console.error("Error fetching token metadata:", error.message);
     throw error;
   }
 }
@@ -348,5 +350,30 @@ export async function getStxCityHash(data: string): Promise<string> {
   const response = await fetch(`${STXCITY_API_HOST}/api/hashing?data=${data}`);
   const hashText = await response.text();
   // Remove quotes from the response
-  return hashText.replace(/^"|"$/g, '');
+  return hashText.replace(/^"|"$/g, "");
+}
+
+export function getTraitDefinition(
+  network: NetworkType,
+  traitType: TraitType
+): TraitDefinition {
+  const networkTraits = TRAITS[network];
+  if (!networkTraits) {
+    throw new Error(`No traits defined for network: ${network}`);
+  }
+
+  const trait = networkTraits[traitType];
+  if (!trait) {
+    throw new Error(`Trait type ${traitType} not found for network ${network}`);
+  }
+
+  return trait;
+}
+
+export function getTraitReference(
+  network: NetworkType,
+  traitType: TraitType
+): string {
+  const trait = getTraitDefinition(network, traitType);
+  return `${trait.contractAddress}.${trait.contractName}.${trait.traitName}`;
 }

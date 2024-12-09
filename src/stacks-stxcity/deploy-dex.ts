@@ -11,9 +11,27 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  getTraitReference,
 } from "../utilities";
 import * as path from "path";
 import { Eta } from "eta";
+
+const BONDING_CURVE_SEND_ADDRESS = {
+  mainnet: "SP1WG62TA0D3K980WGSTZ0QA071TZD4ZXNKP0FQZ7",
+  testnet: "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR",
+};
+
+const networkObj = getNetwork(CONFIG.NETWORK);
+const network = CONFIG.NETWORK;
+
+// Derive child account from mnemonic
+const { address, key } = await deriveChildAccount(
+  CONFIG.NETWORK,
+  CONFIG.MNEMONIC,
+  CONFIG.ACCOUNT_INDEX
+);
+
+const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
 export function GenerateBondingDexContract(
   tokenMaxSupply: string,
@@ -33,6 +51,11 @@ export function GenerateBondingDexContract(
 
   // Prepare template data
   const data = {
+    sip10_trait: getTraitReference(network, "SIP010_FT"),
+    send_address:
+      BONDING_CURVE_SEND_ADDRESS[
+        network as keyof typeof BONDING_CURVE_SEND_ADDRESS
+      ],
     token_max_supply: tokenMaxSupply,
     token_decimals: tokenDecimals,
     creator: senderAddress,
@@ -49,18 +72,6 @@ export function GenerateBondingDexContract(
   // Render the template
   return eta.render("dex.tmpl", data);
 }
-
-const networkObj = getNetwork(CONFIG.NETWORK);
-const network = CONFIG.NETWORK;
-
-// Derive child account from mnemonic
-const { address, key } = await deriveChildAccount(
-  CONFIG.NETWORK,
-  CONFIG.MNEMONIC,
-  CONFIG.ACCOUNT_INDEX
-);
-
-const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
 async function deployContract(sourceCode: string, tokenSymbol: string) {
   try {

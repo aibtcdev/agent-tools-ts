@@ -12,9 +12,32 @@ import {
   getNetwork,
   getNextNonce,
   getStxCityHash,
+  getTraitReference,
 } from "../utilities";
 import * as path from "path";
 import { Eta } from "eta";
+
+const BONDING_CURVE_SEND_ADDRESS_1 = {
+  mainnet: "SP11WRT9TPPKP5492X3VE81CM1T74MD13SPFT527D",
+  testnet: "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR",
+};
+
+const BONDING_CURVE_SEND_ADDRESS_2 = {
+  mainnet: "SP1WTA0YBPC5R6GDMPPJCEDEA6Z2ZEPNMQ4C39W6M",
+  testnet: "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR",
+};
+
+const networkObj = getNetwork(CONFIG.NETWORK);
+const network = CONFIG.NETWORK;
+
+// Derive child account from mnemonic
+const { address, key } = await deriveChildAccount(
+  CONFIG.NETWORK,
+  CONFIG.MNEMONIC,
+  CONFIG.ACCOUNT_INDEX
+);
+
+const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
 export async function GenerateBondingTokenContract(
   tokenSymbol: string,
@@ -36,6 +59,15 @@ export async function GenerateBondingTokenContract(
 
   // Prepare template data
   const data = {
+    sip10_trait: getTraitReference(network, "SIP010_FT"),
+    send_address_1:
+      BONDING_CURVE_SEND_ADDRESS_1[
+        network as keyof typeof BONDING_CURVE_SEND_ADDRESS_1
+      ],
+    send_address_2:
+      BONDING_CURVE_SEND_ADDRESS_2[
+        network as keyof typeof BONDING_CURVE_SEND_ADDRESS_2
+      ],
     token_symbol: tokenSymbol,
     token_name: tokenName,
     token_max_supply: tokenMaxSupply,
@@ -51,18 +83,6 @@ export async function GenerateBondingTokenContract(
   // Render the template
   return eta.render("bonding.tmpl", data);
 }
-
-const networkObj = getNetwork(CONFIG.NETWORK);
-const network = CONFIG.NETWORK;
-
-// Derive child account from mnemonic
-const { address, key } = await deriveChildAccount(
-  CONFIG.NETWORK,
-  CONFIG.MNEMONIC,
-  CONFIG.ACCOUNT_INDEX
-);
-
-const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
 async function deployContract(sourceCode: string, contractName: string) {
   try {
