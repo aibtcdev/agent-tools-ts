@@ -12,6 +12,36 @@ import { TxBroadcastResult, validateStacksAddress } from "@stacks/transactions";
 // matches string definitions in Stacks.js
 export type NetworkType = "mainnet" | "testnet" | "devnet" | "mocknet";
 
+type Metrics = {
+  price_usd: number;
+  holder_count: number;
+  swap_count: number;
+  transfer_count: number;
+  liquidity_usd: number;
+};
+
+type TokenDetails = {
+  contract_id: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  total_supply: number | string;
+  circulating_supply: number | string;
+  image_url: string;
+  header_image_url?: string | null;
+  metrics: Metrics;
+  amms: string[];
+  description: string;
+  homepage?: string;
+  telegram?: string;
+  xlink?: string;
+  discord?: string;
+  verified?: boolean;
+  socials?: any[];
+};
+
+type TokenDetailsArray = TokenDetails[];
+
 // get network from principal
 // limited to just testnet/mainnet for now
 export function getNetworkByPrincipal(principal: string): NetworkType {
@@ -79,10 +109,12 @@ export function getStakingDaoContractID(name: string) {
 }
 
 // define structure of app config
-interface AppConfig {
+export interface AppConfig {
   NETWORK: NetworkType;
   MNEMONIC: string;
   ACCOUNT_INDEX: number;
+  HIRO_API_KEY: string;
+  STXCITY_API_HOST: string;
 }
 
 // define default values for app config
@@ -90,19 +122,18 @@ const DEFAULT_CONFIG: AppConfig = {
   NETWORK: "testnet",
   MNEMONIC: "",
   ACCOUNT_INDEX: 0,
+  HIRO_API_KEY: "",
+  STXCITY_API_HOST: "https://stx.city",
 };
 
 // load configuration from environment variables
 function loadConfig(): AppConfig {
-  // Bun loads .env automatically
-  // so nothing to load here first
-
   return {
     NETWORK: validateNetwork(process.env.NETWORK),
     MNEMONIC: process.env.MNEMONIC || DEFAULT_CONFIG.MNEMONIC,
-    ACCOUNT_INDEX: process.env.ACCOUNT_INDEX
-      ? parseInt(process.env.ACCOUNT_INDEX, 10)
-      : DEFAULT_CONFIG.ACCOUNT_INDEX,
+    ACCOUNT_INDEX: Number(process.env.ACCOUNT_INDEX) || DEFAULT_CONFIG.ACCOUNT_INDEX,
+    HIRO_API_KEY: process.env.HIRO_API_KEY || DEFAULT_CONFIG.HIRO_API_KEY,
+    STXCITY_API_HOST: process.env.STXCITY_API_HOST || DEFAULT_CONFIG.STXCITY_API_HOST,
   };
 }
 
@@ -242,8 +273,80 @@ export async function getNonces(network: string, address: string) {
   return data as AddressNonces;
 }
 
+export async function getTradableDetails() {
+  const response = await fetch(
+    `${CONFIG.STXCITY_API_HOST}/api/tokens/tradable-full-details-tokens`
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to get nonce: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data as TokenDetailsArray;
+}
+
 export async function getNextNonce(network: string, address: string) {
   const nonces = await getNonces(network, address);
   const nextNonce = nonces.possible_next_nonce;
   return nextNonce;
+}
+
+// Type definition for Hiro token metadata response
+export type HiroTokenMetadata = {
+  tx_id: string;
+  sender_address: string;
+  asset_identifier: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  total_supply: string;
+  token_uri: string;
+  description: string;
+  image_uri: string;
+  image_thumbnail_uri: string;
+  image_canonical_uri: string;
+  metadata: {
+    sip: number;
+    name: string;
+    description: string;
+    image: string;
+    cached_image: string;
+    cached_thumbnail_image: string;
+  };
+};
+
+export async function getHiroTokenMetadata(contractId: string): Promise<HiroTokenMetadata> {
+  try {
+    const baseUrl = getApiUrl(CONFIG.NETWORK);
+    const response = await fetch(`${baseUrl}/metadata/v1/ft/${contractId}`, {
+      headers: {
+        Authorization: `Bearer ${CONFIG.HIRO_API_KEY}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json() as HiroTokenMetadata;
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching token metadata:', error.message);
+    throw error;
+  }
+}
+
+export function getAssetNameFromIdentifier(assetIdentifier: string): string {
+  const parts = assetIdentifier.split("::");
+  return parts.length === 2 ? parts[1] : "";
+}
+
+/**
+ * Get hash from STX City API for the given data
+ * @param data - The data to be hashed
+ * @returns Promise<string> - The hashed data with quotes removed
+ */
+export async function getStxCityHash(data: string): Promise<string> {
+  const { STXCITY_API_HOST } = CONFIG;
+  const response = await fetch(`${STXCITY_API_HOST}/api/hashing?data=${data}`);
+  const hashText = await response.text();
+  // Remove quotes from the response
+  return hashText.replace(/^"|"$/g, '');
 }

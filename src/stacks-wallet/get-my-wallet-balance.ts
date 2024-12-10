@@ -7,6 +7,7 @@ import {
   getNetworkByPrincipal,
   deriveChildAccount,
   microStxToStx,
+  getTradableDetails,
 } from "../utilities";
 
 async function getAddressBalanceDetailed(address: string) {
@@ -22,43 +23,84 @@ async function getAddressBalanceDetailed(address: string) {
   }
 }
 
-// Function to format and log balance details
-function logBalanceDetails(balance: any) {
-  console.log("STX Balance:");
-  console.log(`  Balance: ${microStxToStx(balance.stx.balance)}`);
-  console.log(`  Total Sent: ${microStxToStx(balance.stx.total_sent)}`);
-  console.log(`  Total Received: ${microStxToStx(balance.stx.total_received)}`);
-  console.log(
-    `  Total Fees Sent: ${microStxToStx(balance.stx.total_fees_sent)}`
-  );
-  console.log(
-    `  Total Miner Rewards Received: ${balance.stx.total_miner_rewards_received}`
-  );
-  console.log(`  Lock TX ID: ${balance.stx.lock_tx_id}`);
-  console.log(`  Locked: ${microStxToStx(balance.stx.locked)}`);
-  console.log(`  Lock Height: ${balance.stx.lock_height}`);
-  console.log(`  Burnchain Lock Height: ${balance.stx.burnchain_lock_height}`);
-  console.log(
-    `  Burnchain Unlock Height: ${balance.stx.burnchain_unlock_height}`
-  );
+async function logBalanceDetails(balance: any) {
+  const tokenMetadata = await getTradableDetails();
+  const stxTokenMetadata = tokenMetadata.find((t) => t.contract_id === "stx");
 
-  console.log("\nFungible Tokens:");
+  // Calculate STX value
+  const stxValueUsd =
+    microStxToStx(balance.stx.balance) *
+    (stxTokenMetadata?.metrics?.price_usd ?? 0);
+
+  // Initialize total value with STX value
+  let totalValueUsd = stxValueUsd;
+
+  const balanceOutput = {
+    total_value_usd: 0, // Placeholder, will be updated later
+    stx: {
+      price_usd: stxTokenMetadata?.metrics?.price_usd ?? 0,
+      balance: microStxToStx(balance.stx.balance),
+      value_usd: stxValueUsd,
+      locked: microStxToStx(balance.stx.locked),
+    },
+    fungible_tokens: {} as Record<
+      string,
+      {
+        balance: number;
+        decimals?: number;
+        price_usd: number;
+        value_usd: number;
+      }
+    >,
+    non_fungible_tokens: {} as Record<
+      string,
+      {
+        count: number;
+      }
+    >,
+  };
+
+  // Process fungible tokens
   for (const [token, details] of Object.entries(balance.fungible_tokens) as [
     string,
     any
   ]) {
-    console.log(`  Token: ${token} Balance: ${details.balance}`);
+    const tokenName = token.split("::")[0];
+    const tokenSpecific = tokenMetadata.find(
+      (t) => t.contract_id === tokenName
+    );
+
+    const tokenPriceUsd = tokenSpecific?.metrics?.price_usd ?? 0;
+    const tokenDecimals = tokenSpecific?.decimals ?? 0;
+    const tokenBalance =
+      parseFloat(details.balance) / Math.pow(10, tokenDecimals);
+    const tokenValueUsd = tokenBalance * tokenPriceUsd;
+
+    // Add token value to total
+    totalValueUsd += tokenValueUsd;
+
+    balanceOutput.fungible_tokens[tokenName] = {
+      balance: tokenBalance,
+      decimals: tokenDecimals,
+      price_usd: tokenPriceUsd,
+      value_usd: tokenValueUsd,
+    };
   }
 
-  console.log("\nNon-Fungible Tokens:");
+  // Process non-fungible tokens
   for (const [token, details] of Object.entries(
     balance.non_fungible_tokens
   ) as [string, any]) {
-    console.log(`  Token: ${token}`);
-    console.log(`    Count: ${details.count}`);
-    console.log(`    Total Sent: ${details.total_sent}`);
-    console.log(`    Total Received: ${details.total_received}`);
+    balanceOutput.non_fungible_tokens[token] = {
+      count: details.count,
+    };
   }
+
+  // Update total value in the output
+  balanceOutput.total_value_usd = Number(totalValueUsd.toFixed(2));
+
+  console.log(JSON.stringify(balanceOutput, null, 2));
+  return balanceOutput;
 }
 
 // MAIN SCRIPT (DO NOT EDIT)
@@ -67,7 +109,7 @@ async function main() {
   // expect txId as first argument
   const network = CONFIG.NETWORK;
   const mnemonic = CONFIG.MNEMONIC;
-  const accountIndex = CONFIG.ACCOUNT_INDEX;
+  const accountIndex = CONFIG.ACCOUNT_INDEX | 0;
 
   // check that values exist for each
   if (!network) {
@@ -75,9 +117,6 @@ async function main() {
   }
   if (!mnemonic) {
     throw new Error("No mnemonic provided in environment variables");
-  }
-  if (!accountIndex) {
-    throw new Error("No account index provided in environment variables");
   }
 
   const { address } = await deriveChildAccount(network, mnemonic, accountIndex);

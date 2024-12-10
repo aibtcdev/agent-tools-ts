@@ -14,27 +14,33 @@ import {
   getNetwork,
   deriveChildAccount,
   getNextNonce,
+  getHiroTokenMetadata,
+  getAssetNameFromIdentifier,
 } from "../utilities";
 
 async function transfer(
   contractAddress: string,
   contractName: string,
   recipient: string,
-  amount: number,
-  accountIndex: number
+  amount: number
 ) {
   const network = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
-    accountIndex
+    CONFIG.ACCOUNT_INDEX
   );
   const nonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // Get token metadata to extract asset name
+  const contractId = `${contractAddress}.${contractName}`;
+  const tokenMetadata = await getHiroTokenMetadata(contractId);
+  const assetName = getAssetNameFromIdentifier(tokenMetadata.asset_identifier);
 
   const postConditionAddress = address;
   const postConditionCode = FungibleConditionCode.Equal;
   const postConditionAmount = amount;
-  const assetInfo = createAssetInfo(contractAddress, contractName, "suss");
+  const assetInfo = createAssetInfo(contractAddress, contractName, assetName);
 
   const postConditions = [
     makeStandardFungiblePostCondition(
@@ -63,24 +69,22 @@ async function transfer(
     nonce,
   };
 
-  try {
-    const transaction = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTransaction(transaction, network);
-    console.log("Transaction ID:", broadcastResponse.txid);
-  } catch (error: any) {
-    console.error(`Error transferring tokens: ${error.message}`);
-  }
+  const transaction = await makeContractCall(txOptions);
+  const broadcastResponse = await broadcastTransaction(transaction, network);
+  
+  return broadcastResponse;
 }
 
 const [contractAddress, contractName] = process.argv[2]?.split(".") || [];
 const recipient = process.argv[3];
 const amount = process.argv[4] ? parseInt(process.argv[4]) : null;
-const accountIndex = process.argv[5] ? parseInt(process.argv[5]) : 0;
 
-if (contractAddress && contractName && recipient && amount !== null) {
-  transfer(contractAddress, contractName, recipient, amount, accountIndex);
+if (contractAddress && contractName && recipient && amount) {
+  transfer(contractAddress, contractName, recipient, amount)
+    .then(console.log)
+    .catch(console.error);
 } else {
   console.error(
-    "Please provide: contract address.name, recipient address, amount, and optionally account index"
+    "Please provide: contract_address.contract_name recipient amount"
   );
 }

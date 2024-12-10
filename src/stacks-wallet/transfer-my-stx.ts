@@ -65,15 +65,14 @@ async function transferToken(
       networkObj
     );
 
-    // Handle the response
     if ("error" in broadcastResponse) {
-      console.error("Transaction failed to broadcast");
-      console.error(`Error: ${broadcastResponse.error}`);
+      console.log("Transaction failed to broadcast");
+      console.log(`Error: ${broadcastResponse.error}`);
       if (broadcastResponse.reason) {
-        console.error(`Reason: ${broadcastResponse.reason}`);
+        console.log(`Reason: ${broadcastResponse.reason}`);
       }
       if (broadcastResponse.reason_data) {
-        console.error(
+        console.log(
           `Reason Data: ${JSON.stringify(
             broadcastResponse.reason_data,
             null,
@@ -84,10 +83,12 @@ async function transferToken(
     } else {
       console.log("Transaction broadcasted successfully!");
       console.log(`FROM: ${address}`);
+      console.log(`TO: ${recipient}`);
+      console.log(`AMOUNT: ${amount} STX`);
       console.log(`TXID: 0x${broadcastResponse.txid}`);
     }
   } catch (error) {
-    console.error(`Error transferring tokens: ${error}`);
+    console.log(`Error transferring tokens: ${error}`);
   }
 }
 
