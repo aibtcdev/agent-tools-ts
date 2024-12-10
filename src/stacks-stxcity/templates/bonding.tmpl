@@ -1,7 +1,7 @@
 ;; @title Bonding Curve Token by STX.CITY
 ;; @version 2.0
-;; @hash <%= it.hash %>
-;; @targetstx 1
+;; @hash <%= it.hash %> 
+;; @targetstx <%= it.target_stx %> 
 
 ;; Errors 
 (define-constant ERR-UNAUTHORIZED u401)
@@ -115,13 +115,13 @@
 )
 
 ;; ---------------------------------------------------------
-;; Initialize Contract
+;; Mint
 ;; ---------------------------------------------------------
 (begin
-    (try! (send-stx '<%= it.send_address_1 %> u1000000))
-    (try! (ft-mint? <%= it.token_symbol %> u<%= it.dex_token_amount %> '<%= it.creator %>.<%= it.token_symbol %>-stxcity-dex))
+    (try! (send-stx '<%= it.send_address_1 %> u500000))
+    (try! (ft-mint? <%= it.token_symbol %> u<%= it.dex_token_amount %> '<%= it.dex_contract %>))
     (try! (ft-mint? <%= it.token_symbol %> u<%= it.owner_token_amount %> '<%= it.creator %>))
     
-    (try! (send-stx '<%= it.creator %>.<%= it.token_symbol %>-stxcity-dex u<%= it.dex_stx_amount %>))
+    (try! (send-stx '<%= it.dex_contract %> u<%= it.dex_stx_amount %>))
     (try! (send-stx '<%= it.send_address_2 %> u10000))
 )

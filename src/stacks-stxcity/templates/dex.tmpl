@@ -32,7 +32,7 @@
 (define-constant BURN_ADDRESS 'SP000000000000000000002Q6VF78) ;; burn mainnet
 
 (define-constant deployer tx-sender)
-(define-constant allow-token '<%= it.creator %>.<%= it.token_symbol %>)
+(define-constant allow-token '<%= it.token_contract %>)
 
 ;; data vars
 (define-data-var tradable bool false)

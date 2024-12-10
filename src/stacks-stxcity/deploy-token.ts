@@ -54,7 +54,7 @@ export async function GenerateBondingTokenContract(
   const eta = new Eta({ views: path.join(__dirname, "templates") });
 
   // Generate contract hash
-  const contractId = `${senderAddress}.${tokenSymbol}-stxcity-dex`;
+  const contractId = `${senderAddress}.${tokenSymbol.toLowerCase()}-stxcity-dex`;
   const hash = await getStxCityHash(contractId);
 
   // Prepare template data
@@ -77,7 +77,9 @@ export async function GenerateBondingTokenContract(
     hash: hash,
     dex_token_amount: dexTokenAmount,
     owner_token_amount: ownerTokenAmount,
+    dex_contract: contractId,
     dex_stx_amount: dexStxAmount,
+    target_stx: "2000",
   };
 
   // Render the template
@@ -86,7 +88,7 @@ export async function GenerateBondingTokenContract(
 
 async function deployContract(sourceCode: string, contractName: string) {
   try {
-    const formattedContractName = `${contractName}-bonding-token`.toLowerCase();
+    const formattedContractName = `${contractName}-stxcity`.toLowerCase();
     const nextPossibleNonce = await getNextNonce(network, senderAddress);
 
     const txOptions: SignedContractDeployOptions = {

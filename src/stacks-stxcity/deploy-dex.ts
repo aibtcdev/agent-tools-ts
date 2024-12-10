@@ -49,6 +49,8 @@ export function GenerateBondingDexContract(
   // Initialize Eta
   const eta = new Eta({ views: path.join(__dirname, "templates") });
 
+  const tokenContract = `${senderAddress}.${tokenSymbol.toLowerCase()}-stxcity`;
+
   // Prepare template data
   const data = {
     sip10_trait: getTraitReference(network, "SIP010_FT"),
@@ -56,6 +58,7 @@ export function GenerateBondingDexContract(
       BONDING_CURVE_SEND_ADDRESS[
         network as keyof typeof BONDING_CURVE_SEND_ADDRESS
       ],
+    token_contract: tokenContract,
     token_max_supply: tokenMaxSupply,
     token_decimals: tokenDecimals,
     creator: senderAddress,
@@ -75,7 +78,7 @@ export function GenerateBondingDexContract(
 
 async function deployContract(sourceCode: string, tokenSymbol: string) {
   try {
-    const formattedContractName = `${tokenSymbol}-bonding-dex`.toLowerCase();
+    const formattedContractName = `${tokenSymbol}-stxcity-dex`.toLowerCase();
     const nextPossibleNonce = await getNextNonce(network, senderAddress);
 
     const txOptions: SignedContractDeployOptions = {
