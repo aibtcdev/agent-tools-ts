@@ -12,45 +12,20 @@ import {
   getNetwork,
   getNextNonce,
   getStxCityHash,
+  getTraitReference,
 } from "../utilities";
 import * as path from "path";
 import { Eta } from "eta";
 
-export async function GenerateBondingTokenContract(
-  tokenSymbol: string,
-  tokenName: string,
-  tokenMaxSupply: string,
-  tokenDecimals: string,
-  tokenUri: string,
-  senderAddress: string,
-  dexTokenAmount: string,
-  ownerTokenAmount: string,
-  dexStxAmount: string
-): Promise<string> {
-  // Initialize Eta
-  const eta = new Eta({ views: path.join(__dirname, "templates") });
+const BONDING_CURVE_SEND_ADDRESS_1 = {
+  mainnet: "SP11WRT9TPPKP5492X3VE81CM1T74MD13SPFT527D",
+  testnet: "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR",
+};
 
-  // Generate contract hash
-  const contractId = `${senderAddress}.${tokenSymbol}-stxcity-dex`;
-  const hash = await getStxCityHash(contractId);
-
-  // Prepare template data
-  const data = {
-    token_symbol: tokenSymbol,
-    token_name: tokenName,
-    token_max_supply: tokenMaxSupply,
-    token_decimals: tokenDecimals,
-    token_uri: tokenUri,
-    creator: senderAddress,
-    hash: hash,
-    dex_token_amount: dexTokenAmount,
-    owner_token_amount: ownerTokenAmount,
-    dex_stx_amount: dexStxAmount,
-  };
-
-  // Render the template
-  return eta.render("bonding.tmpl", data);
-}
+const BONDING_CURVE_SEND_ADDRESS_2 = {
+  mainnet: "SP1WTA0YBPC5R6GDMPPJCEDEA6Z2ZEPNMQ4C39W6M",
+  testnet: "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR",
+};
 
 const networkObj = getNetwork(CONFIG.NETWORK);
 const network = CONFIG.NETWORK;
@@ -64,9 +39,46 @@ const { address, key } = await deriveChildAccount(
 
 const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
+export async function GenerateBondingTokenContract(
+  tokenSymbol: string,
+  tokenName: string,
+  tokenMaxSupply: string,
+  tokenDecimals: string,
+  tokenUri: string,
+  senderAddress: string
+): Promise<string> {
+  // Initialize Eta
+  const eta = new Eta({ views: path.join(__dirname, "templates") });
+
+  // Generate contract hash
+  const contractId = `${senderAddress}.${tokenSymbol.toLowerCase()}-stxcity-dex`;
+  const hash = await getStxCityHash(contractId);
+
+  // Prepare template data
+  const data = {
+    sip10_trait: getTraitReference(network, "SIP010_FT"),
+    send_address_1:
+      BONDING_CURVE_SEND_ADDRESS_1[
+        network as keyof typeof BONDING_CURVE_SEND_ADDRESS_1
+      ],
+    token_symbol: tokenSymbol,
+    token_name: tokenName,
+    token_max_supply: tokenMaxSupply,
+    token_decimals: tokenDecimals,
+    token_uri: tokenUri,
+    creator: senderAddress,
+    hash: hash,
+    dex_contract: contractId,
+    target_stx: "2000",
+  };
+
+  // Render the template
+  return eta.render("bonding.tmpl", data);
+}
+
 async function deployContract(sourceCode: string, contractName: string) {
   try {
-    const formattedContractName = `${contractName}-bonding-token`.toLowerCase();
+    const formattedContractName = `${contractName}-stxcity`.toLowerCase();
     const nextPossibleNonce = await getNextNonce(network, senderAddress);
 
     const txOptions: SignedContractDeployOptions = {
@@ -114,29 +126,18 @@ async function deployContract(sourceCode: string, contractName: string) {
 }
 
 // Command line arguments
-const [
-  tokenSymbol,
-  tokenName,
-  tokenMaxSupply,
-  tokenDecimals,
-  tokenUri,
-  dexTokenAmount,
-  ownerTokenAmount,
-  dexStxAmount,
-] = process.argv.slice(2);
+const [tokenSymbol, tokenName, tokenMaxSupply, tokenDecimals, tokenUri] =
+  process.argv.slice(2);
 
 if (
   !tokenSymbol ||
   !tokenName ||
   !tokenMaxSupply ||
   !tokenDecimals ||
-  !tokenUri ||
-  !dexTokenAmount ||
-  !ownerTokenAmount ||
-  !dexStxAmount
+  !tokenUri
 ) {
   console.log(
-    "Usage: bun run deploy-bonding-token.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> <dexTokenAmount> <ownerTokenAmount> <dexStxAmount>"
+    "Usage: bun run deploy-bonding-token.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri>"
   );
   process.exit(1);
 }
@@ -147,10 +148,7 @@ const bondingTokenContract = await GenerateBondingTokenContract(
   tokenMaxSupply,
   tokenDecimals,
   tokenUri,
-  senderAddress,
-  dexTokenAmount,
-  ownerTokenAmount,
-  dexStxAmount
+  senderAddress
 );
 
 await deployContract(bondingTokenContract, tokenSymbol);

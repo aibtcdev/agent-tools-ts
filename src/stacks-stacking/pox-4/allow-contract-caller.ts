@@ -13,8 +13,8 @@ import {
   getNetwork,
   getNextNonce,
   logBroadCastResult,
-  NetworkType,
 } from "../../utilities";
+import { NetworkType } from "../../types";
 
 type Epoch = {
   epoch_id: string;

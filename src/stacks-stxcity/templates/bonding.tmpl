@@ -1,7 +1,7 @@
 ;; @title Bonding Curve Token by STX.CITY
 ;; @version 2.0
-;; @hash <%= it.hash %>
-;; @targetstx 1
+;; @hash <%= it.hash %> 
+;; @targetstx <%= it.target_stx %> 
 
 ;; Errors 
 (define-constant ERR-UNAUTHORIZED u401)
@@ -9,7 +9,7 @@
 (define-constant ERR-INVALID-PARAMETERS u403)
 (define-constant ERR-NOT-ENOUGH-FUND u101)
 
-(impl-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
+(impl-trait '<%= it.sip10_trait %>)
 
 ;; Constants
 (define-constant MAXSUPPLY u<%= it.token_max_supply %>)
@@ -115,13 +115,9 @@
 )
 
 ;; ---------------------------------------------------------
-;; Initialize Contract
+;; Mint
 ;; ---------------------------------------------------------
 (begin
-    (try! (send-stx 'SP11WRT9TPPKP5492X3VE81CM1T74MD13SPFT527D u1000000))
-    (try! (ft-mint? <%= it.token_symbol %> u<%= it.dex_token_amount %> '<%= it.creator %>.<%= it.token_symbol %>-stxcity-dex))
-    (try! (ft-mint? <%= it.token_symbol %> u<%= it.owner_token_amount %> '<%= it.creator %>'))
-    
-    (try! (send-stx '<%= it.creator %>.<%= it.token_symbol %>-stxcity-dex u<%= it.dex_stx_amount %>))
-    (try! (send-stx 'SP1WTA0YBPC5R6GDMPPJCEDEA6Z2ZEPNMQ4C39W6M u10000))
+    (try! (send-stx '<%= it.send_address_1 %> u500000))
+    (try! (ft-mint? <%= it.token_symbol %> u<%= it.token_max_supply %> '<%= it.dex_contract %>))
 )

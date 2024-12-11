@@ -11,44 +11,15 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  getTraitReference,
 } from "../utilities";
 import * as path from "path";
 import { Eta } from "eta";
 
-export function GenerateBondingDexContract(
-  tokenMaxSupply: string,
-  tokenDecimals: string,
-  senderAddress: string,
-  tokenSymbol: string,
-  stxTargetAmount: string,
-  virtualStxValue: string,
-  completeFee: string,
-  dexTokenAmount: string,
-  dexStxAmount: string,
-  burnPercent: string,
-  deployerPercent: string
-): string {
-  // Initialize Eta
-  const eta = new Eta({ views: path.join(__dirname, "templates") });
-
-  // Prepare template data
-  const data = {
-    token_max_supply: tokenMaxSupply,
-    token_decimals: tokenDecimals,
-    creator: senderAddress,
-    token_symbol: tokenSymbol,
-    stx_target_amount: stxTargetAmount,
-    virtual_stx_value: virtualStxValue,
-    complete_fee: completeFee,
-    dex_token_amount: dexTokenAmount,
-    dex_stx_amount: dexStxAmount,
-    burn_percent: burnPercent,
-    deployer_percent: deployerPercent,
-  };
-
-  // Render the template
-  return eta.render("dex.tmpl", data);
-}
+const BONDING_CURVE_SEND_ADDRESS = {
+  mainnet: "SP1WG62TA0D3K980WGSTZ0QA071TZD4ZXNKP0FQZ7",
+  testnet: "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR",
+};
 
 const networkObj = getNetwork(CONFIG.NETWORK);
 const network = CONFIG.NETWORK;
@@ -62,9 +33,38 @@ const { address, key } = await deriveChildAccount(
 
 const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
+export function GenerateBondingDexContract(
+  tokenMaxSupply: string,
+  tokenDecimals: string,
+  senderAddress: string,
+  tokenSymbol: string
+): string {
+  // Initialize Eta
+  const eta = new Eta({ views: path.join(__dirname, "templates") });
+
+  const tokenContract = `${senderAddress}.${tokenSymbol.toLowerCase()}-stxcity`;
+
+  // Prepare template data
+  const data = {
+    sip10_trait: getTraitReference(network, "SIP010_FT"),
+    send_address:
+      BONDING_CURVE_SEND_ADDRESS[
+        network as keyof typeof BONDING_CURVE_SEND_ADDRESS
+      ],
+    token_contract: tokenContract,
+    token_max_supply: tokenMaxSupply,
+    token_decimals: tokenDecimals,
+    creator: senderAddress,
+    token_symbol: tokenSymbol,
+  };
+
+  // Render the template
+  return eta.render("dex.tmpl", data);
+}
+
 async function deployContract(sourceCode: string, tokenSymbol: string) {
   try {
-    const formattedContractName = `${tokenSymbol}-bonding-dex`.toLowerCase();
+    const formattedContractName = `${tokenSymbol}-stxcity-dex`.toLowerCase();
     const nextPossibleNonce = await getNextNonce(network, senderAddress);
 
     const txOptions: SignedContractDeployOptions = {
@@ -112,33 +112,11 @@ async function deployContract(sourceCode: string, tokenSymbol: string) {
 }
 
 // Command line arguments
-const [
-  tokenSymbol,
-  tokenMaxSupply,
-  tokenDecimals,
-  stxTargetAmount,
-  virtualStxValue,
-  completeFee,
-  dexTokenAmount,
-  dexStxAmount,
-  burnPercent,
-  deployerPercent,
-] = process.argv.slice(2);
+const [tokenSymbol, tokenMaxSupply, tokenDecimals] = process.argv.slice(2);
 
-if (
-  !tokenSymbol ||
-  !tokenMaxSupply ||
-  !tokenDecimals ||
-  !stxTargetAmount ||
-  !virtualStxValue ||
-  !completeFee ||
-  !dexTokenAmount ||
-  !dexStxAmount ||
-  !burnPercent ||
-  !deployerPercent
-) {
+if (!tokenSymbol || !tokenMaxSupply || !tokenDecimals) {
   console.log(
-    "Usage: bun run deploy-bonding-dex.ts <tokenSymbol> <tokenMaxSupply> <tokenDecimals> <stxTargetAmount> <virtualStxValue> <completeFee> <dexTokenAmount> <dexStxAmount> <burnPercent> <deployerPercent>"
+    "Usage: bun run deploy-bonding-dex.ts <tokenSymbol> <tokenMaxSupply> <tokenDecimals>"
   );
   process.exit(1);
 }
@@ -147,14 +125,7 @@ const bondingDexContract = GenerateBondingDexContract(
   tokenMaxSupply,
   tokenDecimals,
   senderAddress,
-  tokenSymbol,
-  stxTargetAmount,
-  virtualStxValue,
-  completeFee,
-  dexTokenAmount,
-  dexStxAmount,
-  burnPercent,
-  deployerPercent
+  tokenSymbol
 );
 
 await deployContract(bondingDexContract, tokenSymbol);
