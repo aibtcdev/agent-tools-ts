@@ -37,14 +37,7 @@ export function GenerateBondingDexContract(
   tokenMaxSupply: string,
   tokenDecimals: string,
   senderAddress: string,
-  tokenSymbol: string,
-  stxTargetAmount: string,
-  virtualStxValue: string,
-  completeFee: string,
-  dexTokenAmount: string,
-  dexStxAmount: string,
-  burnPercent: string,
-  deployerPercent: string
+  tokenSymbol: string
 ): string {
   // Initialize Eta
   const eta = new Eta({ views: path.join(__dirname, "templates") });
@@ -63,13 +56,6 @@ export function GenerateBondingDexContract(
     token_decimals: tokenDecimals,
     creator: senderAddress,
     token_symbol: tokenSymbol,
-    stx_target_amount: stxTargetAmount,
-    virtual_stx_value: virtualStxValue,
-    complete_fee: completeFee,
-    dex_token_amount: dexTokenAmount,
-    dex_stx_amount: dexStxAmount,
-    burn_percent: burnPercent,
-    deployer_percent: deployerPercent,
   };
 
   // Render the template
@@ -126,33 +112,11 @@ async function deployContract(sourceCode: string, tokenSymbol: string) {
 }
 
 // Command line arguments
-const [
-  tokenSymbol,
-  tokenMaxSupply,
-  tokenDecimals,
-  stxTargetAmount,
-  virtualStxValue,
-  completeFee,
-  dexTokenAmount,
-  dexStxAmount,
-  burnPercent,
-  deployerPercent,
-] = process.argv.slice(2);
+const [tokenSymbol, tokenMaxSupply, tokenDecimals] = process.argv.slice(2);
 
-if (
-  !tokenSymbol ||
-  !tokenMaxSupply ||
-  !tokenDecimals ||
-  !stxTargetAmount ||
-  !virtualStxValue ||
-  !completeFee ||
-  !dexTokenAmount ||
-  !dexStxAmount ||
-  !burnPercent ||
-  !deployerPercent
-) {
+if (!tokenSymbol || !tokenMaxSupply || !tokenDecimals) {
   console.log(
-    "Usage: bun run deploy-bonding-dex.ts <tokenSymbol> <tokenMaxSupply> <tokenDecimals> <stxTargetAmount> <virtualStxValue> <completeFee> <dexTokenAmount> <dexStxAmount> <burnPercent> <deployerPercent>"
+    "Usage: bun run deploy-bonding-dex.ts <tokenSymbol> <tokenMaxSupply> <tokenDecimals>"
   );
   process.exit(1);
 }
@@ -161,14 +125,7 @@ const bondingDexContract = GenerateBondingDexContract(
   tokenMaxSupply,
   tokenDecimals,
   senderAddress,
-  tokenSymbol,
-  stxTargetAmount,
-  virtualStxValue,
-  completeFee,
-  dexTokenAmount,
-  dexStxAmount,
-  burnPercent,
-  deployerPercent
+  tokenSymbol
 );
 
 await deployContract(bondingDexContract, tokenSymbol);

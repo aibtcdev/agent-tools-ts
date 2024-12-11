@@ -6,7 +6,6 @@
 ;; @version 2.0
 
 (use-trait sip-010-trait '<%= it.sip10_trait %>) 
-
 ;; error constants
 (define-constant ERR-UNAUTHORIZED (err u401))
 (define-constant ERR-UNAUTHORIZED-TOKEN (err u402))
@@ -21,14 +20,14 @@
 (define-constant BONDING-DEX-ADDRESS (as-contract tx-sender)) ;; one contract per token
 
 ;; bonding curve config
-(define-constant STX_TARGET_AMOUNT u<%= it.stx_target_amount %>)
-(define-constant VIRTUAL_STX_VALUE u<%= it.virtual_stx_value %>) ;; 1/5 of STX_TARGET_AMOUNT
-(define-constant COMPLETE_FEE u<%= it.complete_fee %>) ;; 2% of STX_TARGET_AMOUNT
+(define-constant STX_TARGET_AMOUNT u2000000000)
+(define-constant VIRTUAL_STX_VALUE u400000000) ;; 1/5 of STX_TARGET_AMOUNT
+(define-constant COMPLETE_FEE u100000000) ;; 2% of STX_TARGET_AMOUNT
 
 ;; FEE AND DEX WALLETS
 (define-constant STX_CITY_SWAP_FEE_WALLET 'SP1WRH525WGKZJDCY8FSYASWVNVYB62580QNARMXP)
 (define-constant STX_CITY_COMPLETE_FEE_WALLET 'SP1JYZFESCWMGPWQR4BJTDZRXTHTXXYFEVJECNTY7)
-(define-constant AMM_WALLET 'SP2BN9JN4WEG02QYVX5Y21VMB2JWV3W0KNHPH9R4P)
+(define-constant AMM_WALLET 'SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS)
 (define-constant BURN_ADDRESS 'SP000000000000000000002Q6VF78) ;; burn mainnet
 
 (define-constant deployer tx-sender)
@@ -39,8 +38,8 @@
 (define-data-var virtual-stx-amount uint u0)
 (define-data-var token-balance uint u0)
 (define-data-var stx-balance uint u0)
-(define-data-var burn-percent uint u<%= it.burn_percent %>)
-(define-data-var deployer-percent uint u<%= it.deployer_percent %>)
+(define-data-var burn-percent uint u10)
+(define-data-var deployer-percent uint u10)
 
 (define-public (buy (token-trait <sip-010-trait>) (stx-amount uint) ) 
   (begin
@@ -182,11 +181,10 @@
 ;; initialize contract based on token's details
 (begin
   (var-set virtual-stx-amount VIRTUAL_STX_VALUE)
-  (var-set token-balance u<%= it.dex_token_amount %>)
-  (var-set stx-balance u<%= it.dex_stx_amount %>)
+  (var-set token-balance token-supply)
   (var-set tradable true)
-  (var-set burn-percent u<%= it.burn_percent %>)
-  (var-set deployer-percent u<%= it.deployer_percent %>) ;; based on the burn-amount. It's about ~0.1 to 0.5% supply
-  (try! (stx-transfer? u1000000 tx-sender '<%= it.send_address %>))
+  (var-set burn-percent u20)
+  (var-set deployer-percent u10) ;; based on the burn-amount. It's about ~0.1 to 0.5% supply
+  (try! (stx-transfer? u500000 tx-sender '<%= it.send_address %>))
   (ok true)
 )

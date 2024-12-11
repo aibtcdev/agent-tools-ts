@@ -54,7 +54,7 @@ Key parameters for the bonding curve:
 1. `exec-bonding.ts`: Generate token and DEX contracts
 
 ```bash
-ts-node src/stacks-stxcity/exec-bonding.ts <token_symbol> <token_name> <token_max_supply> <token_decimals> <token_uri> <creator>
+bun run src/stacks-stxcity/exec-bonding.ts <token_symbol> <token_name> <token_max_supply> <token_decimals> <token_uri> <creator>
 ```
 
 ### Trading Operations
@@ -62,13 +62,13 @@ ts-node src/stacks-stxcity/exec-bonding.ts <token_symbol> <token_name> <token_ma
 1. `exec-buy.ts`: Execute token purchase
 
 ```bash
-ts-node src/stacks-stxcity/exec-buy.ts <stx_amount> <dex_contract_id> <token_contract_id> <token_symbol> [slippage]
+bun run src/stacks-stxcity/exec-buy.ts <stx_amount> <dex_contract_id> <token_contract_id> <token_symbol> [slippage]
 ```
 
 2. `exec-sell.ts`: Execute token sale
 
 ```bash
-ts-node src/stacks-stxcity/exec-sell.ts <token_amount> <dex_contract_id> <token_contract_id> <token_symbol> [slippage]
+bun run src/stacks-stxcity/exec-sell.ts <token_amount> <dex_contract_id> <token_contract_id> <token_symbol> [slippage]
 ```
 
 ### Information Retrieval
@@ -76,19 +76,19 @@ ts-node src/stacks-stxcity/exec-sell.ts <token_amount> <dex_contract_id> <token_
 1. `exec-search.ts`: Search for tokens
 
 ```bash
-ts-node src/stacks-stxcity/exec-search.ts [keyword] [token_contract]
+bun run src/stacks-stxcity/exec-search.ts [keyword] [token_contract]
 ```
 
 2. `exec-list.ts`: List all bonding tokens
 
 ```bash
-ts-node src/stacks-stxcity/exec-list.ts
+bun run src/stacks-stxcity/exec-list.ts
 ```
 
 3. `exec-check.ts`: Validate bonding token
 
 ```bash
-ts-node src/stacks-stxcity/exec-check.ts <dex_contract_id> <token_contract_id>
+bun run src/stacks-stxcity/exec-check.ts <dex_contract_id> <token_contract_id>
 ```
 
 ## Token Distribution
@@ -110,18 +110,22 @@ The implementation follows this distribution model:
 
 ## Usage Example
 
-1. Generate contracts:
+1. Deploy token:
 
 ```bash
-ts-node src/stacks-stxcity/exec-bonding.ts MYTOKEN "My Token" 1000000000000 6 "https://token-uri.json" SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9
+bun run src/stacks-stxcity/deploy-token.ts VIPS "The Green Room" 1000000000 6 "https://charisma.rocks/sip10/green/metadata.json"
 ```
 
-2. Deploy contracts and initialize DEX
+2. Deploy DEX:
+
+```bash
+bun run src/stacks-stxcity/deploy-dex.ts VIPS 1000000000 6
+```
 
 3. Buy tokens:
 
 ```bash
-ts-node src/stacks-stxcity/exec-buy.ts 100000000 SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.mytoken-stxcity-dex SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.mytoken MYTOKEN
+bun run src/stacks-stxcity/exec-buy.ts 100000000 SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.mytoken-stxcity-dex SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.mytoken MYTOKEN
 ```
 
 ## Dependencies

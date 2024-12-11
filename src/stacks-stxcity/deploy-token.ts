@@ -45,10 +45,7 @@ export async function GenerateBondingTokenContract(
   tokenMaxSupply: string,
   tokenDecimals: string,
   tokenUri: string,
-  senderAddress: string,
-  dexTokenAmount: string,
-  ownerTokenAmount: string,
-  dexStxAmount: string
+  senderAddress: string
 ): Promise<string> {
   // Initialize Eta
   const eta = new Eta({ views: path.join(__dirname, "templates") });
@@ -64,10 +61,6 @@ export async function GenerateBondingTokenContract(
       BONDING_CURVE_SEND_ADDRESS_1[
         network as keyof typeof BONDING_CURVE_SEND_ADDRESS_1
       ],
-    send_address_2:
-      BONDING_CURVE_SEND_ADDRESS_2[
-        network as keyof typeof BONDING_CURVE_SEND_ADDRESS_2
-      ],
     token_symbol: tokenSymbol,
     token_name: tokenName,
     token_max_supply: tokenMaxSupply,
@@ -75,10 +68,7 @@ export async function GenerateBondingTokenContract(
     token_uri: tokenUri,
     creator: senderAddress,
     hash: hash,
-    dex_token_amount: dexTokenAmount,
-    owner_token_amount: ownerTokenAmount,
     dex_contract: contractId,
-    dex_stx_amount: dexStxAmount,
     target_stx: "2000",
   };
 
@@ -136,29 +126,18 @@ async function deployContract(sourceCode: string, contractName: string) {
 }
 
 // Command line arguments
-const [
-  tokenSymbol,
-  tokenName,
-  tokenMaxSupply,
-  tokenDecimals,
-  tokenUri,
-  dexTokenAmount,
-  ownerTokenAmount,
-  dexStxAmount,
-] = process.argv.slice(2);
+const [tokenSymbol, tokenName, tokenMaxSupply, tokenDecimals, tokenUri] =
+  process.argv.slice(2);
 
 if (
   !tokenSymbol ||
   !tokenName ||
   !tokenMaxSupply ||
   !tokenDecimals ||
-  !tokenUri ||
-  !dexTokenAmount ||
-  !ownerTokenAmount ||
-  !dexStxAmount
+  !tokenUri
 ) {
   console.log(
-    "Usage: bun run deploy-bonding-token.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> <dexTokenAmount> <ownerTokenAmount> <dexStxAmount>"
+    "Usage: bun run deploy-bonding-token.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri>"
   );
   process.exit(1);
 }
@@ -169,10 +148,7 @@ const bondingTokenContract = await GenerateBondingTokenContract(
   tokenMaxSupply,
   tokenDecimals,
   tokenUri,
-  senderAddress,
-  dexTokenAmount,
-  ownerTokenAmount,
-  dexStxAmount
+  senderAddress
 );
 
 await deployContract(bondingTokenContract, tokenSymbol);
