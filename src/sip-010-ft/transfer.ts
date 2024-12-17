@@ -34,8 +34,14 @@ async function transfer(
 
   // Get token metadata to extract asset name
   const contractId = `${contractAddress}.${contractName}`;
-  const tokenMetadata = await getHiroTokenMetadata(contractId);
-  const assetName = getAssetNameFromIdentifier(tokenMetadata.asset_identifier);
+  
+  let assetName: string;
+  if (contractName === "sbtc-token") {
+    assetName = "sbtc-token";
+  } else {
+    const tokenMetadata = await getHiroTokenMetadata(contractId);
+    assetName = getAssetNameFromIdentifier(tokenMetadata.asset_identifier);
+  }
 
   const postConditionAddress = address;
   const postConditionCode = FungibleConditionCode.Equal;
