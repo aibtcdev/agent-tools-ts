@@ -22,10 +22,10 @@ yarn add @aibtcdev/tools
 ## Quick Start
 
 ```typescript
-import { DaoSDK } from "@aibtcdev/tools";
+import { dao } from "@aibtcdev/tools";
 
 // Initialize the SDK
-const sdk = new DaoSDK({
+const sdk = new dao.DaoSDK({
   network: "mainnet", // or 'testnet'
   stacksApi: "https://api.mainnet.hiro.so",
 });
@@ -202,7 +202,7 @@ try {
 The SDK can be configured with various options:
 
 ```typescript
-const sdk = new DaoSDK({
+const sdk = new dao.DaoSDK({
   // Required
   network: "mainnet", // or 'testnet'
 
@@ -230,10 +230,6 @@ bun test tests/executor.test.ts
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Support
 
-For support, email support@your-org.com or join our Discord community.
+For support, email support@aibtc.dev or join our Discord community.
