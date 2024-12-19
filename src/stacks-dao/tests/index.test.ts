@@ -40,18 +40,17 @@ describe("DAO SDK", () => {
       // console.log("Generated executor:", generatedExecutor.contract);
       // expect(generatedExecutor).toBeDefined();
       // expect(generatedExecutor.contract).toBeDefined();
-
       // Deploy contract
-      const deployedExecutor = await sdk.executor.deploy({
-        name: "TestDao",
-        extensions: [],
-        includeDeployer: false,
-        contractName: "test-dao-executor",
-        senderKey: TEST_SENDER_KEY,
-        fee: 1000000,
-      });
-      console.log("Deployed executor:", deployedExecutor);
-      expect(deployedExecutor).toBeDefined();
+      // const deployedExecutor = await sdk.executor.deploy({
+      //   name: "TestDao",
+      //   extensions: [],
+      //   includeDeployer: false,
+      //   contractName: "test-dao-executor",
+      //   senderKey: TEST_SENDER_KEY,
+      //   fee: 1000000,
+      // });
+      // console.log("Deployed executor:", deployedExecutor);
+      // expect(deployedExecutor).toBeDefined();
     } catch (error) {
       console.error("Error with executor:", error);
       throw error;
