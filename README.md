@@ -2,48 +2,111 @@
 
 # AIBTC Agent Tools (TypeScript)
 
-## Description
+A collection of TypeScript tools and SDKs for interacting with Bitcoin, Stacks, and other blockchain technologies. This package provides utilities for wallet management, smart contract interactions, and blockchain operations.
 
-This repository contains a collection of TypeScript scripts that interact with a Bitcoin/Stacks wallet and the Stacks blockchain. These tools are designed to facilitate various operations such as fetching contract sources, retrieving wallet statuses, and performing blockchain transactions.
+## Features
 
-This project is intended to be used as a submodule within the [ai-agent-crew](https://github.com/aibtcdev/ai-agent-crew) project, providing low-level blockchain interactions for AI agents.
+- 🏦 **Wallet Management**: Interact with Bitcoin and Stacks wallets
+- 🔄 **Blockchain Operations**: Perform transactions and queries
+- 🤖 **DAO Tools**: Create and manage DAOs on Stacks
+- 🔍 **BNS Operations**: Work with Bitcoin Name Service
+- 📝 **Smart Contract Tools**: Deploy and interact with smart contracts
 
-### Tech Stack
+## Installation
 
-- [Bun.js](https://bun.sh) - JavaScript runtime and toolkit
-- [Stacks.js](https://github.com/hirosystems/stacks.js) - JavaScript library for interacting with the Stacks blockchain
+```bash
+npm install @aibtcdev/tools
+# or
+yarn add @aibtcdev/tools
+```
+
+## Quick Start
+
+### Working with DAOs
+
+```typescript
+import { DaoSDK } from "@aibtcdev/tools";
+
+// Initialize the DAO SDK
+const daoSdk = new DaoSDK({
+  network: "mainnet", // or 'testnet'
+  stacksApi: "https://api.mainnet.hiro.so",
+});
+
+// Create and deploy a DAO
+async function deployDao() {
+  const deployedDao = await daoSdk.executor.deploy({
+    name: "MyDAO",
+    contractName: "my-dao-v1",
+    extensions: [],
+    includeDeployer: true,
+    senderKey: "YOUR_PRIVATE_KEY",
+    fee: 10000,
+  });
+}
+```
+
+### Wallet Operations
+
+```typescript
+import { getWalletStatus } from "@aibtcdev/tools";
+
+// Check wallet status
+const status = await getWalletStatus();
+console.log("Wallet Status:", status);
+```
+
+### BNS Operations
+
+```typescript
+import { getAddressByBns } from "@aibtcdev/tools";
+
+// Lookup BNS address
+const address = await getAddressByBns("myname.btc");
+console.log("Address:", address);
+```
+
+## Available Tools
+
+### DAO SDK
+
+The DAO SDK provides comprehensive tools for creating and managing DAOs on the Stacks blockchain. [View DAO SDK Documentation](./docs/dao-sdk.md)
+
+Features:
+
+- Contract Generation & Deployment
+- Extension Management (Treasury, Bank, Payments)
+- Smart Contract Interaction
+- Multi-Network Support
+
+### Wallet Tools
+
+Tools for interacting with Bitcoin and Stacks wallets. [View Wallet Documentation](./docs/wallet-tools.md)
+
+### BNS Tools
+
+Utilities for working with the Bitcoin Name Service. [View BNS Documentation](./docs/bns-tools.md)
+
+### SIP-009 Tools
+
+Tools for working with NFTs on Stacks. [View SIP-009 Documentation](./docs/sip009-tools.md)
+
+## Development
 
 ### Prerequisites
 
-- Node.js (for Bun.js)
-- Git
+- Node.js >= 18
+- Bun.js (recommended for development)
 
-### Installation
+### Setup
 
-1. **Clone the repository:**
-
-   ```bash
-   git clone https://github.com/aibtcdev/agent-tools-ts.git
-   cd agent-tools-ts
-   ```
-
-2. **Install Bun globally:**
-
-   ```bash
-   curl -fsSL https://bun.sh/install | bash
-   ```
-
-   > [!NOTE] Instructions above are for Linux, see the [Bun Website](https://bun.sh) for installing with other operating systems
-
-3. **Install dependencies:**
-
-   ```bash
-   bun install
-   ```
+1. Clone the repository
+2. Install dependencies: `bun install`
+3. Run tests: `bun test`
 
 ### Configuration
 
-Create an `.env` file in the root directory and add the following variables:
+Create an `.env` file in your project root:
 
 ```env
 NETWORK=testnet               # or mainnet
@@ -51,30 +114,20 @@ MNEMONIC=your-mnemonic-phrase # full wallet control
 ACCOUNT_INDEX=0               # select account in wallet
 ```
 
-Replace `your-mnemonic-phrase` with your actual mnemonic phrase.
+## Contributing
 
-> [!CAUTION] The scripts will have full access to any accounts related to the actual mnemonic phrase. Be sure to use a separate wallet from any other activities and only fund it with what you're willing to lose.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Running Scripts
+## Support
 
-To run a script, use the following command:
+- Discord: [Join our community](https://discord.gg/Z59Z3FNbEX)
+- Twitter: [@aibtcdev](https://twitter.com/aibtcdev)
+- Email: support@aibtc.dev
 
-```bash
-bun run src/<script-group>/<script-name>.ts [arguments]
-```
+## License
 
-For example:
-
-```bash
-bun run src/stacks-wallet/get-wallet-status.ts
-bun run src/stacks-bns/get-address-by-bns.ts probablyhuman.btc
-bun run src/sip-009/get-owner.ts contractAddress contractName tokenId
-```
-
-### Using as a Submodule
-
-When used as a submodule in the ai-agent-crew project, these scripts are typically invoked through the `BunScriptRunner` class in Python. Refer to the [ai-agent-crew documentation](https://github.com/aibtcdev/ai-agent-crew) for more details on this integration.
-
-### Contact
-
-If you have any questions about contributing, please open an issue, ask in the [AIBTC Discord](https://discord.gg/Z59Z3FNbEX) or reach out to us on X [@aibtcdev](https://x.com/aibtcdev).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

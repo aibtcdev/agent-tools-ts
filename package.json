@@ -1,7 +1,24 @@
 {
-  "name": "aibtcdev-agent-tools-ts",
+  "name": "@aibtcdev/tools",
   "version": "0.0.2",
-  "private": true,
+  "description": "A TypeScript SDK for interacting with DAOs and their extensions on the Stacks blockchain",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "bun run clean && bun build ./src/stacks-dao/index.ts --outdir ./dist --target node",
+    "build:types": "tsc --project ./src/stacks-dao/tsconfig.json --declaration --emitDeclarationOnly --outDir dist",
+    "prepare": "bun run build && bun run build:types",
+    "prepublishOnly": "bun run test -t dao",
+    "test": "bun test src/stacks-dao/index.test.ts",
+    "publish": "npm publish --access public"
+  },
   "dependencies": {
     "@bitflowlabs/core-sdk": "^1.0.1",
     "@jingcash/core-sdk": "^0.1.4",
@@ -21,5 +38,28 @@
     "@types/bun": "^1.1.6",
     "@types/node": "^22.10.2",
     "bun-types": "^1.1.17"
+  },
+  "keywords": [
+    "stacks",
+    "blockchain",
+    "dao",
+    "smart-contracts",
+    "typescript",
+    "sdk"
+  ],
+  "author": "aibtcdev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aibtcdev/agent-tools-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aibtcdev/agent-tools-ts/issues"
+  },
+  "homepage": "https://github.com/aibtcdev/agent-tools-ts#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

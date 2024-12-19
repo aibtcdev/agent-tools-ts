@@ -14,15 +14,15 @@ A TypeScript SDK for interacting with DAOs and their extensions on the Stacks bl
 ## Installation
 
 ```bash
-npm install @aibtcdev/dao-sdk
+npm install @aibtcdev/tools
 # or
-yarn add @aibtcdev/dao-sdk
+yarn add @aibtcdev/tools
 ```
 
 ## Quick Start
 
 ```typescript
-import { DaoSDK } from "@aibtcdev/dao-sdk";
+import { DaoSDK } from "@aibtcdev/tools";
 
 // Initialize the SDK
 const sdk = new DaoSDK({

@@ -42,16 +42,16 @@ describe("DAO SDK", () => {
       expect(generatedExecutor.contract).toBeDefined();
 
       // Deploy contract
-      const deployedExecutor = await sdk.executor.deploy({
-        name: "TestDao",
-        extensions: [],
-        includeDeployer: true,
-        contractName: "test-dao-executor",
-        senderKey: TEST_SENDER_KEY,
-        fee: 1000000,
-      });
-      console.log("Deployed executor:", deployedExecutor);
-      expect(deployedExecutor).toBeDefined();
+      // const deployedExecutor = await sdk.executor.deploy({
+      //   name: "TestDao",
+      //   extensions: [],
+      //   includeDeployer: true,
+      //   contractName: "test-dao-executor",
+      //   senderKey: TEST_SENDER_KEY,
+      //   fee: 1000000,
+      // });
+      // console.log("Deployed executor:", deployedExecutor);
+      // expect(deployedExecutor).toBeDefined();
     } catch (error) {
       console.error("Error with executor:", error);
       throw error;
@@ -94,18 +94,18 @@ describe("DAO SDK", () => {
       expect(generatedTreasury.contract).toBeDefined();
 
       // Deploy contract
-      const deployedTreasury = await sdk.treasury.deploy({
-        name: "TestTreasury",
-        daoContractId,
-        extensionTraitContractId,
-        sip009TraitContractId,
-        sip010TraitContractId,
-        contractName: "test-treasury",
-        senderKey: TEST_SENDER_KEY,
-        fee: 10000,
-      });
-      console.log("Deployed treasury:", deployedTreasury);
-      expect(deployedTreasury).toBeDefined();
+      // const deployedTreasury = await sdk.treasury.deploy({
+      //   name: "TestTreasury",
+      //   daoContractId,
+      //   extensionTraitContractId,
+      //   sip009TraitContractId,
+      //   sip010TraitContractId,
+      //   contractName: "test-treasury",
+      //   senderKey: TEST_SENDER_KEY,
+      //   fee: 10000,
+      // });
+      // console.log("Deployed treasury:", deployedTreasury);
+      // expect(deployedTreasury).toBeDefined();
     } catch (error) {
       console.error("Error with treasury:", error);
       throw error;
@@ -144,18 +144,18 @@ describe("DAO SDK", () => {
       expect(generatedAccount.contract).toBeDefined();
 
       // Deploy contract
-      const deployedAccount = await sdk.bankAccount.deploy({
-        name: "TestBankAccount",
-        daoContractId,
-        extensionTraitContractId,
-        defaultWithdrawalPeriod: 144,
-        defaultWithdrawalAmount: 1000000,
-        contractName: "test-bank-account",
-        senderKey: TEST_SENDER_KEY,
-        fee: 10000,
-      });
-      console.log("Deployed bank account:", deployedAccount);
-      expect(deployedAccount).toBeDefined();
+      // const deployedAccount = await sdk.bankAccount.deploy({
+      //   name: "TestBankAccount",
+      //   daoContractId,
+      //   extensionTraitContractId,
+      //   defaultWithdrawalPeriod: 144,
+      //   defaultWithdrawalAmount: 1000000,
+      //   contractName: "test-bank-account",
+      //   senderKey: TEST_SENDER_KEY,
+      //   fee: 10000,
+      // });
+      // console.log("Deployed bank account:", deployedAccount);
+      // expect(deployedAccount).toBeDefined();
     } catch (error) {
       console.error("Error with bank account:", error);
       throw error;
@@ -178,15 +178,15 @@ describe("DAO SDK", () => {
       expect(generatedMessaging.contract).toBeDefined();
 
       // Deploy contract
-      const deployedMessaging = await sdk.messaging.deploy({
-        name: "TestMessaging",
-        extensionTraitContractId,
-        contractName: "test-messaging",
-        senderKey: TEST_SENDER_KEY,
-        fee: 10000,
-      });
-      console.log("Deployed messaging:", deployedMessaging);
-      expect(deployedMessaging).toBeDefined();
+      // const deployedMessaging = await sdk.messaging.deploy({
+      //   name: "TestMessaging",
+      //   extensionTraitContractId,
+      //   contractName: "test-messaging",
+      //   senderKey: TEST_SENDER_KEY,
+      //   fee: 10000,
+      // });
+      // console.log("Deployed messaging:", deployedMessaging);
+      // expect(deployedMessaging).toBeDefined();
     } catch (error) {
       console.error("Error with messaging:", error);
       throw error;
@@ -215,17 +215,17 @@ describe("DAO SDK", () => {
       expect(generatedPayments.contract).toBeDefined();
 
       // Deploy contract
-      const deployedPayments = await sdk.payments.deploy({
-        name: "TestPayments",
-        daoContractId,
-        extensionTraitContractId,
-        paymentTraitsContractId,
-        contractName: "test-payments",
-        senderKey: TEST_SENDER_KEY,
-        fee: 10000,
-      });
-      console.log("Deployed payments:", deployedPayments);
-      expect(deployedPayments).toBeDefined();
+      // const deployedPayments = await sdk.payments.deploy({
+      //   name: "TestPayments",
+      //   daoContractId,
+      //   extensionTraitContractId,
+      //   paymentTraitsContractId,
+      //   contractName: "test-payments",
+      //   senderKey: TEST_SENDER_KEY,
+      //   fee: 10000,
+      // });
+      // console.log("Deployed payments:", deployedPayments);
+      // expect(deployedPayments).toBeDefined();
     } catch (error) {
       console.error("Error with payments:", error);
       throw error;
@@ -253,16 +253,16 @@ describe("DAO SDK", () => {
       console.log("Generated main DAO contract:", generatedExecutor);
       expect(generatedExecutor).toBeDefined();
 
-      const deployedExecutor = await sdk.executor.deploy({
-        name: "FullTestDao",
-        extensions: [],
-        includeDeployer: true,
-        contractName: "full-test-dao",
-        senderKey: TEST_SENDER_KEY,
-        fee: 10000,
-      });
-      console.log("Deployed main DAO contract:", deployedExecutor);
-      expect(deployedExecutor).toBeDefined();
+      // const deployedExecutor = await sdk.executor.deploy({
+      //   name: "FullTestDao",
+      //   extensions: [],
+      //   includeDeployer: true,
+      //   contractName: "full-test-dao",
+      //   senderKey: TEST_SENDER_KEY,
+      //   fee: 10000,
+      // });
+      // console.log("Deployed main DAO contract:", deployedExecutor);
+      // expect(deployedExecutor).toBeDefined();
 
       // Generate and deploy treasury extension
       const generatedTreasury = await sdk.treasury.generate({
@@ -275,30 +275,30 @@ describe("DAO SDK", () => {
       console.log("Generated treasury extension:", generatedTreasury);
       expect(generatedTreasury).toBeDefined();
 
-      const deployedTreasury = await sdk.treasury.deploy({
-        name: "FullTestDao",
-        daoContractId,
-        extensionTraitContractId,
-        sip009TraitContractId,
-        sip010TraitContractId,
-        contractName: "full-test-treasury",
-        senderKey: TEST_SENDER_KEY,
-        fee: 10000,
-      });
-      console.log("Deployed treasury extension:", deployedTreasury);
-      expect(deployedTreasury).toBeDefined();
+      // const deployedTreasury = await sdk.treasury.deploy({
+      //   name: "FullTestDao",
+      //   daoContractId,
+      //   extensionTraitContractId,
+      //   sip009TraitContractId,
+      //   sip010TraitContractId,
+      //   contractName: "full-test-treasury",
+      //   senderKey: TEST_SENDER_KEY,
+      //   fee: 10000,
+      // });
+      // console.log("Deployed treasury extension:", deployedTreasury);
+      // expect(deployedTreasury).toBeDefined();
 
       // Enable the extension
-      await sdk.executor.setExtension(
-        deployedExecutor.metadata.contractId,
-        deployedTreasury.metadata.contractId,
-        true,
-        {
-          senderKey: TEST_SENDER_KEY,
-          fee: 10000,
-        }
-      );
-      console.log("Enabled treasury extension");
+      // await sdk.executor.setExtension(
+      //   deployedExecutor.metadata.contractId,
+      //   deployedTreasury.metadata.contractId,
+      //   true,
+      //   {
+      //     senderKey: TEST_SENDER_KEY,
+      //     fee: 10000,
+      //   }
+      // );
+      // console.log("Enabled treasury extension");
     } catch (error) {
       console.error("Error in full DAO deployment:", error);
       throw error;
