@@ -1,6 +1,6 @@
 {
   "name": "@aibtcdev/tools",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "private": false,
   "dependencies": {
     "@bitflowlabs/core-sdk": "^1.0.1",
