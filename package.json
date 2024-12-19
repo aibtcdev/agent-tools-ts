@@ -44,15 +44,19 @@
     "cli:wallet": "bun run src/stacks-wallet/index.ts",
     "cli:bns": "bun run src/stacks-bns/index.ts",
     "cli:nft": "bun run src/sip-009/index.ts",
-    "test": "bun test -t 'DAO SDK'",
+    "test": "bun test",
     "version:patch": "npm version patch -m \"chore: release v%s\"",
     "version:minor": "npm version minor -m \"chore: release v%s\"",
     "version:major": "npm version major -m \"chore: release v%s\"",
-    "release:patch": "npm run build && npm run version:patch && git push --follow-tags",
-    "release:minor": "npm run build && npm run version:minor && git push --follow-tags",
-    "release:major": "npm run build && npm run version:major && git push --follow-tags",
+    "release:patch": "npm run build && npm run version:patch && npm publish && git push --follow-tags",
+    "release:minor": "npm run build && npm run version:minor && npm publish && git push --follow-tags",
+    "release:major": "npm run build && npm run version:major && npm publish && git push --follow-tags",
     "preversion": "npm run build && npm test",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "exports": {
     ".": {
