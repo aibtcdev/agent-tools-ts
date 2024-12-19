@@ -1,0 +1,21 @@
+# Source
+src/
+tests/
+
+# Config files
+.gitignore
+.prettierrc
+.eslintrc
+tsconfig.json
+bun.lockb
+
+# Dev files
+*.test.ts
+*.spec.ts
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
