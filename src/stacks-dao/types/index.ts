@@ -19,23 +19,15 @@ export interface BaseConfig
 // Extended DAO type for UI representation
 export interface ExtendedDAO {
   id: string; // Contract ID
-  name: string; // DAO name
+  name: string;
+  created_at: string;
+  is_public: boolean;
   status: "active" | "paused" | "configuring";
   type: "trading" | "arbitrage" | "yield" | "monitoring";
-  treasury?: {
-    // Optional because it might be loaded separately
-    stx: number;
-    tokens: Array<{
-      ticker: string;
-      amount: number;
-    }>;
-  };
-  agents?: number; // Optional for async loading
-  is_public: boolean;
-  description?: string;
-  created_at: string;
-  last_active?: string;
-  metadata?: Record<string, any>; // Additional contract metadata
+  treasury: number;
+  agents: number;
+  last_active: string;
+  description: string;
 }
 
 // Partial types for async loading
