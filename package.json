@@ -29,7 +29,11 @@
     "bitflow-sdk": "^1.6.1",
     "eta": "^3.5.0",
     "stxcity-sdk": "^1.0.10",
-    "tslib": "^2.7.0"
+    "tslib": "^2.7.0",
+    "commander": "^11.0.0",
+    "chalk": "^5.3.0",
+    "ora": "^7.0.1",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "@types/bun": "^1.1.6",
@@ -42,9 +46,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "cli:wallet": "bun run src/stacks-wallet/index.ts",
-    "cli:bns": "bun run src/stacks-bns/index.ts",
-    "cli:nft": "bun run src/sip-009/index.ts",
+    "cli:dao": "bun run src/stacks-dao/cli.ts",
     "test": "bun test -t 'DAO SDK'",
     "version:patch": "npm version patch -m \"chore: release v%s\"",
     "version:minor": "npm version minor -m \"chore: release v%s\"",

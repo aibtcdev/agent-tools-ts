@@ -33,10 +33,7 @@ export class BaseComponent {
 
     this.client.use({
       onRequest({ request }) {
-        request.headers.set(
-          "x-hiro-api-key",
-          String(process.env.STACKS_API_KEY)
-        );
+        request.headers.set("x-hiro-api-key", String(process.env.HIRO_API_KEY));
         return request;
       },
     });
@@ -140,7 +137,6 @@ export class BaseComponent {
       postConditionMode = PostConditionMode.Deny,
       postConditions = [],
       fee = 10000,
-      nonce,
       onFinish,
       onCancel,
     } = options;
@@ -166,7 +162,6 @@ export class BaseComponent {
       postConditionMode,
       postConditions,
       fee: BigInt(fee),
-      nonce,
       onFinish,
       onCancel,
     };
