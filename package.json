@@ -44,7 +44,7 @@
     "cli:wallet": "bun run src/stacks-wallet/index.ts",
     "cli:bns": "bun run src/stacks-bns/index.ts",
     "cli:nft": "bun run src/sip-009/index.ts",
-    "test": "bun test",
+    "test": "bun test -t 'DAO SDK'",
     "version:patch": "npm version patch -m \"chore: release v%s\"",
     "version:minor": "npm version minor -m \"chore: release v%s\"",
     "version:major": "npm version major -m \"chore: release v%s\"",
