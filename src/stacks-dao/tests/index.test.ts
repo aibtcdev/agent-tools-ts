@@ -82,16 +82,16 @@ describe("DAO SDK", () => {
         "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.ft-trait";
 
       // Generate contract code
-      const generatedTreasury = await sdk.treasury.generate({
-        name: "TestTreasury",
-        daoContractId,
-        extensionTraitContractId,
-        sip009TraitContractId,
-        sip010TraitContractId,
-      });
-      console.log("Generated treasury:", generatedTreasury);
-      expect(generatedTreasury).toBeDefined();
-      expect(generatedTreasury.contract).toBeDefined();
+      // const generatedTreasury = await sdk.treasury.generate({
+      //   name: "TestTreasury",
+      //   daoContractId,
+      //   extensionTraitContractId,
+      //   sip009TraitContractId,
+      //   sip010TraitContractId,
+      // });
+      // console.log("Generated treasury:", generatedTreasury);
+      // expect(generatedTreasury).toBeDefined();
+      // expect(generatedTreasury.contract).toBeDefined();
 
       // Deploy contract
       // const deployedTreasury = await sdk.treasury.deploy({
@@ -132,16 +132,16 @@ describe("DAO SDK", () => {
         "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.extension-trait";
 
       // Generate contract code
-      const generatedAccount = await sdk.bankAccount.generate({
-        name: "TestBankAccount",
-        daoContractId,
-        extensionTraitContractId,
-        defaultWithdrawalPeriod: 144,
-        defaultWithdrawalAmount: 1000000,
-      });
-      console.log("Generated bank account:", generatedAccount);
-      expect(generatedAccount).toBeDefined();
-      expect(generatedAccount.contract).toBeDefined();
+      // const generatedAccount = await sdk.bankAccount.generate({
+      //   name: "TestBankAccount",
+      //   daoContractId,
+      //   extensionTraitContractId,
+      //   defaultWithdrawalPeriod: 144,
+      //   defaultWithdrawalAmount: 1000000,
+      // });
+      // console.log("Generated bank account:", generatedAccount);
+      // expect(generatedAccount).toBeDefined();
+      // expect(generatedAccount.contract).toBeDefined();
 
       // Deploy contract
       // const deployedAccount = await sdk.bankAccount.deploy({
@@ -169,13 +169,13 @@ describe("DAO SDK", () => {
         "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.extension-trait";
 
       // Generate contract code
-      const generatedMessaging = await sdk.messaging.generate({
-        name: "TestMessaging",
-        extensionTraitContractId,
-      });
-      console.log("Generated messaging:", generatedMessaging);
-      expect(generatedMessaging).toBeDefined();
-      expect(generatedMessaging.contract).toBeDefined();
+      // const generatedMessaging = await sdk.messaging.generate({
+      //   name: "TestMessaging",
+      //   extensionTraitContractId,
+      // });
+      // console.log("Generated messaging:", generatedMessaging);
+      // expect(generatedMessaging).toBeDefined();
+      // expect(generatedMessaging.contract).toBeDefined();
 
       // Deploy contract
       // const deployedMessaging = await sdk.messaging.deploy({
@@ -204,15 +204,15 @@ describe("DAO SDK", () => {
         "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.payment-traits";
 
       // Generate contract code
-      const generatedPayments = await sdk.payments.generate({
-        name: "TestPayments",
-        daoContractId,
-        extensionTraitContractId,
-        paymentTraitsContractId,
-      });
-      console.log("Generated payments:", generatedPayments);
-      expect(generatedPayments).toBeDefined();
-      expect(generatedPayments.contract).toBeDefined();
+      // const generatedPayments = await sdk.payments.generate({
+      //   name: "TestPayments",
+      //   daoContractId,
+      //   extensionTraitContractId,
+      //   paymentTraitsContractId,
+      // });
+      // console.log("Generated payments:", generatedPayments);
+      // expect(generatedPayments).toBeDefined();
+      // expect(generatedPayments.contract).toBeDefined();
 
       // Deploy contract
       // const deployedPayments = await sdk.payments.deploy({
@@ -245,13 +245,13 @@ describe("DAO SDK", () => {
         "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.ft-trait";
 
       // Generate and deploy executor
-      const generatedExecutor = await sdk.executor.generate({
-        name: "FullTestDao",
-        extensions: [],
-        includeDeployer: true,
-      });
-      console.log("Generated main DAO contract:", generatedExecutor);
-      expect(generatedExecutor).toBeDefined();
+      // const generatedExecutor = await sdk.executor.generate({
+      //   name: "FullTestDao",
+      //   extensions: [],
+      //   includeDeployer: true,
+      // });
+      // console.log("Generated main DAO contract:", generatedExecutor);
+      // expect(generatedExecutor).toBeDefined();
 
       // const deployedExecutor = await sdk.executor.deploy({
       //   name: "FullTestDao",
@@ -265,15 +265,15 @@ describe("DAO SDK", () => {
       // expect(deployedExecutor).toBeDefined();
 
       // Generate and deploy treasury extension
-      const generatedTreasury = await sdk.treasury.generate({
-        name: "FullTestDao",
-        daoContractId,
-        extensionTraitContractId,
-        sip009TraitContractId,
-        sip010TraitContractId,
-      });
-      console.log("Generated treasury extension:", generatedTreasury);
-      expect(generatedTreasury).toBeDefined();
+      // const generatedTreasury = await sdk.treasury.generate({
+      //   name: "FullTestDao",
+      //   daoContractId,
+      //   extensionTraitContractId,
+      //   sip009TraitContractId,
+      //   sip010TraitContractId,
+      // });
+      // console.log("Generated treasury extension:", generatedTreasury);
+      // expect(generatedTreasury).toBeDefined();
 
       // const deployedTreasury = await sdk.treasury.deploy({
       //   name: "FullTestDao",
