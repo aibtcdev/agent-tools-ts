@@ -7,7 +7,7 @@ import type {
   SearchOptions,
   TransactionOptions,
   ContractDeployOptions,
-} from "./types";
+} from "../types";
 import { principalCV, uintCV, contractPrincipalCV } from "@stacks/transactions";
 
 export interface TreasuryDeployOptions extends DeployOptions {

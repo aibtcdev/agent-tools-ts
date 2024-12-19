@@ -17,7 +17,7 @@ import type {
   ReadOnlyOptions,
   SearchOptions,
   ContractDeployOptions,
-} from "./types";
+} from "../types";
 
 export class BaseComponent {
   protected config: BaseConfig;

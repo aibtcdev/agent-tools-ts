@@ -7,7 +7,7 @@ import type {
   SearchOptions,
   TransactionOptions,
   ContractDeployOptions,
-} from "./types";
+} from "../types";
 import { stringAsciiCV, noneCV, someCV, bufferCV } from "@stacks/transactions";
 
 export interface MessagingDeployOptions extends DeployOptions {

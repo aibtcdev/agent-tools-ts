@@ -1,8 +1,8 @@
-import { Executor } from "./executor";
-import { Treasury } from "./treasury";
-import { BankAccount } from "./bank-account";
-import { Messaging } from "./messaging";
-import { Payments } from "./payments";
+import { Executor } from "./lib/executor";
+import { Treasury } from "./lib/treasury";
+import { BankAccount } from "./lib/bank-account";
+import { Messaging } from "./lib/messaging";
+import { Payments } from "./lib/payments";
 import type { SDKOptions } from "./types";
 
 export class DaoSDK {
@@ -27,28 +27,12 @@ export class DaoSDK {
   }
 }
 
-// Types export
+// Export types
 export * from "./types";
 
-// Default export
-export default DaoSDK;
-
-/* Usage example:
-const sdk = new DaoSDK({
-  network: 'mainnet',
-  baseUrl: '/api'
-});
-
-// Work with executors
-const executors = await sdk.executor.findAll();
-const newExecutor = await sdk.executor.deploy({ name: 'MyDao' });
-await sdk.executor.setExtension(executorId, extensionId, true);
-
-// Work with treasury
-const treasuries = await sdk.treasury.findAll();
-const newTreasury = await sdk.treasury.deploy({ 
-  name: 'MyDao',
-  daoContractId: executorId 
-});
-await sdk.treasury.depositStx(treasuryId, amount);
-*/
+// Named exports of all components
+export { Executor } from "./lib/executor";
+export { Treasury } from "./lib/treasury";
+export { BankAccount } from "./lib/bank-account";
+export { Messaging } from "./lib/messaging";
+export { Payments } from "./lib/payments";

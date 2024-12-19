@@ -7,7 +7,7 @@ import type {
   SearchOptions,
   TransactionOptions,
   ContractDeployOptions,
-} from "./types";
+} from "../types";
 import {
   principalCV,
   uintCV,

@@ -1,24 +1,7 @@
 {
   "name": "@aibtcdev/tools",
-  "version": "0.0.3",
-  "description": "A TypeScript SDK for interacting with DAOs and their extensions on the Stacks blockchain",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "clean": "rm -rf dist",
-    "build": "bun run clean && bun build ./src/stacks-dao/index.ts --outdir ./dist --target node",
-    "build:types": "tsc --project ./src/stacks-dao/tsconfig.json --declaration --emitDeclarationOnly --outDir dist",
-    "prepare": "bun run build && bun run build:types",
-    "prepublishOnly": "bun run test -t dao",
-    "test": "bun test src/stacks-dao/index.test.ts",
-    "publish": "npm publish --access public"
-  },
+  "version": "0.0.2",
+  "private": true,
   "dependencies": {
     "@bitflowlabs/core-sdk": "^1.0.1",
     "@jingcash/core-sdk": "^0.1.4",
@@ -37,29 +20,50 @@
   "devDependencies": {
     "@types/bun": "^1.1.6",
     "@types/node": "^22.10.2",
-    "bun-types": "^1.1.17"
+    "bun-types": "^1.1.17",
+    "tsup": "^8.3.5",
+    "typescript": "^5.0.0"
   },
-  "keywords": [
-    "stacks",
-    "blockchain",
-    "dao",
-    "smart-contracts",
-    "typescript",
-    "sdk"
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "aibtc-wallet": "./src/stacks-wallet/index.ts",
+    "aibtc-bns": "./src/stacks-bns/index.ts",
+    "aibtc-nft": "./src/sip-009/index.ts"
+  },
+  "files": [
+    "dist",
+    "src"
   ],
-  "author": "aibtcdev",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aibtcdev/agent-tools-ts.git"
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "cli:wallet": "bun run src/stacks-wallet/index.ts",
+    "cli:bns": "bun run src/stacks-bns/index.ts",
+    "cli:nft": "bun run src/sip-009/index.ts",
+    "test": "bun test",
+    "version:patch": "npm version patch -m \"chore: release v%s\"",
+    "version:minor": "npm version minor -m \"chore: release v%s\"",
+    "version:major": "npm version major -m \"chore: release v%s\"",
+    "release:patch": "npm run build && npm run version:patch && git push --follow-tags",
+    "release:minor": "npm run build && npm run version:minor && git push --follow-tags",
+    "release:major": "npm run build && npm run version:major && git push --follow-tags",
+    "preversion": "npm run build && npm test",
+    "postversion": "git push && git push --tags"
   },
-  "bugs": {
-    "url": "https://github.com/aibtcdev/agent-tools-ts/issues"
-  },
-  "homepage": "https://github.com/aibtcdev/agent-tools-ts#readme",
-  "engines": {
-    "node": ">=18"
-  },
-  "publishConfig": {
-    "access": "public"
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./dao": {
+      "types": "./dist/stacks-dao/index.d.ts",
+      "import": "./dist/stacks-dao/index.mjs",
+      "require": "./dist/stacks-dao/index.js"
+    }
   }
 }

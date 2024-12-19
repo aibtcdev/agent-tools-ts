@@ -1,6 +1,6 @@
 import { expect, test, describe } from "bun:test";
-import { DaoSDK } from "./";
-import { CONFIG, deriveChildAccount } from "../utilities";
+import { CONFIG, deriveChildAccount } from "../../utilities";
+import { DaoSDK } from "..";
 
 const sdk = new DaoSDK({
   network: "testnet",
