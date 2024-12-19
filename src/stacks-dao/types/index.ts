@@ -4,6 +4,7 @@ import {
   AnchorMode,
 } from "@stacks/transactions";
 
+// Base SDK options & configuration types
 export interface SDKOptions {
   baseUrl?: string;
   stacksApi?: string;
@@ -14,6 +15,51 @@ export interface SDKOptions {
 
 export interface BaseConfig
   extends Required<Pick<SDKOptions, "baseUrl" | "stacksApi" | "network">> {}
+
+// Extended DAO type for UI representation
+export interface ExtendedDAO {
+  id: string; // Contract ID
+  name: string; // DAO name
+  status: "active" | "paused" | "configuring";
+  type: "trading" | "arbitrage" | "yield" | "monitoring";
+  treasury?: {
+    // Optional because it might be loaded separately
+    stx: number;
+    tokens: Array<{
+      ticker: string;
+      amount: number;
+    }>;
+  };
+  agents?: number; // Optional for async loading
+  is_public: boolean;
+  description?: string;
+  created_at: string;
+  last_active?: string;
+  metadata?: Record<string, any>; // Additional contract metadata
+}
+
+// Partial types for async loading
+export interface DAOBasicInfo {
+  id: string;
+  name: string;
+  status: ExtendedDAO["status"];
+  type: ExtendedDAO["type"];
+  is_public: boolean;
+  created_at: string;
+}
+
+export interface DAOTreasuryInfo {
+  stx: number;
+  tokens: Array<{
+    ticker: string;
+    amount: number;
+  }>;
+}
+
+export interface DAOActivityInfo {
+  last_active: string;
+  agents: number;
+}
 
 export interface ContractDeployOptions {
   contractName: string;
