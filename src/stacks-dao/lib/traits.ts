@@ -2,27 +2,11 @@ export const DAO_TRAITS = {
   EXECUTOR: {
     functions: [
       {
-        args: [{ name: "caller", type: "principal" }],
-        name: "execute",
-        access: "public",
-        outputs: {
-          type: { response: { ok: "bool", error: "uint128" } },
-        },
-      },
-      {
         args: [
           { name: "extension", type: "principal" },
           { name: "enabled", type: "bool" },
         ],
         name: "set-extension",
-        access: "public",
-        outputs: {
-          type: { response: { ok: "bool", error: "uint128" } },
-        },
-      },
-      {
-        args: [{ name: "extension", type: "principal" }],
-        name: "is-extension",
         access: "public",
         outputs: {
           type: { response: { ok: "bool", error: "uint128" } },

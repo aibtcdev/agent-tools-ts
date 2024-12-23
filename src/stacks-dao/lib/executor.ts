@@ -14,6 +14,7 @@ import {
   falseCV,
   principalCV,
 } from "@stacks/transactions";
+import { generateContract } from "../templates/executor";
 
 export interface ExecutorDeployOptions extends DeployOptions {
   extensions?: string[];
@@ -30,16 +31,30 @@ export class Executor extends BaseComponent {
   }
 
   /**
-   * Generate using API-generated contract
+   * Generate contract using template
    */
-  async generate(options: ExecutorDeployOptions): Promise<ContractResponse> {
-    const response = await this.fetchApi<ContractResponse>("/daos/generate", {
-      name: options.name,
-      extensions: options.extensions || [],
+  async generate(options: ExecutorDeployOptions) {
+    // Validate extensions format
+    const name = options.name;
+    const extensions = options.extensions || [];
+    const invalidExtensions = extensions.filter(
+      (ext) => ext && ext.trim() && !ext.trim().startsWith("S")
+    );
+    if (invalidExtensions.length > 0) {
+      throw new Error(
+        "Invalid extension format. All extension contracts must start with S"
+      );
+    }
+
+    // Generate contract using template
+    const contract = generateContract({
+      name,
+      extensions,
       includeDeployer: options.includeDeployer !== false,
+      network: this.config.network,
     });
 
-    return response;
+    return { contract };
   }
 
   /**

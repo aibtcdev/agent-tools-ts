@@ -9,10 +9,9 @@ import type {
   ContractDeployOptions,
 } from "../types";
 import { stringAsciiCV, noneCV, someCV, bufferCV } from "@stacks/transactions";
+import { generateContract } from "../templates/messaging";
 
-export interface MessagingDeployOptions extends DeployOptions {
-  extensionTraitContractId: string;
-}
+export interface MessagingDeployOptions extends DeployOptions {}
 
 export class Messaging extends BaseComponent {
   constructor(config: BaseConfig) {
@@ -26,16 +25,13 @@ export class Messaging extends BaseComponent {
   /**
    * Generate using API-generated contract
    */
-  async generate(options: MessagingDeployOptions): Promise<ContractResponse> {
-    const response = await this.fetchApi<ContractResponse>(
-      "/daos/extensions/messaging/generate",
-      {
-        name: options.name,
-        extensionTraitContractId: options.extensionTraitContractId,
-      }
-    );
-
-    return response;
+  async generate(options: MessagingDeployOptions) {
+    // Generate contract using template
+    const contract = generateContract({
+      ...options,
+      network: this.config.network,
+    });
+    return { contract };
   }
 
   /**

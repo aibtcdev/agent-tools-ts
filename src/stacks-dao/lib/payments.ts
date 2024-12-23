@@ -16,11 +16,10 @@ import {
   someCV,
   bufferCV,
 } from "@stacks/transactions";
+import { generateContract } from "../templates/payments";
 
 export interface PaymentsDeployOptions extends DeployOptions {
   daoContractId: string;
-  extensionTraitContractId: string;
-  paymentTraitsContractId: string;
 }
 
 export class Payments extends BaseComponent {
@@ -35,18 +34,13 @@ export class Payments extends BaseComponent {
   /**
    * Generate using API-generated contract
    */
-  async generate(options: PaymentsDeployOptions): Promise<ContractResponse> {
-    const response = await this.fetchApi<ContractResponse>(
-      "/daos/extensions/payments/generate",
-      {
-        name: options.name,
-        daoContractId: options.daoContractId,
-        extensionTraitContractId: options.extensionTraitContractId,
-        paymentTraitsContractId: options.paymentTraitsContractId,
-      }
-    );
-
-    return response;
+  async generate(options: PaymentsDeployOptions) {
+    // Generate contract using template
+    const contract = generateContract({
+      ...options,
+      network: this.config.network,
+    });
+    return { contract };
   }
 
   /**

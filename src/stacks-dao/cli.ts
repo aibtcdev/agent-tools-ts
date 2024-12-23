@@ -7,8 +7,8 @@ import ora from "ora";
 dotenv.config();
 
 const sdk = new DaoSDK({
-  network: (process.env.NETWORK as any) || "mainnet",
-  stacksApi: process.env.STACKS_API || "https://api.mainnet.hiro.so",
+  network: (process.env.NETWORK as any) || "testnet",
+  stacksApi: process.env.STACKS_API || "https://api.testnet.hiro.so",
 });
 
 program
@@ -24,7 +24,7 @@ program
     "testnet"
   )
   .option("-k, --key <key>", "sender private key")
-  .option("-f, --fee <fee>", "transaction fee", "10000");
+  .option("-f, --fee <fee>", "transaction fee", "100000");
 
 // Executor Commands
 program
@@ -64,8 +64,6 @@ program
         try {
           const deployed = await sdk.executor.deploy({
             name: options.name,
-            contractName:
-              options.contract || `${options.name.toLowerCase()}-executor`,
             extensions: options.extensions || [],
             includeDeployer: options.deployer,
             senderKey: program.opts().key,

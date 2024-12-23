@@ -14,7 +14,6 @@ export class DaoSDK {
 
   constructor(options: SDKOptions = {}) {
     const config = {
-      baseUrl: options.baseUrl || "/api",
       stacksApi: options.stacksApi || "https://api.testnet.hiro.so",
       network: options.network || "testnet",
     };
