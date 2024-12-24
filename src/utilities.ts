@@ -7,8 +7,8 @@ import {
 } from "@stacks/wallet-sdk";
 import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
 import { TxBroadcastResult, validateStacksAddress } from "@stacks/transactions";
-import { NetworkType, TraitDefinition, TraitType } from "./types";
-import { TRAITS } from "./constants";
+import { NetworkType, TraitDefinition, TraitType, NetworkAddressMap, NetworkAddresses, AddressType } from "./types";
+import { ADDRESSES, TRAITS } from "./constants";
 
 type Metrics = {
   price_usd: number;
@@ -376,4 +376,28 @@ export function getTraitReference(
 ): string {
   const trait = getTraitDefinition(network, traitType);
   return `${trait.contractAddress}.${trait.contractName}.${trait.traitName}`;
+}
+
+export function getAddressDefinition(
+  network: NetworkType,
+  addressType: AddressType
+): string {
+  const networkAddresses = ADDRESSES[network];
+  if (!networkAddresses) {
+    throw new Error(`No addresses defined for network: ${network}`);
+  }
+
+  const address = networkAddresses[addressType];
+  if (!address) {
+    throw new Error(`Address type ${addressType} not found for network ${network}`);
+  }
+
+  return address;
+}
+
+export function getAddressReference(
+  network: NetworkType,
+  addressType: AddressType
+): string {
+  return getAddressDefinition(network, addressType);
 }

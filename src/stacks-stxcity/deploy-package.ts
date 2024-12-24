@@ -12,26 +12,37 @@ import {
   getNetwork,
   getNextNonce,
   getTraitReference,
-  getStxCityHash,
+  getAddressReference,
 } from "../utilities";
 import * as path from "path";
 import { Eta } from "eta";
 
-const BONDING_CURVE_SEND_ADDRESS_1 = {
-  mainnet: "SP11WRT9TPPKP5492X3VE81CM1T74MD13SPFT527D",
-  testnet: "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR",
+enum ContractType {
+  TOKEN,
+  POOL,
+  DEX,
+}
+
+type ContractNames = {
+  [key in ContractType]: string;
 };
 
-const BONDING_CURVE_SEND_ADDRESS_2 = {
-  mainnet: "SP1WTA0YBPC5R6GDMPPJCEDEA6Z2ZEPNMQ4C39W6M",
-  testnet: "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR",
+type DeploymentResult = {
+  success: boolean;
+  contracts: {
+    token: any | null;
+    pool: any | null;
+    dex: any | null;
+  };
+  error?: {
+    stage?: string;
+    message?: string;
+    reason?: string | null;
+    details?: any;
+  };
 };
 
-const BONDING_CURVE_SEND_ADDRESS = {
-  mainnet: "SP1WG62TA0D3K980WGSTZ0QA071TZD4ZXNKP0FQZ7",
-  testnet: "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR",
-};
-
+// Derive child account from mnemonic
 const networkObj = getNetwork(CONFIG.NETWORK);
 const network = CONFIG.NETWORK;
 
@@ -56,30 +67,48 @@ async function GenerateBondingTokenContract(
   // Initialize Eta
   const eta = new Eta({ views: path.join(__dirname, "templates") });
 
-  // Generate contract hash
-  const contractId = `${senderAddress}.${tokenSymbol.toLowerCase()}-stxcity-dex`;
-  const hash = await getStxCityHash(contractId);
+  // Generate variables
+  const contractId = `${senderAddress}.${tokenSymbol.toLowerCase()}-aibtcdev-dex`;
+  const decimals = parseInt(tokenDecimals, 10);
+  const maxSupply = parseInt(tokenMaxSupply, 10);
+  const calculatedMaxSupply = maxSupply * Math.pow(10, decimals);
 
   // Prepare template data
   const data = {
     sip10_trait: getTraitReference(network, "SIP010_FT"),
-    send_address_1:
-      BONDING_CURVE_SEND_ADDRESS_1[
-        network as keyof typeof BONDING_CURVE_SEND_ADDRESS_1
-      ],
     token_symbol: tokenSymbol,
     token_name: tokenName,
-    token_max_supply: tokenMaxSupply,
+    token_max_supply: calculatedMaxSupply.toString(),
     token_decimals: tokenDecimals,
     token_uri: tokenUri,
     creator: senderAddress,
-    hash: hash,
     dex_contract: contractId,
     target_stx: "2000",
   };
 
   // Render the template
-  return eta.render("bonding.tmpl", data);
+  return eta.render("token.tmpl", data);
+}
+
+async function GeneratePoolContract(
+  tokenSymbol: string,
+): Promise<string> {
+  // Initialize Eta
+  const eta = new Eta({ views: path.join(__dirname, "templates") });
+
+  // Generate variables
+  const contractId = `${senderAddress}.${tokenSymbol.toLowerCase()}-aibtcdev-dex`;
+
+  // Prepare template data
+  const data = {
+    bitflow_pool_trait: getTraitReference(network, "BITFLOW_POOL"),
+    bitflow_sip10_trait: getTraitReference(network, "BITFLOW_SIP10"),
+    bitflow_xyk_core_address: getAddressReference(network, "BITFLOW_CORE_ADDRESS"),
+    dex_contract: contractId,
+  };
+
+  // Render the template
+  return eta.render("pool.tmpl", data);
 }
 
 function GenerateBondingDexContract(
@@ -91,20 +120,33 @@ function GenerateBondingDexContract(
   // Initialize Eta
   const eta = new Eta({ views: path.join(__dirname, "templates") });
 
-  const tokenContract = `${senderAddress}.${tokenSymbol.toLowerCase()}-stxcity`;
+  const tokenContract = `${senderAddress}.${tokenSymbol.toLowerCase()}-aibtcdev`;
+  const poolContract = `${senderAddress}.xyz-pool-stx-${tokenSymbol.toLowerCase()}-v-1-1`;
+
+  const decimals = parseInt(tokenDecimals, 10);
+  const maxSupply = parseInt(tokenMaxSupply, 10);
+
+  // Calculate the actual max supply
+  const calculatedMaxSupply = maxSupply * Math.pow(10, decimals);
+  const stxTargetAmount = parseInt("2000000000", 10);
+
+  const virtualSTXValue = Math.floor(stxTargetAmount / 5);
+  const completeFee = Math.floor(stxTargetAmount * 0.02);
 
   // Prepare template data
   const data = {
     sip10_trait: getTraitReference(network, "SIP010_FT"),
-    send_address:
-      BONDING_CURVE_SEND_ADDRESS[
-        network as keyof typeof BONDING_CURVE_SEND_ADDRESS
-      ],
     token_contract: tokenContract,
-    token_max_supply: tokenMaxSupply,
+    pool_contract: poolContract,
+    bitflow_fee_address: "SP31C60QVZKZ9CMMZX73TQ3F3ZZNS89YX2DCCFT8P",
+    stx_contract: "SM1793C4R5PZ4NS4VQ4WMP7SKKYVH8JZEWSZ9HCCR.token-stx-v-1-2",
+    token_max_supply: calculatedMaxSupply.toString(),
     token_decimals: tokenDecimals,
     creator: senderAddress,
     token_symbol: tokenSymbol,
+    stx_target_amount: stxTargetAmount.toString(),
+    virtual_stx_value: virtualSTXValue.toString(),
+    complete_fee: completeFee.toString(),
   };
 
   // Render the template
@@ -114,13 +156,23 @@ function GenerateBondingDexContract(
 async function deployContract(
   sourceCode: string,
   tokenSymbol: string,
-  isDex: boolean = false
-) {
+  contractType: ContractType
+): Promise<{ success: boolean; data?: any; error?: any }> {
   try {
-    const formattedContractName = isDex
-      ? `${tokenSymbol}-stxcity-dex`.toLowerCase()
-      : `${tokenSymbol}-stxcity`.toLowerCase();
-    const theNextNonce = isDex ? nextPossibleNonce + 1 : nextPossibleNonce;
+    const contractNames: ContractNames = {
+      [ContractType.TOKEN]: `${tokenSymbol}-aibtcdev`.toLowerCase(),
+      [ContractType.POOL]: `xyk-pool-${tokenSymbol}-v-1-1`.toLowerCase(),
+      [ContractType.DEX]: `${tokenSymbol}-aibtcdev-dex`.toLowerCase()
+    };
+
+    const nonceOffsets: { [key in ContractType]: number } = {
+      [ContractType.TOKEN]: 0,
+      [ContractType.POOL]: 1,
+      [ContractType.DEX]: 2
+    };
+
+    const formattedContractName = contractNames[contractType];
+    const theNextNonce = nextPossibleNonce + nonceOffsets[contractType];
 
     const txOptions: SignedContractDeployOptions = {
       contractName: formattedContractName,
@@ -138,85 +190,115 @@ async function deployContract(
     const broadcastResponse = await broadcastTransaction(transaction, networkObj);
 
     if ("error" in broadcastResponse) {
-      console.log("Transaction failed to broadcast");
-      console.log(`Error: ${broadcastResponse.error}`);
-      if (broadcastResponse.reason) {
-        console.log(`Reason: ${broadcastResponse.reason}`);
-      }
-      if (broadcastResponse.reason_data) {
-        console.log(
-          `Reason Data: ${JSON.stringify(
-            broadcastResponse.reason_data,
-            null,
-            2
-          )}`
-        );
-      }
-      return false;
+      return {
+        success: false,
+        error: {
+          message: broadcastResponse.error,
+          reason: broadcastResponse.reason || null,
+          details: broadcastResponse.reason_data || null
+        }
+      };
     } else {
-      console.log("Transaction broadcasted successfully!");
-      console.log(`FROM: ${address}`);
-      console.log(`TXID: 0x${broadcastResponse.txid}`);
-      console.log(`CONTRACT: ${address}.${formattedContractName}`);
-      return true;
+      return {
+        success: true,
+        data: {
+          contractPrincipal: `${address}.${formattedContractName}`,
+          transactionId: `0x${broadcastResponse.txid}`,
+          sender: address
+        }
+      };
     }
   } catch (error) {
-    console.log(`Error deploying contract: ${error}`);
-    return false;
+    return {
+      success: false,
+      error: {
+        message: `Error deploying contract: ${error}`,
+        details: error
+      }
+    };
   }
 }
 
 async function main() {
-  // Command line arguments
-  const [tokenSymbol, tokenName, tokenMaxSupply, tokenDecimals, tokenUri] =
-    process.argv.slice(2);
+  const tokenSymbol = process.argv[2];
+  const tokenName = process.argv[3];
+  const tokenMaxSupply = process.argv[4];
+  const tokenDecimals = process.argv[5];
+  const tokenUrl = process.argv[6];
 
-  if (
-    !tokenSymbol ||
-    !tokenName ||
-    !tokenMaxSupply ||
-    !tokenDecimals ||
-    !tokenUri
-  ) {
-    console.log(
-      "Usage: bun run deploy-package.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri>"
+  const result: DeploymentResult = {
+    success: false,
+    contracts: {
+      token: null,
+      pool: null,
+      dex: null
+    }
+  };
+
+  try {
+    // Deploy Token Contract
+    const bondingTokenContract = await GenerateBondingTokenContract(
+      tokenSymbol,
+      tokenName,
+      tokenMaxSupply,
+      tokenDecimals,
+      tokenUrl,
+      senderAddress
     );
+
+    const tokenDeployResult = await deployContract(bondingTokenContract, tokenSymbol, ContractType.TOKEN);
+    if (!tokenDeployResult.success) {
+      result.error = {
+        stage: "token",
+        ...tokenDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.token = tokenDeployResult.data;
+
+    // Deploy Pool Contract
+    const bondingPoolContract = await GeneratePoolContract(tokenSymbol);
+    const poolDeployResult = await deployContract(bondingPoolContract, tokenSymbol, ContractType.POOL);
+    if (!poolDeployResult.success) {
+      result.error = {
+        stage: "pool",
+        ...poolDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.pool = poolDeployResult.data;
+
+    // Deploy DEX Contract
+    const bondingDexContract = GenerateBondingDexContract(
+      tokenMaxSupply,
+      tokenDecimals,
+      senderAddress,
+      tokenSymbol
+    );
+    const dexDeployResult = await deployContract(bondingDexContract, tokenSymbol, ContractType.DEX);
+    if (!dexDeployResult.success) {
+      result.error = {
+        stage: "dex",
+        ...dexDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.dex = dexDeployResult.data;
+
+    // All deployments successful
+    result.success = true;
+    console.log(JSON.stringify(result));
+  } catch (error) {
+    result.error = {
+      message: `Unexpected error: ${error}`,
+      details: error
+    };
+    console.log(JSON.stringify(result));
     process.exit(1);
   }
-
-  console.log("Generating and deploying token contract...");
-  const bondingTokenContract = await GenerateBondingTokenContract(
-    tokenSymbol,
-    tokenName,
-    tokenMaxSupply,
-    tokenDecimals,
-    tokenUri,
-    senderAddress
-  );
-
-  const tokenDeploySuccess = await deployContract(bondingTokenContract, tokenSymbol);
-  
-  if (!tokenDeploySuccess) {
-    console.log("Token deployment failed. Aborting DEX deployment.");
-    process.exit(1);
-  }
-
-  console.log("\nGenerating and deploying DEX contract...");
-  const bondingDexContract = GenerateBondingDexContract(
-    tokenMaxSupply,
-    tokenDecimals,
-    senderAddress,
-    tokenSymbol
-  );
-
-  const dexDeploySuccess = await deployContract(bondingDexContract, tokenSymbol, true);
-  
-  if (!dexDeploySuccess) {
-    console.log("DEX deployment failed.");
-    process.exit(1);
-  }
-
-  console.log("Both token and DEX contracts deployed successfully.");
 }
 
 main().catch((error) => {

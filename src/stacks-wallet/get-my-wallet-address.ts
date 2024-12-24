@@ -23,7 +23,7 @@ async function main() {
   const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
 
   // log account address with account index
-  console.log(`${accountIndex}: ${address}`);
+  console.log(`${address}`);
 }
 
 main();
