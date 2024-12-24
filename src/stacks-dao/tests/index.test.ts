@@ -7,24 +7,14 @@ const TEST_DAO =
 const TEST_TREASURY =
   "ST2D5BGGJ956A635JG7CJQ59FTRFRB08934NHKJ95.test-dao-1734942153203-treasury";
 
-const sdk = new DaoSDK({
-  network: "testnet",
-  stacksApi: "https://api.testnet.hiro.so",
-});
-
 // Test configuration
-let senderKey: string;
+let sdk: DaoSDK;
 let daoName: string;
 let executorId: string;
 
 beforeAll(async () => {
   // Set up test environment
-  const { key } = await deriveChildAccount(
-    CONFIG.NETWORK,
-    CONFIG.MNEMONIC,
-    CONFIG.ACCOUNT_INDEX
-  );
-  senderKey = key;
+  sdk = await DaoSDK.create();
   daoName = `test-dao-${Date.now()}`; // Unique name for each test run
 });
 
@@ -46,9 +36,9 @@ describe("Executor Tests", () => {
       name: daoName,
       extensions: [],
       includeDeployer: true,
-      senderKey,
       fee: 400000,
     });
+    console.log(result);
 
     expect(result).toBeDefined();
     expect(result.txid).toBeDefined();
@@ -66,8 +56,7 @@ describe("Executor Tests", () => {
     const result = await sdk.executor.setExtension(
       TEST_DAO,
       extensionAddress,
-      true,
-      { senderKey }
+      true
     );
 
     expect(result).toBeDefined();
@@ -93,7 +82,6 @@ describe("Treasury Tests", () => {
     const result = await sdk.treasury.deploy({
       name: daoName,
       daoContractId: TEST_DAO,
-      senderKey,
       fee: 400000,
     });
 
@@ -105,8 +93,7 @@ describe("Treasury Tests", () => {
   test("should deposit STX", async () => {
     const result = await sdk.treasury.depositStx(
       TEST_TREASURY,
-      100000, // 0.1 STX
-      { senderKey }
+      100000 // 0.1 STX
     );
 
     expect(result).toBeDefined();
@@ -118,8 +105,7 @@ describe("Treasury Tests", () => {
     const result = await sdk.treasury.withdrawStx(
       TEST_TREASURY,
       50000, // 0.05 STX
-      recipient,
-      { senderKey }
+      recipient
     );
 
     expect(result).toBeDefined();

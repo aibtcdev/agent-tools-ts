@@ -6,22 +6,12 @@ import ora from "ora";
 
 dotenv.config();
 
-const sdk = new DaoSDK({
-  network: (process.env.NETWORK as any) || "testnet",
-  stacksApi: process.env.STACKS_API || "https://api.testnet.hiro.so",
-});
+const sdk = await DaoSDK.create();
 
 // Global options
 program
-  .name("dao")
   .description("CLI tool for managing DAOs on the Stacks blockchain")
-  .version("1.0.0")
-  .option(
-    "-n, --network <network>",
-    "network to use (mainnet/testnet)",
-    "testnet"
-  )
-  .option("-k, --key <key>", "sender private key")
+  .version("0.1.0")
   .option("-f, --fee <fee>", "transaction fee", "100000");
 
 // Create subcommands
@@ -61,7 +51,6 @@ executor
         name: options.name,
         extensions: options.extensions || [],
         includeDeployer: options.deployer,
-        senderKey: program.opts().key,
         fee: parseInt(program.opts().fee),
       });
       spinner.succeed("Deployed executor contract:");
@@ -87,7 +76,6 @@ executor
         options.extension,
         enabled,
         {
-          senderKey: program.opts().key,
           fee: parseInt(program.opts().fee),
         }
       );
@@ -128,7 +116,6 @@ treasury
       const deployed = await sdk.treasury.deploy({
         name: options.name,
         daoContractId: options.daoId,
-        senderKey: program.opts().key,
         fee: parseInt(program.opts().fee),
       });
       spinner.succeed("Deployed treasury extension:");
@@ -151,7 +138,6 @@ treasury
         options.treasury,
         parseInt(options.amount),
         {
-          senderKey: program.opts().key,
           fee: parseInt(program.opts().fee),
         }
       );
@@ -176,7 +162,6 @@ treasury
         parseInt(options.amount),
         options.recipient,
         {
-          senderKey: program.opts().key,
           fee: parseInt(program.opts().fee),
         }
       );

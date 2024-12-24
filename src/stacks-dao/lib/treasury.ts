@@ -47,7 +47,7 @@ export class Treasury extends BaseComponent {
    */
   async deploy(
     options: TreasuryDeployOptions &
-      Pick<ContractDeployOptions, "senderKey" | "fee" | "nonce">
+      Pick<ContractDeployOptions, "fee" | "nonce">
   ): Promise<any> {
     const { contract: codeBody } = await this.generate(options);
 

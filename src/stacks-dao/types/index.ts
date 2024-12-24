@@ -55,7 +55,7 @@ export interface DAOActivityInfo {
 export interface ContractDeployOptions {
   contractName: string;
   codeBody: string;
-  senderKey: string;
+  senderKey?: string;
   anchorMode?: AnchorMode;
   postConditionMode?: PostConditionMode;
   postConditions?: PostCondition[];
@@ -70,7 +70,7 @@ export interface TransactionOptions {
   contractName: string;
   functionName: string;
   functionArgs: any[];
-  senderKey: string;
+  senderKey?: string;
   anchorMode?: AnchorMode;
   postConditionMode?: PostConditionMode;
   postConditions?: PostCondition[];
