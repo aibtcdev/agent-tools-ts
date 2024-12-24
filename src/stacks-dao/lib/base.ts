@@ -45,23 +45,6 @@ export class BaseComponent {
       : new StacksTestnet();
   }
 
-  protected async fetchApi<T>(endpoint: string, data?: any): Promise<T> {
-    const response = await fetch(`${this.config.baseUrl}${endpoint}`, {
-      method: data ? "POST" : "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: data ? JSON.stringify(data) : undefined,
-    });
-
-    if (!response.ok) {
-      const error: any = await response.json();
-      throw new Error(error.error || "API request failed");
-    }
-
-    return response.json() as T;
-  }
-
   protected async getContractById(contractId: string) {
     const { data } = await this.client.GET(
       "/extended/v1/contract/{contract_id}",
@@ -136,7 +119,7 @@ export class BaseComponent {
       anchorMode = AnchorMode.Any,
       postConditionMode = PostConditionMode.Deny,
       postConditions = [],
-      fee = 10000,
+      fee = 400000,
       onFinish,
       onCancel,
     } = options;
@@ -171,16 +154,6 @@ export class BaseComponent {
       transaction,
       this.network
     );
-
-    // Get transaction status
-    if (broadcastResponse.txid) {
-      const txData = await this.client.GET("/extended/v1/tx/{tx_id}", {
-        params: {
-          path: { tx_id: broadcastResponse.txid },
-        },
-      });
-      return { ...broadcastResponse, transaction: txData.data };
-    }
 
     return broadcastResponse;
   }

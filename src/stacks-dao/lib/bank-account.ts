@@ -15,13 +15,12 @@ import {
   someCV,
   bufferCV,
 } from "@stacks/transactions";
+import { generateContract } from "../templates/bank-account";
 
 export interface BankAccountDeployOptions extends DeployOptions {
   daoContractId: string;
-  extensionTraitContractId: string;
   defaultWithdrawalPeriod?: number;
   defaultWithdrawalAmount?: number;
-  initialAccountHolder?: string;
 }
 
 export class BankAccount extends BaseComponent {
@@ -36,20 +35,13 @@ export class BankAccount extends BaseComponent {
   /**
    * Generate using API-generated contract
    */
-  async generate(options: BankAccountDeployOptions): Promise<ContractResponse> {
-    const response = await this.fetchApi<ContractResponse>(
-      "/daos/extensions/bank-account/generate",
-      {
-        name: options.name,
-        daoContractId: options.daoContractId,
-        extensionTraitContractId: options.extensionTraitContractId,
-        defaultWithdrawalPeriod: options.defaultWithdrawalPeriod,
-        defaultWithdrawalAmount: options.defaultWithdrawalAmount,
-        initialAccountHolder: options.initialAccountHolder,
-      }
-    );
-
-    return response;
+  async generate(options: BankAccountDeployOptions) {
+    // Generate contract using template
+    const contract = generateContract({
+      ...options,
+      network: this.config.network,
+    });
+    return { contract };
   }
 
   /**
@@ -62,7 +54,7 @@ export class BankAccount extends BaseComponent {
     const { contract: codeBody } = await this.generate(options);
 
     return this.makeContractDeploy({
-      contractName: `${options.name}-bank`,
+      contractName: `${options.name}-bank-account`,
       codeBody,
       ...options,
       onFinish: (data) => {

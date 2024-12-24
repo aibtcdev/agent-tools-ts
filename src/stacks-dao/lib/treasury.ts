@@ -8,13 +8,17 @@ import type {
   TransactionOptions,
   ContractDeployOptions,
 } from "../types";
-import { principalCV, uintCV, contractPrincipalCV } from "@stacks/transactions";
+import {
+  principalCV,
+  uintCV,
+  contractPrincipalCV,
+  PostConditionMode,
+  Pc,
+} from "@stacks/transactions";
+import { generateContract } from "../templates/treasury";
 
 export interface TreasuryDeployOptions extends DeployOptions {
   daoContractId: string;
-  extensionTraitContractId: string;
-  sip009TraitContractId: string;
-  sip010TraitContractId: string;
 }
 
 export class Treasury extends BaseComponent {
@@ -29,19 +33,13 @@ export class Treasury extends BaseComponent {
   /**
    * Generate using API-generated contract
    */
-  async generate(options: TreasuryDeployOptions): Promise<ContractResponse> {
-    const response = await this.fetchApi<ContractResponse>(
-      "/daos/extensions/treasury/generate",
-      {
-        name: options.name,
-        daoContractId: options.daoContractId,
-        extensionTraitContractId: options.extensionTraitContractId,
-        sip009TraitContractId: options.sip009TraitContractId,
-        sip010TraitContractId: options.sip010TraitContractId,
-      }
-    );
-
-    return response;
+  async generate(options: TreasuryDeployOptions) {
+    // Generate contract using template
+    const contract = generateContract({
+      ...options,
+      network: this.config.network,
+    });
+    return { contract };
   }
 
   /**
@@ -79,6 +77,7 @@ export class Treasury extends BaseComponent {
       contractName,
       functionName: "deposit-stx",
       functionArgs: [uintCV(amount)],
+      postConditionMode: PostConditionMode.Allow,
     } as TransactionOptions);
   }
 
@@ -96,6 +95,7 @@ export class Treasury extends BaseComponent {
       contractName,
       functionName: "withdraw-stx",
       functionArgs: [uintCV(amount), principalCV(recipient)],
+      postConditionMode: PostConditionMode.Allow,
     } as TransactionOptions);
   }
 

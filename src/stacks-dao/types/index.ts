@@ -6,7 +6,6 @@ import {
 
 // Base SDK options & configuration types
 export interface SDKOptions {
-  baseUrl?: string;
   stacksApi?: string;
   network?: "mainnet" | "testnet";
   mnemonic?: string;
@@ -14,7 +13,7 @@ export interface SDKOptions {
 }
 
 export interface BaseConfig
-  extends Required<Pick<SDKOptions, "baseUrl" | "stacksApi" | "network">> {}
+  extends Required<Pick<SDKOptions, "stacksApi" | "network">> {}
 
 // Extended DAO type for UI representation
 export interface ExtendedDAO {
@@ -34,10 +33,10 @@ export interface ExtendedDAO {
 export interface DAOBasicInfo {
   id: string;
   name: string;
-  status: ExtendedDAO["status"];
-  type: ExtendedDAO["type"];
-  is_public: boolean;
-  created_at: string;
+  // status: ExtendedDAO["status"];
+  // type: ExtendedDAO["type"];
+  // is_public: boolean;
+  // created_at: string;
 }
 
 export interface DAOTreasuryInfo {
@@ -98,7 +97,6 @@ export interface SearchOptions {
 export interface DeployOptions {
   name: string;
   codeBody?: string;
-  contractName?: string;
 }
 
 export interface ContractResponse {
