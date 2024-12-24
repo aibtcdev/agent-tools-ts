@@ -102,6 +102,29 @@ program
   )
   .addCommand(
     program
+      .command("deploy")
+      .description("Deploy a new treasury contract")
+      .requiredOption("-n, --name <name>", "name of the Treasury")
+      .option("-d, --daoId <contract>", "associated DAO contract ID")
+      .action(async (options) => {
+        const spinner = ora("Deploying treasury extension...").start();
+        try {
+          const deployed = await sdk.treasury.deploy({
+            name: options.name,
+            daoContractId: options.daoId,
+            senderKey: program.opts().key,
+            fee: parseInt(program.opts().fee),
+          });
+          spinner.succeed("Deployed treasury extension:");
+          console.log(chalk.green(JSON.stringify(deployed, null, 2)));
+        } catch (error) {
+          spinner.fail("Failed to deploy treasury extension");
+          console.error(chalk.red(error));
+        }
+      })
+  )
+  .addCommand(
+    program
       .command("deposit-stx")
       .description("Deposit STX into treasury")
       .requiredOption("-t, --treasury <treasury>", "treasury contract ID")
@@ -124,126 +147,29 @@ program
           console.error(chalk.red(error));
         }
       })
-  );
-
-// Bank Account Commands
-program
-  .command("bank")
-  .description("Manage DAO bank accounts")
-  .addCommand(
-    program
-      .command("list")
-      .description("List all bank account contracts")
-      .action(async () => {
-        const spinner = ora("Finding bank account contracts...").start();
-        try {
-          const accounts = await sdk.bankAccount.findAll();
-          spinner.succeed("Found bank account contracts:");
-          accounts.forEach((account) => {
-            console.log(chalk.green(`- ${account}`));
-          });
-        } catch (error) {
-          spinner.fail("Failed to find bank account contracts");
-          console.error(chalk.red(error));
-        }
-      })
   )
   .addCommand(
     program
-      .command("balance")
-      .description("Get bank account balance")
-      .requiredOption("-a, --account <account>", "bank account contract ID")
+      .command("withdraw-stx")
+      .description("Withdraw STX into treasury")
+      .requiredOption("-t, --treasury <treasury>", "treasury contract ID")
+      .requiredOption("-a, --amount <amount>", "amount in microSTX")
       .action(async (options) => {
-        const spinner = ora("Getting balance...").start();
+        const spinner = ora("Withdrawing STX...").start();
         try {
-          const balance = await sdk.bankAccount.getBalance(options.account);
-          spinner.succeed("Account balance:");
-          console.log(chalk.green(`${balance} microSTX`));
-        } catch (error) {
-          spinner.fail("Failed to get balance");
-          console.error(chalk.red(error));
-        }
-      })
-  );
-
-// Messaging Commands
-program
-  .command("messaging")
-  .description("Manage DAO messaging")
-  .addCommand(
-    program
-      .command("send")
-      .description("Send a message")
-      .requiredOption("-c, --contract <contract>", "messaging contract ID")
-      .requiredOption("-m, --message <message>", "message to send")
-      .action(async (options) => {
-        const spinner = ora("Sending message...").start();
-        try {
-          const result = await sdk.messaging.send(
-            options.contract,
-            options.message,
-            undefined,
+          const result = await sdk.treasury.withdrawStx(
+            options.treasury,
+            parseInt(options.amount),
+            options.recipient,
             {
               senderKey: program.opts().key,
               fee: parseInt(program.opts().fee),
             }
           );
-          spinner.succeed("Message sent:");
+          spinner.succeed("Deposited STX:");
           console.log(chalk.green(JSON.stringify(result, null, 2)));
         } catch (error) {
-          spinner.fail("Failed to send message");
-          console.error(chalk.red(error));
-        }
-      })
-  );
-
-// Payments Commands
-program
-  .command("payments")
-  .description("Manage DAO payments")
-  .addCommand(
-    program
-      .command("list")
-      .description("List all payment contracts")
-      .action(async () => {
-        const spinner = ora("Finding payment contracts...").start();
-        try {
-          const payments = await sdk.payments.findAll();
-          spinner.succeed("Found payment contracts:");
-          payments.forEach((payment) => {
-            console.log(chalk.green(`- ${payment}`));
-          });
-        } catch (error) {
-          spinner.fail("Failed to find payment contracts");
-          console.error(chalk.red(error));
-        }
-      })
-  )
-  .addCommand(
-    program
-      .command("add-resource")
-      .description("Add a new resource")
-      .requiredOption("-c, --contract <contract>", "payments contract ID")
-      .requiredOption("-n, --name <name>", "resource name")
-      .requiredOption("-d, --description <description>", "resource description")
-      .requiredOption("-p, --price <price>", "resource price in microSTX")
-      .action(async (options) => {
-        const spinner = ora("Adding resource...").start();
-        try {
-          const result = await sdk.payments.addResource(
-            options.contract,
-            options.name,
-            options.description,
-            parseInt(options.price),
-            {
-              senderKey: program.opts().key,
-              fee: parseInt(program.opts().fee),
-            }
-          );
-          spinner.succeed("Resource added:");
-          console.log(chalk.green(JSON.stringify(result, null, 2)));
-        } catch (error) {
-          spinner.fail("Failed to add resource");
+          spinner.fail("Failed to deposit STX");
           console.error(chalk.red(error));
         }
       })
