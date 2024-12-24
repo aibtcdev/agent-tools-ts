@@ -52,7 +52,6 @@ executor
   .command("deploy")
   .description("Deploy a new executor contract")
   .requiredOption("-n, --name <name>", "name of the DAO")
-  .option("-c, --contract <contract>", "contract name")
   .option("-e, --extensions <extensions...>", "extension contracts to include")
   .option("-d, --deployer", "include deployer", false)
   .action(async (options) => {
