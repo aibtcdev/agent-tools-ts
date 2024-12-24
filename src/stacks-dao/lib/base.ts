@@ -1,3 +1,5 @@
+// src/stacks-dao/lib/base.ts
+
 import {
   makeContractCall,
   makeContractDeploy,
@@ -18,6 +20,7 @@ import type {
   SearchOptions,
   ContractDeployOptions,
 } from "../types";
+import { DaoSDK } from "./sdk";
 
 export class BaseComponent {
   protected config: BaseConfig;
@@ -25,15 +28,22 @@ export class BaseComponent {
   protected client;
 
   constructor(config: BaseConfig) {
+    if (!DaoSDK.key) {
+      throw new Error("SDK not initialized. Call DaoSDK.create() first");
+    }
+
     this.config = config;
     this.network = this.getNetwork();
     this.client = createClient({
       baseUrl: this.config.stacksApi,
     });
 
+    // Add API key if available
     this.client.use({
       onRequest({ request }) {
-        request.headers.set("x-hiro-api-key", String(process.env.HIRO_API_KEY));
+        if (process.env.HIRO_API_KEY) {
+          request.headers.set("x-hiro-api-key", process.env.HIRO_API_KEY);
+        }
         return request;
       },
     });
@@ -57,7 +67,112 @@ export class BaseComponent {
     return data;
   }
 
-  protected async callReadOnlyFunction(options: ReadOnlyOptions) {
+  protected async makeContractCall(options: TransactionOptions): Promise<any> {
+    const {
+      contractAddress,
+      contractName,
+      functionName,
+      functionArgs,
+      anchorMode = AnchorMode.Any,
+      postConditionMode = PostConditionMode.Deny,
+      postConditions = [],
+      fee = 10000,
+      nonce,
+      onFinish,
+      onCancel,
+    } = options;
+
+    if (!DaoSDK.key) {
+      throw new Error("SDK not initialized");
+    }
+
+    const txOptions = {
+      contractAddress,
+      contractName,
+      functionName,
+      functionArgs,
+      senderKey: DaoSDK.key,
+      network: this.network,
+      anchorMode,
+      postConditionMode,
+      postConditions,
+      fee: BigInt(fee),
+      nonce: nonce ? BigInt(nonce) : undefined,
+      onFinish,
+      onCancel,
+    };
+
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastTransaction(
+      transaction,
+      this.network
+    );
+
+    // Get transaction status if we have a txid
+    if (broadcastResponse.txid) {
+      const txData = await this.client.GET("/extended/v1/tx/{tx_id}", {
+        params: {
+          path: { tx_id: broadcastResponse.txid },
+        },
+      });
+      return { ...broadcastResponse, transaction: txData.data };
+    }
+
+    return broadcastResponse;
+  }
+
+  protected async makeContractDeploy(
+    options: ContractDeployOptions
+  ): Promise<any> {
+    const {
+      contractName,
+      codeBody,
+      anchorMode = AnchorMode.Any,
+      postConditionMode = PostConditionMode.Deny,
+      postConditions = [],
+      fee = 100000,
+      onFinish,
+      onCancel,
+    } = options;
+
+    if (!DaoSDK.key) {
+      throw new Error("SDK not initialized");
+    }
+
+    const address = getAddressFromPrivateKey(
+      DaoSDK.key,
+      this.config.network === "mainnet"
+        ? TransactionVersion.Mainnet
+        : TransactionVersion.Testnet
+    );
+
+    const txOptions = {
+      clarityVersion: 3,
+      codeBody,
+      contractName,
+      senderKey: DaoSDK.key,
+      network: this.network,
+      anchorMode,
+      postConditionMode,
+      postConditions,
+      fee: BigInt(fee),
+      onFinish,
+      onCancel,
+    };
+
+    const transaction = await makeContractDeploy(txOptions);
+    const broadcastResponse = await broadcastTransaction(
+      transaction,
+      this.network
+    );
+
+    return {
+      ...broadcastResponse,
+      contractId: `${address}.${contractName}`,
+    };
+  }
+
+  protected async callReadOnlyFunction(options: ReadOnlyOptions): Promise<any> {
     const {
       contractAddress,
       contractName,
@@ -66,7 +181,7 @@ export class BaseComponent {
       senderAddress = contractAddress,
     } = options;
 
-    const response = await this.client.POST(
+    const result = await this.client.POST(
       "/v2/contracts/call-read/{address}/{contract_name}/{function_name}" as any,
       {
         params: {
@@ -83,13 +198,13 @@ export class BaseComponent {
       }
     );
 
-    return cvToValue(hexToCV(response.data.result));
+    return cvToValue(hexToCV(result.data.result));
   }
 
   protected async findContractsByTrait(
     traitAbi: any,
     options: SearchOptions = {}
-  ) {
+  ): Promise<string[]> {
     const { limit = 50, offset = 0 } = options;
 
     const { data } = await this.client.GET("/extended/v1/contract/by_trait", {
@@ -107,115 +222,5 @@ export class BaseComponent {
     }
 
     return data.results.map((r: any) => r.contract_id);
-  }
-
-  protected async makeContractDeploy(
-    options: ContractDeployOptions
-  ): Promise<any> {
-    const {
-      contractName,
-      codeBody,
-      senderKey,
-      anchorMode = AnchorMode.Any,
-      postConditionMode = PostConditionMode.Deny,
-      postConditions = [],
-      fee = 400000,
-      onFinish,
-      onCancel,
-    } = options;
-
-    if (!senderKey) {
-      throw new Error("Sender key is required for contract deployment");
-    }
-
-    const address = getAddressFromPrivateKey(
-      senderKey,
-      this.config.network === "mainnet"
-        ? TransactionVersion.Mainnet
-        : TransactionVersion.Testnet
-    );
-
-    const deployOptions = {
-      clarityVersion: 3,
-      codeBody,
-      contractName,
-      senderKey,
-      network: this.network,
-      anchorMode,
-      postConditionMode,
-      postConditions,
-      fee: BigInt(fee),
-      onFinish,
-      onCancel,
-    };
-
-    const transaction = await makeContractDeploy(deployOptions);
-    const broadcastResponse = await broadcastTransaction(
-      transaction,
-      this.network
-    );
-
-    return broadcastResponse;
-  }
-
-  protected async makeContractCall(options: TransactionOptions): Promise<any> {
-    const {
-      contractAddress,
-      contractName,
-      functionName,
-      functionArgs,
-      senderKey,
-      anchorMode = AnchorMode.Any,
-      postConditionMode = PostConditionMode.Deny,
-      postConditions = [],
-      fee = 10000,
-      nonce,
-      onFinish,
-      onCancel,
-    } = options;
-
-    if (!senderKey) {
-      throw new Error("Sender key is required for contract calls");
-    }
-
-    const address = getAddressFromPrivateKey(
-      senderKey,
-      this.config.network === "mainnet"
-        ? TransactionVersion.Mainnet
-        : TransactionVersion.Testnet
-    );
-
-    const txOptions = {
-      contractAddress,
-      contractName,
-      functionName,
-      functionArgs,
-      senderKey,
-      network: this.network,
-      anchorMode,
-      postConditionMode,
-      postConditions,
-      fee: BigInt(fee),
-      onFinish,
-      onCancel,
-    };
-
-    const transaction = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTransaction(
-      transaction,
-      this.network
-    );
-
-    // Get transaction status
-    if (broadcastResponse.txid) {
-      const txData = await this.client.GET("/extended/v1/tx/{tx_id}", {
-        params: {
-          path: { tx_id: broadcastResponse.txid },
-        },
-      });
-      return { ...broadcastResponse, transaction: txData.data };
-    }
-
-    return broadcastResponse;
   }
 }
