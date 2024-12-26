@@ -64,15 +64,13 @@ executor
   .action(async (options) => {
     const spinner = ora("Finding executor extensions...").start();
     try {
-      const executors = await sdk.executor.listExtensions(
+      const results = await sdk.executor.listExtensions(
         options.executor,
         options.limit,
         options.offset
       );
       spinner.succeed("Found executor extensions:");
-      executors.forEach((executor) => {
-        console.log(chalk.green(`- ${executor}`));
-      });
+      console.log(chalk.green(JSON.stringify(results, null, 2)));
     } catch (error) {
       spinner.fail("Failed to find executor extensions");
       console.error(chalk.red(error));

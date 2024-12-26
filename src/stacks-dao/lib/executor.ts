@@ -32,11 +32,7 @@ export class Executor extends BaseComponent {
     return result.value;
   }
 
-  async listExtensions(
-    executorId: string,
-    limit = 20,
-    offset = 0
-  ): Promise<string[]> {
+  async listExtensions(executorId: string, limit = 20, offset = 0) {
     return this.getContractEvents(executorId, limit, offset);
   }
 
