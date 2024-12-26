@@ -12,6 +12,14 @@ export const DAO_TRAITS = {
           type: { response: { ok: "bool", error: "uint128" } },
         },
       },
+      {
+        args: [],
+        name: "get-mission",
+        access: "read_only",
+        outputs: {
+          type: { "string-utf8": { length: 256 } },
+        },
+      },
     ],
   },
 

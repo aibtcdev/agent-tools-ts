@@ -1,15 +1,14 @@
 import { TRAITS } from "../../constants";
 
 export type TreasuryContractParams = {
-  name: string;
   daoContractId: string;
   network: "mainnet" | "testnet";
 };
 
 export function generateContract(params: TreasuryContractParams): string {
-  const { name, daoContractId, network } = params;
+  const { daoContractId, network } = params;
 
-  return `;; title: ${name}-treasury
+  return `;; title: AIBTCDev DAO Treasury
 ;; version: 1.0.0
 ;; summary: An extension that manages STX, SIP-009 NFTs, and SIP-010 FTs.
 

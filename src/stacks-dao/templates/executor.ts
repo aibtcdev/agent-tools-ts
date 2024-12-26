@@ -1,48 +1,18 @@
 import { TRAITS } from "../../constants";
 
 type ContractParams = {
-  name: string;
-  extensions: string[];
-  includeDeployer: boolean;
   network: "mainnet" | "testnet";
+  mission: string;
 };
 
-function generateInitializationBlock(
-  extensions: string[],
-  includeDeployer: boolean
-): string {
-  let initBlock = "\n;; Initialization\n;;\n";
-  const enabledExtensions: string[] = [];
-
-  // Add deployer if specified
-  if (includeDeployer) {
-    enabledExtensions.push("tx-sender");
-  }
-
-  // Add provided extensions
-  extensions.forEach((ext) => {
-    if (ext && ext.trim()) {
-      enabledExtensions.push(`'${ext.trim()}`);
-    }
-  });
-
-  // Generate map-set statements for each extension
-  if (enabledExtensions.length > 0) {
-    initBlock += ";; Initialize extension permissions\n";
-    enabledExtensions.forEach((ext) => {
-      initBlock += `(map-set Extensions ${ext} true)\n`;
-    });
-  }
-
-  return initBlock;
-}
-
 export function generateContract(params: ContractParams): string {
-  const { extensions = [], includeDeployer = true, name, network } = params;
+  const { network, mission = "Empowering decentralized governance" } = params;
 
-  return `;; title: ${name}
+  return `;; title: AIBTCDev DAO Executor
 ;; version: 1.0.0
 ;; summary: An ExecutorDAO implementation for aibtcdev
+;; mission: ${mission}
+
 ;; traits
 ;;
 (impl-trait '${TRAITS[network].EXECUTOR})]})
@@ -60,6 +30,7 @@ export function generateContract(params: ContractParams): string {
 ;;
 ;; used for initial construction, set to contract itself after
 (define-data-var executive principal tx-sender)
+(define-data-var mission (string-utf8 256) u"${mission}")
 
 ;; data maps
 ;;
@@ -78,6 +49,11 @@ export function generateContract(params: ContractParams): string {
     (var-set executive (as-contract tx-sender))
     (as-contract (execute proposal sender))
   )
+)
+
+;; Get mission statement
+(define-read-only (get-mission) 
+  (var-get mission)
 )
 
 ;; execute Clarity code in a proposal
@@ -167,5 +143,5 @@ export function generateContract(params: ContractParams): string {
     })
     (map-set Extensions (get extension item) (get enabled item))
   )
-)${generateInitializationBlock(extensions, includeDeployer)}`;
+)`;
 }

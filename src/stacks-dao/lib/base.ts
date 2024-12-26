@@ -21,6 +21,7 @@ import type {
   ContractDeployOptions,
 } from "../types";
 import { DaoSDK } from "./sdk";
+import path from "path";
 
 export class BaseComponent {
   protected config: BaseConfig;
@@ -222,5 +223,25 @@ export class BaseComponent {
     }
 
     return data.results.map((r: any) => r.contract_id);
+  }
+
+  protected async getContractEvents(
+    contractId: string,
+    limit = 20,
+    offset = 0
+  ): Promise<any> {
+    const { data } = await this.client.GET(
+      "/extended/v1/contract/{contract_id}/events",
+      {
+        params: {
+          path: { contract_id: contractId },
+          query: {
+            limit,
+            offset,
+          },
+        },
+      }
+    );
+    return data;
   }
 }
