@@ -1,30 +1,30 @@
-// src/stacks-dao/lib/sdk.ts
-
 import { Executor } from "./executor";
 import { Treasury } from "./treasury";
 import { BankAccount } from "./bank-account";
 import { Messaging } from "./messaging";
 import { Payments } from "./payments";
 import type { SDKOptions, BaseConfig } from "../types";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../utilities";
+import { CONFIG, deriveChildAccount } from "../../utilities";
+import { Proposal } from "./proposal";
 
 export class DaoSDK {
   private static instance: DaoSDK;
   public static key: string;
+  private config: BaseConfig;
 
   public executor: Executor;
+  public proposal: Proposal;
   public treasury: Treasury;
   public bankAccount: BankAccount;
   public messaging: Messaging;
   public payments: Payments;
   public address: string;
-  private config: BaseConfig;
 
   static async create(options: SDKOptions = {}): Promise<DaoSDK> {
     if (!DaoSDK.instance) {
       const config = {
         stacksApi: options.stacksApi || "https://api.testnet.hiro.so",
-        network: options.network || "testnet",
+        network: options.network || CONFIG.NETWORK,
       };
 
       const { address, key } = await deriveChildAccount(
@@ -44,6 +44,7 @@ export class DaoSDK {
     this.address = address;
 
     this.executor = new Executor(config);
+    this.proposal = new Proposal(config);
     this.treasury = new Treasury(config);
     this.bankAccount = new BankAccount(config);
     this.messaging = new Messaging(config);

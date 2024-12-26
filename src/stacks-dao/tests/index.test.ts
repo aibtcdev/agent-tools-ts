@@ -1,5 +1,4 @@
 import { expect, test, describe, beforeAll } from "bun:test";
-import { CONFIG, deriveChildAccount } from "../../utilities";
 import { DaoSDK } from "../lib/sdk";
 
 const TEST_DAO =
@@ -19,30 +18,41 @@ beforeAll(async () => {
 });
 
 describe("Executor Tests", () => {
+  test("should list extensions", async () => {
+    const result = await sdk.executor.listExtensions(
+      "aibtcdev-executor-1735224645736"
+    );
+    console.log(result);
+  });
+  test("should generate a proposal", async () => {
+    const result = await sdk.proposal.generate({
+      type: "add-extension",
+      executorId: `ST2D5BGGJ956A635JG7CJQ59FTRFRB08934NHKJ95.${daoName}`,
+      extensionId: "ST2D5BGGJ956A635JG7CJQ59FTRFRB08934NHKJ95",
+    });
+    console.log(result);
+  });
   test("should generate executor contract", async () => {
     const result = await sdk.executor.generate({
-      name: daoName,
-      extensions: [],
-      includeDeployer: true,
+      mission:
+        "to increase the marketcap and total active holders of welshcorgicoin",
     });
+    console.log(result);
 
     expect(result.contract).toBeDefined();
-    expect(result.contract).toContain(daoName);
     expect(result.contract).toContain("executor-trait");
   });
 
   test("should deploy executor contract", async () => {
     const result = await sdk.executor.deploy({
-      name: daoName,
-      extensions: [],
-      includeDeployer: true,
+      mission:
+        "to increase the marketcap and total active holders of welshcorgicoin",
       fee: 400000,
     });
     console.log(result);
 
     expect(result).toBeDefined();
     expect(result.txid).toBeDefined();
-    executorId = `${result.txid}.${daoName}-executor`;
   });
 
   test("should find executor contracts", async () => {
@@ -69,7 +79,6 @@ describe("Treasury Tests", () => {
 
   test("should generate treasury contract", async () => {
     const result = await sdk.treasury.generate({
-      name: daoName,
       daoContractId: TEST_DAO,
     });
 
@@ -80,14 +89,12 @@ describe("Treasury Tests", () => {
 
   test("should deploy treasury contract", async () => {
     const result = await sdk.treasury.deploy({
-      name: daoName,
       daoContractId: TEST_DAO,
       fee: 400000,
     });
 
     expect(result).toBeDefined();
     expect(result.txid).toBeDefined();
-    treasuryId = `${result.txid}.${daoName}-treasury`;
   });
 
   test("should deposit STX", async () => {

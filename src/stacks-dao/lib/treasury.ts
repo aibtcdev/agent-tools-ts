@@ -52,7 +52,7 @@ export class Treasury extends BaseComponent {
     const { contract: codeBody } = await this.generate(options);
 
     return this.makeContractDeploy({
-      contractName: `${options.name}-treasury`,
+      contractName: `aibtcdev-treasury-${Date.now()}`,
       codeBody,
       ...options,
       onFinish: (data) => {

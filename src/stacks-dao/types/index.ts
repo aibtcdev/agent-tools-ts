@@ -95,7 +95,6 @@ export interface SearchOptions {
 
 // DAO specific types
 export interface DeployOptions {
-  name: string;
   codeBody?: string;
 }
 
@@ -108,11 +107,6 @@ export interface ContractResponse {
 export interface SearchOptions {
   limit?: number;
   offset?: number;
-}
-
-// Base deployment options
-export interface DeployOptions {
-  name: string;
 }
 
 // Trait interfaces

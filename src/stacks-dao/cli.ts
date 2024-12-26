@@ -39,18 +39,56 @@ executor
   });
 
 executor
+  .command("get-mission")
+  .description("Get the mission statement of the DAO")
+  .action(async () => {
+    const spinner = ora("Getting DAO mission statement...").start();
+    try {
+      const mission = await sdk.executor.getMission(
+        "ST2D5BGGJ956A635JG7CJQ59FTRFRB08934NHKJ95.test-dao-1734938378667-executor"
+      );
+      spinner.succeed("Found DAO mission:");
+      console.log(chalk.green(mission));
+    } catch (error) {
+      spinner.fail("Failed to find DAO mission");
+      console.error(chalk.red(error));
+    }
+  });
+
+executor
+  .command("list-extensions")
+  .description("List all executor extensions")
+  .requiredOption("-x, --executor <executor>", "executor contract ID")
+  .option("-l, --limit <limit>", "number of extensions to list", "20")
+  .option("-o, --offset <offset>", "offset for pagination", "0")
+  .action(async (options) => {
+    const spinner = ora("Finding executor extensions...").start();
+    try {
+      const results = await sdk.executor.listExtensions(
+        options.executor,
+        options.limit,
+        options.offset
+      );
+      spinner.succeed("Found executor extensions:");
+      console.log(chalk.green(JSON.stringify(results, null, 2)));
+    } catch (error) {
+      spinner.fail("Failed to find executor extensions");
+      console.error(chalk.red(error));
+    }
+  });
+
+executor
   .command("deploy")
   .description("Deploy a new executor contract")
-  .requiredOption("-n, --name <name>", "name of the DAO")
-  .option("-e, --extensions <extensions...>", "extension contracts to include")
-  .option("-d, --deployer", "include deployer", false)
+  .requiredOption(
+    "-m, --mission <mission-statement>",
+    "mission statement of the DAO"
+  )
   .action(async (options) => {
     const spinner = ora("Deploying executor contract...").start();
     try {
       const deployed = await sdk.executor.deploy({
-        name: options.name,
-        extensions: options.extensions || [],
-        includeDeployer: options.deployer,
+        mission: options.mission,
         fee: parseInt(program.opts().fee),
       });
       spinner.succeed("Deployed executor contract:");
@@ -108,13 +146,11 @@ treasury
 treasury
   .command("deploy")
   .description("Deploy a new treasury contract")
-  .requiredOption("-n, --name <name>", "name of the Treasury")
-  .option("-d, --daoId <contract>", "associated DAO contract ID")
+  .requiredOption("-d, --daoId <contract>", "associated DAO contract ID")
   .action(async (options) => {
     const spinner = ora("Deploying treasury extension...").start();
     try {
       const deployed = await sdk.treasury.deploy({
-        name: options.name,
         daoContractId: options.daoId,
         fee: parseInt(program.opts().fee),
       });
