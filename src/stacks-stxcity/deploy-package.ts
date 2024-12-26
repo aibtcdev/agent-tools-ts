@@ -83,6 +83,7 @@ async function GenerateBondingTokenContract(
     token_uri: tokenUri,
     creator: senderAddress,
     dex_contract: contractId,
+    stxctiy_token_deployment_fee_address: getAddressReference(network, "STXCITY_TOKEN_DEPLOYMENT_FEE_ADDRESS"),
     target_stx: "2000",
   };
 
@@ -139,7 +140,7 @@ function GenerateBondingDexContract(
     token_contract: tokenContract,
     pool_contract: poolContract,
     bitflow_fee_address: "SP31C60QVZKZ9CMMZX73TQ3F3ZZNS89YX2DCCFT8P",
-    stx_contract: "SM1793C4R5PZ4NS4VQ4WMP7SKKYVH8JZEWSZ9HCCR.token-stx-v-1-2",
+    bitflow_stx_token_address: getAddressReference(network, "BITFLOW_STX_TOKEN_ADDRESS"),
     token_max_supply: calculatedMaxSupply.toString(),
     token_decimals: tokenDecimals,
     creator: senderAddress,
@@ -147,6 +148,7 @@ function GenerateBondingDexContract(
     stx_target_amount: stxTargetAmount.toString(),
     virtual_stx_value: virtualSTXValue.toString(),
     complete_fee: completeFee.toString(),
+    stxcity_dex_deployment_fee_address: getAddressReference(network, "STXCITY_DEX_DEPLOYMENT_FEE_ADDRESS"),
   };
 
   // Render the template

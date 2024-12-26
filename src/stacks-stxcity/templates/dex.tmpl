@@ -1,3 +1,10 @@
+;; @title Bonding Curve DEX by STX.CITY
+;; @notice This decentralized exchange (DEX) facilitates the trading of tokens using a bonding curve mechanism.
+;; @dev This DEX will receive token from another contract and allow users to buy or sell this token.
+;; @dev Once the target STX amount is reached, the contract automatically sends the tokens and STX to the DEX addresses like Velar.
+;; @dev The deployer has no ownership privileges or control over the contract's operations.
+;; @version 2.0
+
 ;; Implement SIP 010 trait
 (use-trait sip-010-trait '<%= it.sip10_trait %>)
 
@@ -77,7 +84,7 @@
             ;; send to deployer
             (try! (as-contract (contract-call? token-trait transfer deployer-amount tx-sender deployer none)))
             ;; Call XYK Core v-1-2 pool by Bitflow
-            (try! (as-contract (contract-call? '<%= it.bitflow_core_contract %> create-pool '<%= it.pool_contract %> '<%= it.stx_contract %> token-trait remain-stx remain-tokens xyk-burn-amount u10 u40 u10 u40 '<% it.bitflow_fee_address %> xyk-pool-uri true)))
+            (try! (as-contract (contract-call? '<%= it.bitflow_core_contract %> create-pool '<%= it.pool_contract %> '<%= it.bitflow_stx_token_address %> token-trait remain-stx remain-tokens xyk-burn-amount u10 u40 u10 u40 '<% it.bitflow_fee_address %> xyk-pool-uri true)))
             ;; send fee
             (try! (as-contract (stx-transfer? COMPLETE_FEE tx-sender COMPLETE_FEE_WALLET)))
             ;; update global variables
@@ -132,14 +139,14 @@
       (
       (current-stx-balance (+ (var-get stx-balance) (var-get virtual-stx-amount)))
       (current-token-balance (var-get token-balance))
-      (stx-fee (/ (* stx-amount u5) u1000)) ;; 0.5% fee
+      (stx-fee (/ (* stx-amount u2) u100)) ;; 2% fee
       (stx-after-fee (- stx-amount stx-fee))
       (k (* current-token-balance current-stx-balance )) ;; k = x*y 
       (new-stx-balance (+ current-stx-balance stx-after-fee)) 
       (new-token-balance (/ k new-stx-balance)) ;; x' = k / y'
       (tokens-out (- current-token-balance new-token-balance))
       (recommend-stx-amount (- STX_TARGET_AMOUNT (var-get stx-balance) ))
-      (recommend-stx-amount-after-fee (/ (* recommend-stx-amount u103) u100)) ;; 3% (including 0.5% fee)
+      (recommend-stx-amount-after-fee (/ (* recommend-stx-amount u103) u100)) ;; 3% (including 2% fee)
   )
    (ok  {fee: stx-fee, buyable-token: tokens-out, stx-buy: stx-after-fee, 
         new-token-balance: new-token-balance, stx-balance: (var-get stx-balance), 
@@ -156,7 +163,7 @@
       (new-token-balance (+ current-token-balance tokens-in))
       (new-stx-balance (/ k new-token-balance)) ;; y' = k / x'
       (stx-out (- (- current-stx-balance new-stx-balance) u1)) ;; prevent the round number
-      (stx-fee (/ (* stx-amount u5) u1000)) ;; 0.5% fee
+      (stx-fee (/ (* stx-amount u2) u100)) ;; 2% fee
       (stx-receive (- stx-out stx-fee))
   )
    (ok  {fee: stx-fee, 
@@ -179,5 +186,6 @@
   (var-set tradable true)
   (var-set burn-percent u20)
   (var-set deployer-percent u10) ;; based on the burn-amount. It's about ~0.1 to 0.5% supply
+  (try! (stx-transfer? u500000 tx-sender '<% it.stxcity_dex_deployment_fee_address %>))
   (ok true)
 )

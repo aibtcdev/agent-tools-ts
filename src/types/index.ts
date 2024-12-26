@@ -26,9 +26,13 @@ export type NetworkTraitsMap = {
 
 export type NetworkAddresses = {
   BURN_ADDRESS: string;
-  SWAP_FEE_ADDRESS: string;
-  COMPLETE_FEE_ADDRESS: string;
+  STXCITY_SWAP_FEE_ADDRESS: string;
+  STXCITY_COMPLETE_FEE_ADDRESS: string;
+  STXCITY_TOKEN_DEPLOYMENT_FEE_ADDRESS: string; 
+  STXCITY_DEX_DEPLOYMENT_FEE_ADDRESS: string;
   BITFLOW_CORE_ADDRESS: string;
+  BITFLOW_STX_TOKEN_ADDRESS: string;
+  BITFLOW_FEE_ADDRESS: string;
 };
 
 export type NetworkAddressMap = {
