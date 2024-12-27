@@ -45,8 +45,8 @@ importers:
         specifier: ^11.0.0
         version: 11.1.0
       dexterity-sdk:
-        specifier: ^0.1.8
-        version: 0.1.8
+        specifier: ^0.1.9
+        version: 0.1.9
       dotenv:
         specifier: ^16.3.1
         version: 16.4.7
@@ -623,8 +623,8 @@ packages:
     resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
     engines: {node: '>=0.4.0'}
 
-  dexterity-sdk@0.1.8:
-    resolution: {integrity: sha512-rz9kDiplQ12S3E8Hy65atOqMi9fqiTzGNgulyG61ehwFFb6gkkJ7InM2Vxu8gOfL05H3M+FJCMXTYMVmWT+v/g==}
+  dexterity-sdk@0.1.9:
+    resolution: {integrity: sha512-3Mt/+tsacOU7GHeti7XvQNiueRun3oRoseYxO6A9fil518PVmWOTRbVexn0rrrcX6i8yXvHYGWor+goGEbs4Fw==}
 
   dotenv@16.4.7:
     resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
@@ -1675,7 +1675,7 @@ snapshots:
 
   delayed-stream@1.0.0: {}
 
-  dexterity-sdk@0.1.8:
+  dexterity-sdk@0.1.9:
     dependencies:
       '@stacks/blockchain-api-client': 8.4.0
       '@stacks/common': 7.0.2
@@ -1684,7 +1684,6 @@ snapshots:
       '@stacks/transactions': 7.0.2
       '@stacks/wallet-sdk': 7.0.2
       dotenv: 16.4.7
-      tests: link:../dexterity/tests
     transitivePeerDependencies:
       - bufferutil
       - encoding
