@@ -7,17 +7,22 @@ export const TRAITS = {
     SIP010_FT:
       "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait",
     PROPOSAL:
-      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.charisma-traits-v1.proposal-trait",
+      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtcdev-traits-rc0.proposal-trait",
     EXTENSION:
-      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.charisma-traits-v1.extension-trait",
-    EXECUTOR: ".aibtcdev-traits-v1.executor-trait",
-    TREASURY: ".aibtcdev-traits-v1.treasury-trait",
-    PAYMENTS: ".aibtcdev-traits-v1.payments-trait",
-    MESSAGING: ".aibtcdev-traits-v1.messaging-trait",
-    BANK_ACCOUNT: ".aibtcdev-traits-v1.bank-account-trait",
-    RESOURCE: ".aibtcdev-traits-v1.resource-trait",
-    INVOICE: ".aibtcdev-traits-v1.invoice-trait",
-    NFT: "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.charisma-traits-v1.nft-trait",
+      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtcdev-traits-rc0.extension-trait",
+    EXECUTOR:
+      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtcdev-traits-rc0.executor-trait",
+    TREASURY:
+      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtcdev-traits-rc0.treasury-trait",
+    MESSAGING:
+      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtcdev-traits-rc0.messaging-trait",
+    BANK_ACCOUNT:
+      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtcdev-traits-rc0.bank-account-trait",
+    RESOURCE:
+      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtcdev-traits-rc0.resource-trait",
+    INVOICE:
+      "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtcdev-traits-rc0.invoice-trait",
+    NFT: "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtcdev-traits-rc0.nft-trait",
     FT_PLUS:
       "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.charisma-traits-v1.ft-plus-trait",
     SHARE_FEE_TO:
@@ -34,8 +39,6 @@ export const TRAITS = {
       "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR.aibtcdev-traits-rc1.executor-trait",
     TREASURY:
       "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR.aibtcdev-traits-rc1.treasury-trait",
-    PAYMENTS:
-      "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR.aibtcdev-traits-rc1.payments-trait",
     MESSAGING:
       "ST2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2SYCBMRR.aibtcdev-traits-rc1.messaging-trait",
     BANK_ACCOUNT:
