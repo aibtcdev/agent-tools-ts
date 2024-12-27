@@ -11,14 +11,13 @@ export type BankAccountContractParams = {
 
 export function generateContract(params: BankAccountContractParams): string {
   const {
-    name,
     daoContractId,
     defaultWithdrawalPeriod = 144,
     defaultWithdrawalAmount = 10000000,
     network,
   } = params;
 
-  return `;; title: ${name}-bank-account
+  return `;; title: AIBTCDev DAO Bank Account
 ;; version: 1.0.0
 ;; summary: An extension that allows a principal to withdraw STX from the contract with given rules.
 
