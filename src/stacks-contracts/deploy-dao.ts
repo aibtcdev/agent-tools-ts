@@ -13,6 +13,7 @@ import {
   getNextNonce,
   getTraitReference,
   getAddressReference,
+  getStxCityHash,
 } from "../utilities";
 import * as path from "path";
 import { Eta } from "eta";
@@ -21,6 +22,14 @@ enum ContractType {
   TOKEN,
   POOL,
   DEX,
+  DAO_BASE,
+  DAO_ACTIONS,
+  DAO_BANK_ACCOUNT,
+  DAO_DIRECT_EXECUTE,
+  DAO_MESSAGING,
+  DAO_PAYMENTS,
+  DAO_TREASURY,
+  DAO_PROPOSAL_BOOTSTRAP,
 }
 
 type ContractNames = {
@@ -33,6 +42,14 @@ type DeploymentResult = {
     token: any | null;
     pool: any | null;
     dex: any | null;
+    dao_base: any | null;
+    dao_actions: any | null;
+    dao_bank_account: any | null;
+    dao_direct_execute: any | null;
+    dao_messaging: any | null;
+    dao_payments: any | null;
+    dao_treasury: any | null;
+    dao_proposal_bootstrap: any | null;
   };
   error?: {
     stage?: string;
@@ -72,10 +89,11 @@ async function GenerateBondingTokenContract(
   const decimals = parseInt(tokenDecimals, 10);
   const maxSupply = parseInt(tokenMaxSupply, 10);
   const calculatedMaxSupply = maxSupply * Math.pow(10, decimals);
+  const hash = await getStxCityHash(contractId);
 
   // Prepare template data
   const data = {
-    sip10_trait: getTraitReference(network, "SIP010_FT"),
+    sip10_trait: getTraitReference(network, "SIP10"),
     token_symbol: tokenSymbol,
     token_name: tokenName,
     token_max_supply: calculatedMaxSupply.toString(),
@@ -83,12 +101,12 @@ async function GenerateBondingTokenContract(
     token_uri: tokenUri,
     creator: senderAddress,
     dex_contract: contractId,
-    stxctiy_token_deployment_fee_address: getAddressReference(network, "STXCITY_TOKEN_DEPLOYMENT_FEE_ADDRESS"),
+    stxctiy_token_deployment_fee_address: getAddressReference(network, "STXCITY_TOKEN_DEPLOYMENT_FEE"),
     target_stx: "2000",
   };
 
   // Render the template
-  return eta.render("token.tmpl", data);
+  return eta.render("token.clar", data);
 }
 
 async function GeneratePoolContract(
@@ -103,13 +121,13 @@ async function GeneratePoolContract(
   // Prepare template data
   const data = {
     bitflow_pool_trait: getTraitReference(network, "BITFLOW_POOL"),
-    bitflow_sip10_trait: getTraitReference(network, "BITFLOW_SIP10"),
-    bitflow_xyk_core_address: getAddressReference(network, "BITFLOW_CORE_ADDRESS"),
+    sip10_trait: getTraitReference(network, "SIP10"),
+    bitflow_xyk_core_address: getAddressReference(network, "BITFLOW_CORE"),
     dex_contract: contractId,
   };
 
   // Render the template
-  return eta.render("pool.tmpl", data);
+  return eta.render("pool.clar", data);
 }
 
 function GenerateBondingDexContract(
@@ -136,11 +154,11 @@ function GenerateBondingDexContract(
 
   // Prepare template data
   const data = {
-    sip10_trait: getTraitReference(network, "SIP010_FT"),
+    sip10_trait: getTraitReference(network, "SIP10"),
     token_contract: tokenContract,
     pool_contract: poolContract,
-    bitflow_fee_address: "SP31C60QVZKZ9CMMZX73TQ3F3ZZNS89YX2DCCFT8P",
-    bitflow_stx_token_address: getAddressReference(network, "BITFLOW_STX_TOKEN_ADDRESS"),
+    bitflow_fee_address: getAddressReference(network, "BITFLOW_FEE"),
+    bitflow_stx_token_address: getAddressReference(network, "BITFLOW_STX_TOKEN"),
     token_max_supply: calculatedMaxSupply.toString(),
     token_decimals: tokenDecimals,
     creator: senderAddress,
@@ -148,11 +166,11 @@ function GenerateBondingDexContract(
     stx_target_amount: stxTargetAmount.toString(),
     virtual_stx_value: virtualSTXValue.toString(),
     complete_fee: completeFee.toString(),
-    stxcity_dex_deployment_fee_address: getAddressReference(network, "STXCITY_DEX_DEPLOYMENT_FEE_ADDRESS"),
+    stxcity_dex_deployment_fee_address: getAddressReference(network, "STXCITY_DEX_DEPLOYMENT_FEE"),
   };
 
   // Render the template
-  return eta.render("dex.tmpl", data);
+  return eta.render("dex.clar", data);
 }
 
 async function deployContract(
@@ -164,13 +182,29 @@ async function deployContract(
     const contractNames: ContractNames = {
       [ContractType.TOKEN]: `${tokenSymbol}-aibtcdev`.toLowerCase(),
       [ContractType.POOL]: `xyk-pool-${tokenSymbol}-v-1-1`.toLowerCase(),
-      [ContractType.DEX]: `${tokenSymbol}-aibtcdev-dex`.toLowerCase()
+      [ContractType.DEX]: `${tokenSymbol}-aibtcdev-dex`.toLowerCase(),
+      [ContractType.DAO_BASE]: `${tokenSymbol}-base-dao`.toLowerCase(),
+      [ContractType.DAO_ACTIONS]: `${tokenSymbol}-ext001-actions`.toLowerCase(),
+      [ContractType.DAO_BANK_ACCOUNT]: `${tokenSymbol}-ext002-bank-account`.toLowerCase(),
+      [ContractType.DAO_DIRECT_EXECUTE]: `${tokenSymbol}-ext003-direct-execute`.toLowerCase(),
+      [ContractType.DAO_MESSAGING]: `${tokenSymbol}-ext004-messaging`.toLowerCase(),
+      [ContractType.DAO_PAYMENTS]: `${tokenSymbol}-ext005-payments`.toLowerCase(),
+      [ContractType.DAO_TREASURY]: `${tokenSymbol}-ext006-treasury`.toLowerCase(),
+      [ContractType.DAO_PROPOSAL_BOOTSTRAP]: `${tokenSymbol}-prop001-bootstrap`.toLowerCase(),
     };
 
     const nonceOffsets: { [key in ContractType]: number } = {
       [ContractType.TOKEN]: 0,
       [ContractType.POOL]: 1,
-      [ContractType.DEX]: 2
+      [ContractType.DEX]: 2,
+      [ContractType.DAO_BASE]: 3,
+      [ContractType.DAO_ACTIONS]: 4,
+      [ContractType.DAO_BANK_ACCOUNT]: 5,
+      [ContractType.DAO_DIRECT_EXECUTE]: 6,
+      [ContractType.DAO_MESSAGING]: 7,
+      [ContractType.DAO_PAYMENTS]: 8,
+      [ContractType.DAO_TREASURY]: 9,
+      [ContractType.DAO_PROPOSAL_BOOTSTRAP]: 10,
     };
 
     const formattedContractName = contractNames[contractType];
@@ -185,7 +219,7 @@ async function deployContract(
       nonce: theNextNonce,
       anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Allow,
-      fee: BigInt(1_000_000), // 1 STX
+      fee: BigInt(100_000), // 0.1 STX
     };
 
     const transaction = await makeContractDeploy(txOptions);
@@ -233,7 +267,15 @@ async function main() {
     contracts: {
       token: null,
       pool: null,
-      dex: null
+      dex: null,
+      dao_base: null,
+      dao_actions: null,
+      dao_bank_account: null,
+      dao_direct_execute: null,
+      dao_messaging: null,
+      dao_payments: null,
+      dao_treasury: null,
+      dao_proposal_bootstrap: null
     }
   };
 

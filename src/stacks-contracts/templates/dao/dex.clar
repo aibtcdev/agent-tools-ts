@@ -182,7 +182,7 @@
 ;; initialize contract based on token's details
 (begin
   (var-set virtual-stx-amount VIRTUAL_STX_VALUE)
-  (var-set token-balance token-supply)
+  (var-set token-balance (/ (* token-supply u40) u100)) ;; Calculate 40% of total supply
   (var-set tradable true)
   (var-set burn-percent u20)
   (var-set deployer-percent u10) ;; based on the burn-amount. It's about ~0.1 to 0.5% supply

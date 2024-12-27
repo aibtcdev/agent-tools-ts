@@ -1,3 +1,8 @@
+;; @title Bonding Curve Token by STX.CITY
+;; @version 2.0
+;; @hash <%= it.hash %> 
+;; @targetstx <%= it.target_stx %> 
+
 ;; SIP-10 Trait
 (impl-trait '<%= it.sip10_trait %>)
 
@@ -101,5 +106,6 @@
 )
 
 (begin
+    (try! (send-stx '<%= it.stxctiy_token_deployment_fee_address %> u500000))
     (try! (ft-mint? <%= it.token_symbol %> u<%= it.token_max_supply %> '<%= it.dex_contract %>))
 )
