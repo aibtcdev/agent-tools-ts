@@ -73,6 +73,10 @@ const { address, key } = await deriveChildAccount(
 const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 const nextPossibleNonce = await getNextNonce(network, senderAddress);
 
+function getContractPrincipal(address: string, contractName: string): string {
+  return `${address}.${contractName}`;
+}
+
 async function GenerateBondingTokenContract(
   tokenSymbol: string,
   tokenName: string,
@@ -173,26 +177,146 @@ function GenerateBondingDexContract(
   return eta.render("dex.clar", data);
 }
 
+async function GenerateBaseDAOContract(): Promise<string> {
+  const data = {
+    base_dao_trait: getTraitReference(network, "DAO_BASE"),
+    proposal_trait: getTraitReference(network, "DAO_PROPOSAL"),
+    extension_trait: getTraitReference(network, "DAO_EXTENSION"),
+  };
+  const eta = new Eta();
+  return eta.render("aibtcdev-base-dao.clar", data);
+}
+
+async function GenerateTreasuryContract(
+  dao_contract_address: string
+): Promise<string> {
+  const data = {
+    dao_contract_address,
+    extension_trait: getTraitReference(network, "DAO_EXTENSION"),
+    treasury_trait: getTraitReference(network, "DAO_TREASURY"),
+    sip10_trait: getTraitReference(network, "SIP10"),
+    sip09_trait: getTraitReference(network, "SIP09"),
+    pox_contract_address: getAddressReference(network, "POX"),
+  };
+  const eta = new Eta();
+  return eta.render("aibtc-ext006-treasury.clar", data);
+}
+
+async function GeneratePaymentsContract(
+  dao_contract_address: string,
+  bank_account_address: string
+): Promise<string> {
+  const data = {
+    dao_contract_address,
+    bank_account_address,
+    extension_trait: getTraitReference(network, "DAO_EXTENSION"),
+    resources_trait: getTraitReference(network, "DAO_RESOURCES"),
+    invoices_trait: getTraitReference(network, "DAO_INVOICES"),
+  };
+  const eta = new Eta();
+  return eta.render("aibtc-ext005-payments.clar", data);
+}
+
+async function GenerateMessagingContract(
+  dao_contract_address: string
+): Promise<string> {
+  const data = {
+    dao_contract_address,
+    extension_trait: getTraitReference(network, "DAO_EXTENSION"),
+    messaging_trait: getTraitReference(network, "DAO_MESSAGING")
+  };
+  const eta = new Eta();
+  return eta.render("aibtc-ext004-messaging.clar", data);
+}
+
+async function GenerateDirectExecuteContract(
+  dao_contract_address: string
+): Promise<string> {
+  const data = {
+    dao_contract_address,
+    extension_trait: getTraitReference(network, "DAO_EXTENSION"),
+    direct_execute_trait: getTraitReference(network, "DAO_DIRECT_EXECUTE"),
+    sip10_trait: getTraitReference(network, "SIP10"),
+    proposal_trait: getTraitReference(network, "DAO_PROPOSAL"),
+    treasury_trait: getTraitReference(network, "DAO_TREASURY"),
+  };
+  const eta = new Eta();
+  return eta.render("aibtc-ext003-direct-execute.clar", data);
+}
+
+async function GenerateBankAccountContract(
+  dao_contract_address: string
+): Promise<string> {
+  const data = {
+    dao_contract_address,
+    extension_trait: getTraitReference(network, "DAO_EXTENSION"),
+    bank_account_trait: getTraitReference(network, "DAO_BANK_ACCOUNT"),
+  };
+  const eta = new Eta();
+  return eta.render("aibtc-ext002-bank-account.clar", data);
+}
+
+async function GenerateActionsContract(
+  dao_contract_address: string
+): Promise<string> {
+  const data = {
+    dao_contract_address,
+    extension_trait: getTraitReference(network, "DAO_EXTENSION"),
+    sip10_trait: getTraitReference(network, "SIP10"),
+    treasury_trait: getTraitReference(network, "DAO_TREASURY"),
+    messaging_trait: getTraitReference(network, "DAO_MESSAGING"),
+    resources_trait: getTraitReference(network, "DAO_RESOURCES"),
+  };
+  const eta = new Eta();
+  return eta.render("aibtc-ext001-actions.clar", data);
+}
+
+async function GenerateBootstrapProposalContract(
+  dao_contract_address: string,
+  actions_contract_address: string,
+  bank_account_contract_address: string,
+  direct_execute_contract_address: string,
+  messaging_contract_address: string,
+  payments_contract_address: string,
+  treasury_contract_address: string
+): Promise<string> {
+  const data = {
+    proposal_trait: getTraitReference(network, "DAO_PROPOSAL"),
+    dao_contract_address,
+    actions_contract_address,
+    bank_account_contract_address,
+    direct_execute_contract_address,
+    messaging_contract_address,
+    payments_contract_address,
+    treasury_contract_address
+  };
+  const eta = new Eta();
+  return eta.render("aibtc-prop001-bootstrap.clar", data);
+}
+
+function generateContractNames(tokenSymbol: string): ContractNames {
+  return {
+    [ContractType.TOKEN]: `${tokenSymbol}-aibtcdev`.toLowerCase(),
+    [ContractType.POOL]: `xyk-pool-${tokenSymbol}-v-1-1`.toLowerCase(),
+    [ContractType.DEX]: `${tokenSymbol}-aibtcdev-dex`.toLowerCase(),
+    [ContractType.DAO_BASE]: `${tokenSymbol}-base-dao`.toLowerCase(),
+    [ContractType.DAO_ACTIONS]: `${tokenSymbol}-ext001-actions`.toLowerCase(),
+    [ContractType.DAO_BANK_ACCOUNT]: `${tokenSymbol}-ext002-bank-account`.toLowerCase(),
+    [ContractType.DAO_DIRECT_EXECUTE]: `${tokenSymbol}-ext003-direct-execute`.toLowerCase(),
+    [ContractType.DAO_MESSAGING]: `${tokenSymbol}-ext004-messaging`.toLowerCase(),
+    [ContractType.DAO_PAYMENTS]: `${tokenSymbol}-ext005-payments`.toLowerCase(),
+    [ContractType.DAO_TREASURY]: `${tokenSymbol}-ext006-treasury`.toLowerCase(),
+    [ContractType.DAO_PROPOSAL_BOOTSTRAP]: `${tokenSymbol}-prop001-bootstrap`.toLowerCase(),
+  };
+}
+
 async function deployContract(
   sourceCode: string,
   tokenSymbol: string,
-  contractType: ContractType
+  contractType: ContractType,
+  contractNames: ContractNames
 ): Promise<{ success: boolean; data?: any; error?: any }> {
   try {
-    const contractNames: ContractNames = {
-      [ContractType.TOKEN]: `${tokenSymbol}-aibtcdev`.toLowerCase(),
-      [ContractType.POOL]: `xyk-pool-${tokenSymbol}-v-1-1`.toLowerCase(),
-      [ContractType.DEX]: `${tokenSymbol}-aibtcdev-dex`.toLowerCase(),
-      [ContractType.DAO_BASE]: `${tokenSymbol}-base-dao`.toLowerCase(),
-      [ContractType.DAO_ACTIONS]: `${tokenSymbol}-ext001-actions`.toLowerCase(),
-      [ContractType.DAO_BANK_ACCOUNT]: `${tokenSymbol}-ext002-bank-account`.toLowerCase(),
-      [ContractType.DAO_DIRECT_EXECUTE]: `${tokenSymbol}-ext003-direct-execute`.toLowerCase(),
-      [ContractType.DAO_MESSAGING]: `${tokenSymbol}-ext004-messaging`.toLowerCase(),
-      [ContractType.DAO_PAYMENTS]: `${tokenSymbol}-ext005-payments`.toLowerCase(),
-      [ContractType.DAO_TREASURY]: `${tokenSymbol}-ext006-treasury`.toLowerCase(),
-      [ContractType.DAO_PROPOSAL_BOOTSTRAP]: `${tokenSymbol}-prop001-bootstrap`.toLowerCase(),
-    };
-
     const nonceOffsets: { [key in ContractType]: number } = {
       [ContractType.TOKEN]: 0,
       [ContractType.POOL]: 1,
@@ -207,11 +331,10 @@ async function deployContract(
       [ContractType.DAO_PROPOSAL_BOOTSTRAP]: 10,
     };
 
-    const formattedContractName = contractNames[contractType];
     const theNextNonce = nextPossibleNonce + nonceOffsets[contractType];
 
     const txOptions: SignedContractDeployOptions = {
-      contractName: formattedContractName,
+      contractName: contractNames[contractType],
       codeBody: sourceCode,
       clarityVersion: 2,
       network: networkObj,
@@ -238,7 +361,7 @@ async function deployContract(
       return {
         success: true,
         data: {
-          contractPrincipal: `${address}.${formattedContractName}`,
+          contractPrincipal: `${address}.${contractNames[contractType]}`,
           transactionId: `0x${broadcastResponse.txid}`,
           sender: address
         }
@@ -280,6 +403,9 @@ async function main() {
   };
 
   try {
+    // Generate contract names once
+    const contractNames = generateContractNames(tokenSymbol);
+
     // Deploy Token Contract
     const bondingTokenContract = await GenerateBondingTokenContract(
       tokenSymbol,
@@ -290,7 +416,7 @@ async function main() {
       senderAddress
     );
 
-    const tokenDeployResult = await deployContract(bondingTokenContract, tokenSymbol, ContractType.TOKEN);
+    const tokenDeployResult = await deployContract(bondingTokenContract, tokenSymbol, ContractType.TOKEN, contractNames);
     if (!tokenDeployResult.success) {
       result.error = {
         stage: "token",
@@ -303,7 +429,7 @@ async function main() {
 
     // Deploy Pool Contract
     const bondingPoolContract = await GeneratePoolContract(tokenSymbol);
-    const poolDeployResult = await deployContract(bondingPoolContract, tokenSymbol, ContractType.POOL);
+    const poolDeployResult = await deployContract(bondingPoolContract, tokenSymbol, ContractType.POOL, contractNames);
     if (!poolDeployResult.success) {
       result.error = {
         stage: "pool",
@@ -321,7 +447,7 @@ async function main() {
       senderAddress,
       tokenSymbol
     );
-    const dexDeployResult = await deployContract(bondingDexContract, tokenSymbol, ContractType.DEX);
+    const dexDeployResult = await deployContract(bondingDexContract, tokenSymbol, ContractType.DEX, contractNames);
     if (!dexDeployResult.success) {
       result.error = {
         stage: "dex",
@@ -331,6 +457,131 @@ async function main() {
       process.exit(1);
     }
     result.contracts.dex = dexDeployResult.data;
+
+    // Deploy Base DAO Contract
+    const baseDAOContract = await GenerateBaseDAOContract();
+    const baseDAODeployResult = await deployContract(baseDAOContract, tokenSymbol, ContractType.DAO_BASE, contractNames);
+    if (!baseDAODeployResult.success) {
+      result.error = {
+        stage: "dao_base",
+        ...baseDAODeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.dao_base = baseDAODeployResult.data;
+
+    // Deploy Actions Contract
+    const actionsContract = await GenerateActionsContract(
+      getContractPrincipal(address, contractNames[ContractType.DAO_BASE])
+    );
+    const actionsDeployResult = await deployContract(actionsContract, tokenSymbol, ContractType.DAO_ACTIONS, contractNames);
+    if (!actionsDeployResult.success) {
+      result.error = {
+        stage: "dao_actions",
+        ...actionsDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.dao_actions = actionsDeployResult.data;
+
+    // Deploy Bank Account Contract
+    const bankAccountContract = await GenerateBankAccountContract(
+      getContractPrincipal(address, contractNames[ContractType.DAO_BASE])
+    );
+    const bankAccountDeployResult = await deployContract(bankAccountContract, tokenSymbol, ContractType.DAO_BANK_ACCOUNT, contractNames);
+    if (!bankAccountDeployResult.success) {
+      result.error = {
+        stage: "dao_bank_account",
+        ...bankAccountDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.dao_bank_account = bankAccountDeployResult.data;
+
+    // Deploy Direct Execute Contract
+    const directExecuteContract = await GenerateDirectExecuteContract(
+      getContractPrincipal(address, contractNames[ContractType.DAO_BASE])
+    );
+    const directExecuteDeployResult = await deployContract(directExecuteContract, tokenSymbol, ContractType.DAO_DIRECT_EXECUTE, contractNames);
+    if (!directExecuteDeployResult.success) {
+      result.error = {
+        stage: "dao_direct_execute",
+        ...directExecuteDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.dao_direct_execute = directExecuteDeployResult.data;
+
+    // Deploy Messaging Contract
+    const messagingContract = await GenerateMessagingContract(
+      getContractPrincipal(address, contractNames[ContractType.DAO_BASE])
+    );
+    const messagingDeployResult = await deployContract(messagingContract, tokenSymbol, ContractType.DAO_MESSAGING, contractNames);
+    if (!messagingDeployResult.success) {
+      result.error = {
+        stage: "dao_messaging",
+        ...messagingDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.dao_messaging = messagingDeployResult.data;
+
+    // Deploy Payments Contract
+    const paymentsContract = await GeneratePaymentsContract(
+      getContractPrincipal(address, contractNames[ContractType.DAO_BASE]),
+      getContractPrincipal(address, contractNames[ContractType.DAO_BANK_ACCOUNT])
+    );
+    const paymentsDeployResult = await deployContract(paymentsContract, tokenSymbol, ContractType.DAO_PAYMENTS, contractNames);
+    if (!paymentsDeployResult.success) {
+      result.error = {
+        stage: "dao_payments",
+        ...paymentsDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.dao_payments = paymentsDeployResult.data;
+
+    // Deploy Treasury Contract
+    const treasuryContract = await GenerateTreasuryContract(
+      getContractPrincipal(address, contractNames[ContractType.DAO_BASE]),
+    );
+    const treasuryDeployResult = await deployContract(treasuryContract, tokenSymbol, ContractType.DAO_TREASURY, contractNames);
+    if (!treasuryDeployResult.success) {
+      result.error = {
+        stage: "dao_treasury",
+        ...treasuryDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.dao_treasury = treasuryDeployResult.data;
+
+    // Deploy Bootstrap Proposal Contract
+    const bootstrapContract = await GenerateBootstrapProposalContract(
+      getContractPrincipal(address, contractNames[ContractType.DAO_BASE]),
+      getContractPrincipal(address, contractNames[ContractType.DAO_ACTIONS]),
+      getContractPrincipal(address, contractNames[ContractType.DAO_BANK_ACCOUNT]),
+      getContractPrincipal(address, contractNames[ContractType.DAO_DIRECT_EXECUTE]),
+      getContractPrincipal(address, contractNames[ContractType.DAO_MESSAGING]),
+      getContractPrincipal(address, contractNames[ContractType.DAO_PAYMENTS]),
+      getContractPrincipal(address, contractNames[ContractType.DAO_TREASURY])
+    );
+    const bootstrapDeployResult = await deployContract(bootstrapContract, tokenSymbol, ContractType.DAO_PROPOSAL_BOOTSTRAP, contractNames);
+    if (!bootstrapDeployResult.success) {
+      result.error = {
+        stage: "dao_proposal_bootstrap",
+        ...bootstrapDeployResult.error
+      };
+      console.log(JSON.stringify(result));
+      process.exit(1);
+    }
+    result.contracts.dao_proposal_bootstrap = bootstrapDeployResult.data;
 
     // All deployments successful
     result.success = true;

@@ -7,12 +7,12 @@
     ;; set initial extensions
     (try! (contract-call? '<% it.dao_contract_address %> set-extensions
       (list
-        {extension: '<% it.actions_contract_address %>', enabled: true}
-        {extension: '<% it.bank_account_contract_address %>', enabled: true}
-        {extension: '<% it.direct_execute_contract_address %>', enabled: true}
-        {extension: '<% it.messaging_contract_address %>', enabled: true}
-        {extension: '<% it.payments_contract_address %>', enabled: true}
-        {extension: '<% it.treasury_contract_address %>', enabled: true}
+        {extension: '<% it.actions_contract_address %>, enabled: true}
+        {extension: '<% it.bank_account_contract_address %>, enabled: true}
+        {extension: '<% it.direct_execute_contract_address %>, enabled: true}
+        {extension: '<% it.messaging_contract_address %>, enabled: true}
+        {extension: '<% it.payments_contract_address %>, enabled: true}
+        {extension: '<% it.treasury_contract_address %>, enabled: true}
       )
     ))
     ;; print manifest

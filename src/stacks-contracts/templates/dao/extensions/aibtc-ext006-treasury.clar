@@ -171,7 +171,7 @@
         sender: tx-sender
       }
     })
-    (match (as-contract (contract-call? '<% it.pox_4_contract_address %> delegate-stx maxAmount to none none))
+    (match (as-contract (contract-call? '<% it.pox_contract_address %> delegate-stx maxAmount to none none))
       success (ok success)
       err (err (to-uint err))
     )
@@ -189,7 +189,7 @@
         sender: tx-sender
       }
     })
-    (match (as-contract (contract-call? '<% it.pox_4_contract_address %> revoke-delegate-stx))
+    (match (as-contract (contract-call? '<% it.pox_contract_address %> revoke-delegate-stx))
       success (begin (print success) (ok true))
       err (err (to-uint err))
     )
