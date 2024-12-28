@@ -1,44 +1,8 @@
-import {
-  getAddressFromPrivateKey,
-  makeContractDeploy,
-  broadcastTransaction,
-  AnchorMode,
-  SignedContractDeployOptions,
-  PostConditionMode,
-} from "@stacks/transactions";
-import {
-  CONFIG,
-  deriveChildAccount,
-  getNetwork,
-  getNextNonce,
-  getTraitReference,
-  getAddressReference,
-} from "../utilities";
-import * as path from "path";
-import { Eta } from "eta";
-
-enum TraitType {
-  DAO_TRAITS = "aibtcdev-dao-traits-v1",
-  DAO_BASE = "aibtcdev-dao-v1",
-  POOL = "xyk-pool-trait-v-1-2",
-}
-
-type DeploymentResult = {
-  success: boolean;
-  contracts: {
-    [key in TraitType]?: any;
-  };
-  error?: {
-    stage?: string;
-    message?: string;
-    reason?: string | null;
-    details?: any;
-  };
-};
-
-// Initialize network and account
-const networkObj = getNetwork(CONFIG.NETWORK);
-const network = CONFIG.NETWORK;
+import { getAddressFromPrivateKey } from "@stacks/transactions";
+import { CONFIG, deriveChildAccount, getNetwork, getNextNonce } from "../utilities";
+import { TraitType, DeploymentResult } from "./types/dao-types";
+import { ContractGenerator } from "./services/contract-generator";
+import { ContractDeployer } from "./services/contract-deployer";
 
 // Define nonce offsets for each trait type
 const nonceOffsets: { [key in TraitType]: number } = {
@@ -47,121 +11,57 @@ const nonceOffsets: { [key in TraitType]: number } = {
   [TraitType.POOL]: 2,
 };
 
-async function generateTraitContract(traitType: TraitType, senderAddress: string): Promise<string> {
-  const eta = new Eta({ views: path.join(__dirname, "templates", "dao") });
-  
-  const data = {
-    sip10_trait: getTraitReference(network, "SIP10"),
-    sip09_trait: getTraitReference(network, "SIP09"),
-    dao_base_trait: getTraitReference(network, "DAO_BASE"),
-    dao_proposal_trait: getTraitReference(network, "DAO_PROPOSAL"),
-    dao_extension_trait: getTraitReference(network, "DAO_EXTENSION"),
-    creator: senderAddress,
-  };
-
-  return eta.render(`traits/${traitType}.clar`, data);
-}
-
-async function deployContract(
-  sourceCode: string,
-  traitType: TraitType,
-  nextPossibleNonce: number
-): Promise<{ success: boolean; data?: any; error?: any }> {
+async function main() {
   try {
-    const { address, key } = await deriveChildAccount(
-      CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
-
-    const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-    const theNextNonce = nextPossibleNonce + nonceOffsets[traitType];
-
-    const contractName = traitType.toLowerCase();
-    
-    const deployOptions: SignedContractDeployOptions = {
-      senderKey: key,
-      contractName,
-      codeBody: sourceCode,
-      clarityVersion: 2,
-      network: networkObj,
-      anchorMode: AnchorMode.Any,
-      postConditionMode: PostConditionMode.Allow,
-      nonce: theNextNonce,
-      fee: BigInt(100_000), // 0.1 STX
-    };
-
-    const transaction = await makeContractDeploy(deployOptions);
-    const broadcastResponse = await broadcastTransaction(transaction, networkObj);
-
-    return {
-      success: true,
-      data: {
-        contractPrincipal: `${address}.${contractName}`,
-        transactionId: `0x${broadcastResponse.txid}`,
-        sender: address
-      }
-    };
-  } catch (error: any) {
-    return {
+    const result: DeploymentResult = {
       success: false,
-      error: {
-        message: error.message,
-        details: error,
-      },
+      contracts: {},
     };
-  }
-}
 
-async function main(): Promise<void> {
-  const result: DeploymentResult = {
-    success: false,
-    contracts: {},
-  };
-
-  try {
+    const networkObj = getNetwork(CONFIG.NETWORK);
     const { address, key } = await deriveChildAccount(
       CONFIG.NETWORK,
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
     );
-    
+
     const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-    const nextPossibleNonce = await getNextNonce(network, senderAddress);
+    const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
 
-    // Deploy traits in order
-    const traitsToProcess = [TraitType.DAO_TRAITS, TraitType.DAO_BASE, TraitType.POOL];
+    const contractGenerator = new ContractGenerator(CONFIG.NETWORK, senderAddress);
+    const contractDeployer = new ContractDeployer(CONFIG.NETWORK);
 
-    for (const traitType of traitsToProcess) {
-      console.log(`Generating and deploying ${traitType}...`);
-      
-      const sourceCode = await generateTraitContract(traitType, senderAddress);
-      const deployResult = await deployContract(sourceCode, traitType, nextPossibleNonce);
+    // Deploy each trait contract
+    for (const traitType of Object.values(TraitType)) {
+      const contractSource = await contractGenerator.generateTraitContract(traitType);
+      const contractName = traitType.toLowerCase();
+      const nonce = nextPossibleNonce + nonceOffsets[traitType];
 
-      if (!deployResult.success) {
+      const deployment = await contractDeployer.deployContract(
+        contractSource,
+        traitType,
+        contractName,
+        nonce
+      );
+
+      if (!deployment.success) {
         result.error = {
-          stage: `Deploying ${traitType}`,
-          ...deployResult.error,
+          stage: traitType,
+          ...deployment.error,
         };
-        throw new Error(`Failed to deploy ${traitType}`);
+        return result;
       }
 
-      result.contracts[traitType] = deployResult.data;
-      console.log(`Successfully deployed ${traitType}`);
+      result.contracts[traitType.toString()] = deployment.data;
     }
 
     result.success = true;
+    console.log("Deployment successful:", JSON.stringify(result, null, 2));
+    return result;
   } catch (error: any) {
-    if (!result.error) {
-      result.error = {
-        message: error.message,
-        details: error,
-      };
-    }
-    console.error("Deployment failed:", result.error);
+    console.error("Error in main:", error);
+    process.exit(1);
   }
-
-  console.log("Deployment result:", JSON.stringify(result, null, 2));
 }
 
 main().catch((error) => {

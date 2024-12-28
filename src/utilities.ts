@@ -7,7 +7,7 @@ import {
 } from "@stacks/wallet-sdk";
 import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
 import { TxBroadcastResult, validateStacksAddress } from "@stacks/transactions";
-import { NetworkType, TraitDefinition, TraitType, NetworkAddressMap, NetworkAddresses, AddressType } from "./types";
+import { NetworkType, TraitType, NetworkAddressMap, NetworkAddresses, AddressType } from "./types";
 import { ADDRESSES, TRAITS } from "./constants";
 
 type Metrics = {
@@ -356,15 +356,31 @@ export async function getStxCityHash(data: string): Promise<string> {
 export function getTraitDefinition(
   network: NetworkType,
   traitType: TraitType
-): TraitDefinition {
+): string {
   const networkTraits = TRAITS[network];
   if (!networkTraits) {
     throw new Error(`No traits defined for network: ${network}`);
   }
 
-  const trait = networkTraits[traitType];
+  // Map TraitType to NetworkTraits keys
+  let traitKey: keyof NetworkTraits;
+  switch (traitType) {
+    case TraitType.DAO_TRAITS:
+      traitKey = "DAO_PROPOSAL"; // Using DAO_PROPOSAL as it's the closest match
+      break;
+    case TraitType.DAO_BASE:
+      traitKey = "DAO_BASE";
+      break;
+    case TraitType.POOL:
+      traitKey = "BITFLOW_POOL";
+      break;
+    default:
+      throw new Error(`Unsupported trait type: ${traitType}`);
+  }
+
+  const trait = networkTraits[traitKey];
   if (!trait) {
-    throw new Error(`Trait type ${traitType} not found for network ${network}`);
+    throw new Error(`Trait type ${traitKey} not found for network ${network}`);
   }
 
   return trait;
@@ -375,7 +391,7 @@ export function getTraitReference(
   traitType: TraitType
 ): string {
   const trait = getTraitDefinition(network, traitType);
-  return `${trait.contractAddress}.${trait.contractName}.${trait.traitName}`;
+  return trait;
 }
 
 export function getAddressDefinition(
