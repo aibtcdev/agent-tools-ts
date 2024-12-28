@@ -1,16 +1,17 @@
 export enum ContractType {
-  TOKEN,
-  POOL,
-  DEX,
-  DAO_BASE,
-  DAO_ACTIONS,
-  DAO_BANK_ACCOUNT,
-  DAO_DIRECT_EXECUTE,
-  DAO_MESSAGING,
-  DAO_PAYMENTS,
-  DAO_TREASURY,
-  DAO_PROPOSAL_BOOTSTRAP,
+  TOKEN = 'token',
+  POOL = 'pool',
+  DEX = 'dex',
+  DAO_BASE = 'aibtcdev-base-dao',
+  DAO_ACTIONS = 'aibtc-ext001-actions',
+  DAO_BANK_ACCOUNT = 'aibtc-ext002-bank-account',
+  DAO_DIRECT_EXECUTE = 'aibtc-ext003-direct-execute',
+  DAO_MESSAGING = 'aibtc-ext004-messaging',
+  DAO_PAYMENTS = 'aibtc-ext005-payments',
+  DAO_TREASURY = 'aibtc-ext006-treasury',
+  DAO_PROPOSAL_BOOTSTRAP = 'aibtc-prop001-bootstrap',
 }
+
 
 export type ContractNames = {
   [key in ContractType]: string;
