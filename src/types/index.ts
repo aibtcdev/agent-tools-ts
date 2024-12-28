@@ -39,23 +39,5 @@ export type NetworkAddressMap = {
   [key in NetworkType]: NetworkAddresses;
 };
 
-export type TraitType = keyof typeof TRAITS.testnet;
-export type AddressType = keyof typeof ADDRESSES.testnet;
-
-export enum ContractType {
-  TOKEN = 'token',
-  POOL = 'pool',
-  DEX = 'dex',
-  DAO_BASE = 'aibtcdev-base-dao',
-  DAO_ACTIONS = 'aibtc-ext001-actions',
-  DAO_BANK_ACCOUNT = 'aibtc-ext002-bank-account',
-  DAO_DIRECT_EXECUTE = 'aibtc-ext003-direct-execute',
-  DAO_MESSAGING = 'aibtc-ext004-messaging',
-  DAO_PAYMENTS = 'aibtc-ext005-payments',
-  DAO_TREASURY = 'aibtc-ext006-treasury',
-  DAO_PROPOSAL_BOOTSTRAP = 'aibtc-prop001-bootstrap',
-}
-
-export type ContractNames = {
-  [key in ContractType]: string;
-};
+export type NetworkTraitType = keyof typeof TRAITS.testnet;
+export type NetworkAddressType = keyof typeof ADDRESSES.testnet;
