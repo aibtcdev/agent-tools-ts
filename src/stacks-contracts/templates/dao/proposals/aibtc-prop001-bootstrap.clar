@@ -1,4 +1,4 @@
-(impl-trait '<%= it.proposal_trait %>)
+(impl-trait '<%= it.proposals_trait %>)
 
 (define-constant DAO_MANIFEST "This is where the DAO can put it's mission, purpose, and goals.")
 

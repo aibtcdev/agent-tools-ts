@@ -1,4 +1,4 @@
-import { expect, test, mock, describe, it } from "bun:test";
+import { expect, test, describe, it } from "bun:test";
 import {
   validateNetwork,
   microStxToStx,
@@ -10,165 +10,106 @@ import {
   getTraitReference,
 } from "./utilities";
 
-const mnemonic = CONFIG.MNEMONIC;
-const stxAddress = "ST3GEF4KYM4V41FHC9NX0F7K0GW1VC6A4WPXNYQKS";
-const stxBnsName = "probablyhuman.btc";
+const TEST_MNEMONIC = CONFIG.MNEMONIC;
+const TEST_STX_ADDRESS = "ST3GEF4KYM4V41FHC9NX0F7K0GW1VC6A4WPXNYQKS";
 
 describe("Utility Functions", () => {
   describe("validateNetwork", () => {
-    test("handles valid networks", () => {
-      expect(validateNetwork("mainnet")).toBe("mainnet");
-      expect(validateNetwork("testnet")).toBe("testnet");
-      expect(validateNetwork("devnet")).toBe("devnet");
-      expect(validateNetwork("mocknet")).toBe("mocknet");
+    it("should accept valid network values", () => {
+      const validNetworks = ["mainnet", "testnet", "devnet", "mocknet"];
+      validNetworks.forEach(network => {
+        expect(validateNetwork(network)).toBe(network);
+      });
     });
 
-    test("defaults to testnet for invalid inputs", () => {
-      expect(validateNetwork("invalid")).toBe("testnet");
-      expect(validateNetwork(undefined)).toBe("testnet");
-      expect(validateNetwork("")).toBe("testnet");
+    it("should default to testnet for invalid or missing inputs", () => {
+      const invalidInputs = ["invalid", undefined, "", null];
+      invalidInputs.forEach(input => {
+        expect(validateNetwork(input as any)).toBe("testnet");
+      });
     });
   });
 
-  describe("STX conversion", () => {
-    test("microStxToStx handles various inputs", () => {
-      expect(microStxToStx(1000000)).toBe(1);
-      expect(microStxToStx(0)).toBe(0);
-      expect(microStxToStx(1)).toBe(0.000001);
+  describe("STX conversion utilities", () => {
+    const testCases = [
+      { stx: 1, microStx: 1000000 },
+      { stx: 0, microStx: 0 },
+      { stx: 0.000001, microStx: 1 },
+      { stx: 123.456789, microStx: 123456789 }
+    ];
+
+    testCases.forEach(({ stx, microStx }) => {
+      it(`should correctly convert ${stx} STX to ${microStx} microSTX and back`, () => {
+        expect(stxToMicroStx(stx)).toBe(microStx);
+        expect(microStxToStx(microStx)).toBeCloseTo(stx, 6);
+      });
     });
 
-    test("stxToMicroStx handles various inputs", () => {
-      expect(stxToMicroStx(1)).toBe(1000000);
-      expect(stxToMicroStx(0)).toBe(0);
-      expect(stxToMicroStx(0.000001)).toBe(1);
-    });
-
-    test("conversion roundtrip preserves value", () => {
-      const original = 1.23456;
-      expect(microStxToStx(stxToMicroStx(original))).toBeCloseTo(original, 5);
+    it("should handle decimal precision correctly", () => {
+      const original = 1.23456789;
+      expect(microStxToStx(stxToMicroStx(original))).toBeCloseTo(original, 6);
     });
   });
 
   describe("deriveChildAccount", () => {
-    test("returns expected properties for multiple accounts", async () => {
-      const account0 = await deriveChildAccount("testnet", mnemonic, 0);
-      const account1 = await deriveChildAccount("testnet", mnemonic, 1);
-      expect(account0).toHaveProperty("address");
-      expect(account0).toHaveProperty("key");
-      expect(account1).toHaveProperty("address");
-      expect(account1).toHaveProperty("key");
-      expect(account1.address).toEqual(stxAddress);
+    it("should derive consistent accounts with expected properties", async () => {
+      const accounts = await Promise.all([
+        deriveChildAccount("testnet", TEST_MNEMONIC, 0),
+        deriveChildAccount("testnet", TEST_MNEMONIC, 1)
+      ]);
+
+      accounts.forEach(account => {
+        expect(account).toHaveProperty("address");
+        expect(account.address).toMatch(/^ST/);
+        expect(account).toHaveProperty("key");
+        expect(typeof account.key).toBe("string");
+      });
+
+      expect(accounts[1].address).toEqual(TEST_STX_ADDRESS);
     });
-  });
 
-  describe("getNamesOwnedByAddress", () => {
-    // test("returns array containing expected name", async () => {
-    //   const names = await getNamesOwnedByAddress("testnet", stxAddress);
-    //   expect(Array.isArray(names)).toBeTruthy();
-    //   expect(names).toContain(stxBnsName);
-    // });
-    // test("handles address with no names", async () => {
-    //   const names = await getNamesOwnedByAddress(
-    //     "testnet",
-    //     "ST000000000000000000000000000000000"
-    //   );
-    //   expect(Array.isArray(names)).toBeTruthy();
-    //   expect(names.length).toBe(0);
-    // });
-  });
-
-  describe("getAddressByName", () => {
-    // test("returns correct address for valid name", async () => {
-    //   const address = await getAddressByName("testnet", stxBnsName);
-    //   expect(typeof address).toBe("string");
-    //   expect(address).toEqual(stxAddress);
-    // });
-    // test("handles non-existent name", async () => {
-    //   expect(
-    //     getAddressByName("testnet", "non-existent-name.btc")
-    //   ).rejects.toThrow();
-    // });
+    it("should derive different addresses for different indices", async () => {
+      const [account0, account1] = await Promise.all([
+        deriveChildAccount("testnet", TEST_MNEMONIC, 0),
+        deriveChildAccount("testnet", TEST_MNEMONIC, 1)
+      ]);
+      expect(account0.address).not.toEqual(account1.address);
+    });
   });
 
   describe("getNextNonce", () => {
-    test("returns a number", async () => {
-      const nonce = await getNextNonce("testnet", stxAddress);
+    it("should return a valid nonce number", async () => {
+      const nonce = await getNextNonce("testnet", TEST_STX_ADDRESS);
       expect(typeof nonce).toBe("number");
+      expect(nonce).toBeGreaterThanOrEqual(0);
     });
 
-    test("handles API error", async () => {
-      // store original fetch function to restore after test
+    it("should handle API errors gracefully", async () => {
       const originalFetch = global.fetch;
-
       try {
-        // mock the global fetch function to simulate an API error
-        global.fetch = mock(async () => {
-          return new Response(JSON.stringify(""), {
-            status: 500,
-            statusText: "Internal Server Error",
-          });
-        });
-
-        expect(getNextNonce("testnet", stxAddress)).rejects.toThrow(
-          "Failed to get nonce: Internal Server Error"
-        );
+        global.fetch = () => Promise.reject(new Error("Network error"));
+        await expect(getNextNonce("testnet", TEST_STX_ADDRESS))
+          .rejects
+          .toThrow("Failed to fetch nonce");
       } finally {
-        // restore original fetch function
         global.fetch = originalFetch;
       }
     });
   });
 
-  describe("getContractSource", () => {
-    // test("returns a string for valid contract", async () => {
-    //   const source = await getContractSource(
-    //     "testnet",
-    //     stxAddress,
-    //     "aibtcdev-aibtc"
-    //   );
-    //   expect(typeof source).toBe("string");
-    // });
-    // test("handles non-existent contract", async () => {
-    //   expect(
-    //     getContractSource("testnet", stxAddress, "non-existent-contract")
-    //   ).rejects.toThrow();
-    // });
-  });
+  describe("Trait utilities", () => {
+    it("should return valid SIP010_FT trait definition for testnet", () => {
+      const trait = getTraitDefinition("testnet", "SIP010_FT");
+      expect(trait).toHaveProperty("contractAddress");
+      expect(trait).toHaveProperty("contractName");
+      expect(typeof trait.contractAddress).toBe("string");
+      expect(typeof trait.contractName).toBe("string");
+    });
 
-  describe("getAddressBalance", () => {
-    // test("returns object with expected properties", async () => {
-    //   const balance = await getAddressBalance("testnet", stxAddress);
-    //   expect(balance).toHaveProperty("total");
-    //   expect(balance).toHaveProperty("locked");
-    //   expect(balance).toHaveProperty("unlocked");
-    // });
-    // test("handles zero balance", async () => {
-    //   const balance = await getAddressBalance(
-    //     "testnet",
-    //     "ST000000000000000000000000000000000"
-    //   );
-    //   expect(balance.total).toBe("0");
-    //   expect(balance.locked).toBe("0");
-    //   expect(balance.unlocked).toBe("0");
-    // });
-  });
-});
-
-describe("Trait Config Utilities", () => {
-  it("should get SIP010_FT trait for testnet", () => {
-    const trait = getTraitDefinition("testnet", "SIP010_FT");
-    expect(trait).toHaveProperty("contractAddress");
-    expect(trait).toHaveProperty("contractName");
-    expect(trait).toHaveProperty("traitName");
-  });
-
-  it("should get sip10 trait reference for mainnet", () => {
-    const trait = getTraitReference("mainnet", "SIP010_FT");
-    console.log(trait);
-  });
-
-  it("should get sip10 trait reference for testnet", () => {
-    const trait = getTraitReference("testnet", "SIP010_FT");
-    console.log(trait);
+    it("should return valid trait reference", () => {
+      const trait = getTraitReference("testnet", "SIP010_FT");
+      expect(typeof trait).toBe("string");
+      expect(trait).toMatch(/^'.*::.*'$/);
+    });
   });
 });

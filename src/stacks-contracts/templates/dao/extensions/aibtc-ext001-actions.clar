@@ -5,7 +5,7 @@
 
 ;; traits
 ;;
-(impl-trait '<%= it.dao_extension_trait %>)
+(impl-trait '<%= it.extension_trait %>)
 
 (use-trait ft-trait '<%= it.sip10_trait %>)
 (use-trait treasury-trait '<%= it.treasury_trait %>)

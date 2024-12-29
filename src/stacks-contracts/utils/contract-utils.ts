@@ -2,9 +2,9 @@ import { ContractType, ContractNames } from "../types/dao-types";
 
 export function generateContractNames(tokenSymbol: string): ContractNames {
   return {
-    [ContractType.TOKEN]: `${tokenSymbol.toLowerCase()}-aibtcdev`,
-    [ContractType.POOL]: `xyz-pool-stx-${tokenSymbol.toLowerCase()}-v-1-1`,
-    [ContractType.DEX]: `${tokenSymbol.toLowerCase()}-aibtcdev-dex`,
+    [ContractType.TOKEN]: `${tokenSymbol.toLowerCase()}-stxcity`,
+    [ContractType.POOL]: `xyk-pool-stx-${tokenSymbol.toLowerCase()}-v-1-1`,
+    [ContractType.DEX]: `${tokenSymbol.toLowerCase()}-stxcity-dex`,
     [ContractType.DAO_BASE]: `${tokenSymbol.toLowerCase()}-base-dao`,
     [ContractType.DAO_ACTIONS]: `${tokenSymbol.toLowerCase()}-ext001-actions`,
     [ContractType.DAO_BANK_ACCOUNT]: `${tokenSymbol.toLowerCase()}-ext002-bank-account`,

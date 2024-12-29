@@ -28,9 +28,9 @@
 (define-constant COMPLETE_FEE u<%= it.complete_fee %>) ;; 2% of STX_TARGET_AMOUNT
 
 ;; FEE AND DEX WALLETS
-(define-constant SWAP_FEE_WALLET '<%= it.swap_fee_wallet %>)
-(define-constant COMPLETE_FEE_WALLET '<%= it.complete_fee_wallet %>)
-(define-constant BURN_ADDRESS '<%= it.burn_address %>) ;; burn mainnet
+(define-constant STX_CITY_SWAP_FEE_WALLET '<%= it.stxcity_swap_fee %>)
+(define-constant STX_CITY_COMPLETE_FEE_WALLET '<%= it.stxcity_complete_fee %>)
+(define-constant BURN_ADDRESS '<%= it.burn %>) ;; burn mainnet
 
 (define-constant deployer tx-sender)
 (define-constant allow-token '<%= it.token_contract %>)
@@ -59,7 +59,7 @@
       
     )
       ;; user send stx fee to stxcity
-      (try! (stx-transfer? stx-fee tx-sender SWAP_FEE_WALLET))
+      (try! (stx-transfer? stx-fee tx-sender STX_CITY_SWAP_FEE_WALLET))
       ;; user send stx to dex
       (try! (stx-transfer? stx-after-fee tx-sender (as-contract tx-sender)))
       ;; dex send token to user
@@ -86,7 +86,7 @@
             ;; Call XYK Core v-1-2 pool by Bitflow
             (try! (as-contract (contract-call? '<%= it.bitflow_core_contract %> create-pool '<%= it.pool_contract %> '<%= it.bitflow_stx_token_address %> token-trait remain-stx remain-tokens xyk-burn-amount u10 u40 u10 u40 '<%= it.bitflow_fee_address %> xyk-pool-uri true)))
             ;; send fee
-            (try! (as-contract (stx-transfer? COMPLETE_FEE tx-sender COMPLETE_FEE_WALLET)))
+            (try! (as-contract (stx-transfer? COMPLETE_FEE tx-sender STX_CITY_COMPLETE_FEE_WALLET)))
             ;; update global variables
             (var-set tradable false)
             (var-set stx-balance u0)
@@ -124,7 +124,7 @@
       (try! (contract-call? token-trait transfer tokens-in tx-sender BONDING-DEX-ADDRESS none))
       ;; dex transfer stx to user and stxcity
       (try! (as-contract (stx-transfer? stx-receive tx-sender recipient)))
-      (try! (as-contract (stx-transfer? stx-fee tx-sender SWAP_FEE_WALLET)))
+      (try! (as-contract (stx-transfer? stx-fee tx-sender STX_CITY_SWAP_FEE_WALLET)))
       ;; update global variable
       (var-set stx-balance (- (var-get stx-balance) stx-out))
       (var-set token-balance new-token-balance)
@@ -163,7 +163,7 @@
       (new-token-balance (+ current-token-balance tokens-in))
       (new-stx-balance (/ k new-token-balance)) ;; y' = k / x'
       (stx-out (- (- current-stx-balance new-stx-balance) u1)) ;; prevent the round number
-      (stx-fee (/ (* stx-amount u2) u100)) ;; 2% fee
+      (stx-fee (/ (* stx-out u2) u100)) ;; 2% fee
       (stx-receive (- stx-out stx-fee))
   )
    (ok  {fee: stx-fee, 
@@ -181,11 +181,24 @@
 
 ;; initialize contract based on token's details
 (begin
+  ;; Set the virtual STX amount
   (var-set virtual-stx-amount VIRTUAL_STX_VALUE)
-  (var-set token-balance (/ (* token-supply u40) u100)) ;; Calculate 40% of total supply
+  
+  ;; Set the token balance to 40% of the total supply using inline division
+  (var-set token-balance (/ (* token-supply u40) u100)) ;; Direct calculation of 40% of total supply
+  
+  ;; Set tradable flag
   (var-set tradable true)
+  
+  ;; Set burn percentage
   (var-set burn-percent u20)
-  (var-set deployer-percent u10) ;; based on the burn-amount. It's about ~0.1 to 0.5% supply
+  
+  ;; Set deployer percentage (based on burn amount)
+  (var-set deployer-percent u10) ;; About ~0.1 to 0.5% supply based on burn-amount
+  
+  ;; Transfer STX deployment fee
   (try! (stx-transfer? u500000 tx-sender '<%= it.stxcity_dex_deployment_fee_address %>))
+  
+  ;; Return success
   (ok true)
 )

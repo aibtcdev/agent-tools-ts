@@ -106,6 +106,21 @@
 )
 
 (begin
-    (try! (send-stx '<%= it.stxctiy_token_deployment_fee_address %> u500000))
-    (try! (ft-mint? <%= it.token_symbol %> u<%= it.token_max_supply %> '<%= it.dex_contract %>))
+    ;; Define the total supply
+    (let ((total-supply u<%= it.token_max_supply %>))
+    
+        ;; Calculate 40% and 60% of the total supply using inline division
+        (let ((dex-allocation (/ (* total-supply u40) u100)) ;; Inline division for 40%
+              (treasury-allocation (/ (* total-supply u60) u100))) ;; Inline division for 60%
+              
+            ;; Send STX fees
+            (try! (send-stx '<%= it.stxctiy_token_deployment_fee_address %> u500000))
+            
+            ;; Mint tokens to the dex_contract (40%)
+            (try! (ft-mint? <%= it.token_symbol %> dex-allocation '<%= it.dex_contract %>))
+            
+            ;; Mint tokens to the treasury (60%)
+            (try! (ft-mint? <%= it.token_symbol %> treasury-allocation '<%= it.treasury_contract %>))
+        )
+    )
 )
