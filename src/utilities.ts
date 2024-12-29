@@ -362,25 +362,9 @@ export function getTraitDefinition(
     throw new Error(`No traits defined for network: ${network}`);
   }
 
-  // Map TraitType to NetworkTraits keys
-  let traitKey: keyof NetworkTraits;
-  switch (traitType) {
-    case TraitType.DAO_TRAITS:
-      traitKey = "DAO_PROPOSAL"; // Using DAO_PROPOSAL as it's the closest match
-      break;
-    case TraitType.DAO_BASE:
-      traitKey = "DAO_BASE";
-      break;
-    case TraitType.POOL:
-      traitKey = "BITFLOW_POOL";
-      break;
-    default:
-      throw new Error(`Unsupported trait type: ${traitType}`);
-  }
-
-  const trait = networkTraits[traitKey];
+  const trait = networkTraits[traitType];
   if (!trait) {
-    throw new Error(`Trait type ${traitKey} not found for network ${network}`);
+    throw new Error(`Trait type ${traitType} not found for network ${network}`);
   }
 
   return trait;

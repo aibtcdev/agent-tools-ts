@@ -4,9 +4,9 @@
 
 ;; traits
 ;;
-(impl-trait '<% it.extension_trait %>)
-(impl-trait '<% it.invoices_trait %>)
-(impl-trait '<% it.resources_trait %>)
+(impl-trait '<%= it.extension_trait %>)
+(impl-trait '<%= it.invoices_trait %>)
+(impl-trait '<%= it.resources_trait %>)
 
 ;; constants
 ;;
@@ -45,7 +45,7 @@
 (define-data-var totalRevenue uint u0)
 
 ;; dao can update payment address
-(define-data-var paymentAddress principal '<% it.bank_account_address %>)
+(define-data-var paymentAddress principal '<%= it.bank_account_address %>)
 
 ;; data maps
 ;;
@@ -403,8 +403,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<% it.dao_contract_address %>)
-    (contract-call? '<% it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
+    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 

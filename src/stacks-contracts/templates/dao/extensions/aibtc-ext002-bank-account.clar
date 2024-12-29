@@ -4,8 +4,8 @@
 
 ;; traits
 ;;
-(impl-trait '<% it.extension_trait %>)
-(impl-trait '<% it.bank_account_trait %>)
+(impl-trait '<%= it.extension_trait %>)
+(impl-trait '<%= it.bank_account_trait %>)
 
 ;; constants
 ;;
@@ -142,8 +142,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<% it.dao_contract_address %>)
-    (contract-call? '<% it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
+    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 

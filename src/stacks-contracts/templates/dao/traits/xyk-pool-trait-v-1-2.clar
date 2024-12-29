@@ -1,7 +1,7 @@
 ;; xyk-pool-trait-v-1-2
 
 ;; Use SIP 010 trait
-(use-trait sip-010-trait '<%= it.sip10_trait %>)
+(use-trait sip-010-trait .sip-010-trait-ft-standard.sip-010-trait)
 
 ;; Define pool trait for XYK Core
 (define-trait xyk-pool-trait

@@ -206,7 +206,8 @@ export class ContractGenerator {
       dao_contract_address: daoContractAddress,
       bank_account_address: bankAccountAddress,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
-      payments_trait: getTraitReference(this.network, "DAO_PAYMENTS"),
+      invoice_trait: getTraitReference(this.network, "DAO_INVOICES"),
+      resources_trait: getTraitReference(this.network, "DAO_RESOURCES"),
     };
     return this.eta.render("extensions/aibtc-ext005-payments.clar", data);
   }

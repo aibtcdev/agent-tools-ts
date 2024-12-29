@@ -4,11 +4,11 @@
 
 ;; traits
 ;;
-(impl-trait '<% it.extension_trait %>)
-(impl-trait '<% it.treasury_trait %>)
+(impl-trait '<%= it.extension_trait %>)
+(impl-trait '<%= it.treasury_trait %>)
 
-(use-trait ft-trait '<% it.sip10_trait %>)
-(use-trait nft-trait '<% it.sip09_trait %>)
+(use-trait ft-trait '<%= it.sip10_trait %>)
+(use-trait nft-trait '<%= it.sip09_trait %>)
 
 ;; constants
 ;;
@@ -171,7 +171,7 @@
         sender: tx-sender
       }
     })
-    (match (as-contract (contract-call? '<% it.pox_contract_address %> delegate-stx maxAmount to none none))
+    (match (as-contract (contract-call? '<%= it.pox_contract_address %> delegate-stx maxAmount to none none))
       success (ok success)
       err (err (to-uint err))
     )
@@ -189,7 +189,7 @@
         sender: tx-sender
       }
     })
-    (match (as-contract (contract-call? '<% it.pox_contract_address %> revoke-delegate-stx))
+    (match (as-contract (contract-call? '<%= it.pox_contract_address %> revoke-delegate-stx))
       success (begin (print success) (ok true))
       err (err (to-uint err))
     )
@@ -211,8 +211,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<% it.dao_contract_address %>)
-    (contract-call? '<% it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
+    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 

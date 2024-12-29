@@ -5,12 +5,12 @@
 
 ;; traits
 ;;
-(impl-trait '<% it.dao_extension_trait %>)
+(impl-trait '<%= it.dao_extension_trait %>)
 
-(use-trait ft-trait '<% it.sip10_trait %>)
-(use-trait treasury-trait '<% it.treasury_trait %>)
-(use-trait messaging-trait '<% it.messaging_trait %>)
-(use-trait resources-trait '<% it.resources_trait %>)
+(use-trait ft-trait '<%= it.sip10_trait %>)
+(use-trait treasury-trait '<%= it.treasury_trait %>)
+(use-trait messaging-trait '<%= it.messaging_trait %>)
+(use-trait resources-trait '<%= it.resources_trait %>)
 
 ;; constants
 ;;
@@ -332,8 +332,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<% it.dao_contract_address %>)
-    (contract-call? '<% it.dao_contract_address %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
+  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
+    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )
 

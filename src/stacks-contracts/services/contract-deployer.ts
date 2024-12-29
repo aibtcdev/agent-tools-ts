@@ -43,7 +43,7 @@ export class ContractDeployer {
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow,
         nonce: nonce !== undefined ? nonce : undefined,
-        fee: BigInt(100_000), // 0.1 STX
+        fee: BigInt(1_000_000), // 0.1 STX
       };
 
       const transaction = await makeContractDeploy(deployOptions);

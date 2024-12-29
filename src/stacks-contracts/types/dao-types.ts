@@ -18,9 +18,11 @@ export type ContractNames = {
 };
 
 export enum TraitType {
-  DAO_TRAITS = "aibtcdev-dao-traits-v1",
-  DAO_BASE = "aibtcdev-dao-v1",
   POOL = "xyk-pool-trait-v-1-2",
+  DAO_BASE = "aibtcdev-dao-v1",
+  DAO_TRAITS = "aibtcdev-dao-traits-v1",
+  SIP09 = "nft-trait",
+  SIP10 = "sip-010-trait-ft-standard",
 }
 
 export type TraitNames = {

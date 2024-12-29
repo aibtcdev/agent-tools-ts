@@ -5,9 +5,9 @@
 ;; traits
 ;;
 
-(impl-trait '<% it.base_dao_trait %>)
-(use-trait proposal-trait '<% it.proposal_trait %>)
-(use-trait extension-trait '<% it.extension_trait %>)
+(impl-trait '<%= it.base_dao_trait %>)
+(use-trait proposal-trait '<%= it.proposal_trait %>)
+(use-trait extension-trait '<%= it.extension_trait %>)
 
 ;; constants
 ;;

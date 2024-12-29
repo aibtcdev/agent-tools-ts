@@ -28,9 +28,7 @@ async function main() {
   if (!mnemonic) {
     throw new Error("No mnemonic provided in environment variables");
   }
-  if (!accountIndex) {
-    throw new Error("No account index provided in environment variables");
-  }
+
   // get network object
   const networkObj = getNetwork(network);
   // get tx version object

@@ -50,31 +50,10 @@ async function main() {
       tokenDecimals,
       tokenUri
     );
-    const tokenDeployment = await contractDeployer.deployContract(
-      tokenSource,
-      ContractType.TOKEN,
-      contractNames[ContractType.TOKEN],
-      nextPossibleNonce
-    );
-    if (!tokenDeployment.success) {
-      result.error = { stage: "token", ...tokenDeployment.error };
-      return result;
-    }
-    result.contracts.token = tokenDeployment.data;
-
+    console.log(tokenSource);
     // Deploy Pool Contract
     const poolSource = await contractGenerator.generatePoolContract(tokenSymbol);
-    const poolDeployment = await contractDeployer.deployContract(
-      poolSource,
-      ContractType.POOL,
-      contractNames[ContractType.POOL],
-      nextPossibleNonce + 1
-    );
-    if (!poolDeployment.success) {
-      result.error = { stage: "pool", ...poolDeployment.error };
-      return result;
-    }
-    result.contracts.pool = poolDeployment.data;
+    console.log(poolSource);
 
     // Deploy DEX Contract
     const dexSource = await contractGenerator.generateBondingDexContract(
@@ -82,17 +61,7 @@ async function main() {
       tokenDecimals,
       tokenSymbol
     );
-    const dexDeployment = await contractDeployer.deployContract(
-      dexSource,
-      ContractType.DEX,
-      contractNames[ContractType.DEX],
-      nextPossibleNonce + 2
-    );
-    if (!dexDeployment.success) {
-      result.error = { stage: "dex", ...dexDeployment.error };
-      return result;
-    }
-    result.contracts.dex = dexDeployment.data;
+    console.log(dexSource);
 
     // Generate all DAO contracts
     const contracts = await contractGenerator.generateDaoContracts(senderAddress, tokenSymbol);
@@ -108,29 +77,11 @@ async function main() {
     // Deploy all contracts
     for (const [key, contract] of sortedContracts) {
 
-      const deployment = await contractDeployer.deployContract(
-        contract.source,
-        contract.type,
-        contract.name,
-        nextPossibleNonce + daoNonce
-      );
+      console.log(contract.source)
 
-      if (!deployment.success) {
-        result.error = {
-          stage: `Deploying ${contract.type}`,
-          message: deployment.error?.message,
-          reason: deployment.error?.reason,
-          details: deployment.error?.details,
-        };
-        return result;
-      }
-
-      daoNonce += 1;
-      result.contracts[contract.type] = deployment.data;
     }
 
     result.success = true;
-    console.log(JSON.stringify(result, null, 2));
     return result;
   } catch (error: any) {
     console.error(JSON.stringify({ success: false, message: error }));

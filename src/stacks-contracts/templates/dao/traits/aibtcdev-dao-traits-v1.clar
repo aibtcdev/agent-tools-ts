@@ -4,8 +4,8 @@
 
 ;; IMPORTS
 
-(use-trait ft-trait '<%= it.sip10_trait %>)
-(use-trait nft-trait '<%= it.sip09_trait %>)
+(use-trait ft-trait .sip-010-trait-ft-standard.sip-010-trait)
+(use-trait nft-trait .nft-trait.nft-trait)
 
 ;; CORE DAO TRAITS
 
@@ -141,7 +141,7 @@
   ;; set the protocol treasury contract
   ;; @param treasury the treasury contract principal
   ;; @returns (response bool uint)
-  (set-protocol-treasury (<treasury>) (response bool uint))
+  (set-protocol-treasury (<treasury-trait>) (response bool uint))
   ;; set the voting token contract
   ;; @param token the token contract principal
   ;; @returns (response bool uint)
@@ -150,17 +150,17 @@
   ;; @param proposal the proposal contract
   ;; @param token the voting token contract
   ;; @returns (response bool uint)
-  (create-proposal (<proposal> <ft-trait>) (response bool uint))
+  (create-proposal (<proposal-trait> <ft-trait>) (response bool uint))
   ;; vote on an existing proposal
   ;; @param proposal the proposal contract
   ;; @param token the voting token contract
   ;; @param vote true for yes, false for no
   ;; @returns (response bool uint)
-  (vote-on-proposal (<proposal> <ft-trait> bool) (response bool uint))
+  (vote-on-proposal (<proposal-trait> <ft-trait> bool) (response bool uint))
   ;; conclude a proposal after voting period
   ;; @param proposal the proposal contract
   ;; @param treasury the treasury contract
   ;; @param token the voting token contract
   ;; @returns (response bool uint)
-  (conclude-proposal (<proposal> <treasury> <ft-trait>) (response bool uint))
+  (conclude-proposal (<proposal-trait> <treasury-trait> <ft-trait>) (response bool uint))
 ))

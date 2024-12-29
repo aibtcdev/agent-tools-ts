@@ -5,12 +5,12 @@
 
 ;; traits
 ;;
-(impl-trait '<% it.extension_trait %>)
-(impl-trait '<% it.direct_execute_trait %>)
+(impl-trait '<%= it.extension_trait %>)
+(impl-trait '<%= it.direct_execute_trait %>)
 
-(use-trait ft-trait '<% it.sip10_trait %>)
-(use-trait proposal-trait '<% it.proposal_trait %>)
-(use-trait treasury-trait '<% it.treasury_trait %>)
+(use-trait ft-trait '<%= it.sip10_trait %>)
+(use-trait proposal-trait '<%= it.proposal_trait %>)
+(use-trait treasury-trait '<%= it.treasury_trait %>)
 
 
 ;; constants
@@ -146,7 +146,7 @@
     ;; caller has the required balance
     (asserts! (> (try! (contract-call? token get-balance tx-sender)) u0) ERR_INSUFFICIENT_BALANCE)
     ;; proposal was not already executed
-    (asserts! (is-none (contract-call? '<% it.dao_contract_address %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
+    (asserts! (is-none (contract-call? '<%= it.dao_contract_address %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; print proposal creation event
     (print {
       notification: "create-proposal",
@@ -186,7 +186,7 @@
     ;; caller has the required balance
     (asserts! (> senderBalance u0) ERR_ZERO_VOTING_POWER)
     ;; proposal was not already executed
-    (asserts! (is-none (contract-call? '<% it.dao_contract_address %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
+    (asserts! (is-none (contract-call? '<%= it.dao_contract_address %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; proposal is still active
     (asserts! (>= burn-block-height (get startBlock proposalRecord)) ERR_VOTE_TOO_SOON)
     (asserts! (< burn-block-height (get endBlock proposalRecord)) ERR_VOTE_TOO_LATE)
@@ -231,7 +231,7 @@
     ;; verify treasury matches protocol treasury
     (asserts! (is-eq treasuryContract (var-get protocolTreasury)) ERR_TREASURY_MISMATCH)
     ;; proposal was not already executed
-    (asserts! (is-none (contract-call? '<% it.dao_contract_address %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
+    (asserts! (is-none (contract-call? '<%= it.dao_contract_address %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; proposal past end block height
     (asserts! (>= burn-block-height (get endBlock proposalRecord)) ERR_PROPOSAL_STILL_ACTIVE)
     ;; proposal not already concluded
@@ -252,7 +252,7 @@
       })
     )
     ;; execute the proposal only if it passed
-    (and votePassed (try! (contract-call? '<% it.dao_contract_address %> execute proposal tx-sender)))
+    (and votePassed (try! (contract-call? '<%= it.dao_contract_address %> execute proposal tx-sender)))
     ;; return the result
     (ok votePassed)
   )
@@ -303,7 +303,7 @@
 ;; 
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<% it.dao_contract_address %>)
-    (contract-call? '<% it.dao_contract_address %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
+  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
+    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )

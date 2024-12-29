@@ -11,7 +11,6 @@ export type NetworkTraits = {
   DAO_EXTENSION: string;
   DAO_DIRECT_EXECUTE: string;
   DAO_TREASURY: string;
-  DAO_PAYMENTS: string;
   DAO_MESSAGING: string;
   DAO_BANK_ACCOUNT: string;
   DAO_RESOURCES: string;

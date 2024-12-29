@@ -84,7 +84,7 @@
             ;; send to deployer
             (try! (as-contract (contract-call? token-trait transfer deployer-amount tx-sender deployer none)))
             ;; Call XYK Core v-1-2 pool by Bitflow
-            (try! (as-contract (contract-call? '<%= it.bitflow_core_contract %> create-pool '<%= it.pool_contract %> '<%= it.bitflow_stx_token_address %> token-trait remain-stx remain-tokens xyk-burn-amount u10 u40 u10 u40 '<% it.bitflow_fee_address %> xyk-pool-uri true)))
+            (try! (as-contract (contract-call? '<%= it.bitflow_core_contract %> create-pool '<%= it.pool_contract %> '<%= it.bitflow_stx_token_address %> token-trait remain-stx remain-tokens xyk-burn-amount u10 u40 u10 u40 '<%= it.bitflow_fee_address %> xyk-pool-uri true)))
             ;; send fee
             (try! (as-contract (stx-transfer? COMPLETE_FEE tx-sender COMPLETE_FEE_WALLET)))
             ;; update global variables
@@ -186,6 +186,6 @@
   (var-set tradable true)
   (var-set burn-percent u20)
   (var-set deployer-percent u10) ;; based on the burn-amount. It's about ~0.1 to 0.5% supply
-  (try! (stx-transfer? u500000 tx-sender '<% it.stxcity_dex_deployment_fee_address %>))
+  (try! (stx-transfer? u500000 tx-sender '<%= it.stxcity_dex_deployment_fee_address %>))
   (ok true)
 )

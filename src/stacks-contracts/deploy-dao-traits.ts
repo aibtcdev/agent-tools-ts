@@ -6,9 +6,11 @@ import { ContractDeployer } from "./services/contract-deployer";
 
 // Define nonce offsets for each trait type
 const nonceOffsets: { [key in TraitType]: number } = {
-  [TraitType.DAO_TRAITS]: 0,
-  [TraitType.DAO_BASE]: 1,
-  [TraitType.POOL]: 2,
+  [TraitType.SIP10]: 0,
+  [TraitType.SIP09]: 1,
+  [TraitType.DAO_TRAITS]: 2,
+  [TraitType.DAO_BASE]: 3,
+  [TraitType.POOL]: 4,
 };
 
 async function main() {
@@ -56,15 +58,15 @@ async function main() {
     }
 
     result.success = true;
-    console.log("Deployment successful:", JSON.stringify(result, null, 2));
+    console.log(JSON.stringify(result, null, 2));
     return result;
   } catch (error: any) {
-    console.error("Error in main:", error);
+    console.error(JSON.stringify({ success: false, message: error.message }));
     process.exit(1);
   }
 }
 
 main().catch((error) => {
-  console.error("Error in main:", error);
+  console.error(JSON.stringify({ success: false, message: error.message }));
   process.exit(1);
 });
