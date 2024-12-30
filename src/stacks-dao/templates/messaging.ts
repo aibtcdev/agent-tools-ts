@@ -1,14 +1,13 @@
 import { TRAITS } from "../../constants";
 
 export type MessagingContractParams = {
-  name: string;
   network: "mainnet" | "testnet";
 };
 
 export function generateContract(params: MessagingContractParams): string {
-  const { name, network } = params;
+  const { network } = params;
 
-  return `;; title: ${name}-messaging
+  return `;; title: AIBTCDev DAO Messaging
 ;; version: 1.0.0
 ;; summary: An extension to send messages on-chain to anyone listening to this contract.
 

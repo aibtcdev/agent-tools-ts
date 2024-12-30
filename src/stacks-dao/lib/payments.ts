@@ -53,7 +53,7 @@ export class Payments extends BaseComponent {
     const { contract: codeBody } = await this.generate(options);
 
     return this.makeContractDeploy({
-      contractName: `${options.name}-payments`,
+      contractName: `aibtcdev-payments-${Date.now()}`,
       codeBody,
       ...options,
       onFinish: (data) => {

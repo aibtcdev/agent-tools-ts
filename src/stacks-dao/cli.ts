@@ -41,12 +41,11 @@ executor
 executor
   .command("get-mission")
   .description("Get the mission statement of the DAO")
-  .action(async () => {
+  .requiredOption("-x, --executor <executor>", "executor contract ID")
+  .action(async (options) => {
     const spinner = ora("Getting DAO mission statement...").start();
     try {
-      const mission = await sdk.executor.getMission(
-        "ST2D5BGGJ956A635JG7CJQ59FTRFRB08934NHKJ95.test-dao-1734938378667-executor"
-      );
+      const mission = await sdk.executor.getMission(options.executor);
       spinner.succeed("Found DAO mission:");
       console.log(chalk.green(mission));
     } catch (error) {

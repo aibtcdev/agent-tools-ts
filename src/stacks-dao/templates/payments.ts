@@ -3,15 +3,14 @@
 import { TRAITS } from "../../constants";
 
 export type PaymentsContractParams = {
-  name: string;
   daoContractId: string;
   network: "mainnet" | "testnet";
 };
 
 export function generateContract(params: PaymentsContractParams): string {
-  const { name, daoContractId, network } = params;
+  const { daoContractId, network } = params;
 
-  return `;; title: ${name}-payments
+  return `;; title: AIBTCDev DAO Payments
 ;; version: 1.0.0
 ;; summary: An extension that provides payment processing.
 

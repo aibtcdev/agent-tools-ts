@@ -44,7 +44,7 @@ export class Messaging extends BaseComponent {
     const { contract: codeBody } = await this.generate(options);
 
     return this.makeContractDeploy({
-      contractName: `${options.name}-messaging`,
+      contractName: `aibtcdev-messaging-${Date.now()}`,
       codeBody,
       ...options,
       onFinish: (data) => {

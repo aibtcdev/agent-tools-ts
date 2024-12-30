@@ -1,6 +1,5 @@
 import { Executor } from "./executor";
 import { Treasury } from "./treasury";
-import { BankAccount } from "./bank-account";
 import { Messaging } from "./messaging";
 import { Payments } from "./payments";
 import type { SDKOptions, BaseConfig } from "../types";
@@ -15,7 +14,6 @@ export class DaoSDK {
   public executor: Executor;
   public proposal: Proposal;
   public treasury: Treasury;
-  public bankAccount: BankAccount;
   public messaging: Messaging;
   public payments: Payments;
   public address: string;
@@ -46,7 +44,6 @@ export class DaoSDK {
     this.executor = new Executor(config);
     this.proposal = new Proposal(config);
     this.treasury = new Treasury(config);
-    this.bankAccount = new BankAccount(config);
     this.messaging = new Messaging(config);
     this.payments = new Payments(config);
   }
