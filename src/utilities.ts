@@ -7,8 +7,8 @@ import {
 } from "@stacks/wallet-sdk";
 import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
 import { TxBroadcastResult, validateStacksAddress } from "@stacks/transactions";
-import { NetworkType, TraitDefinition, TraitType } from "./types";
-import { TRAITS } from "./constants";
+import { NetworkType, NetworkTraits, NetworkTraitType, NetworkAddressType } from "./types";
+import { ADDRESSES, TRAITS } from "./constants";
 
 type Metrics = {
   price_usd: number;
@@ -355,8 +355,8 @@ export async function getStxCityHash(data: string): Promise<string> {
 
 export function getTraitDefinition(
   network: NetworkType,
-  traitType: TraitType
-): TraitDefinition {
+  traitType: NetworkTraitType
+): string {
   const networkTraits = TRAITS[network];
   if (!networkTraits) {
     throw new Error(`No traits defined for network: ${network}`);
@@ -372,8 +372,32 @@ export function getTraitDefinition(
 
 export function getTraitReference(
   network: NetworkType,
-  traitType: TraitType
+  traitType: NetworkTraitType
 ): string {
   const trait = getTraitDefinition(network, traitType);
-  return `${trait.contractAddress}.${trait.contractName}.${trait.traitName}`;
+  return trait;
+}
+
+export function getAddressDefinition(
+  network: NetworkType,
+  addressType: NetworkAddressType
+): string {
+  const networkAddresses = ADDRESSES[network];
+  if (!networkAddresses) {
+    throw new Error(`No addresses defined for network: ${network}`);
+  }
+
+  const address = networkAddresses[addressType];
+  if (!address) {
+    throw new Error(`Address type ${addressType} not found for network ${network}`);
+  }
+
+  return address;
+}
+
+export function getAddressReference(
+  network: NetworkType,
+  addressType: NetworkAddressType
+): string {
+  return getAddressDefinition(network, addressType);
 }
