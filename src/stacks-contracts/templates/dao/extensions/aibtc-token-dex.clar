@@ -6,7 +6,7 @@
 ;; @version 2.0
 
 ;; Implement SIP 010 trait
-(use-trait sip-010-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait) ;; <%= it.sip10_trait %>
+(use-trait sip-010-trait '<%= it.sip10_trait %>)
 
 ;; error constants
 (define-constant ERR-UNAUTHORIZED (err u401))
@@ -19,21 +19,21 @@
 (define-constant BUY-INFO-ERROR (err u2001))
 (define-constant SELL-INFO-ERROR (err u2002))
 
-(define-constant token-supply u21000000) ;; <%= it.token_max_supply %> match with the token's supply (6 decimals)
+(define-constant token-supply u<%= it.token_max_supply %>) ;; match with the token's supply (6 decimals)
 (define-constant BONDING-DEX-ADDRESS (as-contract tx-sender)) ;; one contract per token
 
 ;; bonding curve config
-(define-constant STX_TARGET_AMOUNT u0) ;; <%= it.stx_target_amount %>
-(define-constant VIRTUAL_STX_VALUE u0) ;; <%= it.virtual_stx_value %> 1/5 of STX_TARGET_AMOUNT
-(define-constant COMPLETE_FEE u0) ;; <%= it.complete_fee % >2% of STX_TARGET_AMOUNT
+(define-constant STX_TARGET_AMOUNT u<%= it.stx_target_amount %>)
+(define-constant VIRTUAL_STX_VALUE u<%= it.virtual_stx_value %>) ;; 1/5 of STX_TARGET_AMOUNT
+(define-constant COMPLETE_FEE u<%= it.complete_fee %>) ;; 2% of STX_TARGET_AMOUNT
 
 ;; FEE AND DEX WALLETS
-(define-constant STX_CITY_SWAP_FEE_WALLET 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1) ;; <%= it.stxcity_swap_fee %>
-(define-constant STX_CITY_COMPLETE_FEE_WALLET 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1) ;; <%= it.stxcity_complete_fee %>
-(define-constant BURN_ADDRESS 'ST000000000000000000002AMW42H) ;; <%= it.burn %> burn mainnet
+(define-constant STX_CITY_SWAP_FEE_WALLET '<%= it.stxcity_swap_fee %>)
+(define-constant STX_CITY_COMPLETE_FEE_WALLET '<%= it.stxcity_complete_fee %>)
+(define-constant BURN_ADDRESS '<%= it.burn %>) ;; burn mainnet
 
 (define-constant deployer tx-sender)
-(define-constant allow-token .aibtc-token) ;; <%= it.token_contract %>
+(define-constant allow-token '<%= it.token_contract %>)
 
 ;; data vars
 (define-data-var tradable bool false)
@@ -84,11 +84,7 @@
             ;; send to deployer
             (try! (as-contract (contract-call? token-trait transfer deployer-amount tx-sender deployer none)))
             ;; Call XYK Core v-1-2 pool by Bitflow
-            ;; <%= it.bitflow_core_contract %>
-            ;; <%= it.pool_contract %>
-            ;; <%= it.bitflow_stx_token_address %>
-            ;; <%= it.bitflow_fee_address %>
-            (try! (as-contract (contract-call? 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1.xyk-core-v-1-2 create-pool .aibtc-bitflow-pool 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1.token-stx-v-1-2 token-trait remain-stx remain-tokens xyk-burn-amount u10 u40 u10 u40 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1 xyk-pool-uri true)))
+            (try! (as-contract (contract-call? '<%= it.bitflow_core_contract %> create-pool '<%= it.pool_contract %> '<%= it.bitflow_stx_token_address %> token-trait remain-stx remain-tokens xyk-burn-amount u10 u40 u10 u40 '<%= it.bitflow_fee_address %> xyk-pool-uri true)))
             ;; send fee
             (try! (as-contract (stx-transfer? COMPLETE_FEE tx-sender STX_CITY_COMPLETE_FEE_WALLET)))
             ;; update global variables
@@ -201,7 +197,7 @@
   (var-set deployer-percent u10) ;; About ~0.1 to 0.5% supply based on burn-amount
   
   ;; Transfer STX deployment fee
-  (try! (stx-transfer? u500000 tx-sender 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1)) ;; <%= it.stxcity_dex_deployment_fee_address %>
+  (try! (stx-transfer? u500000 tx-sender '<%= it.stxcity_dex_deployment_fee_address %>))
   
   ;; Return success
   (ok true)
