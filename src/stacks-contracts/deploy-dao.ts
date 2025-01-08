@@ -43,6 +43,7 @@ async function main() {
     const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
     const contractNames = generateContractNames(tokenSymbol);
     const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
+    let currentNonce = nextPossibleNonce;
 
     const contractGenerator = new ContractGenerator(
       CONFIG.NETWORK,
@@ -52,7 +53,7 @@ async function main() {
 
     // Step 1 - generate token-related contracts
 
-    // aibtc-token
+    // deploy aibtc-token
     const tokenSource = await contractGenerator.generateTokenContract(
       tokenSymbol,
       tokenName,
@@ -64,32 +65,33 @@ async function main() {
       tokenSource,
       ContractType.DAO_TOKEN,
       contractNames[ContractType.DAO_TOKEN],
-      nextPossibleNonce
+      currentNonce
     );
     if (!tokenDeployment.success) {
       result.error = { stage: "token", ...tokenDeployment.error };
       return result;
     }
     result.contracts.token = tokenDeployment.data;
+    currentNonce++;
 
-    // Deploy Pool Contract
-    const poolSource = await contractGenerator.generateBitflowPoolContract(
-      tokenSymbol
-    );
+    // deploy aibtc-bitflow-pool
+    const poolSource =
+      contractGenerator.generateBitflowPoolContract(tokenSymbol);
     const poolDeployment = await contractDeployer.deployContract(
       poolSource,
       ContractType.DAO_BITFLOW_POOL,
       contractNames[ContractType.DAO_BITFLOW_POOL],
-      nextPossibleNonce + 1
+      currentNonce
     );
     if (!poolDeployment.success) {
       result.error = { stage: "pool", ...poolDeployment.error };
       return result;
     }
     result.contracts.pool = poolDeployment.data;
+    currentNonce++;
 
-    // Deploy DEX Contract
-    const dexSource = await contractGenerator.generateTokenDexContract(
+    // deploy aibtc-token-dex
+    const dexSource = contractGenerator.generateTokenDexContract(
       tokenMaxSupply,
       tokenDecimals,
       tokenSymbol
@@ -98,21 +100,22 @@ async function main() {
       dexSource,
       ContractType.DAO_TOKEN_DEX,
       contractNames[ContractType.DAO_TOKEN_DEX],
-      nextPossibleNonce + 2
+      currentNonce
     );
     if (!dexDeployment.success) {
       result.error = { stage: "dex", ...dexDeployment.error };
       return result;
     }
     result.contracts.dex = dexDeployment.data;
+    currentNonce++;
 
-    // Generate all DAO contracts
-    const contracts = await contractGenerator.generateDaoContracts(
+    // Step 2 - generate remaining dao contracts
+
+    const contracts = contractGenerator.generateDaoContracts(
       senderAddress,
       tokenSymbol
     );
 
-    let daoNonce = 3;
     // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
     const sortedContracts = Object.entries(contracts).sort(([, a], [, b]) => {
       if (a.type === ContractType.DAO_PROPOSAL_BOOTSTRAP) return 1;
@@ -126,7 +129,7 @@ async function main() {
         contract.source,
         contract.type,
         contract.name,
-        nextPossibleNonce + daoNonce
+        currentNonce
       );
 
       if (!deployment.success) {
@@ -139,7 +142,7 @@ async function main() {
         return result;
       }
 
-      daoNonce += 1;
+      currentNonce++;
       result.contracts[contract.type] = deployment.data;
     }
 
