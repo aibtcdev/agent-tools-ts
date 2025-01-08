@@ -216,7 +216,7 @@ export class ContractGenerator {
       target_stx: "2000",
     };
 
-    return this.eta.render("token.clar", data);
+    return this.eta.render("aibtc-token.clar", data);
   }
 
   // proposal: aibtc-base-bootstrap-initialization
@@ -362,7 +362,8 @@ export class ContractGenerator {
     };
   }
 
-  async generateTraitContract(traitType: TraitType): Promise<string> {
+  // helper function to generate trait contracts
+  private generateTraitContract(traitType: TraitType): string {
     const data = {
       sip10_trait: getTraitReference(this.network, "SIP10"),
       sip09_trait: getTraitReference(this.network, "SIP09"),
