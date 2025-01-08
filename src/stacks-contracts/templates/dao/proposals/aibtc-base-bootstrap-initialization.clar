@@ -12,7 +12,7 @@
         {extension: '<%= it.core_proposals_contract_address %>, enabled: true}
         {extension: '<%= it.messaging_contract_address %>, enabled: true}
         {extension: '<%= it.payments_contract_address %>, enabled: true}
-        {extension: '<%= it.token_owner_contract %>, enabled: true}
+        {extension: '<%= it.token_owner_contract_address %>, enabled: true}
         {extension: '<%= it.treasury_contract_address %>, enabled: true}
       )
     ))

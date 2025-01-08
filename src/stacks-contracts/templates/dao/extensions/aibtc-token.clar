@@ -17,7 +17,7 @@
 
 ;; Variables
 (define-fungible-token <%= it.token_symbol %> MAXSUPPLY)
-(define-data-var contract-owner principal <%= it.token_owner %>) 
+(define-data-var contract-owner principal '<%= it.token_owner %>) 
 
 ;; SIP-10 Functions
 (define-public (transfer (amount uint) (from principal) (to principal) (memo (optional (buff 34))))
