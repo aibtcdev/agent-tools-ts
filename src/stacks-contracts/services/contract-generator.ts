@@ -74,7 +74,7 @@ export class ContractGenerator {
       dex_contract: contractId,
     };
 
-    return this.eta.render("aibtc-bitflow-pool.clar", data);
+    return this.eta.render("extensions/aibtc-bitflow-pool.clar", data);
   }
 
   // extension: aibtc-core-proposals
@@ -168,7 +168,7 @@ export class ContractGenerator {
       ),
     };
 
-    return this.eta.render("aibtc-token-dex.clar", data);
+    return this.eta.render("extensions/aibtc-token-dex.clar", data);
   }
 
   // extension: aibtc-token-owner
@@ -182,7 +182,7 @@ export class ContractGenerator {
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
       creator: this.senderAddress,
     };
-    return this.eta.render("aibtc-token-owner.clar", data);
+    return this.eta.render("extensions/aibtc-token-owner.clar", data);
   }
 
   // extension: aibtc-token (h/t stxcity)
@@ -224,7 +224,7 @@ export class ContractGenerator {
       target_stx: "2000",
     };
 
-    return this.eta.render("aibtc-token.clar", data);
+    return this.eta.render("extensions/aibtc-token.clar", data);
   }
 
   // extension: aibtc-treasury
