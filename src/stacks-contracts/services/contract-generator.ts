@@ -63,8 +63,23 @@ export class ContractGenerator {
   }
 
   // extension: aibtc-bitflow-pool
-  private generateBitflowPoolContract(tokenSymbol: string): string {
-    return "TODO";
+  // generated at runtime based on script parameters
+  generateBitflowPoolContract(tokenSymbol: string): string {
+    const contractId = `${
+      this.senderAddress
+    }.${tokenSymbol.toLowerCase()}-stxcity-dex`;
+
+    const data = {
+      bitflow_pool_trait: getTraitReference(this.network, "BITFLOW_POOL"),
+      sip10_trait: getTraitReference(this.network, "SIP10"),
+      bitflow_xyk_core_address: getAddressReference(
+        this.network,
+        "BITFLOW_CORE"
+      ),
+      dex_contract: contractId,
+    };
+
+    return this.eta.render("aibtc-bitflow-pool.clar", data);
   }
 
   // extension: aibtc-core-proposals
@@ -109,7 +124,8 @@ export class ContractGenerator {
   }
 
   // extension: aibtc-token-dex (bonding curve)
-  private generateTokenDexContract(
+  // generated at runtime based on script parameters
+  generateTokenDexContract(
     tokenMaxSupply: string,
     tokenDecimals: string,
     tokenSymbol: string
@@ -165,22 +181,10 @@ export class ContractGenerator {
     return "TODO";
   }
 
-  // extension: aibtc-token
-
-  // extension: aibtc-treasury
-  private generateTreasuryContract(daoContractAddress: string): string {
-    const data = {
-      dao_contract_address: daoContractAddress,
-      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
-      treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
-      sip10_trait: getTraitReference(this.network, "SIP10"),
-      sip09_trait: getTraitReference(this.network, "SIP09"),
-      pox_contract_address: getAddressReference(this.network, "POX"),
-    };
-    return this.eta.render("extensions/aibtc-treasury.clar", data);
-  }
-
-  async generateBondingTokenContract(
+  // extension: aibtc-token (h/t stxcity)
+  // generated at runtime based on script parameters
+  // async due to querying the stxcity hash
+  async generateTokenContract(
     tokenSymbol: string,
     tokenName: string,
     tokenMaxSupply: string,
@@ -219,6 +223,19 @@ export class ContractGenerator {
     return this.eta.render("aibtc-token.clar", data);
   }
 
+  // extension: aibtc-treasury
+  private generateTreasuryContract(daoContractAddress: string): string {
+    const data = {
+      dao_contract_address: daoContractAddress,
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
+      sip10_trait: getTraitReference(this.network, "SIP10"),
+      sip09_trait: getTraitReference(this.network, "SIP09"),
+      pox_contract_address: getAddressReference(this.network, "POX"),
+    };
+    return this.eta.render("extensions/aibtc-treasury.clar", data);
+  }
+
   // proposal: aibtc-base-bootstrap-initialization
   private generateProposalsBootstrapContract(
     daoContractAddress: string,
@@ -246,7 +263,8 @@ export class ContractGenerator {
   }
 
   // generate all contracts necessary to deploy and init the dao
-  private generateDaoContracts(
+  // generated at runtime based on script parameters
+  generateDaoContracts(
     senderAddress: string,
     tokenSymbol: string
   ): GeneratedDaoContracts {
@@ -363,7 +381,8 @@ export class ContractGenerator {
   }
 
   // helper function to generate trait contracts
-  private generateTraitContract(traitType: TraitType): string {
+  // generated at runtime based on script parameters
+  generateTraitContract(traitType: TraitType): string {
     const data = {
       sip10_trait: getTraitReference(this.network, "SIP10"),
       sip09_trait: getTraitReference(this.network, "SIP09"),
