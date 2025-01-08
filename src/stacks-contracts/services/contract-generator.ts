@@ -255,7 +255,7 @@ export class ContractGenerator {
       proposals_trait: getTraitReference(this.network, "DAO_PROPOSAL"),
       actions_contract_address: actionProposalsContractAddress,
       bank_account_contract_address: bankAccountContractAddress,
-      direct_execute_contract_address: coreProposalsContractAddress,
+      core_proposals_contract_address: coreProposalsContractAddress,
       messaging_contract_address: messagingContractAddress,
       payments_contract_address: paymentsContractAddress,
       treasury_contract_address: treasuryContractAddress,

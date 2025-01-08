@@ -1,18 +1,18 @@
-(impl-trait .aibtcdev-dao-traits-v1.proposal)
+(impl-trait '<%= it.proposals_trait %>)
 
 (define-constant DAO_MANIFEST "This is where the DAO can put it's mission, purpose, and goals.")
 
 (define-public (execute (sender principal))
   (begin  
     ;; set initial extensions
-    (try! (contract-call? .aibtcdev-base-dao set-extensions
+    (try! (contract-call? '<%= it.dao_contract_address %> set-extensions
       (list
-        {extension: .aibtc-action-proposals, enabled: true}
-        {extension: .aibtc-bank-account, enabled: true}
-        {extension: .aibtc-ext003-direct-execute, enabled: true}
-        {extension: .aibtc-onchain-messaging, enabled: true}
-        {extension: .aibtc-payments-invoices, enabled: true}
-        {extension: .aibtc-treasury, enabled: true}
+        {extension: '<%= it.actions_contract_address %>, enabled: true}
+        {extension: '<%= it.bank_account_contract_address %>, enabled: true}
+        {extension: '<%= it.core_proposals_contract_address %>, enabled: true}
+        {extension: '<%= it.messaging_contract_address %>, enabled: true}
+        {extension: '<%= it.payments_contract_address %>, enabled: true}
+        {extension: '<%= it.treasury_contract_address %>, enabled: true}
       )
     ))
     ;; print manifest
