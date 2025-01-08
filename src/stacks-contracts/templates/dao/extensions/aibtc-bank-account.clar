@@ -1,4 +1,4 @@
-;; title: aibtcdev-bank-account
+;; title: aibtc-bank-account
 ;; version: 1.0.0
 ;; summary: An extension that allows a principal to withdraw STX from the contract with given rules.
 
