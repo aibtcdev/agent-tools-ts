@@ -54,8 +54,9 @@ export type GeneratedDaoContracts = {
   treasury: DaoContractInfo;
   payments: DaoContractInfo;
   messaging: DaoContractInfo;
-  directExecute: DaoContractInfo;
+  coreProposals: DaoContractInfo;
   bankAccount: DaoContractInfo;
-  actions: DaoContractInfo;
+  actionProposals: DaoContractInfo;
+  tokenOwner: DaoContractInfo;
   bootstrap: DaoContractInfo;
 };

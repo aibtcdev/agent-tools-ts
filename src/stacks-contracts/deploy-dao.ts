@@ -5,11 +5,7 @@ import {
   getNetwork,
   getNextNonce,
 } from "../utilities";
-import {
-  ContractType,
-  ContractNames,
-  DeploymentResult,
-} from "./types/dao-types";
+import { ContractType, DeploymentResult } from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
 import { ContractDeployer } from "./services/contract-deployer";
 import { generateContractNames } from "./utils/contract-utils";
@@ -38,7 +34,7 @@ async function main() {
     };
 
     const networkObj = getNetwork(CONFIG.NETWORK);
-    const { address, key } = await deriveChildAccount(
+    const { key } = await deriveChildAccount(
       CONFIG.NETWORK,
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
@@ -54,8 +50,10 @@ async function main() {
     );
     const contractDeployer = new ContractDeployer(CONFIG.NETWORK);
 
-    // Deploy Token Contract
-    const tokenSource = await contractGenerator.generateBondingTokenContract(
+    // Step 1 - generate token-related contracts
+
+    // aibtc-token
+    const tokenSource = await contractGenerator.generateTokenContract(
       tokenSymbol,
       tokenName,
       tokenMaxSupply,
@@ -75,7 +73,7 @@ async function main() {
     result.contracts.token = tokenDeployment.data;
 
     // Deploy Pool Contract
-    const poolSource = await contractGenerator.generatePoolContract(
+    const poolSource = await contractGenerator.generateBitflowPoolContract(
       tokenSymbol
     );
     const poolDeployment = await contractDeployer.deployContract(
@@ -91,7 +89,7 @@ async function main() {
     result.contracts.pool = poolDeployment.data;
 
     // Deploy DEX Contract
-    const dexSource = await contractGenerator.generateBondingDexContract(
+    const dexSource = await contractGenerator.generateTokenDexContract(
       tokenMaxSupply,
       tokenDecimals,
       tokenSymbol

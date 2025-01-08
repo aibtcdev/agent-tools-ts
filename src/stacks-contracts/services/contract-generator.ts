@@ -172,12 +172,15 @@ export class ContractGenerator {
   }
 
   // extension: aibtc-token-owner
-  // generated at runtime based on script parameters
-  generateTokenOwnerContract(tokenSymbol: string): string {
+  private generateTokenOwnerContract(
+    daoContractAddress: string,
+    tokenSymbol: string
+  ): string {
     const tokenContract = `${
       this.senderAddress
     }.${tokenSymbol.toLowerCase()}-stxcity`;
     const data = {
+      dao_contract_address: daoContractAddress,
       token_contract: tokenContract,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
       creator: this.senderAddress,
@@ -200,7 +203,10 @@ export class ContractGenerator {
     }.${tokenSymbol.toLowerCase()}-stxcity-dex`;
     const treasuryContractId = `${
       this.senderAddress
-    }.${tokenSymbol.toLowerCase()}-ext006-treasury`;
+    }.${tokenSymbol.toLowerCase()}-treasury`;
+    const tokenOwnerContractId = `${
+      this.senderAddress
+    }.${tokenSymbol.toLowerCase()}-token-owner`;
     const decimals = parseInt(tokenDecimals, 10);
     const maxSupply = parseInt(tokenMaxSupply, 10);
     const calculatedMaxSupply = maxSupply * Math.pow(10, decimals);
@@ -209,6 +215,7 @@ export class ContractGenerator {
     const data = {
       hash,
       sip10_trait: getTraitReference(this.network, "SIP10"),
+      token_owner: tokenOwnerContractId,
       token_symbol: tokenSymbol,
       token_name: tokenName,
       token_max_supply: calculatedMaxSupply.toString(),
@@ -249,6 +256,7 @@ export class ContractGenerator {
     coreProposalsContractAddress: string,
     messagingContractAddress: string,
     paymentsContractAddress: string,
+    tokenOwnerContractAddress: string,
     treasuryContractAddress: string
   ): string {
     const data = {
@@ -260,6 +268,7 @@ export class ContractGenerator {
       core_proposals_contract_address: coreProposalsContractAddress,
       messaging_contract_address: messagingContractAddress,
       payments_contract_address: paymentsContractAddress,
+      token_owner_contract_address: tokenOwnerContractAddress,
       treasury_contract_address: treasuryContractAddress,
     };
     return this.eta.render(
@@ -296,6 +305,9 @@ export class ContractGenerator {
     const paymentsContractAddress = `${senderAddress}.${
       contractNames[ContractType.DAO_PAYMENTS]
     }`;
+    const tokenOwnerContractAddress = `${senderAddress}.${
+      contractNames[ContractType.DAO_TOKEN_OWNER]
+    }`;
     const treasuryContractAddress = `${senderAddress}.${
       contractNames[ContractType.DAO_TREASURY]
     }`;
@@ -317,11 +329,15 @@ export class ContractGenerator {
     const messagingContract = this.generateMessagingContract(
       baseDaoContractAddress
     );
-    const directExecuteContract = this.generateCorePropasalsContract(
+    const coreProposalsContract = this.generateCorePropasalsContract(
       baseDaoContractAddress
     );
-    const actionsContract = this.generateActionProposalsContract(
+    const actionProposalsContract = this.generateActionProposalsContract(
       baseDaoContractAddress
+    );
+    const tokenOwnerContract = this.generateTokenOwnerContract(
+      baseDaoContractAddress,
+      tokenSymbol
     );
 
     const daoManifest = "This is where the dao manifest would go";
@@ -334,6 +350,7 @@ export class ContractGenerator {
       coreProposalsContractAddress,
       messagingContractAddress,
       paymentsContractAddress,
+      tokenOwnerContractAddress,
       treasuryContractAddress
     );
 
@@ -362,8 +379,8 @@ export class ContractGenerator {
         type: ContractType.DAO_MESSAGING,
         address: messagingContractAddress,
       },
-      directExecute: {
-        source: directExecuteContract,
+      coreProposals: {
+        source: coreProposalsContract,
         name: contractNames[ContractType.DAO_CORE_PROPOSALS],
         type: ContractType.DAO_CORE_PROPOSALS,
         address: coreProposalsContractAddress,
@@ -374,11 +391,17 @@ export class ContractGenerator {
         type: ContractType.DAO_BANK_ACCOUNT,
         address: bankAccountContractAddress,
       },
-      actions: {
-        source: actionsContract,
+      actionProposals: {
+        source: actionProposalsContract,
         name: contractNames[ContractType.DAO_ACTION_PROPOSALS],
         type: ContractType.DAO_ACTION_PROPOSALS,
         address: actionProposalsContractAddress,
+      },
+      tokenOwner: {
+        source: tokenOwnerContract,
+        name: contractNames[ContractType.DAO_TOKEN_OWNER],
+        type: ContractType.DAO_TOKEN_OWNER,
+        address: tokenOwnerContractAddress,
       },
       bootstrap: {
         source: bootstrapContract,
