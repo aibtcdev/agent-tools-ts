@@ -9,7 +9,7 @@ export type NetworkTraits = {
   DAO_BASE: string;
   DAO_PROPOSAL: string;
   DAO_EXTENSION: string;
-  DAO_DIRECT_EXECUTE: string;
+  DAO_CORE_PROPOSALS: string;
   DAO_TREASURY: string;
   DAO_MESSAGING: string;
   DAO_BANK_ACCOUNT: string;
@@ -27,7 +27,7 @@ export type NetworkAddresses = {
   BURN: string;
   STXCITY_SWAP_FEE: string;
   STXCITY_COMPLETE_FEE: string;
-  STXCITY_TOKEN_DEPLOYMENT_FEE: string; 
+  STXCITY_TOKEN_DEPLOYMENT_FEE: string;
   STXCITY_DEX_DEPLOYMENT_FEE: string;
   BITFLOW_CORE: string;
   BITFLOW_STX_TOKEN: string;

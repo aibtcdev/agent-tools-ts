@@ -84,13 +84,13 @@ export class ContractGenerator {
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
       direct_execute_trait: getTraitReference(
         this.network,
-        "DAO_DIRECT_EXECUTE"
+        "DAO_CORE_PROPOSALS"
       ),
       sip10_trait: getTraitReference(this.network, "SIP10"),
       proposal_trait: getTraitReference(this.network, "DAO_PROPOSAL"),
       treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
     };
-    return this.eta.render("extensions/aibtc-ext003-direct-execute.clar", data);
+    return this.eta.render("extensions/aibtc-core-proposals.clar", data);
   }
 
   // extension: aibtc-onchain-messaging
@@ -243,9 +243,9 @@ export class ContractGenerator {
   // proposal: aibtc-base-bootstrap-initialization
   private generateProposalsBootstrapContract(
     daoContractAddress: string,
-    actionsContractAddress: string,
+    actionProposalsContractAddress: string,
     bankAccountContractAddress: string,
-    directExecuteContractAddress: string,
+    coreProposalsContractAddress: string,
     messagingContractAddress: string,
     paymentsContractAddress: string,
     treasuryContractAddress: string
@@ -253,9 +253,9 @@ export class ContractGenerator {
     const data = {
       dao_contract_address: daoContractAddress,
       proposals_trait: getTraitReference(this.network, "DAO_PROPOSAL"),
-      actions_contract_address: actionsContractAddress,
+      actions_contract_address: actionProposalsContractAddress,
       bank_account_contract_address: bankAccountContractAddress,
-      direct_execute_contract_address: directExecuteContractAddress,
+      direct_execute_contract_address: coreProposalsContractAddress,
       messaging_contract_address: messagingContractAddress,
       payments_contract_address: paymentsContractAddress,
       treasury_contract_address: treasuryContractAddress,
@@ -279,13 +279,13 @@ export class ContractGenerator {
     const baseDaoContractAddress = `${senderAddress}.${
       contractNames[ContractType.DAO_BASE]
     }`;
-    const actionsContractAddress = `${senderAddress}.${
+    const actionProposalsContractAddress = `${senderAddress}.${
       contractNames[ContractType.DAO_ACTION_PROPOSALS]
     }`;
     const bankAccountContractAddress = `${senderAddress}.${
       contractNames[ContractType.DAO_BANK_ACCOUNT]
     }`;
-    const directExecuteContractAddress = `${senderAddress}.${
+    const coreProposalsContractAddress = `${senderAddress}.${
       contractNames[ContractType.DAO_CORE_PROPOSALS]
     }`;
     const messagingContractAddress = `${senderAddress}.${
@@ -324,9 +324,9 @@ export class ContractGenerator {
 
     const bootstrapContract = this.generateProposalsBootstrapContract(
       baseDaoContractAddress,
-      actionsContractAddress,
+      actionProposalsContractAddress,
       bankAccountContractAddress,
-      directExecuteContractAddress,
+      coreProposalsContractAddress,
       messagingContractAddress,
       paymentsContractAddress,
       treasuryContractAddress
@@ -361,7 +361,7 @@ export class ContractGenerator {
         source: directExecuteContract,
         name: contractNames[ContractType.DAO_CORE_PROPOSALS],
         type: ContractType.DAO_CORE_PROPOSALS,
-        address: directExecuteContractAddress,
+        address: coreProposalsContractAddress,
       },
       bankAccount: {
         source: bankAccountContract,
@@ -373,7 +373,7 @@ export class ContractGenerator {
         source: actionsContract,
         name: contractNames[ContractType.DAO_ACTION_PROPOSALS],
         type: ContractType.DAO_ACTION_PROPOSALS,
-        address: actionsContractAddress,
+        address: actionProposalsContractAddress,
       },
       bootstrap: {
         source: bootstrapContract,
