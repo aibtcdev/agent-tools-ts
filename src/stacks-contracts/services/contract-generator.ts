@@ -243,6 +243,7 @@ export class ContractGenerator {
   // proposal: aibtc-base-bootstrap-initialization
   private generateProposalsBootstrapContract(
     daoContractAddress: string,
+    daoManifest: string,
     actionProposalsContractAddress: string,
     bankAccountContractAddress: string,
     coreProposalsContractAddress: string,
@@ -252,6 +253,7 @@ export class ContractGenerator {
   ): string {
     const data = {
       dao_contract_address: daoContractAddress,
+      dao_manifest: daoManifest,
       proposals_trait: getTraitReference(this.network, "DAO_PROPOSAL"),
       actions_contract_address: actionProposalsContractAddress,
       bank_account_contract_address: bankAccountContractAddress,
@@ -322,8 +324,11 @@ export class ContractGenerator {
       baseDaoContractAddress
     );
 
+    const daoManifest = "This is where the dao manifest would go";
+
     const bootstrapContract = this.generateProposalsBootstrapContract(
       baseDaoContractAddress,
+      daoManifest,
       actionProposalsContractAddress,
       bankAccountContractAddress,
       coreProposalsContractAddress,
