@@ -1,4 +1,4 @@
-(impl-trait .aibtcdev-dao-traits-v1.proposal)
+(impl-trait '<%= it.proposals_trait %>)
 
 (define-public (execute (sender principal))
   ;; adds and enables a new extension to the DAO

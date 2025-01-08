@@ -1,4 +1,4 @@
-(impl-trait .aibtcdev-dao-traits-v1.proposal)
+(impl-trait '<%= it.proposals_trait %>)
 
 (define-public (execute (sender principal))
   ;; pays an invoice for a resource by index
