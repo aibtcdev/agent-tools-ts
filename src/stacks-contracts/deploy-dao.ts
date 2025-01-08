@@ -1,6 +1,15 @@
 import { getAddressFromPrivateKey } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork, getNextNonce } from "../utilities";
-import { ContractType, ContractNames, DeploymentResult } from "./types/dao-types";
+import {
+  CONFIG,
+  deriveChildAccount,
+  getNetwork,
+  getNextNonce,
+} from "../utilities";
+import {
+  ContractType,
+  ContractNames,
+  DeploymentResult,
+} from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
 import { ContractDeployer } from "./services/contract-deployer";
 import { generateContractNames } from "./utils/contract-utils";
@@ -8,7 +17,7 @@ import { generateContractNames } from "./utils/contract-utils";
 async function main() {
   try {
     const [tokenSymbol, tokenName, tokenMaxSupply, tokenDecimals, tokenUri] =
-    process.argv.slice(2);
+      process.argv.slice(2);
 
     if (
       !tokenSymbol ||
@@ -25,7 +34,7 @@ async function main() {
 
     const result: DeploymentResult = {
       success: false,
-      contracts: {}
+      contracts: {},
     };
 
     const networkObj = getNetwork(CONFIG.NETWORK);
@@ -39,7 +48,10 @@ async function main() {
     const contractNames = generateContractNames(tokenSymbol);
     const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
 
-    const contractGenerator = new ContractGenerator(CONFIG.NETWORK, senderAddress);
+    const contractGenerator = new ContractGenerator(
+      CONFIG.NETWORK,
+      senderAddress
+    );
     const contractDeployer = new ContractDeployer(CONFIG.NETWORK);
 
     // Deploy Token Contract
@@ -52,8 +64,8 @@ async function main() {
     );
     const tokenDeployment = await contractDeployer.deployContract(
       tokenSource,
-      ContractType.TOKEN,
-      contractNames[ContractType.TOKEN],
+      ContractType.DAO_TOKEN,
+      contractNames[ContractType.DAO_TOKEN],
       nextPossibleNonce
     );
     if (!tokenDeployment.success) {
@@ -63,11 +75,13 @@ async function main() {
     result.contracts.token = tokenDeployment.data;
 
     // Deploy Pool Contract
-    const poolSource = await contractGenerator.generatePoolContract(tokenSymbol);
+    const poolSource = await contractGenerator.generatePoolContract(
+      tokenSymbol
+    );
     const poolDeployment = await contractDeployer.deployContract(
       poolSource,
-      ContractType.POOL,
-      contractNames[ContractType.POOL],
+      ContractType.DAO_BITFLOW_POOL,
+      contractNames[ContractType.DAO_BITFLOW_POOL],
       nextPossibleNonce + 1
     );
     if (!poolDeployment.success) {
@@ -84,8 +98,8 @@ async function main() {
     );
     const dexDeployment = await contractDeployer.deployContract(
       dexSource,
-      ContractType.DEX,
-      contractNames[ContractType.DEX],
+      ContractType.DAO_TOKEN_DEX,
+      contractNames[ContractType.DAO_TOKEN_DEX],
       nextPossibleNonce + 2
     );
     if (!dexDeployment.success) {
@@ -95,7 +109,10 @@ async function main() {
     result.contracts.dex = dexDeployment.data;
 
     // Generate all DAO contracts
-    const contracts = await contractGenerator.generateDaoContracts(senderAddress, tokenSymbol);
+    const contracts = await contractGenerator.generateDaoContracts(
+      senderAddress,
+      tokenSymbol
+    );
 
     let daoNonce = 3;
     // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
@@ -107,7 +124,6 @@ async function main() {
 
     // Deploy all contracts
     for (const [key, contract] of sortedContracts) {
-
       const deployment = await contractDeployer.deployContract(
         contract.source,
         contract.type,

@@ -57,11 +57,6 @@ export class ContractGenerator {
     return this.eta.render("extensions/aibtc-bank-account.clar", data);
   }
 
-  // extension: aibtc-bitflow-pool-owner
-  private generateBitflowPoolOwnerContract(): string {
-    return "TODO";
-  }
-
   // extension: aibtc-bitflow-pool
   // generated at runtime based on script parameters
   generateBitflowPoolContract(tokenSymbol: string): string {
@@ -276,13 +271,13 @@ export class ContractGenerator {
       contractNames[ContractType.DAO_BASE]
     }`;
     const actionsContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_ACTIONS]
+      contractNames[ContractType.DAO_ACTION_PROPOSALS]
     }`;
     const bankAccountContractAddress = `${senderAddress}.${
       contractNames[ContractType.DAO_BANK_ACCOUNT]
     }`;
     const directExecuteContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_DIRECT_EXECUTE]
+      contractNames[ContractType.DAO_CORE_PROPOSALS]
     }`;
     const messagingContractAddress = `${senderAddress}.${
       contractNames[ContractType.DAO_MESSAGING]
@@ -355,8 +350,8 @@ export class ContractGenerator {
       },
       directExecute: {
         source: directExecuteContract,
-        name: contractNames[ContractType.DAO_DIRECT_EXECUTE],
-        type: ContractType.DAO_DIRECT_EXECUTE,
+        name: contractNames[ContractType.DAO_CORE_PROPOSALS],
+        type: ContractType.DAO_CORE_PROPOSALS,
         address: directExecuteContractAddress,
       },
       bankAccount: {
@@ -367,8 +362,8 @@ export class ContractGenerator {
       },
       actions: {
         source: actionsContract,
-        name: contractNames[ContractType.DAO_ACTIONS],
-        type: ContractType.DAO_ACTIONS,
+        name: contractNames[ContractType.DAO_ACTION_PROPOSALS],
+        type: ContractType.DAO_ACTION_PROPOSALS,
         address: actionsContractAddress,
       },
       bootstrap: {
