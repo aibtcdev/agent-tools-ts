@@ -1,6 +1,6 @@
 ;; Implement XYK pool trait and use SIP 010 trait
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.xyk-pool-trait-v-1-2.xyk-pool-trait) ;; <%= it.bitflow_pool_trait %>
-(use-trait sip-010-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait) ;; <%= it.sip10_trait %>
+(impl-trait '<%= it.bitflow_pool_trait %>)
+(use-trait sip-010-trait '<%= it.sip10_trait %>)
 
 ;; Define fungible pool token
 (define-fungible-token pool-token)
@@ -16,8 +16,8 @@
 (define-constant ERR_NOT_POOL_CONTRACT_DEPLOYER (err u3006))
 
 ;; XYK Core address and contract deployer address
-(define-constant CORE_ADDRESS 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1.xyk-core-v-1-2) ;; <%= it.bitflow_xyk_core_address %>
-(define-constant CONTRACT_DEPLOYER .aibtc-token-dex) ;; <%= it.dex_contract %>
+(define-constant CORE_ADDRESS '<%= it.bitflow_xyk_core_address %>)
+(define-constant CONTRACT_DEPLOYER '<%= it.dex_contract %>)
 
 ;; Define all pool data vars
 (define-data-var pool-id uint u0)
