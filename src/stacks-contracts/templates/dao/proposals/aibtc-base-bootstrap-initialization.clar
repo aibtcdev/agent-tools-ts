@@ -1,6 +1,6 @@
 (impl-trait '<%= it.proposals_trait %>)
 
-(define-constant DAO_MANIFEST <%= it.dao_manifest %>)
+(define-constant DAO_MANIFEST "<%= it.dao_manifest %>")
 
 (define-public (execute (sender principal))
   (begin  
