@@ -2,6 +2,7 @@ export enum ContractType {
   DAO_TOKEN = "aibtc-token",
   DAO_BITFLOW_POOL = "aibtc-bitflow-pool",
   DAO_TOKEN_DEX = "aibtc-token-dex",
+  DAO_TOKEN_OWNER = "aibtc-token-owner",
   DAO_BASE = "aibtcdev-base-dao",
   DAO_ACTION_PROPOSALS = "aibtc-action-proposals",
   DAO_BANK_ACCOUNT = "aibtc-bank-account",

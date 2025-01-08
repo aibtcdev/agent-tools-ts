@@ -63,6 +63,11 @@ async function main() {
       tokenUri
     );
     console.log(tokenSource);
+
+    const tokenOwnerSource =
+      contractGenerator.generateTokenOwnerContract(tokenSymbol);
+    console.log(tokenOwnerSource);
+
     // Deploy Pool Contract
     const poolSource =
       contractGenerator.generateBitflowPoolContract(tokenSymbol);

@@ -172,8 +172,17 @@ export class ContractGenerator {
   }
 
   // extension: aibtc-token-owner
-  private generateTokenOwnerContract(): string {
-    return "TODO";
+  // generated at runtime based on script parameters
+  generateTokenOwnerContract(tokenSymbol: string): string {
+    const tokenContract = `${
+      this.senderAddress
+    }.${tokenSymbol.toLowerCase()}-stxcity`;
+    const data = {
+      token_contract: tokenContract,
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      creator: this.senderAddress,
+    };
+    return this.eta.render("aibtc-token-owner.clar", data);
   }
 
   // extension: aibtc-token (h/t stxcity)
