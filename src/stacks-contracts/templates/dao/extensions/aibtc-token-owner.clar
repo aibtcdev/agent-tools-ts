@@ -4,7 +4,7 @@
 
 ;; traits
 ;;
-(impl-trait .aibtcdev-dao-traits-v1.extension)
+(impl-trait '<%= it.extension_trait %>)
 
 ;; constants
 ;;
@@ -23,7 +23,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; update token uri
-    (try! (as-contract (contract-call? .aibtc-token set-token-uri value)))
+    (try! (as-contract (contract-call? '<%= it.token_contract %> set-token-uri value)))
     (ok true)
   )
 )
@@ -33,7 +33,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; transfer ownership
-    (try! (as-contract (contract-call? .aibtc-token transfer-ownership new-owner)))
+    (try! (as-contract (contract-call? '<%= it.token_contract %> transfer-ownership new-owner)))
     (ok true)
   )
 )
@@ -42,7 +42,7 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender .aibtcdev-base-dao)
-    (contract-call? .aibtcdev-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
+    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
