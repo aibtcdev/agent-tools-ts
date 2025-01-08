@@ -1,8 +1,16 @@
 import { Eta } from "eta";
 import * as path from "path";
-import { getTraitReference, getAddressReference, getStxCityHash } from "../../utilities";
+import {
+  getTraitReference,
+  getAddressReference,
+  getStxCityHash,
+} from "../../utilities";
 import { NetworkType } from "../../types";
-import { ContractType, TraitType, GeneratedDaoContracts } from "../types/dao-types";
+import {
+  ContractType,
+  TraitType,
+  GeneratedDaoContracts,
+} from "../types/dao-types";
 import { generateContractNames } from "../utils/contract-utils";
 
 export class ContractGenerator {
@@ -16,15 +24,52 @@ export class ContractGenerator {
     this.senderAddress = senderAddress;
   }
 
+  // extension: aibtc-action-proposals
+  private generateActionProposalsContract(daoContractAddress: string): string {
+    const data = {
+      dao_contract_address: daoContractAddress,
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      sip10_trait: getTraitReference(this.network, "SIP10"),
+      treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
+      messaging_trait: getTraitReference(this.network, "DAO_MESSAGING"),
+      resources_trait: getTraitReference(this.network, "DAO_RESOURCES"),
+    };
+    return this.eta.render("extensions/aibtc-action-proposals.clar", data);
+  }
+
+  // extension: aibtc-bank-account
+  private generateBankAccountContract(daoContractAddress: string): string {
+    const data = {
+      dao_contract_address: daoContractAddress,
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      bank_account_trait: getTraitReference(this.network, "DAO_BANK_ACCOUNT"),
+    };
+    return this.eta.render("extensions/aibtc-bank-account.clar", data);
+  }
+
+  // extension: aibtc-bitflow-pool-owner
+  private generateBitflowPoolOwnerContract(): string {
+    return "TODO";
+  }
+
+  // extension: aibtc-bitflow-pool
+  private generateBitflowPoolContract(tokenSymbol: string): string {
+    return "TODO";
+  }
+
   async generateBondingTokenContract(
     tokenSymbol: string,
     tokenName: string,
     tokenMaxSupply: string,
     tokenDecimals: string,
-    tokenUri: string,
+    tokenUri: string
   ): Promise<string> {
-    const contractId = `${this.senderAddress}.${tokenSymbol.toLowerCase()}-stxcity-dex`;
-    const treasuryContractId = `${this.senderAddress}.${tokenSymbol.toLowerCase()}-ext006-treasury`;
+    const contractId = `${
+      this.senderAddress
+    }.${tokenSymbol.toLowerCase()}-stxcity-dex`;
+    const treasuryContractId = `${
+      this.senderAddress
+    }.${tokenSymbol.toLowerCase()}-ext006-treasury`;
     const decimals = parseInt(tokenDecimals, 10);
     const maxSupply = parseInt(tokenMaxSupply, 10);
     const calculatedMaxSupply = maxSupply * Math.pow(10, decimals);
@@ -41,24 +86,14 @@ export class ContractGenerator {
       creator: this.senderAddress,
       dex_contract: contractId,
       treasury_contract: treasuryContractId,
-      stxctiy_token_deployment_fee_address: getAddressReference(this.network, "STXCITY_TOKEN_DEPLOYMENT_FEE"),
+      stxctiy_token_deployment_fee_address: getAddressReference(
+        this.network,
+        "STXCITY_TOKEN_DEPLOYMENT_FEE"
+      ),
       target_stx: "2000",
     };
 
     return this.eta.render("token.clar", data);
-  }
-
-  async generatePoolContract(tokenSymbol: string): Promise<string> {
-    const contractId = `${this.senderAddress}.${tokenSymbol.toLowerCase()}-stxcity-dex`;
-
-    const data = {
-      bitflow_pool_trait: getTraitReference(this.network, "BITFLOW_POOL"),
-      sip10_trait: getTraitReference(this.network, "SIP10"),
-      bitflow_xyk_core_address: getAddressReference(this.network, "BITFLOW_CORE"),
-      dex_contract: contractId,
-    };
-
-    return this.eta.render("pool.clar", data);
   }
 
   generateBondingDexContract(
@@ -66,8 +101,12 @@ export class ContractGenerator {
     tokenDecimals: string,
     tokenSymbol: string
   ): string {
-    const tokenContract = `${this.senderAddress}.${tokenSymbol.toLowerCase()}-stxcity`;
-    const poolContract = `${this.senderAddress}.xyk-pool-stx-${tokenSymbol.toLowerCase()}-v-1-1`;
+    const tokenContract = `${
+      this.senderAddress
+    }.${tokenSymbol.toLowerCase()}-stxcity`;
+    const poolContract = `${
+      this.senderAddress
+    }.xyk-pool-stx-${tokenSymbol.toLowerCase()}-v-1-1`;
 
     const decimals = parseInt(tokenDecimals, 10);
     const maxSupply = parseInt(tokenMaxSupply, 10);
@@ -78,14 +117,20 @@ export class ContractGenerator {
 
     const data = {
       stxcity_swap_fee: getAddressReference(this.network, "STXCITY_SWAP_FEE"),
-      stxcity_complete_fee: getAddressReference(this.network, "STXCITY_COMPLETE_FEE"),
+      stxcity_complete_fee: getAddressReference(
+        this.network,
+        "STXCITY_COMPLETE_FEE"
+      ),
       burn: getAddressReference(this.network, "BURN"),
       bitflow_core_contract: getAddressReference(this.network, "BITFLOW_CORE"),
       sip10_trait: getTraitReference(this.network, "SIP10"),
       token_contract: tokenContract,
       pool_contract: poolContract,
       bitflow_fee_address: getAddressReference(this.network, "BITFLOW_FEE"),
-      bitflow_stx_token_address: getAddressReference(this.network, "BITFLOW_STX_TOKEN"),
+      bitflow_stx_token_address: getAddressReference(
+        this.network,
+        "BITFLOW_STX_TOKEN"
+      ),
       token_max_supply: calculatedMaxSupply.toString(),
       token_decimals: tokenDecimals,
       creator: this.senderAddress,
@@ -93,34 +138,68 @@ export class ContractGenerator {
       stx_target_amount: stxTargetAmount.toString(),
       virtual_stx_value: virtualSTXValue.toString(),
       complete_fee: completeFee.toString(),
-      stxcity_dex_deployment_fee_address: getAddressReference(this.network, "STXCITY_DEX_DEPLOYMENT_FEE"),
+      stxcity_dex_deployment_fee_address: getAddressReference(
+        this.network,
+        "STXCITY_DEX_DEPLOYMENT_FEE"
+      ),
     };
 
     return this.eta.render("dex.clar", data);
   }
 
-  async generateDaoContracts(senderAddress: string, tokenSymbol: string): Promise<GeneratedDaoContracts> {
-
+  async generateDaoContracts(
+    senderAddress: string,
+    tokenSymbol: string
+  ): Promise<GeneratedDaoContracts> {
     // Get contract names from shared utility
     const contractNames = generateContractNames(tokenSymbol);
 
     // Construct contract addresses
-    const baseDaoContractAddress = `${senderAddress}.${contractNames[ContractType.DAO_BASE]}`;
-    const actionsContractAddress = `${senderAddress}.${contractNames[ContractType.DAO_ACTIONS]}`;
-    const bankAccountContractAddress = `${senderAddress}.${contractNames[ContractType.DAO_BANK_ACCOUNT]}`;
-    const directExecuteContractAddress = `${senderAddress}.${contractNames[ContractType.DAO_DIRECT_EXECUTE]}`;
-    const messagingContractAddress = `${senderAddress}.${contractNames[ContractType.DAO_MESSAGING]}`;
-    const paymentsContractAddress = `${senderAddress}.${contractNames[ContractType.DAO_PAYMENTS]}`;
-    const treasuryContractAddress = `${senderAddress}.${contractNames[ContractType.DAO_TREASURY]}`;
-    const bootstrapContractAddress = `${senderAddress}.${contractNames[ContractType.DAO_PROPOSAL_BOOTSTRAP]}`;
+    const baseDaoContractAddress = `${senderAddress}.${
+      contractNames[ContractType.DAO_BASE]
+    }`;
+    const actionsContractAddress = `${senderAddress}.${
+      contractNames[ContractType.DAO_ACTIONS]
+    }`;
+    const bankAccountContractAddress = `${senderAddress}.${
+      contractNames[ContractType.DAO_BANK_ACCOUNT]
+    }`;
+    const directExecuteContractAddress = `${senderAddress}.${
+      contractNames[ContractType.DAO_DIRECT_EXECUTE]
+    }`;
+    const messagingContractAddress = `${senderAddress}.${
+      contractNames[ContractType.DAO_MESSAGING]
+    }`;
+    const paymentsContractAddress = `${senderAddress}.${
+      contractNames[ContractType.DAO_PAYMENTS]
+    }`;
+    const treasuryContractAddress = `${senderAddress}.${
+      contractNames[ContractType.DAO_TREASURY]
+    }`;
+    const bootstrapContractAddress = `${senderAddress}.${
+      contractNames[ContractType.DAO_PROPOSAL_BOOTSTRAP]
+    }`;
 
     const baseContract = await this.generateBaseDAOContract();
-    const bankAccountContract = await this.generateBankAccountContract(baseDaoContractAddress);
-    const treasuryContract = await this.generateTreasuryContract(baseDaoContractAddress);
-    const paymentsContract = await this.generatePaymentsContract(baseDaoContractAddress, bankAccountContractAddress);
-    const messagingContract = await this.generateMessagingContract(baseDaoContractAddress);
-    const directExecuteContract = await this.generateDirectExecuteContract(baseDaoContractAddress);
-    const actionsContract = await this.generateActionsContract(baseDaoContractAddress);
+    const bankAccountContract = await this.generateBankAccountContract(
+      baseDaoContractAddress
+    );
+    const treasuryContract = await this.generateTreasuryContract(
+      baseDaoContractAddress
+    );
+    const paymentsContract = await this.generatePaymentsContract(
+      baseDaoContractAddress,
+      bankAccountContractAddress
+    );
+    const messagingContract = await this.generateMessagingContract(
+      baseDaoContractAddress
+    );
+    const directExecuteContract = await this.generateDirectExecuteContract(
+      baseDaoContractAddress
+    );
+    const actionsContract = await this.generateActionsContract(
+      baseDaoContractAddress
+    );
 
     const bootstrapContract = await this.generateProposalsBootstrapContract(
       baseDaoContractAddress,
@@ -193,7 +272,9 @@ export class ContractGenerator {
     return this.eta.render("aibtcdev-base-dao.clar", data);
   }
 
-  private async generateTreasuryContract(daoContractAddress: string): Promise<string> {
+  private async generateTreasuryContract(
+    daoContractAddress: string
+  ): Promise<string> {
     const data = {
       dao_contract_address: daoContractAddress,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
@@ -219,7 +300,9 @@ export class ContractGenerator {
     return this.eta.render("extensions/aibtc-ext005-payments.clar", data);
   }
 
-  private async generateMessagingContract(daoContractAddress: string): Promise<string> {
+  private async generateMessagingContract(
+    daoContractAddress: string
+  ): Promise<string> {
     const data = {
       dao_contract_address: daoContractAddress,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
@@ -228,11 +311,16 @@ export class ContractGenerator {
     return this.eta.render("extensions/aibtc-ext004-messaging.clar", data);
   }
 
-  private async generateDirectExecuteContract(daoContractAddress: string): Promise<string> {
+  private async generateDirectExecuteContract(
+    daoContractAddress: string
+  ): Promise<string> {
     const data = {
       dao_contract_address: daoContractAddress,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
-      direct_execute_trait: getTraitReference(this.network, "DAO_DIRECT_EXECUTE"),
+      direct_execute_trait: getTraitReference(
+        this.network,
+        "DAO_DIRECT_EXECUTE"
+      ),
       sip10_trait: getTraitReference(this.network, "SIP10"),
       proposal_trait: getTraitReference(this.network, "DAO_PROPOSAL"),
       treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
@@ -240,28 +328,15 @@ export class ContractGenerator {
     return this.eta.render("extensions/aibtc-ext003-direct-execute.clar", data);
   }
 
-  private async generateBankAccountContract(daoContractAddress: string): Promise<string> {
-    const data = {
-      dao_contract_address: daoContractAddress,
-      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
-      bank_account_trait: getTraitReference(this.network, "DAO_BANK_ACCOUNT"),
-    };
-    return this.eta.render("extensions/aibtc-ext002-bank-account.clar", data);
-  }
-
-  private async generateActionsContract(daoContractAddress: string): Promise<string> {
-    const data = {
-      dao_contract_address: daoContractAddress,
-      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
-      sip10_trait: getTraitReference(this.network, "SIP10"),
-      treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
-      messaging_trait: getTraitReference(this.network, "DAO_MESSAGING"),
-      resources_trait: getTraitReference(this.network, "DAO_RESOURCES"),
-    };
-    return this.eta.render("extensions/aibtc-ext001-actions.clar", data);
-  }
-
-  private async generateProposalsBootstrapContract(daoContractAddress: string, actionsContractAddress: string, bankAccountContractAddress: string, directExecuteContractAddress: string, messagingContractAddress: string, paymentsContractAddress: string, treasuryContractAddress: string): Promise<string> {
+  private async generateProposalsBootstrapContract(
+    daoContractAddress: string,
+    actionsContractAddress: string,
+    bankAccountContractAddress: string,
+    directExecuteContractAddress: string,
+    messagingContractAddress: string,
+    paymentsContractAddress: string,
+    treasuryContractAddress: string
+  ): Promise<string> {
     const data = {
       dao_contract_address: daoContractAddress,
       proposals_trait: getTraitReference(this.network, "DAO_PROPOSAL"),
