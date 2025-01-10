@@ -27,13 +27,14 @@
 ;; error messages - treasury
 (define-constant ERR_TREASURY_CANNOT_BE_SELF (err u1200))
 (define-constant ERR_TREASURY_MISMATCH (err u1201))
-(define-constant ERR_TREASURY_NOT_INITIALIZED (err u1202))
+(define-constant ERR_TREASURY_CANNOT_BE_SAME (err u1202))
 
 ;; error messages - voting token
 (define-constant ERR_TOKEN_ALREADY_INITIALIZED (err u1300))
 (define-constant ERR_TOKEN_MISMATCH (err u1301))
 (define-constant ERR_INSUFFICIENT_BALANCE (err u1302))
 (define-constant ERR_TOKEN_CANNOT_BE_SELF (err u1303))
+(define-constant ERR_TOKEN_CANNOT_BE_SAME (err u1304))
 
 ;; error messages - proposals
 (define-constant ERR_PROPOSAL_NOT_FOUND (err u1400))
@@ -97,10 +98,10 @@
       (treasuryContract (contract-of treasury))
     )
     (try! (is-dao-or-extension))
-    ;; treasury must not be already set
-    (asserts! (is-eq (var-get protocolTreasury) SELF) ERR_TREASURY_NOT_INITIALIZED)
-    ;; treasury cannot be the voting contract
+    ;; cannot set treasury to self
     (asserts! (not (is-eq treasuryContract SELF)) ERR_TREASURY_CANNOT_BE_SELF)
+    ;; cannot set treasury to same value
+    (asserts! (not (is-eq treasuryContract (var-get protocolTreasury))) ERR_TREASURY_CANNOT_BE_SAME)
     (print {
       notification: "set-protocol-treasury",
       payload: {
@@ -112,18 +113,24 @@
 )
 
 (define-public (set-voting-token (token <ft-trait>))
-  (begin
+  (let
+    (
+      (tokenContract (contract-of token))
+    )
     (try! (is-dao-or-extension))
-    ;; token must not be already set
+    ;; cannot set token to self
+    (asserts! (not (is-eq tokenContract SELF)) ERR_TOKEN_CANNOT_BE_SELF)
+    ;; cannot set token to same value
+    (asserts! (not (is-eq tokenContract (var-get votingToken))) ERR_TOKEN_CANNOT_BE_SAME)
+    ;; cannot set token if already set once
     (asserts! (is-eq (var-get votingToken) SELF) ERR_TOKEN_ALREADY_INITIALIZED)
-    (asserts! (not (is-eq (contract-of token) SELF)) ERR_TOKEN_CANNOT_BE_SELF)
     (print {
       notification: "set-voting-token",
       payload: {
-        token: token
+        token: tokenContract
       }
     })
-    (ok (var-set votingToken (contract-of token)))
+    (ok (var-set votingToken tokenContract))
   )
 )
 
