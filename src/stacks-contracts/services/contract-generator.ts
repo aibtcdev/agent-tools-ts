@@ -89,7 +89,7 @@ export class ContractGenerator {
     const data = {
       dao_contract_address: daoContractAddress,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
-      direct_execute_trait: getTraitReference(
+      core_proposal_trait: getTraitReference(
         this.network,
         "DAO_CORE_PROPOSALS"
       ),

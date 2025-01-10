@@ -1,4 +1,4 @@
-;; title: aibtcdev-direct-execute
+;; title: aibtcdev-core-proposals
 ;; version: 1.0.0
 ;; summary: An extension that manages voting on proposals to execute Clarity code using a SIP-010 Stacks token.
 ;; description: This contract can make changes to core DAO functionality with a high voting threshold by executing Clarity code in the context of the DAO.
@@ -6,12 +6,11 @@
 ;; traits
 ;;
 (impl-trait '<%= it.extension_trait %>)
-(impl-trait '<%= it.direct_execute_trait %>)
+(impl-trait '<%= it.core_proposal_trait %>)
 
 (use-trait ft-trait '<%= it.sip10_trait %>)
 (use-trait proposal-trait '<%= it.proposal_trait %>)
 (use-trait treasury-trait '<%= it.treasury_trait %>)
-
 
 ;; constants
 ;;
@@ -21,24 +20,22 @@
 (define-constant VOTING_QUORUM u95) ;; 95% of liquid supply (total supply - treasury)
 
 ;; error messages - authorization
-(define-constant ERR_UNAUTHORIZED (err u3000))
-(define-constant ERR_NOT_DAO_OR_EXTENSION (err u3001))
+(define-constant ERR_NOT_DAO_OR_EXTENSION (err u3000))
 
 ;; error messages - initialization
 (define-constant ERR_NOT_INITIALIZED (err u3100))
-(define-constant ERR_ALREADY_INITIALIZED (err u3101))
 
 ;; error messages - treasury
-(define-constant ERR_TREASURY_MUST_BE_CONTRACT (err u3200))
-(define-constant ERR_TREASURY_CANNOT_BE_SELF (err u3201))
-(define-constant ERR_TREASURY_ALREADY_SET (err u3202))
-(define-constant ERR_TREASURY_MISMATCH (err u3203))
+(define-constant ERR_TREASURY_CANNOT_BE_SELF (err u3200))
+(define-constant ERR_TREASURY_MISMATCH (err u3201))
+(define-constant ERR_TREASURY_CANNOT_BE_SAME (err u3202))
 
 ;; error messages - voting token
-(define-constant ERR_TOKEN_MUST_BE_CONTRACT (err u3300))
-(define-constant ERR_TOKEN_NOT_INITIALIZED (err u3301))
-(define-constant ERR_TOKEN_MISMATCH (err u3302))
-(define-constant ERR_INSUFFICIENT_BALANCE (err u3303))
+(define-constant ERR_TOKEN_ALREADY_INITIALIZED (err u3300))
+(define-constant ERR_TOKEN_MISMATCH (err u3301))
+(define-constant ERR_INSUFFICIENT_BALANCE (err u3302))
+(define-constant ERR_TOKEN_CANNOT_BE_SELF (err u3303))
+(define-constant ERR_TOKEN_CANNOT_BE_SAME (err u3304))
 
 ;; error messages - proposals
 (define-constant ERR_PROPOSAL_NOT_FOUND (err u3400))
@@ -51,7 +48,6 @@
 (define-constant ERR_VOTE_TOO_SOON (err u3500))
 (define-constant ERR_VOTE_TOO_LATE (err u3501))
 (define-constant ERR_ALREADY_VOTED (err u3502))
-(define-constant ERR_ZERO_VOTING_POWER (err u3503))
 (define-constant ERR_QUORUM_NOT_REACHED (err u3504))
 
 ;; data vars
@@ -97,12 +93,10 @@
       (treasuryContract (contract-of treasury))
     )
     (try! (is-dao-or-extension))
-    ;; treasury must be a contract
-    (asserts! (not (is-standard treasuryContract)) ERR_TREASURY_MUST_BE_CONTRACT)
-    ;; treasury cannot be the voting contract
+    ;; cannot set treasury to self
     (asserts! (not (is-eq treasuryContract SELF)) ERR_TREASURY_CANNOT_BE_SELF)
-    ;; treasury cannot be the same value
-    (asserts! (not (is-eq treasuryContract (var-get protocolTreasury))) ERR_TREASURY_ALREADY_SET)
+    ;; cannot set treasury to same value
+    (asserts! (not (is-eq treasuryContract (var-get protocolTreasury))) ERR_TREASURY_CANNOT_BE_SAME)
     (print {
       notification: "set-protocol-treasury",
       payload: {
@@ -119,10 +113,12 @@
       (tokenContract (contract-of token))
     )
     (try! (is-dao-or-extension))
-    ;; token must be a contract
-    (asserts! (not (is-standard tokenContract)) ERR_TOKEN_MUST_BE_CONTRACT)
-    (asserts! (is-eq (var-get votingToken) SELF) ERR_TOKEN_NOT_INITIALIZED)
-    (asserts! (is-eq (var-get votingToken) tokenContract) ERR_TOKEN_MISMATCH)
+    ;; cannot set token to self
+    (asserts! (not (is-eq tokenContract SELF)) ERR_TOKEN_CANNOT_BE_SELF)
+    ;; cannot set token to same value
+    (asserts! (not (is-eq tokenContract (var-get votingToken))) ERR_TOKEN_CANNOT_BE_SAME)
+    ;; cannot set token if already set once
+    (asserts! (is-eq (var-get votingToken) SELF) ERR_TOKEN_ALREADY_INITIALIZED)
     (print {
       notification: "set-voting-token",
       payload: {
@@ -184,7 +180,7 @@
     ;; token matches set voting token
     (asserts! (is-eq tokenContract (var-get votingToken)) ERR_TOKEN_MISMATCH)
     ;; caller has the required balance
-    (asserts! (> senderBalance u0) ERR_ZERO_VOTING_POWER)
+    (asserts! (> senderBalance u0) ERR_INSUFFICIENT_BALANCE)
     ;; proposal was not already executed
     (asserts! (is-none (contract-call? '<%= it.dao_contract_address %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; proposal is still active
