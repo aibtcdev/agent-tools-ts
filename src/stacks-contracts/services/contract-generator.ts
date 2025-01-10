@@ -39,6 +39,10 @@ export class ContractGenerator {
     const data = {
       dao_contract_address: daoContractAddress,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      action_proposals_trait: getTraitReference(
+        this.network,
+        "DAO_ACTION_PROPOSALS"
+      ),
       sip10_trait: getTraitReference(this.network, "SIP10"),
       treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
       messaging_trait: getTraitReference(this.network, "DAO_MESSAGING"),
