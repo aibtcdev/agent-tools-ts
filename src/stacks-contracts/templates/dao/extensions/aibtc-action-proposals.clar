@@ -10,8 +10,6 @@
 
 (use-trait ft-trait '<%= it.sip10_trait %>)
 (use-trait treasury-trait '<%= it.treasury_trait %>)
-(use-trait messaging-trait '<%= it.messaging_trait %>)
-(use-trait resources-trait '<%= it.resources_trait %>)
 (use-trait action-trait '<%= it.action_trait %>)
 
 ;; constants
