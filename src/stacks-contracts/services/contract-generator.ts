@@ -70,6 +70,10 @@ export class ContractGenerator {
     }.${tokenSymbol.toLowerCase()}-stxcity-dex`;
 
     const data = {
+      dao_bitflow_pool_trait: getTraitReference(
+        this.network,
+        "DAO_BITFLOW_POOL"
+      ),
       bitflow_pool_trait: getTraitReference(this.network, "BITFLOW_POOL"),
       sip10_trait: getTraitReference(this.network, "SIP10"),
       bitflow_xyk_core_address: getAddressReference(
