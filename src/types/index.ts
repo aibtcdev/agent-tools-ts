@@ -9,6 +9,7 @@ export type NetworkTraits = {
   DAO_BASE: string;
   DAO_PROPOSAL: string;
   DAO_EXTENSION: string;
+  DAO_ACTION_PROPOSALS: string;
   DAO_CORE_PROPOSALS: string;
   DAO_TREASURY: string;
   DAO_MESSAGING: string;
