@@ -14,9 +14,6 @@
 ;; initially scoped to service provider deploying a contract
 (define-constant SELF (as-contract tx-sender))
 
-;; math helpers (credit: ALEX)
-(define-constant ONE_8 (pow u10 u8))
-
 ;; errors
 (define-constant ERR_UNAUTHORIZED (err u5000))
 (define-constant ERR_INVALID_PARAMS (err u5001))
