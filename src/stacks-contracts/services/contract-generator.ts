@@ -43,6 +43,7 @@ export class ContractGenerator {
       treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
       messaging_trait: getTraitReference(this.network, "DAO_MESSAGING"),
       resources_trait: getTraitReference(this.network, "DAO_RESOURCES"),
+      action_trait: getTraitReference(this.network, "DAO_ACTION"),
     };
     return this.eta.render("extensions/aibtc-action-proposals.clar", data);
   }

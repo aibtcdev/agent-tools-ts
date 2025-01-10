@@ -64,6 +64,7 @@ export const TRAITS: NetworkTraitsMap = {
     DAO_BANK_ACCOUNT: "SP1K807E6R9R248P9N1W0Q6SQGE7GXXGPFMR6MCM7.aibtcdev-dao-traits-v1.bank-account-trait",
     DAO_RESOURCES: "SP1K807E6R9R248P9N1W0Q6SQGE7GXXGPFMR6MCM7.aibtcdev-dao-traits-v1.resources-trait",
     DAO_INVOICES: "SP1K807E6R9R248P9N1W0Q6SQGE7GXXGPFMR6MCM7.aibtcdev-dao-traits-v1.invoices-trait",
+    DAO_ACTION: "SP1K807E6R9R248P9N1W0Q6SQGE7GXXGPFMR6MCM7.aibtcdev-dao-traits-v1.action",
     BITFLOW_POOL: "SM1793C4R5PZ4NS4VQ4WMP7SKKYVH8JZEWSZ9HCCR.xyk-pool-trait-v-1-2.xyk-pool-trait",
     },
   testnet: {
@@ -78,6 +79,7 @@ export const TRAITS: NetworkTraitsMap = {
     DAO_BANK_ACCOUNT: "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.bank-account-trait",
     DAO_RESOURCES: "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.resources-trait",
     DAO_INVOICES: "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.invoices-trait",
+    DAO_ACTION: "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.action",
     BITFLOW_POOL: "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.xyk-pool-trait-v-1-2.xyk-pool-trait",
   },
   devnet: {
@@ -92,6 +94,7 @@ export const TRAITS: NetworkTraitsMap = {
     DAO_BANK_ACCOUNT: "",
     DAO_RESOURCES: "",
     DAO_INVOICES: "",
+    DAO_ACTION: "",
     BITFLOW_POOL: "",
   },
   mocknet: {
@@ -106,6 +109,7 @@ export const TRAITS: NetworkTraitsMap = {
     DAO_BANK_ACCOUNT: "",
     DAO_RESOURCES: "",
     DAO_INVOICES: "",
+    DAO_ACTION: "",
     BITFLOW_POOL: "",
   }
 };

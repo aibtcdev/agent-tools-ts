@@ -15,6 +15,7 @@ export type NetworkTraits = {
   DAO_BANK_ACCOUNT: string;
   DAO_RESOURCES: string;
   DAO_INVOICES: string;
+  DAO_ACTION: string;
   BITFLOW_POOL: string;
 };
 
