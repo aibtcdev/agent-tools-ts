@@ -5,6 +5,7 @@
 ;; traits
 ;;
 (impl-trait '<%= it.extension_trait %>)
+(impl-trait '<%= it.token_owner_trait %>)
 
 ;; constants
 ;;

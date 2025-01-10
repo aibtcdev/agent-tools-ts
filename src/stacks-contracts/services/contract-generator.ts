@@ -190,6 +190,7 @@ export class ContractGenerator {
       dao_contract_address: daoContractAddress,
       token_contract: tokenContract,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      token_owner_trait: getTraitReference(this.network, "DAO_TOKEN_OWNER"),
       creator: this.senderAddress,
     };
     return this.eta.render("extensions/aibtc-token-owner.clar", data);

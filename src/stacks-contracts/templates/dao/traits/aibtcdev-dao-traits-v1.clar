@@ -75,6 +75,12 @@
   (withdraw-stx () (response bool uint))
 ))
 
+(define-trait bitflow-pool (
+  ;; transfer funds (limited as we're just tagging this)
+  ;; all functions are covered between sip-010 and bitflow-xyk
+  (transfer (uint principal principal (optional (buff 34))) (response bool uint))
+))
+
 (define-trait messaging (
   ;; send a message on-chain (opt from DAO)
   ;; @param msg the message to send (up to 1MB)
@@ -193,6 +199,17 @@
   ;; @param token the voting token contract
   ;; @returns (response bool uint)
   (conclude-proposal (<proposal> <treasury> <ft-trait>) (response bool uint))
+))
+
+(define-trait token-owner (
+  ;; set the token URI
+  ;; @param value the new token URI
+  ;; @returns (response bool uint)
+  (set-token-uri ((string-utf8 256)) (response bool uint))
+  ;; transfer ownership of the token
+  ;; @param new-owner the new owner of the token
+  ;; @returns (response bool uint)
+  (transfer-ownership (principal) (response bool uint))
 ))
 
 (define-trait action (
