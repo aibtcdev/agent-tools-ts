@@ -3,6 +3,7 @@
 ;; @hash <%= it.hash %> 
 ;; @targetstx <%= it.target_stx %> 
 
+(impl-trait '<%= it.token_trait %>)
 ;; SIP-10 Trait
 (impl-trait '<%= it.sip10_trait %>)
 

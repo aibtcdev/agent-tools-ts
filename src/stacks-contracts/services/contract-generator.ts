@@ -155,6 +155,7 @@ export class ContractGenerator {
       burn: getAddressReference(this.network, "BURN"),
       bitflow_core_contract: getAddressReference(this.network, "BITFLOW_CORE"),
       sip10_trait: getTraitReference(this.network, "SIP10"),
+      token_dex_trait: getTraitReference(this.network, "DAO_TOKEN_DEX"),
       token_contract: tokenContract,
       pool_contract: poolContract,
       bitflow_fee_address: getAddressReference(this.network, "BITFLOW_FEE"),
@@ -223,6 +224,7 @@ export class ContractGenerator {
     const data = {
       hash,
       sip10_trait: getTraitReference(this.network, "SIP10"),
+      token_trait: getTraitReference(this.network, "DAO_TOKEN"),
       token_owner: tokenOwnerContractId,
       token_symbol: tokenSymbol,
       token_name: tokenName,
