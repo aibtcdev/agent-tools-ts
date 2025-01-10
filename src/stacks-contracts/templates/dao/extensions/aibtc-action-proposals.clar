@@ -1,16 +1,16 @@
-;; title: aibtcdev-actions
+;; title: aibtcdev-action-proposals
 ;; version: 1.0.0
 ;; summary: An extension that manages voting on predefined actions using a SIP-010 Stacks token.
-;; description: This contract allows voting on specific extension actions with a lower threshold than direct-execute.
+;; description: This contract allows voting on specific extension actions with a lower threshold than core proposals.
 
 ;; traits
 ;;
 (impl-trait '<%= it.extension_trait %>)
+(impl-trait '<%= it.action_proposals_trait %>)
 
 (use-trait ft-trait '<%= it.sip10_trait %>)
 (use-trait treasury-trait '<%= it.treasury_trait %>)
-(use-trait messaging-trait '<%= it.messaging_trait %>)
-(use-trait resources-trait '<%= it.resources_trait %>)
+(use-trait action-trait '<%= it.action_trait %>)
 
 ;; constants
 ;;
@@ -18,47 +18,29 @@
 (define-constant VOTING_PERIOD u144) ;; 144 Bitcoin blocks, ~1 day
 (define-constant VOTING_QUORUM u66) ;; 66% of liquid supply (total supply - treasury)
 
-(define-constant VALID_ACTIONS (list
-  "send-message"
-  "add-resource"
-  "batch-messages"
-  "batch-resources"
-  "allow-asset"
-  "delegate-stx"
-  "set-account-holder"
-  "set-withdrawal-period"
-  "set-withdrawal-amount"
-  "toggle-resource"
-  "set-payment-address"
-))
-
 ;; error messages - authorization
-(define-constant ERR_UNAUTHORIZED (err u1000))
-(define-constant ERR_NOT_DAO_OR_EXTENSION (err u1001))
+(define-constant ERR_NOT_DAO_OR_EXTENSION (err u1000))
 
 ;; error messages - initialization
 (define-constant ERR_NOT_INITIALIZED (err u1100))
-(define-constant ERR_ALREADY_INITIALIZED (err u1101))
 
 ;; error messages - treasury
-(define-constant ERR_TREASURY_MUST_BE_CONTRACT (err u1200))
-(define-constant ERR_TREASURY_CANNOT_BE_SELF (err u1201))
-(define-constant ERR_TREASURY_ALREADY_SET (err u1202))
-(define-constant ERR_TREASURY_MISMATCH (err u1203))
-(define-constant ERR_TREASURY_NOT_INITIALIZED (err u1204))
+(define-constant ERR_TREASURY_CANNOT_BE_SELF (err u1200))
+(define-constant ERR_TREASURY_MISMATCH (err u1201))
+(define-constant ERR_TREASURY_CANNOT_BE_SAME (err u1202))
 
 ;; error messages - voting token
-(define-constant ERR_TOKEN_MUST_BE_CONTRACT (err u1300))
-(define-constant ERR_TOKEN_NOT_INITIALIZED (err u1301))
-(define-constant ERR_TOKEN_MISMATCH (err u1302))
-(define-constant ERR_INSUFFICIENT_BALANCE (err u1303))
+(define-constant ERR_TOKEN_ALREADY_INITIALIZED (err u1300))
+(define-constant ERR_TOKEN_MISMATCH (err u1301))
+(define-constant ERR_INSUFFICIENT_BALANCE (err u1302))
+(define-constant ERR_TOKEN_CANNOT_BE_SELF (err u1303))
+(define-constant ERR_TOKEN_CANNOT_BE_SAME (err u1304))
 
 ;; error messages - proposals
 (define-constant ERR_PROPOSAL_NOT_FOUND (err u1400))
-(define-constant ERR_PROPOSAL_ALREADY_EXECUTED (err u1401))
-(define-constant ERR_PROPOSAL_STILL_ACTIVE (err u1402))
-(define-constant ERR_SAVING_PROPOSAL (err u1403))
-(define-constant ERR_PROPOSAL_ALREADY_CONCLUDED (err u1404))
+(define-constant ERR_PROPOSAL_STILL_ACTIVE (err u1401))
+(define-constant ERR_SAVING_PROPOSAL (err u1402))
+(define-constant ERR_PROPOSAL_ALREADY_CONCLUDED (err u1403))
 
 ;; error messages - voting
 (define-constant ERR_VOTE_TOO_SOON (err u1500))
@@ -69,20 +51,20 @@
 
 ;; error messages - actions
 (define-constant ERR_INVALID_ACTION (err u1600))
-(define-constant ERR_INVALID_PARAMETERS (err u1601))
 
 ;; data vars
 ;;
 (define-data-var protocolTreasury principal SELF) ;; the treasury contract for protocol funds
 (define-data-var votingToken principal SELF) ;; the FT contract used for voting
+(define-data-var proposalCount uint u0) ;; total number of proposals
 
 ;; data maps
 ;;
 (define-map Proposals
   uint ;; proposal id
   {
-    action: (string-ascii 64), ;; action name
-    parameters: (list 10 (string-utf8 256)), ;; action parameters
+    action: principal, ;; action contract
+    parameters: (buff 2048), ;; action parameters
     createdAt: uint, ;; block height
     caller: principal, ;; contract caller
     creator: principal, ;; proposal creator (tx-sender)
@@ -103,8 +85,6 @@
   uint ;; total votes
 )
 
-(define-data-var proposalCount uint u0)
-
 ;; public functions
 ;;
 
@@ -118,12 +98,10 @@
       (treasuryContract (contract-of treasury))
     )
     (try! (is-dao-or-extension))
-    ;; treasury must be a contract
-    (asserts! (not (is-standard treasuryContract)) ERR_TREASURY_MUST_BE_CONTRACT)
-    ;; treasury must not be already set
-    (asserts! (is-eq (var-get protocolTreasury) SELF) ERR_TREASURY_NOT_INITIALIZED)
-    ;; treasury cannot be the voting contract
+    ;; cannot set treasury to self
     (asserts! (not (is-eq treasuryContract SELF)) ERR_TREASURY_CANNOT_BE_SELF)
+    ;; cannot set treasury to same value
+    (asserts! (not (is-eq treasuryContract (var-get protocolTreasury))) ERR_TREASURY_CANNOT_BE_SAME)
     (print {
       notification: "set-protocol-treasury",
       payload: {
@@ -140,10 +118,12 @@
       (tokenContract (contract-of token))
     )
     (try! (is-dao-or-extension))
-    ;; token must be a contract
-    (asserts! (not (is-standard tokenContract)) ERR_TOKEN_MUST_BE_CONTRACT)
-    ;; token must not be already set
-    (asserts! (is-eq (var-get votingToken) SELF) ERR_TOKEN_NOT_INITIALIZED)
+    ;; cannot set token to self
+    (asserts! (not (is-eq tokenContract SELF)) ERR_TOKEN_CANNOT_BE_SELF)
+    ;; cannot set token to same value
+    (asserts! (not (is-eq tokenContract (var-get votingToken))) ERR_TOKEN_CANNOT_BE_SAME)
+    ;; cannot set token if already set once
+    (asserts! (is-eq (var-get votingToken) SELF) ERR_TOKEN_ALREADY_INITIALIZED)
     (print {
       notification: "set-voting-token",
       payload: {
@@ -154,7 +134,7 @@
   )
 )
 
-(define-public (propose-action (action (string-ascii 64)) (parameters (list 10 (string-utf8 256))) (token <ft-trait>))
+(define-public (propose-action (action <action-trait>) (parameters (buff 2048)) (token <ft-trait>))
   (let
     (
       (tokenContract (contract-of token))
@@ -180,7 +160,7 @@
     })
     ;; create the proposal
     (asserts! (map-insert Proposals newId {
-      action: action,
+      action: (contract-of action),
       parameters: parameters,
       createdAt: burn-block-height,
       caller: contract-caller,
@@ -243,7 +223,7 @@
   )
 )
 
-(define-public (conclude-proposal (proposalId uint) (treasury <treasury-trait>) (token <ft-trait>))
+(define-public (conclude-proposal (proposalId uint) (action <action-trait>) (treasury <treasury-trait>) (token <ft-trait>))
   (let
     (
       (proposalRecord (unwrap! (map-get? Proposals proposalId) ERR_PROPOSAL_NOT_FOUND))
@@ -261,6 +241,8 @@
     (asserts! (>= burn-block-height (get endBlock proposalRecord)) ERR_PROPOSAL_STILL_ACTIVE)
     ;; proposal not already concluded
     (asserts! (not (get concluded proposalRecord)) ERR_PROPOSAL_ALREADY_CONCLUDED)
+    ;; action must be the same as the one in proposal
+    (asserts! (is-eq (get action proposalRecord) (contract-of action)) ERR_INVALID_ACTION)
     ;; print conclusion event
     (print {
       notification: "conclude-proposal",
@@ -277,9 +259,10 @@
       })
     )
     ;; execute the action only if it passed
-    ;; (and votePassed (try! (execute-action proposalRecord)))
-    ;; return the result
-    (ok votePassed)
+    (ok (if votePassed
+      (match (contract-call? action run (get parameters proposalRecord)) ok_ true err_ (begin (print {err:err_}) false))
+      false
+    ))
   )
 )
 

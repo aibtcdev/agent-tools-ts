@@ -9,17 +9,53 @@
 
 ;; CORE DAO TRAITS
 
-(define-trait proposal-trait (
+(define-trait proposal (
   (execute (principal) (response bool uint))
 ))
 
-(define-trait extension-trait (
+(define-trait extension (
   (callback (principal (buff 34)) (response bool uint))
 ))
 
 ;; EXTENSION TRAITS
 
-(define-trait bank-account-trait (
+(define-trait action (
+  ;; @param parameters encoded action parameters
+  ;; @returns (response bool uint)
+  (run ((buff 2048)) (response bool uint))
+))
+
+(define-trait action-proposals (
+  ;; set the protocol treasury contract
+  ;; @param treasury the treasury contract principal
+  ;; @returns (response bool uint)
+  (set-protocol-treasury (<treasury>) (response bool uint))
+  ;; set the voting token contract
+  ;; @param token the token contract principal
+  ;; @returns (response bool uint)
+  (set-voting-token (<ft-trait>) (response bool uint))
+  ;; propose a new action
+  ;; @param action the action contract
+  ;; @param parameters encoded action parameters
+  ;; @param token the voting token contract
+  ;; @returns (response bool uint)
+  (propose-action (<action> (buff 2048) <ft-trait>) (response bool uint))
+  ;; vote on an existing proposal
+  ;; @param proposal the proposal id
+  ;; @param token the voting token contract
+  ;; @param vote true for yes, false for no
+  ;; @returns (response bool uint)
+  (vote-on-proposal (uint <ft-trait> bool) (response bool uint))
+  ;; conclude a proposal after voting period
+  ;; @param proposal the proposal id
+  ;; @param action the action contract
+  ;; @param treasury the treasury contract
+  ;; @param token the voting token contract
+  ;; @returns (response bool uint)
+  (conclude-proposal (uint <action> <treasury> <ft-trait>) (response bool uint))
+))
+
+(define-trait bank-account (
   ;; set account holder
   ;; @param principal the new account holder
   ;; @returns (response bool uint)
@@ -45,7 +81,41 @@
   (withdraw-stx () (response bool uint))
 ))
 
-(define-trait messaging-trait (
+(define-trait bitflow-pool (
+  ;; transfer funds (limited as we're just tagging this)
+  ;; all functions are covered between sip-010 and bitflow-xyk
+  (transfer (uint principal principal (optional (buff 34))) (response bool uint))
+))
+
+(define-trait core-proposals (
+  ;; set the protocol treasury contract
+  ;; @param treasury the treasury contract principal
+  ;; @returns (response bool uint)
+  (set-protocol-treasury (<treasury>) (response bool uint))
+  ;; set the voting token contract
+  ;; @param token the token contract principal
+  ;; @returns (response bool uint)
+  (set-voting-token (<ft-trait>) (response bool uint))
+  ;; create a new proposal
+  ;; @param proposal the proposal contract
+  ;; @param token the voting token contract
+  ;; @returns (response bool uint)
+  (create-proposal (<proposal> <ft-trait>) (response bool uint))
+  ;; vote on an existing proposal
+  ;; @param proposal the proposal contract
+  ;; @param token the voting token contract
+  ;; @param vote true for yes, false for no
+  ;; @returns (response bool uint)
+  (vote-on-proposal (<proposal> <ft-trait> bool) (response bool uint))
+  ;; conclude a proposal after voting period
+  ;; @param proposal the proposal contract
+  ;; @param treasury the treasury contract
+  ;; @param token the voting token contract
+  ;; @returns (response bool uint)
+  (conclude-proposal (<proposal> <treasury> <ft-trait>) (response bool uint))
+))
+
+(define-trait messaging (
   ;; send a message on-chain (opt from DAO)
   ;; @param msg the message to send (up to 1MB)
   ;; @param isFromDao whether the message is from the DAO
@@ -53,7 +123,18 @@
   (send ((string-ascii 1048576) bool) (response bool uint))
 ))
 
-(define-trait resources-trait (
+(define-trait invoices (
+  ;; pay an invoice by ID
+  ;; @param invoice the ID of the invoice
+  ;; @returns (response uint uint)
+  (pay-invoice (uint (optional (buff 34))) (response uint uint))
+  ;; pay an invoice by resource name
+  ;; @param name the name of the resource
+  ;; @returns (response uint uint)
+  (pay-invoice-by-resource-name ((string-utf8 50) (optional (buff 34))) (response uint uint))
+))
+
+(define-trait resources (
   ;; set payment address for resource invoices
   ;; @param principal the new payment address
   ;; @returns (response bool uint)
@@ -74,18 +155,36 @@
   (toggle-resource-by-name ((string-utf8 50)) (response bool uint))
 ))
 
-(define-trait invoices-trait (
-  ;; pay an invoice by ID
-  ;; @param invoice the ID of the invoice
+(define-trait token-dex (
+  ;; buy tokens from the dex
+  ;; @param token-trait the token contract
+  ;; @param stx-amount the amount of microSTX to spend
   ;; @returns (response uint uint)
-  (pay-invoice (uint (optional (buff 34))) (response uint uint))
-  ;; pay an invoice by resource name
-  ;; @param name the name of the resource
+  (buy (<ft-trait> uint) (response uint uint))
+  ;; sell tokens to the dex
+  ;; @param token-trait the token contract
+  ;; @param tokens-in the amount of tokens to sell
   ;; @returns (response uint uint)
-  (pay-invoice-by-resource-name ((string-utf8 50) (optional (buff 34))) (response uint uint))
+  (sell (<ft-trait> uint) (response uint uint))
 ))
 
-(define-trait treasury-trait (
+(define-trait token-owner (
+  ;; set the token URI
+  ;; @param value the new token URI
+  ;; @returns (response bool uint)
+  (set-token-uri ((string-utf8 256)) (response bool uint))
+  ;; transfer ownership of the token
+  ;; @param new-owner the new owner of the token
+  ;; @returns (response bool uint)
+  (transfer-ownership (principal) (response bool uint))
+))
+
+(define-trait token (
+  ;; transfer funds (limited as we're just tagging this)
+  (transfer (uint principal principal (optional (buff 34))) (response bool uint))
+))
+
+(define-trait treasury (
   ;; allow an asset for deposit/withdrawal
   ;; @param token the asset contract principal
   ;; @param enabled whether the asset is allowed
@@ -135,32 +234,4 @@
   ;; revoke delegation of STX from stacking in PoX
   ;; @returns (response bool uint)
   (revoke-delegate-stx () (response bool uint))
-))
-
-(define-trait direct-execute-trait (
-  ;; set the protocol treasury contract
-  ;; @param treasury the treasury contract principal
-  ;; @returns (response bool uint)
-  (set-protocol-treasury (<treasury-trait>) (response bool uint))
-  ;; set the voting token contract
-  ;; @param token the token contract principal
-  ;; @returns (response bool uint)
-  (set-voting-token (<ft-trait>) (response bool uint))
-  ;; create a new proposal
-  ;; @param proposal the proposal contract
-  ;; @param token the voting token contract
-  ;; @returns (response bool uint)
-  (create-proposal (<proposal-trait> <ft-trait>) (response bool uint))
-  ;; vote on an existing proposal
-  ;; @param proposal the proposal contract
-  ;; @param token the voting token contract
-  ;; @param vote true for yes, false for no
-  ;; @returns (response bool uint)
-  (vote-on-proposal (<proposal-trait> <ft-trait> bool) (response bool uint))
-  ;; conclude a proposal after voting period
-  ;; @param proposal the proposal contract
-  ;; @param treasury the treasury contract
-  ;; @param token the voting token contract
-  ;; @returns (response bool uint)
-  (conclude-proposal (<proposal-trait> <treasury-trait> <ft-trait>) (response bool uint))
 ))

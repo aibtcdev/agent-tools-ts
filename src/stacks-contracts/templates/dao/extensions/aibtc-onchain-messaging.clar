@@ -9,8 +9,8 @@
 
 ;; constants
 ;;
-(define-constant INPUT_ERROR (err u400))
-(define-constant ERR_UNAUTHORIZED (err u2000))
+(define-constant INPUT_ERROR (err u4000))
+(define-constant ERR_UNAUTHORIZED (err u4001))
 
 ;; public functions
 

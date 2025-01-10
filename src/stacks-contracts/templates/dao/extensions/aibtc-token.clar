@@ -3,6 +3,7 @@
 ;; @hash <%= it.hash %> 
 ;; @targetstx <%= it.target_stx %> 
 
+(impl-trait '<%= it.token_trait %>)
 ;; SIP-10 Trait
 (impl-trait '<%= it.sip10_trait %>)
 
@@ -17,7 +18,7 @@
 
 ;; Variables
 (define-fungible-token <%= it.token_symbol %> MAXSUPPLY)
-(define-data-var contract-owner principal tx-sender) 
+(define-data-var contract-owner principal '<%= it.token_owner %>) 
 
 ;; SIP-10 Functions
 (define-public (transfer (amount uint) (from principal) (to principal) (memo (optional (buff 34))))
@@ -106,21 +107,10 @@
 )
 
 (begin
-    ;; Define the total supply
-    (let ((total-supply u<%= it.token_max_supply %>))
-    
-        ;; Calculate 40% and 60% of the total supply using inline division
-        (let ((dex-allocation (/ (* total-supply u40) u100)) ;; Inline division for 40%
-              (treasury-allocation (/ (* total-supply u60) u100))) ;; Inline division for 60%
-              
-            ;; Send STX fees
-            (try! (send-stx '<%= it.stxctiy_token_deployment_fee_address %> u500000))
-            
-            ;; Mint tokens to the dex_contract (40%)
-            (try! (ft-mint? <%= it.token_symbol %> dex-allocation '<%= it.dex_contract %>))
-            
-            ;; Mint tokens to the treasury (60%)
-            (try! (ft-mint? <%= it.token_symbol %> treasury-allocation '<%= it.treasury_contract %>))
-        )
-    )
+  ;; Send STX fees
+  (try! (send-stx '<%= it.stxcity_token_deployment_fee_address %> u500000))
+  ;; mint tokens to the dex_contract (20%)
+  (try! (ft-mint? <%= it.token_symbol %> (/ (* MAXSUPPLY u20) u100) '<%= it.dex_contract %>))
+  ;; mint tokens to the treasury (80%)
+  (try! (ft-mint? <%= it.token_symbol %> (/ (* MAXSUPPLY u80) u100) '<%= it.dex_contract %>))
 )

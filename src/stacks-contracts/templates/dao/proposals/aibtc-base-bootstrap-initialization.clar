@@ -1,6 +1,6 @@
 (impl-trait '<%= it.proposals_trait %>)
 
-(define-constant DAO_MANIFEST "This is where the DAO can put it's mission, purpose, and goals.")
+(define-constant DAO_MANIFEST "<%= it.dao_manifest %>")
 
 (define-public (execute (sender principal))
   (begin  
@@ -9,9 +9,10 @@
       (list
         {extension: '<%= it.actions_contract_address %>, enabled: true}
         {extension: '<%= it.bank_account_contract_address %>, enabled: true}
-        {extension: '<%= it.direct_execute_contract_address %>, enabled: true}
+        {extension: '<%= it.core_proposals_contract_address %>, enabled: true}
         {extension: '<%= it.messaging_contract_address %>, enabled: true}
         {extension: '<%= it.payments_contract_address %>, enabled: true}
+        {extension: '<%= it.token_owner_contract_address %>, enabled: true}
         {extension: '<%= it.treasury_contract_address %>, enabled: true}
       )
     ))
