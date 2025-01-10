@@ -54,6 +54,7 @@ async function main() {
     // Step 1 - generate token-related contracts
 
     // deploy aibtc-token
+    //console.log("- deploying aibtc-token...");
     const tokenSource = await contractGenerator.generateTokenContract(
       tokenSymbol,
       tokenName,
@@ -75,6 +76,7 @@ async function main() {
     currentNonce++;
 
     // deploy aibtc-bitflow-pool
+    //console.log("- deploying aibtc-bitflow-pool...");
     const poolSource =
       contractGenerator.generateBitflowPoolContract(tokenSymbol);
     const poolDeployment = await contractDeployer.deployContract(
@@ -91,6 +93,7 @@ async function main() {
     currentNonce++;
 
     // deploy aibtc-token-dex
+    //console.log("- deploying aibtc-token-dex...");
     const dexSource = contractGenerator.generateTokenDexContract(
       tokenMaxSupply,
       tokenDecimals,
@@ -125,6 +128,7 @@ async function main() {
 
     // Deploy all contracts
     for (const [key, contract] of sortedContracts) {
+      //console.log(`- deploying ${key}...`);
       const deployment = await contractDeployer.deployContract(
         contract.source,
         contract.type,
@@ -133,6 +137,8 @@ async function main() {
       );
 
       if (!deployment.success) {
+        //console.log(`Deployment failed for ${contract.type}`);
+        //console.log(JSON.stringify(deployment.error, null, 2));
         result.error = {
           stage: `Deploying ${contract.type}`,
           message: deployment.error?.message,
@@ -147,6 +153,7 @@ async function main() {
     }
 
     result.success = true;
+    //console.log("Deployment successful!");
     console.log(JSON.stringify(result, null, 2));
     return result;
   } catch (error: any) {
