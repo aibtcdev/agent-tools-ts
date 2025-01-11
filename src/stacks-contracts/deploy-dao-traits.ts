@@ -1,5 +1,10 @@
 import { getAddressFromPrivateKey } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork, getNextNonce } from "../utilities";
+import {
+  CONFIG,
+  deriveChildAccount,
+  getNetwork,
+  getNextNonce,
+} from "../utilities";
 import { TraitType, DeploymentResult } from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
 import { ContractDeployer } from "./services/contract-deployer";
@@ -15,27 +20,30 @@ const nonceOffsets: { [key in TraitType]: number } = {
 
 async function main() {
   try {
+    // setup empty result
     const result: DeploymentResult = {
       success: false,
       contracts: {},
     };
-
+    // setup network and key
     const networkObj = getNetwork(CONFIG.NETWORK);
-    const { address, key } = await deriveChildAccount(
+    const { key } = await deriveChildAccount(
       CONFIG.NETWORK,
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
     );
-
+    // get address and nonce
     const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
     const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
-
-    const contractGenerator = new ContractGenerator(CONFIG.NETWORK, senderAddress);
+    // setup contract generator and deployer
+    const contractGenerator = new ContractGenerator(
+      CONFIG.NETWORK,
+      senderAddress
+    );
     const contractDeployer = new ContractDeployer(CONFIG.NETWORK);
-
-    // Deploy each trait contract
+    // deploy each trait contract
     for (const traitType of Object.values(TraitType)) {
-      const contractSource = await contractGenerator.generateTraitContract(traitType);
+      const contractSource = contractGenerator.generateTraitContract(traitType);
       const contractName = traitType.toLowerCase();
       const nonce = nextPossibleNonce + nonceOffsets[traitType];
 

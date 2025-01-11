@@ -93,40 +93,40 @@ export const TRAITS: NetworkTraitsMap = {
   },
   testnet: {
     SIP10:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait",
-    SIP09: "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.nft-trait.nft-trait",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.sip-010-trait-ft-standard.sip-010-trait",
+    SIP09: "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.nft-trait.nft-trait",
     DAO_BASE:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-v1.aibtcdev-base-dao",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-v1.aibtcdev-base-dao",
     DAO_PROPOSAL:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.proposal",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.proposal",
     DAO_EXTENSION:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.extension",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.extension",
     DAO_ACTION_PROPOSALS:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.action-proposals",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.action-proposals",
     DAO_CORE_PROPOSALS:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.core-proposals",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.core-proposals",
     DAO_TREASURY:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.treasury",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.treasury",
     DAO_MESSAGING:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.messaging",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.messaging",
     DAO_BANK_ACCOUNT:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.bank-account",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.bank-account",
     DAO_RESOURCES:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.resources",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.resources",
     DAO_INVOICES:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.invoices",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.invoices",
     DAO_ACTION:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.action",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.action",
     DAO_TOKEN_DEX:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.token-dex",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.token-dex",
     DAO_TOKEN_OWNER:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.token-owner",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.token-owner",
     DAO_TOKEN:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.token",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.token",
     DAO_BITFLOW_POOL:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.bitflow-pool",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.bitflow-pool",
     BITFLOW_POOL:
-      "ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.xyk-pool-trait-v-1-2.xyk-pool-trait",
+      "ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.xyk-pool-trait-v-1-2.xyk-pool-trait",
   },
   devnet: {
     SIP10: "",
