@@ -2,11 +2,19 @@ import { getAddressFromPrivateKey } from "@stacks/transactions";
 import { CONFIG, deriveChildAccount, getNetwork } from "../utilities";
 import { ContractType, DeploymentResult } from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
+import * as fs from "fs";
+import * as path from "path";
 
 async function main() {
   try {
-    const [tokenSymbol, tokenName, tokenMaxSupply, tokenDecimals, tokenUri] =
-      process.argv.slice(2);
+    const [
+      tokenSymbol,
+      tokenName,
+      tokenMaxSupply,
+      tokenDecimals,
+      tokenUri,
+      generateFiles = "false",
+    ] = process.argv.slice(2);
 
     if (
       !tokenSymbol ||
@@ -16,10 +24,12 @@ async function main() {
       !tokenUri
     ) {
       console.log(
-        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri>"
+        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> [generateFiles]"
       );
       process.exit(1);
     }
+
+    const shouldGenerateFiles = generateFiles.toLowerCase() === "true";
 
     const result: DeploymentResult = {
       success: false,
@@ -33,6 +43,13 @@ async function main() {
       CONFIG.ACCOUNT_INDEX
     );
 
+    let outputDir = "";
+    if (shouldGenerateFiles) {
+      // Create output directory
+      outputDir = path.join("generated", tokenSymbol.toLowerCase());
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
     const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
     const contractGenerator = new ContractGenerator(
@@ -40,9 +57,19 @@ async function main() {
       senderAddress
     );
 
-    // Step 1 - generate token-related contracts
+    // Function to save contract to file
+    const saveContract = (name: string, source: string) => {
+      if (shouldGenerateFiles) {
+        const fileName = `${name}.clar`;
+        const filePath = path.join(outputDir, fileName);
+        fs.writeFileSync(filePath, source);
+        console.log(`Generated: ${filePath}`);
+      }
+      console.log(`===== ${name}`);
+      console.log(source);
+    };
 
-    console.log("===== aibtc-token");
+    // Step 1 - generate token-related contracts
     const tokenSource = await contractGenerator.generateTokenContract(
       tokenSymbol,
       tokenName,
@@ -50,20 +77,18 @@ async function main() {
       tokenDecimals,
       tokenUri
     );
-    console.log(tokenSource);
+    saveContract(`${tokenSymbol.toLowerCase()}-stxcity`, tokenSource);
 
-    console.log("===== aibtc-bitflow-pool");
     const poolSource =
       contractGenerator.generateBitflowPoolContract(tokenSymbol);
-    console.log(poolSource);
+    saveContract(`xyk-pool-stx-${tokenSymbol.toLowerCase()}-v-1-1`, poolSource);
 
-    console.log("===== aibtc-token-dex");
     const dexSource = contractGenerator.generateTokenDexContract(
       tokenMaxSupply,
       tokenDecimals,
       tokenSymbol
     );
-    console.log(dexSource);
+    saveContract(`${tokenSymbol.toLowerCase()}-stxcity-dex`, dexSource);
 
     // Step 2 - generate remaining dao contracts
 
@@ -79,10 +104,9 @@ async function main() {
       return 0;
     });
 
-    // Display all contracts
-    for (const [key, contract] of sortedContracts) {
-      console.log(`===== ${key}`);
-      console.log(contract.source);
+    // Save all contracts
+    for (const [_, contract] of sortedContracts) {
+      saveContract(contract.name, contract.source);
     }
 
     result.success = true;
