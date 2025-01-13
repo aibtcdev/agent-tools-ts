@@ -1,12 +1,12 @@
 ===== aibtc-token
 ;; @title Bonding Curve Token by STX.CITY
 ;; @version 2.0
-;; @hash dvNERphMAq1ZsOFzRIa7dA:98cTUYYyDL75vpOJEdHuiQ:V8wL8cj9RDxzSckYR1IYF8yhEvzzmM2v5CBSPF6sTZmTl8GYZHEfLQWXcMSq8EOwLPlH58lBapH_cjJmGRGP8Q 
+;; @hash qFXlDodI44P2yclvKXNMvQ:mzHmAemVsjKQSlQ_OGvgEw:1hgE3hUpqqCPZ5Y3GFsQdNbs4p7LMGQ7Iq0P_HUg41at6-Q6exDxrPfB9YEC66UdE17q71083SwiBGb26IOPNA 
 ;; @targetstx 2000 
 
 ;; Traits
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.token)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.token)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.sip-010-trait-ft-standard.sip-010-trait)
 
 ;; Errors 
 (define-constant ERR-UNAUTHORIZED u401)
@@ -59,7 +59,7 @@
   (ok "MON")
 )
 (define-read-only (get-decimals)
-  (ok u8)
+  (ok u6)
 )
 (define-read-only (get-total-supply)
   (ok (ft-get-supply MON))
@@ -117,11 +117,11 @@
 )
 ===== aibtc-bitflow-pool
 ;; Implement XYK pool trait and use SIP 010 trait
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.xyk-pool-trait-v-1-2.xyk-pool-trait)
-(use-trait sip-010-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.xyk-pool-trait-v-1-2.xyk-pool-trait)
+(use-trait sip-010-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.sip-010-trait-ft-standard.sip-010-trait)
 
 ;; implement aibtcdev trait
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.bitflow-pool)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.bitflow-pool)
 
 ;; Define fungible pool token
 (define-fungible-token pool-token)
@@ -457,8 +457,8 @@
 ;; @version 2.0
 
 ;; traits
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.token-dex)
-(use-trait sip-010-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.token-dex)
+(use-trait sip-010-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.sip-010-trait-ft-standard.sip-010-trait)
 
 ;; error constants
 (define-constant ERR-UNAUTHORIZED (err u401))
@@ -649,9 +649,9 @@
 ;; traits
 ;;
 
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-v1.aibtcdev-base-dao)
-(use-trait proposal-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.proposal)
-(use-trait extension-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.extension)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-v1.aibtcdev-base-dao)
+(use-trait proposal-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.proposal)
+(use-trait extension-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.extension)
 
 ;; constants
 ;;
@@ -786,11 +786,11 @@
 
 ;; traits
 ;;
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.extension)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.treasury)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.extension)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.treasury)
 
-(use-trait ft-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait)
-(use-trait nft-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.nft-trait.nft-trait)
+(use-trait ft-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.sip-010-trait-ft-standard.sip-010-trait)
+(use-trait nft-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.nft-trait.nft-trait)
 
 ;; constants
 ;;
@@ -1019,9 +1019,9 @@
 
 ;; traits
 ;;
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.extension)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.invoices)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.resources)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.extension)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.invoices)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.resources)
 
 ;; constants
 ;;
@@ -1454,8 +1454,8 @@
 
 ;; traits
 ;;
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.extension)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.messaging)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.extension)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.messaging)
 
 ;; constants
 ;;
@@ -1505,12 +1505,12 @@
 
 ;; traits
 ;;
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.extension)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.core-proposals)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.extension)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.core-proposals)
 
-(use-trait ft-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait)
-(use-trait proposal-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.proposal)
-(use-trait treasury-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.treasury)
+(use-trait ft-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.sip-010-trait-ft-standard.sip-010-trait)
+(use-trait proposal-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.proposal)
+(use-trait treasury-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.treasury)
 
 ;; constants
 ;;
@@ -1811,8 +1811,8 @@
 
 ;; traits
 ;;
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.extension)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.bank-account)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.extension)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.bank-account)
 
 ;; constants
 ;;
@@ -1972,12 +1972,12 @@
 
 ;; traits
 ;;
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.extension)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.action-proposals)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.extension)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.action-proposals)
 
-(use-trait ft-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait)
-(use-trait treasury-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.treasury)
-(use-trait action-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.action)
+(use-trait ft-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.sip-010-trait-ft-standard.sip-010-trait)
+(use-trait treasury-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.treasury)
+(use-trait action-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.action)
 
 ;; constants
 ;;
@@ -2295,8 +2295,8 @@
 
 ;; traits
 ;;
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.extension)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.token-owner)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.extension)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.token-owner)
 
 ;; constants
 ;;
@@ -2340,7 +2340,7 @@
 )
 
 ===== bootstrap
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.proposal)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.proposal)
 
 (define-constant DAO_MANIFEST "This is where the dao manifest would go")
 

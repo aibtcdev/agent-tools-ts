@@ -1,11 +1,11 @@
 ;; @title Bonding Curve Token by STX.CITY
 ;; @version 2.0
-;; @hash dvNERphMAq1ZsOFzRIa7dA:98cTUYYyDL75vpOJEdHuiQ:V8wL8cj9RDxzSckYR1IYF8yhEvzzmM2v5CBSPF6sTZmTl8GYZHEfLQWXcMSq8EOwLPlH58lBapH_cjJmGRGP8Q 
+;; @hash qFXlDodI44P2yclvKXNMvQ:mzHmAemVsjKQSlQ_OGvgEw:1hgE3hUpqqCPZ5Y3GFsQdNbs4p7LMGQ7Iq0P_HUg41at6-Q6exDxrPfB9YEC66UdE17q71083SwiBGb26IOPNA 
 ;; @targetstx 2000 
 
 ;; Traits
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.token)
-(impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.aibtcdev-dao-traits-v1.token)
+(impl-trait 'ST6BBNM7Q8GKDG2FMKRBZJCJ3SE4BWVC1YSF2XKD.sip-010-trait-ft-standard.sip-010-trait)
 
 ;; Errors 
 (define-constant ERR-UNAUTHORIZED u401)
@@ -58,7 +58,7 @@
   (ok "MON")
 )
 (define-read-only (get-decimals)
-  (ok u8)
+  (ok u6)
 )
 (define-read-only (get-total-supply)
   (ok (ft-get-supply MON))
