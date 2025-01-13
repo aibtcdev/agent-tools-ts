@@ -2,13 +2,19 @@ import { getAddressFromPrivateKey } from "@stacks/transactions";
 import { CONFIG, deriveChildAccount, getNetwork } from "../utilities";
 import { ContractType, DeploymentResult } from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
 async function main() {
   try {
-    const [tokenSymbol, tokenName, tokenMaxSupply, tokenDecimals, tokenUri, generateFiles = "false"] =
-      process.argv.slice(2);
+    const [
+      tokenSymbol,
+      tokenName,
+      tokenMaxSupply,
+      tokenDecimals,
+      tokenUri,
+      generateFiles = "false",
+    ] = process.argv.slice(2);
 
     if (
       !tokenSymbol ||
@@ -40,7 +46,7 @@ async function main() {
     let outputDir = "";
     if (shouldGenerateFiles) {
       // Create output directory
-      outputDir = path.join('generated', tokenSymbol.toLowerCase());
+      outputDir = path.join("generated", tokenSymbol.toLowerCase());
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
@@ -54,7 +60,7 @@ async function main() {
     // Function to save contract to file
     const saveContract = (name: string, source: string) => {
       if (shouldGenerateFiles) {
-        const fileName = `${tokenSymbol.toLowerCase()}-${name}.clar`;
+        const fileName = `${name}.clar`;
         const filePath = path.join(outputDir, fileName);
         fs.writeFileSync(filePath, source);
         console.log(`Generated: ${filePath}`);
@@ -71,17 +77,18 @@ async function main() {
       tokenDecimals,
       tokenUri
     );
-    saveContract('token', tokenSource);
+    saveContract(`${tokenSymbol.toLowerCase()}-stxcity`, tokenSource);
 
-    const poolSource = contractGenerator.generateBitflowPoolContract(tokenSymbol);
-    saveContract('bitflow-pool', poolSource);
+    const poolSource =
+      contractGenerator.generateBitflowPoolContract(tokenSymbol);
+    saveContract(`xyk-pool-stx-${tokenSymbol.toLowerCase()}-v-1-1`, poolSource);
 
     const dexSource = contractGenerator.generateTokenDexContract(
       tokenMaxSupply,
       tokenDecimals,
       tokenSymbol
     );
-    saveContract('token-dex', dexSource);
+    saveContract(`${tokenSymbol.toLowerCase()}-stxcity-dex`, dexSource);
 
     // Step 2 - generate remaining dao contracts
 
@@ -98,8 +105,8 @@ async function main() {
     });
 
     // Save all contracts
-    for (const [key, contract] of sortedContracts) {
-      saveContract(key, contract.source);
+    for (const [_, contract] of sortedContracts) {
+      saveContract(contract.name, contract.source);
     }
 
     result.success = true;
