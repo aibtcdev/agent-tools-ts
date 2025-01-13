@@ -7,7 +7,7 @@ import * as path from 'path';
 
 async function main() {
   try {
-    const [tokenSymbol, tokenName, tokenMaxSupply, tokenDecimals, tokenUri] =
+    const [tokenSymbol, tokenName, tokenMaxSupply, tokenDecimals, tokenUri, generateFiles = "false"] =
       process.argv.slice(2);
 
     if (
@@ -18,10 +18,12 @@ async function main() {
       !tokenUri
     ) {
       console.log(
-        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri>"
+        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> [generateFiles]"
       );
       process.exit(1);
     }
+
+    const shouldGenerateFiles = generateFiles.toLowerCase() === "true";
 
     const result: DeploymentResult = {
       success: false,
@@ -35,9 +37,12 @@ async function main() {
       CONFIG.ACCOUNT_INDEX
     );
 
-    // Create output directory
-    const outputDir = path.join('generated', tokenSymbol.toLowerCase());
-    fs.mkdirSync(outputDir, { recursive: true });
+    let outputDir = "";
+    if (shouldGenerateFiles) {
+      // Create output directory
+      outputDir = path.join('generated', tokenSymbol.toLowerCase());
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
 
     const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
@@ -48,10 +53,14 @@ async function main() {
 
     // Function to save contract to file
     const saveContract = (name: string, source: string) => {
-      const fileName = `${tokenSymbol.toLowerCase()}-${name}.clar`;
-      const filePath = path.join(outputDir, fileName);
-      fs.writeFileSync(filePath, source);
-      console.log(`Generated: ${filePath}`);
+      if (shouldGenerateFiles) {
+        const fileName = `${tokenSymbol.toLowerCase()}-${name}.clar`;
+        const filePath = path.join(outputDir, fileName);
+        fs.writeFileSync(filePath, source);
+        console.log(`Generated: ${filePath}`);
+      }
+      console.log(`===== ${name}`);
+      console.log(source);
     };
 
     // Step 1 - generate token-related contracts
