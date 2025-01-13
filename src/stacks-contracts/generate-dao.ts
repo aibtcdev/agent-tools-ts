@@ -2,6 +2,8 @@ import { getAddressFromPrivateKey } from "@stacks/transactions";
 import { CONFIG, deriveChildAccount, getNetwork } from "../utilities";
 import { ContractType, DeploymentResult } from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
+import * as fs from 'fs';
+import * as path from 'path';
 
 async function main() {
   try {
@@ -33,6 +35,10 @@ async function main() {
       CONFIG.ACCOUNT_INDEX
     );
 
+    // Create output directory
+    const outputDir = path.join('generated', tokenSymbol.toLowerCase());
+    fs.mkdirSync(outputDir, { recursive: true });
+
     const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
     const contractGenerator = new ContractGenerator(
@@ -40,9 +46,15 @@ async function main() {
       senderAddress
     );
 
-    // Step 1 - generate token-related contracts
+    // Function to save contract to file
+    const saveContract = (name: string, source: string) => {
+      const fileName = `${tokenSymbol.toLowerCase()}-${name}.clar`;
+      const filePath = path.join(outputDir, fileName);
+      fs.writeFileSync(filePath, source);
+      console.log(`Generated: ${filePath}`);
+    };
 
-    console.log("===== aibtc-token");
+    // Step 1 - generate token-related contracts
     const tokenSource = await contractGenerator.generateTokenContract(
       tokenSymbol,
       tokenName,
@@ -50,20 +62,17 @@ async function main() {
       tokenDecimals,
       tokenUri
     );
-    console.log(tokenSource);
+    saveContract('token', tokenSource);
 
-    console.log("===== aibtc-bitflow-pool");
-    const poolSource =
-      contractGenerator.generateBitflowPoolContract(tokenSymbol);
-    console.log(poolSource);
+    const poolSource = contractGenerator.generateBitflowPoolContract(tokenSymbol);
+    saveContract('bitflow-pool', poolSource);
 
-    console.log("===== aibtc-token-dex");
     const dexSource = contractGenerator.generateTokenDexContract(
       tokenMaxSupply,
       tokenDecimals,
       tokenSymbol
     );
-    console.log(dexSource);
+    saveContract('token-dex', dexSource);
 
     // Step 2 - generate remaining dao contracts
 
@@ -79,10 +88,9 @@ async function main() {
       return 0;
     });
 
-    // Display all contracts
+    // Save all contracts
     for (const [key, contract] of sortedContracts) {
-      console.log(`===== ${key}`);
-      console.log(contract.source);
+      saveContract(key, contract.source);
     }
 
     result.success = true;
