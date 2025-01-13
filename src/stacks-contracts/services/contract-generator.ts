@@ -234,7 +234,7 @@ export class ContractGenerator {
       creator: this.senderAddress,
       dex_contract: contractId,
       treasury_contract: treasuryContractId,
-      stxctiy_token_deployment_fee_address: getAddressReference(
+      stxcity_token_deployment_fee_address: getAddressReference(
         this.network,
         "STXCITY_TOKEN_DEPLOYMENT_FEE"
       ),
