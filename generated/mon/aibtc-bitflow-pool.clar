@@ -20,7 +20,7 @@
 
 ;; XYK Core address and contract deployer address
 (define-constant CORE_ADDRESS 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1.xyk-core-v-1-2)
-(define-constant CONTRACT_DEPLOYER 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-stxcity-dex)
+(define-constant CONTRACT_DEPLOYER 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-stxcity-dex)
 
 ;; Define all pool data vars
 (define-data-var pool-id uint u0)

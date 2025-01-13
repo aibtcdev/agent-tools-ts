@@ -315,7 +315,7 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )

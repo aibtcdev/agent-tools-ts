@@ -24,7 +24,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; update token uri
-    (try! (as-contract (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-stxcity set-token-uri value)))
+    (try! (as-contract (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-stxcity set-token-uri value)))
     (ok true)
   )
 )
@@ -34,7 +34,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; transfer ownership
-    (try! (as-contract (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-stxcity transfer-ownership new-owner)))
+    (try! (as-contract (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-stxcity transfer-ownership new-owner)))
     (ok true)
   )
 )
@@ -43,7 +43,7 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )

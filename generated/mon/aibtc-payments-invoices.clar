@@ -42,7 +42,7 @@
 (define-data-var totalRevenue uint u0)
 
 ;; dao can update payment address
-(define-data-var paymentAddress principal 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-bank-account)
+(define-data-var paymentAddress principal 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-bank-account)
 
 ;; data maps
 ;;
@@ -400,8 +400,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 

@@ -1,11 +1,11 @@
 ===== aibtc-token
 ;; @title Bonding Curve Token by STX.CITY
 ;; @version 2.0
-;; @hash gK12_9LrdIDYy4AVcdjKWQ:nCcvmO-qxrmkG8G4rm1-eQ:8fhVhDM7Q3tUj1yejR_G5S9-4dM0_rkr1_MgOcn1B6nfTqTc6haOcKhM_bBsutw2sN1A9W2uHHITx3F76LZkTQ 
+;; @hash dvNERphMAq1ZsOFzRIa7dA:98cTUYYyDL75vpOJEdHuiQ:V8wL8cj9RDxzSckYR1IYF8yhEvzzmM2v5CBSPF6sTZmTl8GYZHEfLQWXcMSq8EOwLPlH58lBapH_cjJmGRGP8Q 
 ;; @targetstx 2000 
 
+;; Traits
 (impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.token)
-;; SIP-10 Trait
 (impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait)
 
 ;; Errors 
@@ -15,22 +15,22 @@
 (define-constant ERR-NOT-ENOUGH-FUND u101)
 
 ;; Constants
-(define-constant MAXSUPPLY u2100000000000000)
+(define-constant MAXSUPPLY u1000000000000000)
 
 ;; Variables
-(define-fungible-token WIN2 MAXSUPPLY)
-(define-data-var contract-owner principal 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-token-owner) 
+(define-fungible-token MON MAXSUPPLY)
+(define-data-var contract-owner principal 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-token-owner) 
 
 ;; SIP-10 Functions
 (define-public (transfer (amount uint) (from principal) (to principal) (memo (optional (buff 34))))
     (begin
         (asserts! (is-eq from tx-sender) (err ERR-UNAUTHORIZED))
-        (ft-transfer? WIN2 amount from to)
+        (ft-transfer? MON amount from to)
     )
 )
 
 ;; Define token metadata
-(define-data-var token-uri (optional (string-utf8 256)) (some u"https://stacks.org"))
+(define-data-var token-uri (optional (string-utf8 256)) (some u"https://bitcoin.org"))
 
 ;; Set token uri
 (define-public (set-token-uri (value (string-utf8 256)))
@@ -50,19 +50,19 @@
 
 ;; Read-Only Functions
 (define-read-only (get-balance (owner principal))
-  (ok (ft-get-balance WIN2 owner))
+  (ok (ft-get-balance MON owner))
 )
 (define-read-only (get-name)
-  (ok "WINNER2")
+  (ok "MONDAY")
 )
 (define-read-only (get-symbol)
-  (ok "WIN2")
+  (ok "MON")
 )
 (define-read-only (get-decimals)
   (ok u8)
 )
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply WIN2))
+  (ok (ft-get-supply MON))
 )
 (define-read-only (get-token-uri)
   (ok (var-get token-uri))
@@ -111,9 +111,9 @@
   ;; Send STX fees
   (try! (send-stx 'undefined u500000))
   ;; mint tokens to the dex_contract (20%)
-  (try! (ft-mint? WIN2 (/ (* MAXSUPPLY u20) u100) 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-stxcity-dex))
+  (try! (ft-mint? MON (/ (* MAXSUPPLY u20) u100) 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-stxcity-dex))
   ;; mint tokens to the treasury (80%)
-  (try! (ft-mint? WIN2 (/ (* MAXSUPPLY u80) u100) 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-stxcity-dex))
+  (try! (ft-mint? MON (/ (* MAXSUPPLY u80) u100) 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-treasury))
 )
 ===== aibtc-bitflow-pool
 ;; Implement XYK pool trait and use SIP 010 trait
@@ -138,7 +138,7 @@
 
 ;; XYK Core address and contract deployer address
 (define-constant CORE_ADDRESS 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1.xyk-core-v-1-2)
-(define-constant CONTRACT_DEPLOYER 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-stxcity-dex)
+(define-constant CONTRACT_DEPLOYER 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-stxcity-dex)
 
 ;; Define all pool data vars
 (define-data-var pool-id uint u0)
@@ -456,8 +456,8 @@
 ;; @dev The deployer has no ownership privileges or control over the contract's operations.
 ;; @version 2.0
 
+;; traits
 (impl-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.aibtcdev-dao-traits-v1.token-dex)
-;; Implement SIP 010 trait
 (use-trait sip-010-trait 'ST3VXT52QEQPZ5246A16RFNMR1PRJ96JK6YYX37N8.sip-010-trait-ft-standard.sip-010-trait)
 
 ;; error constants
@@ -471,7 +471,7 @@
 (define-constant BUY-INFO-ERROR (err u2001))
 (define-constant SELL-INFO-ERROR (err u2002))
 
-(define-constant token-supply u2100000000000000) ;; match with the token's supply (6 decimals)
+(define-constant token-supply u1000000000000000) ;; match with the token's supply (use decimals)
 (define-constant BONDING-DEX-ADDRESS (as-contract tx-sender)) ;; one contract per token
 
 ;; bonding curve config
@@ -484,16 +484,14 @@
 (define-constant STX_CITY_COMPLETE_FEE_WALLET 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1)
 (define-constant BURN_ADDRESS 'ST000000000000000000002AMW42H) ;; burn mainnet
 
-(define-constant deployer tx-sender)
-(define-constant allow-token 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-stxcity)
+(define-constant allow-token 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-stxcity)
 
 ;; data vars
 (define-data-var tradable bool false)
 (define-data-var virtual-stx-amount uint u0)
 (define-data-var token-balance uint u0)
 (define-data-var stx-balance uint u0)
-(define-data-var burn-percent uint u10)
-(define-data-var deployer-percent uint u10)
+(define-data-var burn-percent uint u25)
 
 (define-public (buy (token-trait <sip-010-trait>) (stx-amount uint) ) 
   (begin
@@ -526,17 +524,13 @@
             (burn-amount (/ (* contract-token-balance burn-percent-val) u100)) ;; burn tokens for a deflationary boost after the bonding curve completed
             (remain-tokens (- contract-token-balance burn-amount))
             (remain-stx (- (var-get stx-balance) COMPLETE_FEE))
-            (deployer-amount (/ (* burn-amount (var-get deployer-percent)) u100)) ;; deployer-amount is based on the burn amount
-            (burn-after-deployer-amount (- burn-amount deployer-amount))
             (xyk-pool-uri (default-to u"https://bitflow.finance" (try! (contract-call? token-trait get-token-uri)) ))
             (xyk-burn-amount (- (sqrti (* remain-stx remain-tokens)) u1))
           )
             ;; burn tokens
-            (try! (as-contract (contract-call? token-trait transfer burn-after-deployer-amount tx-sender BURN_ADDRESS none)))
-            ;; send to deployer
-            (try! (as-contract (contract-call? token-trait transfer deployer-amount tx-sender deployer none)))
+            (try! (as-contract (contract-call? token-trait transfer burn-amount tx-sender BURN_ADDRESS none)))
             ;; Call XYK Core v-1-2 pool by Bitflow
-            (try! (as-contract (contract-call? 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1.xyk-core-v-1-2 create-pool 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.xyk-pool-stx-win2-v-1-1 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1.token-stx-v-1-2 token-trait remain-stx remain-tokens xyk-burn-amount u10 u40 u10 u40 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1 xyk-pool-uri true)))
+            (try! (as-contract (contract-call? 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1.xyk-core-v-1-2 create-pool 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.xyk-pool-stx-mon-v-1-1 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1.token-stx-v-1-2 token-trait remain-stx remain-tokens xyk-burn-amount u10 u40 u10 u40 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1 xyk-pool-uri true)))
             ;; send fee
             (try! (as-contract (stx-transfer? COMPLETE_FEE tx-sender STX_CITY_COMPLETE_FEE_WALLET)))
             ;; update global variables
@@ -635,25 +629,18 @@
 (begin
   ;; Set the virtual STX amount
   (var-set virtual-stx-amount VIRTUAL_STX_VALUE)
-  
-  ;; Set the token balance to 40% of the total supply using inline division
-  (var-set token-balance (/ (* token-supply u40) u100)) ;; Direct calculation of 40% of total supply
-  
+  ;; Set the token balance to 20% of the total supply using inline division
+  (var-set token-balance (/ (* token-supply u20) u100)) ;; Direct calculation of 20% of total supply
   ;; Set tradable flag
   (var-set tradable true)
-  
   ;; Set burn percentage
-  (var-set burn-percent u20)
-  
-  ;; Set deployer percentage (based on burn amount)
-  (var-set deployer-percent u10) ;; About ~0.1 to 0.5% supply based on burn-amount
-  
+  (var-set burn-percent u25)
   ;; Transfer STX deployment fee
   (try! (stx-transfer? u500000 tx-sender 'ST295MNE41DC74QYCPRS8N37YYMC06N6Q3VQDZ6G1))
-  
   ;; Return success
   (ok true)
 )
+
 ===== base
 ;; title: aibtcdev-dao
 ;; version: 1.0.0
@@ -1006,8 +993,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 
@@ -1070,7 +1057,7 @@
 (define-data-var totalRevenue uint u0)
 
 ;; dao can update payment address
-(define-data-var paymentAddress principal 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-bank-account)
+(define-data-var paymentAddress principal 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-bank-account)
 
 ;; data maps
 ;;
@@ -1428,8 +1415,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 
@@ -1505,8 +1492,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 
@@ -1655,7 +1642,7 @@
     ;; caller has the required balance
     (asserts! (> (try! (contract-call? token get-balance tx-sender)) u0) ERR_INSUFFICIENT_BALANCE)
     ;; proposal was not already executed
-    (asserts! (is-none (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
+    (asserts! (is-none (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; print proposal creation event
     (print {
       notification: "create-proposal",
@@ -1695,7 +1682,7 @@
     ;; caller has the required balance
     (asserts! (> senderBalance u0) ERR_INSUFFICIENT_BALANCE)
     ;; proposal was not already executed
-    (asserts! (is-none (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
+    (asserts! (is-none (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; proposal is still active
     (asserts! (>= burn-block-height (get startBlock proposalRecord)) ERR_VOTE_TOO_SOON)
     (asserts! (< burn-block-height (get endBlock proposalRecord)) ERR_VOTE_TOO_LATE)
@@ -1740,7 +1727,7 @@
     ;; verify treasury matches protocol treasury
     (asserts! (is-eq treasuryContract (var-get protocolTreasury)) ERR_TREASURY_MISMATCH)
     ;; proposal was not already executed
-    (asserts! (is-none (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
+    (asserts! (is-none (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; proposal past end block height
     (asserts! (>= burn-block-height (get endBlock proposalRecord)) ERR_PROPOSAL_STILL_ACTIVE)
     ;; proposal not already concluded
@@ -1761,7 +1748,7 @@
       })
     )
     ;; execute the proposal only if it passed
-    (and votePassed (try! (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao execute proposal tx-sender)))
+    (and votePassed (try! (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao execute proposal tx-sender)))
     ;; return the result
     (ok votePassed)
   )
@@ -1812,8 +1799,8 @@
 ;; 
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )
 
@@ -1962,8 +1949,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 
@@ -2295,8 +2282,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )
 
@@ -2328,7 +2315,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; update token uri
-    (try! (as-contract (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-stxcity set-token-uri value)))
+    (try! (as-contract (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-stxcity set-token-uri value)))
     (ok true)
   )
 )
@@ -2338,7 +2325,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; transfer ownership
-    (try! (as-contract (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-stxcity transfer-ownership new-owner)))
+    (try! (as-contract (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-stxcity transfer-ownership new-owner)))
     (ok true)
   )
 )
@@ -2347,8 +2334,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao)
-    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao)
+    (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 
@@ -2360,15 +2347,15 @@
 (define-public (execute (sender principal))
   (begin  
     ;; set initial extensions
-    (try! (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-base-dao set-extensions
+    (try! (contract-call? 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-base-dao set-extensions
       (list
-        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-action-proposals, enabled: true}
-        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-bank-account, enabled: true}
-        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-core-proposals, enabled: true}
-        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-onchain-messaging, enabled: true}
-        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-payments-invoices, enabled: true}
-        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-token-owner, enabled: true}
-        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.win2-treasury, enabled: true}
+        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-action-proposals, enabled: true}
+        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-bank-account, enabled: true}
+        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-core-proposals, enabled: true}
+        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-onchain-messaging, enabled: true}
+        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-payments-invoices, enabled: true}
+        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-token-owner, enabled: true}
+        {extension: 'ST1TZE9ZY61FYR7YM9BR0543XKX9YG5TR9017R4WJ.mon-treasury, enabled: true}
       )
     ))
     ;; print manifest
