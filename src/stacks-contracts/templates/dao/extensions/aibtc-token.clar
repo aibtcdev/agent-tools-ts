@@ -3,8 +3,8 @@
 ;; @hash <%= it.hash %> 
 ;; @targetstx <%= it.target_stx %> 
 
+;; Traits
 (impl-trait '<%= it.token_trait %>)
-;; SIP-10 Trait
 (impl-trait '<%= it.sip10_trait %>)
 
 ;; Errors 
@@ -112,5 +112,5 @@
   ;; mint tokens to the dex_contract (20%)
   (try! (ft-mint? <%= it.token_symbol %> (/ (* MAXSUPPLY u20) u100) '<%= it.dex_contract %>))
   ;; mint tokens to the treasury (80%)
-  (try! (ft-mint? <%= it.token_symbol %> (/ (* MAXSUPPLY u80) u100) '<%= it.dex_contract %>))
+  (try! (ft-mint? <%= it.token_symbol %> (/ (* MAXSUPPLY u80) u100) '<%= it.treasury_contract %>))
 )
