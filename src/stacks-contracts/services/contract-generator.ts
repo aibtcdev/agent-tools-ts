@@ -141,7 +141,8 @@ export class ContractGenerator {
 
     const decimals = parseInt(tokenDecimals, 10);
     const maxSupply = parseInt(tokenMaxSupply, 10);
-    const calculatedMaxSupply = maxSupply * Math.pow(10, decimals);
+    const calculatedMaxSupply =
+      BigInt(maxSupply) * BigInt(10) ** BigInt(decimals);
     const stxTargetAmount = parseInt("2000000000", 10);
     const virtualSTXValue = Math.floor(stxTargetAmount / 5);
     const completeFee = Math.floor(stxTargetAmount * 0.02);
