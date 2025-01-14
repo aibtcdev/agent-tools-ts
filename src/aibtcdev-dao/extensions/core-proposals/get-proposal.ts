@@ -1,6 +1,7 @@
 import {
   callReadOnlyFunction,
   ClarityType,
+  cvToJSON,
   cvToValue,
   getAddressFromPrivateKey,
   principalCV,
@@ -52,8 +53,9 @@ async function main() {
     console.log("Proposal not found");
   }
   if (result.type === ClarityType.OptionalSome) {
-    const parsedResult = cvToValue(result);
-    console.log(parsedResult);
+    const jsonResult = cvToJSON(result);
+    // TODO: might need a better way to display the result
+    console.log(jsonResult);
   }
 }
 
