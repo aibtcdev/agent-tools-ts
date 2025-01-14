@@ -32,8 +32,11 @@ export class ContractDeployer {
         CONFIG.ACCOUNT_INDEX
       );
 
-      const senderAddress = getAddressFromPrivateKey(key, this.networkObj.version);
-      
+      const senderAddress = getAddressFromPrivateKey(
+        key,
+        this.networkObj.version
+      );
+
       const deployOptions: SignedContractDeployOptions = {
         senderKey: key,
         contractName,
@@ -43,19 +46,22 @@ export class ContractDeployer {
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow,
         nonce: nonce !== undefined ? nonce : undefined,
-        fee: BigInt(1_000_000), // 0.1 STX
+        fee: BigInt(100_000), // 0.1 STX
       };
 
       const transaction = await makeContractDeploy(deployOptions);
-      const broadcastResponse = await broadcastTransaction(transaction, this.networkObj);
+      const broadcastResponse = await broadcastTransaction(
+        transaction,
+        this.networkObj
+      );
 
       return {
         success: true,
         data: {
           contractPrincipal: `${address}.${contractName}`,
           transactionId: `0x${broadcastResponse.txid}`,
-          sender: address
-        }
+          sender: address,
+        },
       };
     } catch (error: any) {
       return {
@@ -63,8 +69,8 @@ export class ContractDeployer {
         error: {
           message: error.message,
           reason: error.reason,
-          details: error
-        }
+          details: error,
+        },
       };
     }
   }
