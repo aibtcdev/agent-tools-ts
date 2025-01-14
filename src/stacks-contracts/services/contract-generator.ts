@@ -10,6 +10,7 @@ import {
   ContractType,
   TraitType,
   GeneratedDaoContracts,
+  ContractActionType,
 } from "../types/dao-types";
 import { generateContractNames } from "../utils/contract-utils";
 
@@ -258,29 +259,156 @@ export class ContractGenerator {
     return this.eta.render("extensions/aibtc-treasury.clar", data);
   }
 
+  // action extension: aibtc-action-add-resource
+  private generateActionAddResourceContract(
+    daoContractAddress: string,
+    paymentsContractAddress: string
+  ): string {
+    const data = {
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      action_trait: getTraitReference(this.network, "DAO_ACTION"),
+      dao_contract_address: daoContractAddress,
+      payments_contract_address: paymentsContractAddress,
+    };
+    return this.eta.render("actions/aibtc-action-add-resource.clar", data);
+  }
+
+  // action extension: aibtc-action-allow-asset
+  private generateActionAllowAssetContract(
+    daoContractAddress: string,
+    paymentsContractAddress: string
+  ): string {
+    const data = {
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      action_trait: getTraitReference(this.network, "DAO_ACTION"),
+      dao_contract_address: daoContractAddress,
+      payments_contract_address: paymentsContractAddress,
+    };
+    return this.eta.render("actions/aibtc-action-allow-asset.clar", data);
+  }
+
+  // action extension: aibtc-action-send-message
+  private generateActionSendMessageContract(
+    daoContractAddress: string,
+    messagingContractAddress: string
+  ): string {
+    const data = {
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      action_trait: getTraitReference(this.network, "DAO_ACTION"),
+      dao_contract_address: daoContractAddress,
+      messaging_contract_address: messagingContractAddress,
+    };
+    return this.eta.render("actions/aibtc-action-send-message.clar", data);
+  }
+
+  // action extension: aibtc-action-set-account-holder
+  private generateActionSetAccountHolderContract(
+    daoContractAddress: string,
+    bankAccountContractAddress: string
+  ): string {
+    const data = {
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      action_trait: getTraitReference(this.network, "DAO_ACTION"),
+      dao_contract_address: daoContractAddress,
+      bank_account_contract_address: bankAccountContractAddress,
+    };
+    return this.eta.render(
+      "actions/aibtc-action-set-account-holder.clar",
+      data
+    );
+  }
+
+  // action extension: aibtc-action-set-withdrawal-amount
+  private generateActionSetWithdrawalAmountContract(
+    daoContractAddress: string,
+    bankAccountContractAddress: string
+  ): string {
+    const data = {
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      action_trait: getTraitReference(this.network, "DAO_ACTION"),
+      dao_contract_address: daoContractAddress,
+      bank_account_contract_address: bankAccountContractAddress,
+    };
+    return this.eta.render(
+      "actions/aibtc-action-set-withdrawal-amount.clar",
+      data
+    );
+  }
+
+  // action extension: aibtc-action-set-withdrawal-period
+  private generateActionSetWithdrawalPeriodContract(
+    daoContractAddress: string,
+    bankAccountContractAddress: string
+  ): string {
+    const data = {
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      action_trait: getTraitReference(this.network, "DAO_ACTION"),
+      dao_contract_address: daoContractAddress,
+      bank_account_contract_address: bankAccountContractAddress,
+    };
+    return this.eta.render(
+      "actions/aibtc-action-set-withdrawal-period.clar",
+      data
+    );
+  }
+
+  // action extension: aibtc-action-toggle-resource
+  private generateActionToggleResourceContract(
+    daoContractAddress: string,
+    paymentsContractAddress: string
+  ): string {
+    const data = {
+      extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
+      action_trait: getTraitReference(this.network, "DAO_ACTION"),
+      dao_contract_address: daoContractAddress,
+      payments_contract_address: paymentsContractAddress,
+    };
+    return this.eta.render("actions/aibtc-action-toggle-resource.clar", data);
+  }
+
   // proposal: aibtc-base-bootstrap-initialization
   private generateProposalsBootstrapContract(
-    daoContractAddress: string,
     daoManifest: string,
+    tokenContractAddress: string,
+    daoContractAddress: string,
     actionProposalsContractAddress: string,
     bankAccountContractAddress: string,
     coreProposalsContractAddress: string,
     messagingContractAddress: string,
     paymentsContractAddress: string,
     tokenOwnerContractAddress: string,
-    treasuryContractAddress: string
+    treasuryContractAddress: string,
+    actionAddResourceContractAddress: string,
+    actionAllowAssetContractAddress: string,
+    actionSendMessageContractAddress: string,
+    actionSetAccountHolderContractAddress: string,
+    actionSetWithdrawalAmountContractAddress: string,
+    actionSetWithdrawalPeriodContractAddress: string,
+    actionToggleResourceContractAddress: string
   ): string {
     const data = {
-      dao_contract_address: daoContractAddress,
       dao_manifest: daoManifest,
+      token_contract_address: tokenContractAddress,
+      dao_contract_address: daoContractAddress,
       proposals_trait: getTraitReference(this.network, "DAO_PROPOSAL"),
-      actions_contract_address: actionProposalsContractAddress,
+      action_proposals_contract_address: actionProposalsContractAddress,
       bank_account_contract_address: bankAccountContractAddress,
       core_proposals_contract_address: coreProposalsContractAddress,
       messaging_contract_address: messagingContractAddress,
       payments_contract_address: paymentsContractAddress,
       token_owner_contract_address: tokenOwnerContractAddress,
       treasury_contract_address: treasuryContractAddress,
+      action_add_resource_contract_address: actionAddResourceContractAddress,
+      action_allow_asset_contract_address: actionAllowAssetContractAddress,
+      action_send_message_contract_address: actionSendMessageContractAddress,
+      action_set_account_holder_contract_address:
+        actionSetAccountHolderContractAddress,
+      action_set_withdrawal_amount_contract_address:
+        actionSetWithdrawalAmountContractAddress,
+      action_set_withdrawal_period_contract_address:
+        actionSetWithdrawalPeriodContractAddress,
+      action_toggle_resource_contract_address:
+        actionToggleResourceContractAddress,
     };
     return this.eta.render(
       "proposals/aibtc-base-bootstrap-initialization.clar",
@@ -294,38 +422,78 @@ export class ContractGenerator {
     senderAddress: string,
     tokenSymbol: string
   ): GeneratedDaoContracts {
-    // Get contract names from shared utility
+    // set dao manifest, passed to proposal for dao construction
+    const daoManifest = "This is where the dao manifest would go";
+
+    // get contract names using token symbol
     const contractNames = generateContractNames(tokenSymbol);
 
-    // Construct contract addresses
-    const baseDaoContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_BASE]
-    }`;
-    const actionProposalsContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_ACTION_PROPOSALS]
-    }`;
-    const bankAccountContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_BANK_ACCOUNT]
-    }`;
-    const coreProposalsContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_CORE_PROPOSALS]
-    }`;
-    const messagingContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_MESSAGING]
-    }`;
-    const paymentsContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_PAYMENTS]
-    }`;
-    const tokenOwnerContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_TOKEN_OWNER]
-    }`;
-    const treasuryContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_TREASURY]
-    }`;
-    const bootstrapContractAddress = `${senderAddress}.${
-      contractNames[ContractType.DAO_PROPOSAL_BOOTSTRAP]
-    }`;
+    const generateContractPrincipal = (
+      contractType: ContractType | ContractActionType
+    ) => `${senderAddress}.${contractNames[contractType]}`;
 
+    // construct token contract address
+    const tokenContractAddress = generateContractPrincipal(
+      ContractType.DAO_TOKEN
+    );
+
+    // construct base dao contract address
+    const baseDaoContractAddress = generateContractPrincipal(
+      ContractType.DAO_BASE
+    );
+
+    // construct extension contract addresses
+    const actionProposalsContractAddress = generateContractPrincipal(
+      ContractType.DAO_ACTION_PROPOSALS
+    );
+    const bankAccountContractAddress = generateContractPrincipal(
+      ContractType.DAO_BANK_ACCOUNT
+    );
+    const coreProposalsContractAddress = generateContractPrincipal(
+      ContractType.DAO_CORE_PROPOSALS
+    );
+    const messagingContractAddress = generateContractPrincipal(
+      ContractType.DAO_MESSAGING
+    );
+    const paymentsContractAddress = generateContractPrincipal(
+      ContractType.DAO_PAYMENTS
+    );
+    const tokenOwnerContractAddress = generateContractPrincipal(
+      ContractType.DAO_TOKEN_OWNER
+    );
+    const treasuryContractAddress = generateContractPrincipal(
+      ContractType.DAO_TREASURY
+    );
+
+    // construct action extension contract addresses
+    const actionAddResourceContractAddress = generateContractPrincipal(
+      ContractActionType.DAO_ACTION_ADD_RESOURCE
+    );
+    const actionAllowAssetContractAddress = generateContractPrincipal(
+      ContractActionType.DAO_ACTION_ALLOW_ASSET
+    );
+    const actionSendMessageContractAddress = generateContractPrincipal(
+      ContractActionType.DAO_ACTION_SEND_MESSAGE
+    );
+    const actionSetAccountHolderContractAddress = generateContractPrincipal(
+      ContractActionType.DAO_ACTION_SET_ACCOUNT_HOLDER
+    );
+    const actionSetWithdrawalAmountContractAddress = generateContractPrincipal(
+      ContractActionType.DAO_ACTION_SET_WITHDRAWAL_AMOUNT
+    );
+    const actionSetWithdrawalPeriodContractAddress = generateContractPrincipal(
+      ContractActionType.DAO_ACTION_SET_WITHDRAWAL_PERIOD
+    );
+    const actionToggleResourceContractAddress = generateContractPrincipal(
+      ContractActionType.DAO_ACTION_TOGGLE_RESOURCE
+    );
+
+    // construct bootstrap proposal contract address
+    const bootstrapContractAddress = generateContractPrincipal(
+      ContractType.DAO_PROPOSAL_BOOTSTRAP
+    );
+
+    // generate extension contract code
     const baseContract = this.generateBaseDAOContract();
     const bankAccountContract = this.generateBankAccountContract(
       baseDaoContractAddress
@@ -351,26 +519,105 @@ export class ContractGenerator {
       tokenSymbol
     );
 
-    const daoManifest = "This is where the dao manifest would go";
-
-    const bootstrapContract = this.generateProposalsBootstrapContract(
+    // generate action extension contract code
+    const actionAddResourceContract = this.generateActionAddResourceContract(
       baseDaoContractAddress,
+      paymentsContractAddress
+    );
+    const actionAllowAssetContract = this.generateActionAllowAssetContract(
+      baseDaoContractAddress,
+      paymentsContractAddress
+    );
+    const actionSendMessageContract = this.generateActionSendMessageContract(
+      baseDaoContractAddress,
+      messagingContractAddress
+    );
+    const actionSetAccountHolderContract =
+      this.generateActionSetAccountHolderContract(
+        baseDaoContractAddress,
+        bankAccountContractAddress
+      );
+    const actionSetWithdrawalAmountContract =
+      this.generateActionSetWithdrawalAmountContract(
+        baseDaoContractAddress,
+        bankAccountContractAddress
+      );
+    const actionSetWithdrawalPeriodContract =
+      this.generateActionSetWithdrawalPeriodContract(
+        baseDaoContractAddress,
+        bankAccountContractAddress
+      );
+    const actionToggleResourceContract =
+      this.generateActionToggleResourceContract(
+        baseDaoContractAddress,
+        paymentsContractAddress
+      );
+
+    // pass all generated extensions and action extensions for initialization
+    const bootstrapContract = this.generateProposalsBootstrapContract(
       daoManifest,
+      tokenContractAddress,
+      baseDaoContractAddress,
       actionProposalsContractAddress,
       bankAccountContractAddress,
       coreProposalsContractAddress,
       messagingContractAddress,
       paymentsContractAddress,
       tokenOwnerContractAddress,
-      treasuryContractAddress
+      treasuryContractAddress,
+      actionAddResourceContractAddress,
+      actionAllowAssetContractAddress,
+      actionSendMessageContractAddress,
+      actionSetAccountHolderContractAddress,
+      actionSetWithdrawalAmountContractAddress,
+      actionSetWithdrawalPeriodContractAddress,
+      actionToggleResourceContractAddress
     );
 
     return {
-      base: {
+      // base dao
+      "base-dao": {
         source: baseContract,
         name: contractNames[ContractType.DAO_BASE],
         type: ContractType.DAO_BASE,
         address: baseDaoContractAddress,
+      },
+      // extensions
+      "action-proposals": {
+        source: actionProposalsContract,
+        name: contractNames[ContractType.DAO_ACTION_PROPOSALS],
+        type: ContractType.DAO_ACTION_PROPOSALS,
+        address: actionProposalsContractAddress,
+      },
+      "bank-account": {
+        source: bankAccountContract,
+        name: contractNames[ContractType.DAO_BANK_ACCOUNT],
+        type: ContractType.DAO_BANK_ACCOUNT,
+        address: bankAccountContractAddress,
+      },
+      "core-proposals": {
+        source: coreProposalsContract,
+        name: contractNames[ContractType.DAO_CORE_PROPOSALS],
+        type: ContractType.DAO_CORE_PROPOSALS,
+        address: coreProposalsContractAddress,
+      },
+      "onchain-messaging": {
+        source: messagingContract,
+        name: contractNames[ContractType.DAO_MESSAGING],
+        type: ContractType.DAO_MESSAGING,
+        address: messagingContractAddress,
+      },
+      "payments-invoices": {
+        source: paymentsInvoicesContract,
+        name: contractNames[ContractType.DAO_PAYMENTS],
+        type: ContractType.DAO_PAYMENTS,
+        address: paymentsContractAddress,
+      },
+      "token-owner": {
+        source: tokenOwnerContract,
+        name: contractNames[ContractType.DAO_TOKEN_OWNER],
+        type: ContractType.DAO_TOKEN_OWNER,
+        address: tokenOwnerContractAddress,
       },
       treasury: {
         source: treasuryContract,
@@ -378,43 +625,55 @@ export class ContractGenerator {
         type: ContractType.DAO_TREASURY,
         address: treasuryContractAddress,
       },
-      payments: {
-        source: paymentsInvoicesContract,
-        name: contractNames[ContractType.DAO_PAYMENTS],
-        type: ContractType.DAO_PAYMENTS,
-        address: paymentsContractAddress,
+      // action extensions
+      "action-add-resource": {
+        source: actionAddResourceContract,
+        name: contractNames[ContractActionType.DAO_ACTION_ADD_RESOURCE],
+        type: ContractActionType.DAO_ACTION_ADD_RESOURCE,
+        address: actionAddResourceContractAddress,
       },
-      messaging: {
-        source: messagingContract,
-        name: contractNames[ContractType.DAO_MESSAGING],
-        type: ContractType.DAO_MESSAGING,
-        address: messagingContractAddress,
+      "action-allow-asset": {
+        source: actionAllowAssetContract,
+        name: contractNames[ContractActionType.DAO_ACTION_ALLOW_ASSET],
+        type: ContractActionType.DAO_ACTION_ALLOW_ASSET,
+        address: actionAllowAssetContractAddress,
       },
-      coreProposals: {
-        source: coreProposalsContract,
-        name: contractNames[ContractType.DAO_CORE_PROPOSALS],
-        type: ContractType.DAO_CORE_PROPOSALS,
-        address: coreProposalsContractAddress,
+      "action-send-message": {
+        source: actionSendMessageContract,
+        name: contractNames[ContractActionType.DAO_ACTION_SEND_MESSAGE],
+        type: ContractActionType.DAO_ACTION_SEND_MESSAGE,
+        address: actionSendMessageContractAddress,
       },
-      bankAccount: {
-        source: bankAccountContract,
-        name: contractNames[ContractType.DAO_BANK_ACCOUNT],
-        type: ContractType.DAO_BANK_ACCOUNT,
-        address: bankAccountContractAddress,
+      "action-set-account-holder": {
+        source: actionSetAccountHolderContract,
+        name: contractNames[ContractActionType.DAO_ACTION_SET_ACCOUNT_HOLDER],
+        type: ContractActionType.DAO_ACTION_SET_ACCOUNT_HOLDER,
+        address: actionSetAccountHolderContractAddress,
       },
-      actionProposals: {
-        source: actionProposalsContract,
-        name: contractNames[ContractType.DAO_ACTION_PROPOSALS],
-        type: ContractType.DAO_ACTION_PROPOSALS,
-        address: actionProposalsContractAddress,
+      "action-set-withdrawal-amount": {
+        source: actionSetWithdrawalAmountContract,
+        name: contractNames[
+          ContractActionType.DAO_ACTION_SET_WITHDRAWAL_AMOUNT
+        ],
+        type: ContractActionType.DAO_ACTION_SET_WITHDRAWAL_AMOUNT,
+        address: actionSetWithdrawalAmountContractAddress,
       },
-      tokenOwner: {
-        source: tokenOwnerContract,
-        name: contractNames[ContractType.DAO_TOKEN_OWNER],
-        type: ContractType.DAO_TOKEN_OWNER,
-        address: tokenOwnerContractAddress,
+      "action-set-withdrawal-period": {
+        source: actionSetWithdrawalPeriodContract,
+        name: contractNames[
+          ContractActionType.DAO_ACTION_SET_WITHDRAWAL_PERIOD
+        ],
+        type: ContractActionType.DAO_ACTION_SET_WITHDRAWAL_PERIOD,
+        address: actionSetWithdrawalPeriodContractAddress,
       },
-      bootstrap: {
+      "action-toggle-resource": {
+        source: actionToggleResourceContract,
+        name: contractNames[ContractActionType.DAO_ACTION_TOGGLE_RESOURCE],
+        type: ContractActionType.DAO_ACTION_TOGGLE_RESOURCE,
+        address: actionToggleResourceContractAddress,
+      },
+      // proposals
+      "base-bootstrap-initialization": {
         source: bootstrapContract,
         name: contractNames[ContractType.DAO_PROPOSAL_BOOTSTRAP],
         type: ContractType.DAO_PROPOSAL_BOOTSTRAP,
