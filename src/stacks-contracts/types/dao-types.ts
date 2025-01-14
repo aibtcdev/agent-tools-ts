@@ -13,9 +13,25 @@ export enum ContractType {
   DAO_PROPOSAL_BOOTSTRAP = "aibtc-base-bootstrap-initialization",
 }
 
-export type ContractNames = {
+export enum ContractActionType {
+  DAO_ACTION_ADD_RESOURCE = "aibtc-action-add-resource",
+  DAO_ACTION_ALLOW_ASSET = "aibtc-action-allow-asset",
+  DAO_ACTION_SEND_MESSAGE = "aibtc-action-send-message",
+  DAO_ACTION_SET_ACCOUNT_HOLDER = "aibtc-action-set-account-holder",
+  DAO_ACTION_SET_WITHDRAWAL_AMOUNT = "aibtc-action-set-withdrawal-amount",
+  DAO_ACTION_SET_WITHDRAWAL_PERIOD = "aibtc-action-set-withdrawal-period",
+  DAO_ACTION_TOGGLE_RESOURCE = "aibtc-action-toggle-resource",
+}
+
+type ContractExtensionNames = {
   [key in ContractType]: string;
 };
+
+type ContractActionNames = {
+  [key in ContractActionType]: string;
+};
+
+export type ContractNames = ContractExtensionNames & ContractActionNames;
 
 export enum TraitType {
   POOL = "xyk-pool-trait-v-1-2",

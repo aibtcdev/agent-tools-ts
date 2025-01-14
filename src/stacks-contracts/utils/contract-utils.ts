@@ -1,4 +1,8 @@
-import { ContractType, ContractNames } from "../types/dao-types";
+import {
+  ContractType,
+  ContractNames,
+  ContractActionType,
+} from "../types/dao-types";
 
 export function generateContractNames(tokenSymbol: string): ContractNames {
   return {
@@ -14,5 +18,12 @@ export function generateContractNames(tokenSymbol: string): ContractNames {
     [ContractType.DAO_PAYMENTS]: `${tokenSymbol.toLowerCase()}-payments-invoices`,
     [ContractType.DAO_TREASURY]: `${tokenSymbol.toLowerCase()}-treasury`,
     [ContractType.DAO_PROPOSAL_BOOTSTRAP]: `${tokenSymbol.toLowerCase()}-base-bootstrap-initialization`,
+    [ContractActionType.DAO_ACTION_ADD_RESOURCE]: `${tokenSymbol.toLowerCase()}-action-add-resource`,
+    [ContractActionType.DAO_ACTION_ALLOW_ASSET]: `${tokenSymbol.toLowerCase()}-action-allow-asset`,
+    [ContractActionType.DAO_ACTION_SEND_MESSAGE]: `${tokenSymbol.toLowerCase()}-action-send-message`,
+    [ContractActionType.DAO_ACTION_SET_ACCOUNT_HOLDER]: `${tokenSymbol.toLowerCase()}-action-set-account-holder`,
+    [ContractActionType.DAO_ACTION_SET_WITHDRAWAL_AMOUNT]: `${tokenSymbol.toLowerCase()}-action-set-withdrawal-amount`,
+    [ContractActionType.DAO_ACTION_SET_WITHDRAWAL_PERIOD]: `${tokenSymbol.toLowerCase()}-action-set-withdrawal-period`,
+    [ContractActionType.DAO_ACTION_TOGGLE_RESOURCE]: `${tokenSymbol.toLowerCase()}-action-toggle-resource`,
   };
 }
