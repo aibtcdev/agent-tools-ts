@@ -53,7 +53,7 @@ async function main() {
     anchorMode: AnchorMode.Any,
     contractAddress: daoCoreContractExtensionAddress,
     contractName: daoCoreContractExtensionName,
-    functionName: "vote-on-proposal",
+    functionName: "conclude-proposal",
     functionArgs: [
       principalCV(proposalContractAddress),
       principalCV(treasuryContractAddress),
