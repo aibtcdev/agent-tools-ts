@@ -279,13 +279,13 @@ export class ContractGenerator {
   // action extension: aibtc-action-allow-asset
   private generateActionAllowAssetContract(
     daoContractAddress: string,
-    paymentsContractAddress: string
+    treasuryContractAddress: string
   ): string {
     const data = {
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
       action_trait: getTraitReference(this.network, "DAO_ACTION"),
       dao_contract_address: daoContractAddress,
-      payments_contract_address: paymentsContractAddress,
+      treasury_contract_address: treasuryContractAddress,
     };
     return this.eta.render(
       "extensions/actions/aibtc-action-allow-asset.clar",
@@ -419,7 +419,7 @@ export class ContractGenerator {
         actionSetWithdrawalAmountContractAddress,
       action_set_withdrawal_period_contract_address:
         actionSetWithdrawalPeriodContractAddress,
-      action_toggle_resource_contract_address:
+      action_toggle_resource_by_name_contract_address:
         actionToggleResourceContractAddress,
     };
     return this.eta.render(
@@ -538,7 +538,7 @@ export class ContractGenerator {
     );
     const actionAllowAssetContract = this.generateActionAllowAssetContract(
       baseDaoContractAddress,
-      paymentsContractAddress
+      treasuryContractAddress
     );
     const actionSendMessageContract = this.generateActionSendMessageContract(
       baseDaoContractAddress,
