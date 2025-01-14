@@ -7,7 +7,12 @@ import {
 } from "@stacks/wallet-sdk";
 import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
 import { TxBroadcastResult, validateStacksAddress } from "@stacks/transactions";
-import { NetworkType, NetworkTraits, NetworkTraitType, NetworkAddressType } from "./types";
+import {
+  NetworkType,
+  NetworkTraits,
+  NetworkTraitType,
+  NetworkAddressType,
+} from "./types";
 import { ADDRESSES, TRAITS } from "./constants";
 
 type Metrics = {
@@ -389,7 +394,9 @@ export function getAddressDefinition(
 
   const address = networkAddresses[addressType];
   if (!address) {
-    throw new Error(`Address type ${addressType} not found for network ${network}`);
+    throw new Error(
+      `Address type ${addressType} not found for network ${network}`
+    );
   }
 
   return address;
@@ -400,4 +407,22 @@ export function getAddressReference(
   addressType: NetworkAddressType
 ): string {
   return getAddressDefinition(network, addressType);
+}
+
+export function convertStringToBoolean(value: string): boolean | null {
+  // Convert to lowercase and trim whitespace
+  const normalized = value.toLowerCase().trim();
+
+  // Check for true values
+  if (normalized === "true" || normalized === "1") {
+    return true;
+  }
+
+  // Check for false values
+  if (normalized === "false" || normalized === "0") {
+    return false;
+  }
+
+  // Return null or throw error for invalid inputs
+  return null;
 }
