@@ -17,8 +17,10 @@ import {
 // concludes an action proposal
 async function main() {
   // contract for the action extension in the dao
-  const [daoActionProposalsExtensionAddress, daoActionProposalsExtensionName] =
-    process.argv[2]?.split(".") || [];
+  const [
+    daoActionProposalsExtensionContractAddress,
+    daoActionProposalsExtensionContractName,
+  ] = process.argv[2]?.split(".") || [];
   // proposal id to be concluded
   const proposalId = parseInt(process.argv[3]);
   // action contract in the dao to be executed / concluded
@@ -29,8 +31,8 @@ async function main() {
     process.argv[5]?.split(".") || [];
 
   if (
-    !daoActionProposalsExtensionAddress ||
-    !daoActionProposalsExtensionName ||
+    !daoActionProposalsExtensionContractAddress ||
+    !daoActionProposalsExtensionContractName ||
     !proposalId ||
     !daoActionProposalContractAddress ||
     !daoActionProposalContractName ||
@@ -38,7 +40,7 @@ async function main() {
     !daoTreasuryContractName
   ) {
     console.log(
-      "Usage: bun run conclude-proposal.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTreasuryContract>"
+      "Usage: bun run conclude-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <daoActionProposalContract> <daoTreasuryContract>"
     );
     console.log(
       "- e.g. bun run conclude-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-treasury"
@@ -58,8 +60,8 @@ async function main() {
 
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
-    contractAddress: daoActionProposalsExtensionAddress,
-    contractName: daoActionProposalsExtensionName,
+    contractAddress: daoActionProposalsExtensionContractAddress,
+    contractName: daoActionProposalsExtensionContractName,
     functionName: "conclude-proposal",
     functionArgs: [
       uintCV(proposalId),
