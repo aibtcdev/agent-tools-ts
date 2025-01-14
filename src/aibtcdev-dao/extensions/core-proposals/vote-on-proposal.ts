@@ -1,5 +1,6 @@
 import {
   AnchorMode,
+  boolCV,
   broadcastTransaction,
   getAddressFromPrivateKey,
   makeContractCall,
@@ -8,29 +9,32 @@ import {
 } from "@stacks/transactions";
 import {
   CONFIG,
+  convertStringToBoolean,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
 } from "../../../utilities";
 
-// creates a new core proposal
+// votes on a core proposal
 async function main() {
   const [daoCoreContractExtensionAddress, daoCoreContractExtensionName] =
     process.argv[2]?.split(".") || [];
   const [proposalContractAddress, proposalContractName] =
     process.argv[3]?.split(".") || [];
+  const vote = convertStringToBoolean(process.argv[4]);
 
   if (
     !daoCoreContractExtensionAddress ||
     !daoCoreContractExtensionName ||
     !proposalContractAddress ||
-    !proposalContractName
+    !proposalContractName ||
+    !vote
   ) {
     console.log(
-      "Usage: bun run create-proposal.ts <daoCoreProposalExtensionContract> <newProposalContract>"
+      "Usage: bun run vote-on-proposal.ts <daoCoreProposalExtensionContract> <newProposalContract> <vote>"
     );
     console.log(
-      "- e.g. bun run create-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization"
+      "- e.g. bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization true"
     );
 
     process.exit(1);
@@ -49,8 +53,8 @@ async function main() {
     anchorMode: AnchorMode.Any,
     contractAddress: daoCoreContractExtensionAddress,
     contractName: daoCoreContractExtensionName,
-    functionName: "create-proposal",
-    functionArgs: [principalCV(proposalContractAddress)],
+    functionName: "vote-on-proposal",
+    functionArgs: [principalCV(proposalContractAddress), boolCV(vote)],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
@@ -59,7 +63,9 @@ async function main() {
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTransaction(transaction, networkObj);
 
-  console.log(`Proposal created successfully: 0x${broadcastResponse.txid}`);
+  console.log(
+    `Vote transaction completed successfully: 0x${broadcastResponse.txid}`
+  );
   console.log(`Full response: ${JSON.stringify(broadcastResponse, null, 2)}`);
 }
 
