@@ -24,7 +24,7 @@ async function main() {
       !tokenUri
     ) {
       console.log(
-        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> [generateFiles]"
+        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> <generateFiles>"
       );
       process.exit(1);
     }

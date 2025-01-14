@@ -270,7 +270,10 @@ export class ContractGenerator {
       dao_contract_address: daoContractAddress,
       payments_contract_address: paymentsContractAddress,
     };
-    return this.eta.render("actions/aibtc-action-add-resource.clar", data);
+    return this.eta.render(
+      "extensions/actions/aibtc-action-add-resource.clar",
+      data
+    );
   }
 
   // action extension: aibtc-action-allow-asset
@@ -284,7 +287,10 @@ export class ContractGenerator {
       dao_contract_address: daoContractAddress,
       payments_contract_address: paymentsContractAddress,
     };
-    return this.eta.render("actions/aibtc-action-allow-asset.clar", data);
+    return this.eta.render(
+      "extensions/actions/aibtc-action-allow-asset.clar",
+      data
+    );
   }
 
   // action extension: aibtc-action-send-message
@@ -298,7 +304,10 @@ export class ContractGenerator {
       dao_contract_address: daoContractAddress,
       messaging_contract_address: messagingContractAddress,
     };
-    return this.eta.render("actions/aibtc-action-send-message.clar", data);
+    return this.eta.render(
+      "extensions/actions/aibtc-action-send-message.clar",
+      data
+    );
   }
 
   // action extension: aibtc-action-set-account-holder
@@ -313,7 +322,7 @@ export class ContractGenerator {
       bank_account_contract_address: bankAccountContractAddress,
     };
     return this.eta.render(
-      "actions/aibtc-action-set-account-holder.clar",
+      "extensions/actions/aibtc-action-set-account-holder.clar",
       data
     );
   }
@@ -330,7 +339,7 @@ export class ContractGenerator {
       bank_account_contract_address: bankAccountContractAddress,
     };
     return this.eta.render(
-      "actions/aibtc-action-set-withdrawal-amount.clar",
+      "extensions/actions/aibtc-action-set-withdrawal-amount.clar",
       data
     );
   }
@@ -347,7 +356,7 @@ export class ContractGenerator {
       bank_account_contract_address: bankAccountContractAddress,
     };
     return this.eta.render(
-      "actions/aibtc-action-set-withdrawal-period.clar",
+      "extensions/actions/aibtc-action-set-withdrawal-period.clar",
       data
     );
   }
@@ -363,7 +372,10 @@ export class ContractGenerator {
       dao_contract_address: daoContractAddress,
       payments_contract_address: paymentsContractAddress,
     };
-    return this.eta.render("actions/aibtc-action-toggle-resource.clar", data);
+    return this.eta.render(
+      "extensions/actions/aibtc-action-toggle-resource.clar",
+      data
+    );
   }
 
   // proposal: aibtc-base-bootstrap-initialization

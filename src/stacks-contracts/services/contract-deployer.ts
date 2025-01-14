@@ -6,7 +6,11 @@ import {
   PostConditionMode,
   getAddressFromPrivateKey,
 } from "@stacks/transactions";
-import { ContractType, TraitType } from "../types/dao-types";
+import {
+  ContractActionType,
+  ContractType,
+  TraitType,
+} from "../types/dao-types";
 import { CONFIG, deriveChildAccount, getNetwork } from "../../utilities";
 import { NetworkType } from "../../types";
 
@@ -21,7 +25,7 @@ export class ContractDeployer {
 
   async deployContract(
     sourceCode: string,
-    contractType: ContractType | TraitType,
+    contractType: ContractType | ContractActionType | TraitType,
     contractName: string,
     nonce?: number
   ): Promise<{ success: boolean; data?: any; error?: any }> {
@@ -30,11 +34,6 @@ export class ContractDeployer {
         this.network,
         CONFIG.MNEMONIC,
         CONFIG.ACCOUNT_INDEX
-      );
-
-      const senderAddress = getAddressFromPrivateKey(
-        key,
-        this.networkObj.version
       );
 
       const deployOptions: SignedContractDeployOptions = {
