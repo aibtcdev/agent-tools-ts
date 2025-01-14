@@ -9,21 +9,23 @@ import { CONFIG, deriveChildAccount, getNetwork } from "../../../utilities";
 // gets total votes from core proposal contract for a given voter
 
 async function main() {
-  const [daoCoreContractExtensionAddress, daoCoreContractExtensionName] =
-    process.argv[2]?.split(".") || [];
+  const [
+    daoCoreProposalsExtensionContractAddress,
+    daoCoreProposalsExtensionContractName,
+  ] = process.argv[2]?.split(".") || [];
   const [proposalContractAddress, proposalContractName] =
     process.argv[3]?.split(".") || [];
   const voterAddress = process.argv[4];
 
   if (
-    !daoCoreContractExtensionAddress ||
-    !daoCoreContractExtensionName ||
+    !daoCoreProposalsExtensionContractAddress ||
+    !daoCoreProposalsExtensionContractName ||
     !proposalContractAddress ||
     !proposalContractName ||
     !voterAddress
   ) {
     console.log(
-      "Usage: bun run get-total-votes.ts <daoCoreProposalExtensionContract> <proposalContract> <voterAddress>"
+      "Usage: bun run get-total-votes.ts <daoCoreProposalsExtensionContract> <proposalContract> <voterAddress>"
     );
     console.log(
       "- e.g. bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
@@ -41,8 +43,8 @@ async function main() {
   const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
   const result = await callReadOnlyFunction({
-    contractAddress: daoCoreContractExtensionAddress,
-    contractName: daoCoreContractExtensionName,
+    contractAddress: daoCoreProposalsExtensionContractAddress,
+    contractName: daoCoreProposalsExtensionContractName,
     functionName: "get-total-votes",
     functionArgs: [
       principalCV(proposalContractAddress),

@@ -8,12 +8,17 @@ import { CONFIG, deriveChildAccount, getNetwork } from "../../../utilities";
 
 // gets set protocol treasury in core proposal contract
 async function main() {
-  const [daoCoreContractExtensionAddress, daoCoreContractExtensionName] =
-    process.argv[2]?.split(".") || [];
+  const [
+    daoCoreProposalsExtensionContractAddress,
+    daoCoreProposalsExtensionContractName,
+  ] = process.argv[2]?.split(".") || [];
 
-  if (!daoCoreContractExtensionAddress || !daoCoreContractExtensionName) {
+  if (
+    !daoCoreProposalsExtensionContractAddress ||
+    !daoCoreProposalsExtensionContractName
+  ) {
     console.log(
-      "Usage: bun run get-protocol-treasury.ts <daoCoreProposalExtensionContract>"
+      "Usage: bun run get-protocol-treasury.ts <daoCoreProposalsExtensionContract>"
     );
     console.log(
       "- e.g. bun run get-protocol-treasury.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals"
@@ -31,8 +36,8 @@ async function main() {
   const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
   const result = await callReadOnlyFunction({
-    contractAddress: daoCoreContractExtensionAddress,
-    contractName: daoCoreContractExtensionName,
+    contractAddress: daoCoreProposalsExtensionContractAddress,
+    contractName: daoCoreProposalsExtensionContractName,
     functionName: "get-protocol-treasury",
     functionArgs: [],
     senderAddress,

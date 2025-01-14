@@ -15,19 +15,21 @@ import {
 
 // creates a new core proposal
 async function main() {
-  const [daoCoreContractExtensionAddress, daoCoreContractExtensionName] =
-    process.argv[2]?.split(".") || [];
+  const [
+    daoCoreProposalsExtensionContractAddress,
+    daoCoreProposalsExtensionContractName,
+  ] = process.argv[2]?.split(".") || [];
   const [proposalContractAddress, proposalContractName] =
     process.argv[3]?.split(".") || [];
 
   if (
-    !daoCoreContractExtensionAddress ||
-    !daoCoreContractExtensionName ||
+    !daoCoreProposalsExtensionContractAddress ||
+    !daoCoreProposalsExtensionContractName ||
     !proposalContractAddress ||
     !proposalContractName
   ) {
     console.log(
-      "Usage: bun run create-proposal.ts <daoCoreProposalExtensionContract> <newProposalContract>"
+      "Usage: bun run create-proposal.ts <daoCoreProposalsExtensionContract> <newProposalContract>"
     );
     console.log(
       "- e.g. bun run create-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization"
@@ -47,8 +49,8 @@ async function main() {
 
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
-    contractAddress: daoCoreContractExtensionAddress,
-    contractName: daoCoreContractExtensionName,
+    contractAddress: daoCoreProposalsExtensionContractAddress,
+    contractName: daoCoreProposalsExtensionContractName,
     functionName: "create-proposal",
     functionArgs: [principalCV(proposalContractAddress)],
     network: networkObj,
