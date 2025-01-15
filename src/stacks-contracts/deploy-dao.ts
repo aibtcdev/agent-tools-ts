@@ -12,8 +12,14 @@ import { generateContractNames } from "./utils/contract-utils";
 
 async function main() {
   try {
-    const [tokenSymbol, tokenName, tokenMaxSupply, tokenDecimals, tokenUri] =
-      process.argv.slice(2);
+    const [
+      tokenSymbol,
+      tokenName,
+      tokenMaxSupply,
+      tokenDecimals,
+      tokenUri,
+      daoManifest,
+    ] = process.argv.slice(2);
 
     if (
       !tokenSymbol ||
@@ -23,7 +29,7 @@ async function main() {
       !tokenUri
     ) {
       console.log(
-        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri>"
+        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> <daoManifest>"
       );
       process.exit(1);
     }
@@ -115,13 +121,15 @@ async function main() {
     // Step 2 - generate remaining dao contracts
 
     // set dao manifest, passed to proposal for dao construction
-    const daoManifest =
-      "This is where the DAO can put it's mission, purpose, and goals.";
+    // or default to dao name + token name
+    const manifest = daoManifest
+      ? daoManifest
+      : `Bitcoin DeFAI ${tokenSymbol} ${tokenName}`;
 
     const contracts = contractGenerator.generateDaoContracts(
       senderAddress,
       tokenSymbol,
-      daoManifest
+      manifest
     );
 
     // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
