@@ -83,7 +83,7 @@
     ;; at least one voting period passed
     (asserts! (>= burn-block-height (+ DEPLOYED_AT VOTING_PERIOD)) ERR_FIRST_VOTING_PERIOD)
     ;; caller has the required balance
-    (asserts! (> (unwrap! (contract-call? '<%= it.token_contract %> get-balance tx-sender) ERR_FETCHING_TOKEN_DATA) u0) ERR_INSUFFICIENT_BALANCE)
+    (asserts! (> (unwrap! (contract-call? '<%= it.token_contract_address %> get-balance tx-sender) ERR_FETCHING_TOKEN_DATA) u0) ERR_INSUFFICIENT_BALANCE)
     ;; proposal was not already executed
     (asserts! (is-none (contract-call? '<%= it.dao_contract_address %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; print proposal creation event
@@ -121,7 +121,7 @@
       (proposalRecord (unwrap! (map-get? Proposals proposalContract) ERR_PROPOSAL_NOT_FOUND))
       (proposalBlock (get startBlockStx proposalRecord))
       (proposalBlockHash (unwrap! (get-block-hash proposalBlock) ERR_RETRIEVING_START_BLOCK_HASH))
-      (senderBalance (unwrap! (at-block proposalBlockHash (contract-call? '<%= it.token_contract %> get-balance tx-sender)) ERR_FETCHING_TOKEN_DATA))
+      (senderBalance (unwrap! (at-block proposalBlockHash (contract-call? '<%= it.token_contract_address %> get-balance tx-sender)) ERR_FETCHING_TOKEN_DATA))
     )
     ;; caller has the required balance
     (asserts! (> senderBalance u0) ERR_INSUFFICIENT_BALANCE)
@@ -200,7 +200,7 @@
       (proposalRecord (unwrap! (map-get? Proposals (contract-of proposal)) ERR_PROPOSAL_NOT_FOUND))
       (proposalBlockHash (unwrap! (get-block-hash (get startBlockStx proposalRecord)) ERR_RETRIEVING_START_BLOCK_HASH))
     )
-    (at-block proposalBlockHash (contract-call? '<%= it.token_contract %> get-balance who))
+    (at-block proposalBlockHash (contract-call? '<%= it.token_contract_address %> get-balance who))
   )
 )
 
@@ -245,10 +245,10 @@
   (let
     (
       (blockHash (unwrap! (get-block-hash blockHeight) ERR_RETRIEVING_START_BLOCK_HASH))
-      (totalSupply (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-total-supply)) ERR_FETCHING_TOKEN_DATA))
-      (dexBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TOKEN_DEX)) ERR_FETCHING_TOKEN_DATA))
-      (poolBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TOKEN_POOL)) ERR_FETCHING_TOKEN_DATA))
-      (treasuryBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TREASURY)) ERR_FETCHING_TOKEN_DATA))
+      (totalSupply (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract_address %> get-total-supply)) ERR_FETCHING_TOKEN_DATA))
+      (dexBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract_address %> get-balance VOTING_TOKEN_DEX)) ERR_FETCHING_TOKEN_DATA))
+      (poolBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract_address %> get-balance VOTING_TOKEN_POOL)) ERR_FETCHING_TOKEN_DATA))
+      (treasuryBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract_address %> get-balance VOTING_TREASURY)) ERR_FETCHING_TOKEN_DATA))
     )
     (ok (- totalSupply (+ dexBalance poolBalance treasuryBalance)))
   )

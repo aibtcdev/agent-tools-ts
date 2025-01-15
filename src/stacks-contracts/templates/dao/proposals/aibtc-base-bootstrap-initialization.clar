@@ -28,10 +28,6 @@
         {extension: '<%= it.action_toggle_resource_by_name_contract_address %>, enabled: true}
       )
     ))
-    ;; initialize action proposals
-    (try! (contract-call? '<%= it.action_proposals_contract_address %> set-protocol-treasury '<%= it.treasury_contract_address %>))
-    ;; initialize core proposals
-    (try! (contract-call? '<%= it.core_proposals_contract_address %> set-protocol-treasury '<%= it.treasury_contract_address %>))
     ;; send DAO manifest as onchain message
     (try! (contract-call? '<%= it.messaging_contract_address %> send DAO_MANIFEST true))
     ;; allow assets in treasury
