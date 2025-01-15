@@ -13,6 +13,7 @@ async function main() {
       tokenMaxSupply,
       tokenDecimals,
       tokenUri,
+      daoManifest,
       generateFiles = "false",
     ] = process.argv.slice(2);
 
@@ -92,9 +93,16 @@ async function main() {
 
     // Step 2 - generate remaining dao contracts
 
+    // set dao manifest, passed to proposal for dao construction
+    // or default to dao name + token name
+    const manifest = daoManifest
+      ? daoManifest
+      : `Bitcoin DeFAI ${tokenSymbol} ${tokenName}`;
+
     const contracts = contractGenerator.generateDaoContracts(
       senderAddress,
-      tokenSymbol
+      tokenSymbol,
+      manifest
     );
 
     // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
