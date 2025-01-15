@@ -7,9 +7,12 @@
 (define-public (callback (sender principal) (memo (buff 34))) (ok true))
 
 (define-public (run (parameters (buff 2048)))
-  (begin
+  (let
+    (
+      (accountHolder (unwrap! (from-consensus-buff? principal parameters) ERR_INVALID_PARAMS))
+    )
     (try! (is-dao-or-extension))
-    (contract-call? .aibtc-bank-account set-account-holder (unwrap! (from-consensus-buff? principal parameters) ERR_INVALID_PARAMS))
+    (contract-call? '<%= it.bank_account_contract_address %> set-account-holder accountHolder)
   )
 )
 
