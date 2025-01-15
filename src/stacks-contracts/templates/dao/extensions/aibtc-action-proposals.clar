@@ -16,46 +16,29 @@
 ;;
 (define-constant SELF (as-contract tx-sender))
 (define-constant VOTING_PERIOD u144) ;; 144 Bitcoin blocks, ~1 day
-(define-constant VOTING_QUORUM u66) ;; 66% of liquid supply (total supply - treasury)
+(define-constant VOTING_QUORUM u66) ;; 66% of liquid supply
 
-;; error messages - authorization
+;; error messages
 (define-constant ERR_NOT_DAO_OR_EXTENSION (err u1000))
+(define-constant ERR_INSUFFICIENT_BALANCE (err u1001))
+(define-constant ERR_FETCHING_TOKEN_DATA (err u1002))
+(define-constant ERR_PROPOSAL_NOT_FOUND (err u1003))
+(define-constant ERR_PROPOSAL_STILL_ACTIVE (err u1004))
+(define-constant ERR_SAVING_PROPOSAL (err u1005))
+(define-constant ERR_PROPOSAL_ALREADY_CONCLUDED (err u1006))
+(define-constant ERR_RETRIEVING_START_BLOCK_HASH (err u1007))
+(define-constant ERR_VOTE_TOO_SOON (err u1008))
+(define-constant ERR_VOTE_TOO_LATE (err u1009))
+(define-constant ERR_ALREADY_VOTED (err u1010))
+(define-constant ERR_INVALID_ACTION (err u1011))
 
-;; error messages - initialization
-(define-constant ERR_NOT_INITIALIZED (err u1100))
-
-;; error messages - treasury
-(define-constant ERR_TREASURY_CANNOT_BE_SELF (err u1200))
-(define-constant ERR_TREASURY_MISMATCH (err u1201))
-(define-constant ERR_TREASURY_CANNOT_BE_SAME (err u1202))
-
-;; error messages - voting token
-(define-constant ERR_TOKEN_ALREADY_INITIALIZED (err u1300))
-(define-constant ERR_TOKEN_MISMATCH (err u1301))
-(define-constant ERR_INSUFFICIENT_BALANCE (err u1302))
-(define-constant ERR_TOKEN_CANNOT_BE_SELF (err u1303))
-(define-constant ERR_TOKEN_CANNOT_BE_SAME (err u1304))
-
-;; error messages - proposals
-(define-constant ERR_PROPOSAL_NOT_FOUND (err u1400))
-(define-constant ERR_PROPOSAL_STILL_ACTIVE (err u1401))
-(define-constant ERR_SAVING_PROPOSAL (err u1402))
-(define-constant ERR_PROPOSAL_ALREADY_CONCLUDED (err u1403))
-
-;; error messages - voting
-(define-constant ERR_VOTE_TOO_SOON (err u1500))
-(define-constant ERR_VOTE_TOO_LATE (err u1501))
-(define-constant ERR_ALREADY_VOTED (err u1502))
-(define-constant ERR_ZERO_VOTING_POWER (err u1503))
-(define-constant ERR_QUORUM_NOT_REACHED (err u1504))
-
-;; error messages - actions
-(define-constant ERR_INVALID_ACTION (err u1600))
+;; contracts used for voting calculations
+(define-constant VOTING_TOKEN_DEX <% it.token_dex_contract %>)
+(define-constant VOTING_TOKEN_POOL <% it.token_pool_contract %>)
+(define-constant VOTING_TREASURY <% it.treasury_contract %>)
 
 ;; data vars
 ;;
-(define-data-var protocolTreasury principal SELF) ;; the treasury contract for protocol funds
-(define-data-var votingToken principal SELF) ;; the FT contract used for voting
 (define-data-var proposalCount uint u0) ;; total number of proposals
 
 ;; data maps
@@ -68,10 +51,12 @@
     createdAt: uint, ;; block height
     caller: principal, ;; contract caller
     creator: principal, ;; proposal creator (tx-sender)
-    startBlock: uint, ;; block height
-    endBlock: uint, ;; block height
+    startBlockStx: uint, ;; block height for at-block calls
+    startBlock: uint, ;; burn block height
+    endBlock: uint, ;; burn block height
     votesFor: uint, ;; total votes for
     votesAgainst: uint, ;; total votes against
+    liquidTokens: uint, ;; liquid tokens
     concluded: bool, ;; has the proposal concluded
     passed: bool, ;; did the proposal pass
   }
@@ -92,60 +77,15 @@
   (ok true)
 )
 
-(define-public (set-protocol-treasury (treasury <treasury-trait>))
+(define-public (propose-action (action <action-trait>) (parameters (buff 2048)))
   (let
     (
-      (treasuryContract (contract-of treasury))
-    )
-    (try! (is-dao-or-extension))
-    ;; cannot set treasury to self
-    (asserts! (not (is-eq treasuryContract SELF)) ERR_TREASURY_CANNOT_BE_SELF)
-    ;; cannot set treasury to same value
-    (asserts! (not (is-eq treasuryContract (var-get protocolTreasury))) ERR_TREASURY_CANNOT_BE_SAME)
-    (print {
-      notification: "set-protocol-treasury",
-      payload: {
-        treasury: treasuryContract
-      }
-    })
-    (ok (var-set protocolTreasury treasuryContract))
-  )
-)
-
-(define-public (set-voting-token (token <ft-trait>))
-  (let
-    (
-      (tokenContract (contract-of token))
-    )
-    (try! (is-dao-or-extension))
-    ;; cannot set token to self
-    (asserts! (not (is-eq tokenContract SELF)) ERR_TOKEN_CANNOT_BE_SELF)
-    ;; cannot set token to same value
-    (asserts! (not (is-eq tokenContract (var-get votingToken))) ERR_TOKEN_CANNOT_BE_SAME)
-    ;; cannot set token if already set once
-    (asserts! (is-eq (var-get votingToken) SELF) ERR_TOKEN_ALREADY_INITIALIZED)
-    (print {
-      notification: "set-voting-token",
-      payload: {
-        token: tokenContract
-      }
-    })
-    (ok (var-set votingToken tokenContract))
-  )
-)
-
-(define-public (propose-action (action <action-trait>) (parameters (buff 2048)) (token <ft-trait>))
-  (let
-    (
-      (tokenContract (contract-of token))
       (newId (+ (var-get proposalCount) u1))
+      (voterBalance (unwrap! (contract-call? '<%= it.token_contract %> get-balance tx-sender) ERR_FETCHING_TOKEN_DATA))
+      (liquidTokens (try! (get-liquid-supply block-height)))
     )
-    ;; required variables must be set
-    (asserts! (is-initialized) ERR_NOT_INITIALIZED)
-    ;; token matches set voting token
-    (asserts! (is-eq tokenContract (var-get votingToken)) ERR_TOKEN_MISMATCH)
     ;; caller has the required balance
-    (asserts! (> (try! (contract-call? token get-balance tx-sender)) u0) ERR_INSUFFICIENT_BALANCE)
+    (asserts! (> voterBalance u0) ERR_INSUFFICIENT_BALANCE)
     ;; print proposal creation event
     (print {
       notification: "propose-action",
@@ -154,6 +94,8 @@
         action: action,
         parameters: parameters,
         creator: tx-sender,
+        liquidTokens: liquidTokens,
+        startBlockStx: block-height,
         startBlock: burn-block-height,
         endBlock: (+ burn-block-height VOTING_PERIOD)
       }
@@ -165,10 +107,12 @@
       createdAt: burn-block-height,
       caller: contract-caller,
       creator: tx-sender,
+      startBlockStx: block-height,
       startBlock: burn-block-height,
       endBlock: (+ burn-block-height VOTING_PERIOD),
       votesFor: u0,
       votesAgainst: u0,
+      liquidTokens: liquidTokens,
       concluded: false,
       passed: false,
     }) ERR_SAVING_PROPOSAL)
@@ -177,66 +121,53 @@
   )
 )
 
-(define-public (vote-on-proposal (proposalId uint) (token <ft-trait>) (vote bool))
-  (let
-    (
-      (tokenContract (contract-of token))
-      (senderBalance (try! (contract-call? token get-balance tx-sender)))
-    )
-    ;; required variables must be set
-    (asserts! (is-initialized) ERR_NOT_INITIALIZED)
-    ;; token matches set voting token
-    (asserts! (is-eq tokenContract (var-get votingToken)) ERR_TOKEN_MISMATCH)
-    ;; caller has the required balance
-    (asserts! (> senderBalance u0) ERR_INSUFFICIENT_BALANCE)
-    ;; get proposal record
-    (let
-      (
-        (proposalRecord (unwrap! (map-get? Proposals proposalId) ERR_PROPOSAL_NOT_FOUND))
-      )
-      ;; proposal is still active
-      (asserts! (>= burn-block-height (get startBlock proposalRecord)) ERR_VOTE_TOO_SOON)
-      (asserts! (< burn-block-height (get endBlock proposalRecord)) ERR_VOTE_TOO_LATE)
-      ;; proposal not already concluded
-      (asserts! (not (get concluded proposalRecord)) ERR_PROPOSAL_ALREADY_CONCLUDED)
-      ;; vote not already cast
-      (asserts! (is-none (map-get? VotingRecords {proposalId: proposalId, voter: tx-sender})) ERR_ALREADY_VOTED)
-      ;; print vote event
-      (print {
-        notification: "vote-on-proposal",
-        payload: {
-          proposalId: proposalId,
-          voter: tx-sender,
-          amount: senderBalance
-        }
-      })
-      ;; update the proposal record
-      (map-set Proposals proposalId
-        (if vote
-          (merge proposalRecord {votesFor: (+ (get votesFor proposalRecord) senderBalance)})
-          (merge proposalRecord {votesAgainst: (+ (get votesAgainst proposalRecord) senderBalance)})
-        )
-      )
-      ;; record the vote for the sender
-      (ok (map-set VotingRecords {proposalId: proposalId, voter: tx-sender} senderBalance))
-    )
-  )
-)
-
-(define-public (conclude-proposal (proposalId uint) (action <action-trait>) (treasury <treasury-trait>) (token <ft-trait>))
+(define-public (vote-on-proposal (proposalId uint) (vote bool))
   (let
     (
       (proposalRecord (unwrap! (map-get? Proposals proposalId) ERR_PROPOSAL_NOT_FOUND))
-      (tokenContract (contract-of token))
-      (tokenTotalSupply (try! (contract-call? token get-total-supply)))
-      (treasuryContract (contract-of treasury))
-      (treasuryBalance (try! (contract-call? token get-balance treasuryContract)))
-      (votePassed (> (get votesFor proposalRecord) (* tokenTotalSupply (- u100 treasuryBalance) VOTING_QUORUM)))
+      (proposalBlock (get startBlockStx proposalRecord))
+      (proposalBlockHash (unwrap! (get-block-hash proposalBlock) ERR_RETRIEVING_START_BLOCK_HASH))
+      (senderBalance (unwrap! (at-block proposalBlockHash (contract-call? '<%= it.token_contract %> get-balance tx-sender)) ERR_FETCHING_TOKEN_DATA))
     )
-    ;; required variables must be set
-    (asserts! (is-initialized) ERR_NOT_INITIALIZED)
-    ;; verify treasury matches protocol treasury
-    (asserts! (is-eq treasuryContract (var-get protocolTreasury)) ERR_TREASURY_MISMATCH)
+    ;; caller has the required balance
+    (asserts! (> senderBalance u0) ERR_INSUFFICIENT_BALANCE)
+    ;; proposal not still active
+    (asserts! (>= burn-block-height (get startBlock proposalRecord)) ERR_VOTE_TOO_SOON)
+    (asserts! (< burn-block-height (get endBlock proposalRecord)) ERR_VOTE_TOO_LATE)
+    ;; proposal not already concluded
+    (asserts! (not (get concluded proposalRecord)) ERR_PROPOSAL_ALREADY_CONCLUDED)
+    ;; vote not already cast
+    (asserts! (is-none (map-get? VotingRecords {proposalId: proposalId, voter: tx-sender})) ERR_ALREADY_VOTED)
+    ;; print vote event
+    (print {
+      notification: "vote-on-proposal",
+      payload: {
+        proposalId: proposalId,
+        voter: tx-sender,
+        amount: senderBalance
+      }
+    })
+    ;; update the proposal record
+    (map-set Proposals proposalId
+      (if vote
+        (merge proposalRecord {votesFor: (+ (get votesFor proposalRecord) senderBalance)})
+        (merge proposalRecord {votesAgainst: (+ (get votesAgainst proposalRecord) senderBalance)})
+      )
+    )
+    ;; record the vote for the sender
+    (ok (map-set VotingRecords {proposalId: proposalId, voter: tx-sender} senderBalance))
+  )
+)
+
+(define-public (conclude-proposal (proposalId uint) (action <action-trait>))
+  (let
+    (
+      (proposalRecord (unwrap! (map-get? Proposals proposalId) ERR_PROPOSAL_NOT_FOUND))
+      ;; if VOTING_QUORUM <= ((votesFor * 100) / liquidTokens)
+      (votePassed (<= VOTING_QUORUM (/ (* (get votesFor proposalRecord) u100) (get liquidTokens proposalRecord))))
+    )
+    ;; verify extension still active in dao
+    (try! (as-contract (is-dao-or-extension)))
     ;; proposal past end block height
     (asserts! (>= burn-block-height (get endBlock proposalRecord)) ERR_PROPOSAL_STILL_ACTIVE)
     ;; proposal not already concluded
@@ -269,18 +200,22 @@
 ;; read only functions
 ;;
 
-(define-read-only (get-protocol-treasury)
-  (if (is-eq (var-get protocolTreasury) SELF)
-    none
-    (some (var-get protocolTreasury))
+(define-read-only (get-voting-power (who principal) (proposalId uint))
+  (let
+    (
+      (proposalRecord (unwrap! (map-get? Proposals proposalId) ERR_PROPOSAL_NOT_FOUND))
+      (proposalBlockHash (unwrap! (get-block-hash (get startBlockStx proposalRecord)) ERR_RETRIEVING_START_BLOCK_HASH))
+    )
+    (at-block proposalBlockHash (contract-call? '<%= it.token_contract %> get-balance who))
   )
 )
 
-(define-read-only (get-voting-token)
-  (if (is-eq (var-get votingToken) SELF)
-    none
-    (some (var-get votingToken))
-  )
+(define-read-only (get-linked-voting-contracts)
+  {
+    treasury: VOTING_TREASURY,
+    token-dex: VOTING_TOKEN_DEX,
+    token-pool: VOTING_TOKEN_POOL
+  }
 )
 
 (define-read-only (get-proposal (proposalId uint))
@@ -289,14 +224,6 @@
 
 (define-read-only (get-total-votes (proposalId uint) (voter principal))
   (default-to u0 (map-get? VotingRecords {proposalId: proposalId, voter: voter}))
-)
-
-(define-read-only (is-initialized)
-  ;; check if the required variables are set
-  (not (or
-    (is-eq (var-get votingToken) SELF)
-    (is-eq (var-get protocolTreasury) SELF)
-  ))
 )
 
 (define-read-only (get-voting-period)
@@ -318,5 +245,22 @@
   (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
     (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
+)
+
+(define-private (get-block-hash (blockHeight uint))
+  (get-block-info? id-header-hash blockHeight)
+)
+
+(define-private (get-liquid-supply (blockHeight uint))
+  (let
+    (
+      (blockHash (unwrap! (get-block-hash blockHeight) ERR_RETRIEVING_START_BLOCK_HASH))
+      (totalSupply (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-total-supply)) ERR_FETCHING_TOKEN_DATA))
+      (dexBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TOKEN_DEX)) ERR_FETCHING_TOKEN_DATA))
+      (poolBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TOKEN_POOL)) ERR_FETCHING_TOKEN_DATA))
+      (treasuryBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TREASURY)) ERR_FETCHING_TOKEN_DATA))
+    )
+    (ok (- totalSupply (+ dexBalance poolBalance treasuryBalance)))
+  )
 )
 

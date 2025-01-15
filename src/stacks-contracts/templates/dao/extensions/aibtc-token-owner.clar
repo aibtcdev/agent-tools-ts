@@ -10,7 +10,7 @@
 ;; constants
 ;;
 
-(define-constant ERR_UNAUTHORIZED (err u401))
+(define-constant ERR_UNAUTHORIZED (err u7000))
 
 ;; public functions
 ;;
