@@ -22,6 +22,7 @@ export type NetworkTraits = {
   DAO_TOKEN: string;
   DAO_BITFLOW_POOL: string;
   BITFLOW_POOL: string;
+  BITFLOW_SIP010: string;
 };
 
 export type NetworkTraitsMap = {

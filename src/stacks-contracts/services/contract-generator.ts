@@ -84,7 +84,7 @@ export class ContractGenerator {
         "DAO_BITFLOW_POOL"
       ),
       bitflow_pool_trait: getTraitReference(this.network, "BITFLOW_POOL"),
-      sip10_trait: getTraitReference(this.network, "SIP10"),
+      sip10_trait: getTraitReference(this.network, "BITFLOW_SIP010"),
       bitflow_xyk_core_address: getAddressReference(
         this.network,
         "BITFLOW_CORE"
@@ -449,12 +449,9 @@ export class ContractGenerator {
   // generated at runtime based on script parameters
   generateDaoContracts(
     senderAddress: string,
-    tokenSymbol: string
+    tokenSymbol: string,
+    daoManifest: string
   ): GeneratedDaoContracts {
-    // set dao manifest, passed to proposal for dao construction
-    const daoManifest =
-      "This is where the DAO can put it's mission, purpose, and goals.";
-
     // get contract names using token symbol
     const contractNames = generateContractNames(tokenSymbol);
 
