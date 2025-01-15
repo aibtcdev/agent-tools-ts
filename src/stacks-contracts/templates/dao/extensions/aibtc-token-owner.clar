@@ -10,7 +10,7 @@
 ;; constants
 ;;
 
-(define-constant ERR_UNAUTHORIZED (err u401))
+(define-constant ERR_UNAUTHORIZED (err u7000))
 
 ;; public functions
 ;;
@@ -24,7 +24,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; update token uri
-    (try! (as-contract (contract-call? '<%= it.token_contract %> set-token-uri value)))
+    (try! (as-contract (contract-call? '<%= it.token_contract_address %> set-token-uri value)))
     (ok true)
   )
 )
@@ -34,7 +34,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; transfer ownership
-    (try! (as-contract (contract-call? '<%= it.token_contract %> transfer-ownership new-owner)))
+    (try! (as-contract (contract-call? '<%= it.token_contract_address %> transfer-ownership new-owner)))
     (ok true)
   )
 )

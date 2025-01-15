@@ -17,7 +17,7 @@
       )
     ))
     ;; set initial action proposals list
-    (try! (contract-call? .aibtcdev-base-dao set-extensions
+    (try! (contract-call? '<%= it.dao_contract_address %> set-extensions
       (list
         {extension: '<%= it.action_add_resource_contract_address %>, enabled: true}
         {extension: '<%= it.action_allow_asset_contract_address %>, enabled: true}
@@ -28,10 +28,6 @@
         {extension: '<%= it.action_toggle_resource_by_name_contract_address %>, enabled: true}
       )
     ))
-    ;; initialize action proposals
-    (try! (contract-call? '<%= it.action_proposals_contract_address %> set-protocol-treasury '<%= it.treasury_contract_address %>))
-    ;; initialize core proposals
-    (try! (contract-call? '<%= it.core_proposals_contract_address %> set-protocol-treasury '<%= it.treasury_contract_address %>))
     ;; send DAO manifest as onchain message
     (try! (contract-call? '<%= it.messaging_contract_address %> send DAO_MANIFEST true))
     ;; allow assets in treasury

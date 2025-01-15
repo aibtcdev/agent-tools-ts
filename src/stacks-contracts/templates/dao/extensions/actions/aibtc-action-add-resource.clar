@@ -21,6 +21,6 @@
 
 (define-private (is-dao-or-extension)
   (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
-    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
+    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )

@@ -4,8 +4,8 @@
 
 ;; IMPORTS
 
-(use-trait ft-trait .sip-010-trait-ft-standard.sip-010-trait)
-(use-trait nft-trait .nft-trait.nft-trait)
+(use-trait ft-trait <%= it.sip10_trait %>)
+(use-trait nft-trait <%= it.sip09_trait %>)
 
 ;; CORE DAO TRAITS
 
@@ -26,33 +26,21 @@
 ))
 
 (define-trait action-proposals (
-  ;; set the protocol treasury contract
-  ;; @param treasury the treasury contract principal
-  ;; @returns (response bool uint)
-  (set-protocol-treasury (<treasury>) (response bool uint))
-  ;; set the voting token contract
-  ;; @param token the token contract principal
-  ;; @returns (response bool uint)
-  (set-voting-token (<ft-trait>) (response bool uint))
   ;; propose a new action
   ;; @param action the action contract
   ;; @param parameters encoded action parameters
-  ;; @param token the voting token contract
   ;; @returns (response bool uint)
-  (propose-action (<action> (buff 2048) <ft-trait>) (response bool uint))
+  (propose-action (<action> (buff 2048)) (response bool uint))
   ;; vote on an existing proposal
   ;; @param proposal the proposal id
-  ;; @param token the voting token contract
   ;; @param vote true for yes, false for no
   ;; @returns (response bool uint)
-  (vote-on-proposal (uint <ft-trait> bool) (response bool uint))
+  (vote-on-proposal (uint bool) (response bool uint))
   ;; conclude a proposal after voting period
   ;; @param proposal the proposal id
   ;; @param action the action contract
-  ;; @param treasury the treasury contract
-  ;; @param token the voting token contract
   ;; @returns (response bool uint)
-  (conclude-proposal (uint <action> <treasury> <ft-trait>) (response bool uint))
+  (conclude-proposal (uint <action>) (response bool uint))
 ))
 
 (define-trait bank-account (
@@ -88,31 +76,19 @@
 ))
 
 (define-trait core-proposals (
-  ;; set the protocol treasury contract
-  ;; @param treasury the treasury contract principal
-  ;; @returns (response bool uint)
-  (set-protocol-treasury (<treasury>) (response bool uint))
-  ;; set the voting token contract
-  ;; @param token the token contract principal
-  ;; @returns (response bool uint)
-  (set-voting-token (<ft-trait>) (response bool uint))
   ;; create a new proposal
   ;; @param proposal the proposal contract
-  ;; @param token the voting token contract
   ;; @returns (response bool uint)
-  (create-proposal (<proposal> <ft-trait>) (response bool uint))
+  (create-proposal (<proposal>) (response bool uint))
   ;; vote on an existing proposal
   ;; @param proposal the proposal contract
-  ;; @param token the voting token contract
   ;; @param vote true for yes, false for no
   ;; @returns (response bool uint)
-  (vote-on-proposal (<proposal> <ft-trait> bool) (response bool uint))
+  (vote-on-proposal (<proposal> bool) (response bool uint))
   ;; conclude a proposal after voting period
   ;; @param proposal the proposal contract
-  ;; @param treasury the treasury contract
-  ;; @param token the voting token contract
   ;; @returns (response bool uint)
-  (conclude-proposal (<proposal> <treasury> <ft-trait>) (response bool uint))
+  (conclude-proposal (<proposal>) (response bool uint))
 ))
 
 (define-trait messaging (
