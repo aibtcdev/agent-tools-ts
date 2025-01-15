@@ -2,33 +2,26 @@ import {
   callReadOnlyFunction,
   cvToValue,
   getAddressFromPrivateKey,
-  principalCV,
 } from "@stacks/transactions";
 import { CONFIG, deriveChildAccount, getNetwork } from "../../../utilities";
 
-// gets total votes from core proposal contract for a given voter
+// gets set treasury, dex, and pool for a proposal extension
 
 async function main() {
   const [
     daoCoreProposalsExtensionContractAddress,
     daoCoreProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
-  const [daoProposalContractAddress, daoProposalContractName] =
-    process.argv[3]?.split(".") || [];
-  const voterAddress = process.argv[4];
 
   if (
     !daoCoreProposalsExtensionContractAddress ||
-    !daoCoreProposalsExtensionContractName ||
-    !daoProposalContractAddress ||
-    !daoProposalContractName ||
-    !voterAddress
+    !daoCoreProposalsExtensionContractName
   ) {
     console.log(
-      "Usage: bun run get-total-votes.ts <daoCoreProposalsExtensionContract> <daoProposalContract> <voterAddress>"
+      "Usage: bun run get-linked-voting-contracts.ts <daoCoreProposalExtensionContract>"
     );
     console.log(
-      "- e.g. bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
+      "- e.g. bun run get-linked-voting-contracts.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals"
     );
 
     process.exit(1);
@@ -45,17 +38,13 @@ async function main() {
   const result = await callReadOnlyFunction({
     contractAddress: daoCoreProposalsExtensionContractAddress,
     contractName: daoCoreProposalsExtensionContractName,
-    functionName: "get-total-votes",
-    functionArgs: [
-      principalCV(daoProposalContractAddress),
-      principalCV(voterAddress),
-    ],
+    functionName: "get-total-proposals",
+    functionArgs: [],
     senderAddress,
     network: networkObj,
   });
 
-  const parsedResult = cvToValue(result, true);
-  console.log(parsedResult);
+  console.log(cvToValue(result));
 }
 
 main().catch((error) => {

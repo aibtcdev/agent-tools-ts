@@ -12,6 +12,7 @@ import {
   getNetwork,
   getNextNonce,
 } from "../../../utilities";
+import { dao } from "../../..";
 
 // concludes a core proposal
 async function main() {
@@ -19,24 +20,20 @@ async function main() {
     daoCoreProposalsExtensionContractAddress,
     daoCoreProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
-  const [proposalContractAddress, proposalContractName] =
+  const [daoProposalContractAddress, daoProposalContractName] =
     process.argv[3]?.split(".") || [];
-  const [daoTreasuryContractAddress, daoTreasuryContractName] =
-    process.argv[4]?.split(".") || [];
 
   if (
     !daoCoreProposalsExtensionContractAddress ||
     !daoCoreProposalsExtensionContractName ||
-    !proposalContractAddress ||
-    !proposalContractName ||
-    !daoTreasuryContractAddress ||
-    !daoTreasuryContractName
+    !daoProposalContractAddress ||
+    !daoProposalContractName
   ) {
     console.log(
-      "Usage: bun run conclude-proposal.ts <daoCoreProposalsExtensionContract> <newProposalContract> <daoTreasuryContract>"
+      "Usage: bun run conclude-proposal.ts <daoCoreProposalsExtensionContract> <daoProposalContract>"
     );
     console.log(
-      "- e.g. bun run conclude-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-treasury"
+      "- e.g. bun run conclude-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-onchain-messaging-send"
     );
 
     process.exit(1);
@@ -56,10 +53,7 @@ async function main() {
     contractAddress: daoCoreProposalsExtensionContractAddress,
     contractName: daoCoreProposalsExtensionContractName,
     functionName: "conclude-proposal",
-    functionArgs: [
-      principalCV(proposalContractAddress),
-      principalCV(daoTreasuryContractAddress),
-    ],
+    functionArgs: [principalCV(daoProposalContractAddress)],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,

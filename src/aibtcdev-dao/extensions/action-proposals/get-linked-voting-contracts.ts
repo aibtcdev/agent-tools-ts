@@ -38,7 +38,7 @@ async function main() {
   const result = await callReadOnlyFunction({
     contractAddress: daoActionProposalsExtensionContractAddress,
     contractName: daoActionProposalsExtensionContractName,
-    functionName: "get-total-proposals",
+    functionName: "get-linked-voting-contracts",
     functionArgs: [],
     senderAddress,
     network: networkObj,

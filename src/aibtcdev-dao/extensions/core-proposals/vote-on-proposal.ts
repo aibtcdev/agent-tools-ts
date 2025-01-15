@@ -21,15 +21,15 @@ async function main() {
     daoCoreProposalsExtensionContractAddress,
     daoCoreProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
-  const [proposalContractAddress, proposalContractName] =
+  const [daoProposalContractAddress, daoProposalContractName] =
     process.argv[3]?.split(".") || [];
   const vote = convertStringToBoolean(process.argv[4]);
 
   if (
     !daoCoreProposalsExtensionContractAddress ||
     !daoCoreProposalsExtensionContractName ||
-    !proposalContractAddress ||
-    !proposalContractName ||
+    !daoProposalContractAddress ||
+    !daoProposalContractName ||
     !vote
   ) {
     console.log(
@@ -56,7 +56,7 @@ async function main() {
     contractAddress: daoCoreProposalsExtensionContractAddress,
     contractName: daoCoreProposalsExtensionContractName,
     functionName: "vote-on-proposal",
-    functionArgs: [principalCV(proposalContractAddress), boolCV(vote)],
+    functionArgs: [principalCV(daoProposalContractAddress), boolCV(vote)],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
@@ -66,7 +66,7 @@ async function main() {
   const broadcastResponse = await broadcastTransaction(transaction, networkObj);
 
   console.log(
-    `Vote transaction completed successfully: 0x${broadcastResponse.txid}`
+    `Vote transaction broadcast successfully: 0x${broadcastResponse.txid}`
   );
   console.log(`Full response: ${JSON.stringify(broadcastResponse, null, 2)}`);
 }
