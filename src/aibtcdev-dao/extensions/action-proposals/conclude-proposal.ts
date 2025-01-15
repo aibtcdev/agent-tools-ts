@@ -26,24 +26,19 @@ async function main() {
   // action contract in the dao to be executed / concluded
   const [daoActionProposalContractAddress, daoActionProposalContractName] =
     process.argv[4]?.split(".") || [];
-  // treasury contract in the dao
-  const [daoTreasuryContractAddress, daoTreasuryContractName] =
-    process.argv[5]?.split(".") || [];
 
   if (
     !daoActionProposalsExtensionContractAddress ||
     !daoActionProposalsExtensionContractName ||
     !proposalId ||
     !daoActionProposalContractAddress ||
-    !daoActionProposalContractName ||
-    !daoTreasuryContractAddress ||
-    !daoTreasuryContractName
+    !daoActionProposalContractName
   ) {
     console.log(
-      "Usage: bun run conclude-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <daoActionProposalContract> <daoTreasuryContract>"
+      "Usage: bun run conclude-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <daoActionProposalContract>"
     );
     console.log(
-      "- e.g. bun run conclude-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-treasury"
+      "- e.g. bun run conclude-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-send-message"
     );
 
     process.exit(1);
@@ -66,7 +61,6 @@ async function main() {
     functionArgs: [
       uintCV(proposalId),
       principalCV(daoActionProposalContractAddress),
-      principalCV(daoTreasuryContractAddress),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,
