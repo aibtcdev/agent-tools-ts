@@ -20,19 +20,19 @@ async function main() {
     daoActionProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
   const daoActionProposalContractAddress = process.argv[3];
-  const message = process.argv[4];
+  const accountHolderAddress = process.argv[4];
 
   if (
     !daoActionProposalsExtensionContractAddress ||
     !daoActionProposalsExtensionContractName ||
     !daoActionProposalContractAddress ||
-    !message
+    !accountHolderAddress
   ) {
     console.log(
-      "Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <message>"
+      "Usage: bun run propose-action-set-account-holder.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <accountHolderAddress>"
     );
     console.log(
-      '- e.g. bun run propose-action-send-message.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-send-message "hello world"'
+      "- e.g. bun run propose-action-set-account-holder.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-set-account-holder ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
     );
 
     process.exit(1);
@@ -47,7 +47,7 @@ async function main() {
   const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
 
-  const paramsCV = Cl.stringAscii(message);
+  const paramsCV = Cl.principal(accountHolderAddress);
 
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,

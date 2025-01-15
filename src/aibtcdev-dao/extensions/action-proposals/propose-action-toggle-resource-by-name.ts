@@ -20,19 +20,19 @@ async function main() {
     daoActionProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
   const daoActionProposalContractAddress = process.argv[3];
-  const message = process.argv[4];
+  const resourceName = process.argv[4];
 
   if (
     !daoActionProposalsExtensionContractAddress ||
     !daoActionProposalsExtensionContractName ||
     !daoActionProposalContractAddress ||
-    !message
+    !resourceName
   ) {
     console.log(
-      "Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <message>"
+      "Usage: bun run propose-action-toggle-resource-by-name.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <resourceName>"
     );
     console.log(
-      '- e.g. bun run propose-action-send-message.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-send-message "hello world"'
+      '- e.g. bun run propose-action-toggle-resource-by-name.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-toggle-resource-by-name "consulting"'
     );
 
     process.exit(1);
@@ -47,7 +47,7 @@ async function main() {
   const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
 
-  const paramsCV = Cl.stringAscii(message);
+  const paramsCV = Cl.stringAscii(resourceName);
 
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
