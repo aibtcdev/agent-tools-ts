@@ -114,9 +114,14 @@ async function main() {
 
     // Step 2 - generate remaining dao contracts
 
+    // set dao manifest, passed to proposal for dao construction
+    const daoManifest =
+      "This is where the DAO can put it's mission, purpose, and goals.";
+
     const contracts = contractGenerator.generateDaoContracts(
       senderAddress,
-      tokenSymbol
+      tokenSymbol,
+      daoManifest
     );
 
     // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
