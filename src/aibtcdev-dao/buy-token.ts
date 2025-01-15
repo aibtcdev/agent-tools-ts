@@ -6,13 +6,14 @@ import {
   uintCV,
   contractPrincipalCV,
   SignedContractCallOptions,
+  PostConditionMode,
 } from "@stacks/transactions";
 import {
   CONFIG,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
-} from "../../utilities";
+} from "../utilities";
 
 // buys tokens from the bonding curve DEX
 async function main() {
@@ -60,6 +61,7 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Allow,
   };
 
   const transaction = await makeContractCall(txOptions);

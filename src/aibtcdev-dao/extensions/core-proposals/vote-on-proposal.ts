@@ -4,6 +4,7 @@ import {
   broadcastTransaction,
   getAddressFromPrivateKey,
   makeContractCall,
+  PostConditionMode,
   principalCV,
   SignedContractCallOptions,
 } from "@stacks/transactions";
