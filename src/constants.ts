@@ -90,6 +90,8 @@ export const TRAITS: NetworkTraitsMap = {
       "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtcdev-dao-traits-v1.bitflow-pool",
     BITFLOW_POOL:
       "SM1793C4R5PZ4NS4VQ4WMP7SKKYVH8JZEWSZ9HCCR.xyk-pool-trait-v-1-2.xyk-pool-trait",
+    BITFLOW_SIP010:
+      "SM1793C4R5PZ4NS4VQ4WMP7SKKYVH8JZEWSZ9HCCR.sip-010-trait-ft-standard-v-1-1.sip-010-trait",
   },
   testnet: {
     SIP10:
@@ -127,6 +129,8 @@ export const TRAITS: NetworkTraitsMap = {
       "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.aibtcdev-dao-traits-v1.bitflow-pool",
     BITFLOW_POOL:
       "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.xyk-pool-trait-v-1-2.xyk-pool-trait",
+    BITFLOW_SIP010:
+      "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.sip-010-trait-ft-standard.sip-010-trait",
   },
   devnet: {
     SIP10: "",
@@ -147,6 +151,7 @@ export const TRAITS: NetworkTraitsMap = {
     DAO_TOKEN: "",
     DAO_BITFLOW_POOL: "",
     BITFLOW_POOL: "",
+    BITFLOW_SIP010: "",
   },
   mocknet: {
     SIP10: "",
@@ -167,5 +172,6 @@ export const TRAITS: NetworkTraitsMap = {
     DAO_TOKEN: "",
     DAO_BITFLOW_POOL: "",
     BITFLOW_POOL: "",
+    BITFLOW_SIP010: "",
   },
 };
