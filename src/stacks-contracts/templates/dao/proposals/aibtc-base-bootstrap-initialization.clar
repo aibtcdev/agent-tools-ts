@@ -17,7 +17,7 @@
       )
     ))
     ;; set initial action proposals list
-    (try! (contract-call? .aibtcdev-base-dao set-extensions
+    (try! (contract-call? '<%= it.dao_contract_address %> set-extensions
       (list
         {extension: '<%= it.action_add_resource_contract_address %>, enabled: true}
         {extension: '<%= it.action_allow_asset_contract_address %>, enabled: true}

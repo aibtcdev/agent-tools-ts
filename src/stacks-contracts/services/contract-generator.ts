@@ -452,7 +452,8 @@ export class ContractGenerator {
     tokenSymbol: string
   ): GeneratedDaoContracts {
     // set dao manifest, passed to proposal for dao construction
-    const daoManifest = "This is where the dao manifest would go";
+    const daoManifest =
+      "This is where the DAO can put it's mission, purpose, and goals.";
 
     // get contract names using token symbol
     const contractNames = generateContractNames(tokenSymbol);
