@@ -13,17 +13,17 @@ async function main() {
     daoCoreProposalsExtensionContractAddress,
     daoCoreProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
-  const [proposalContractAddress, proposalContractName] =
+  const [daoProposalContractAddress, daoProposalContractName] =
     process.argv[3]?.split(".") || [];
 
   if (
     !daoCoreProposalsExtensionContractAddress ||
     !daoCoreProposalsExtensionContractName ||
-    !proposalContractAddress ||
-    !proposalContractName
+    !daoProposalContractAddress ||
+    !daoProposalContractName
   ) {
     console.log(
-      "Usage: bun run get-proposal.ts <daoCoreProposalsExtensionContract> <proposalContract>"
+      "Usage: bun run get-proposal.ts <daoCoreProposalsExtensionContract> <daoProposalContract>"
     );
     console.log(
       "- e.g. bun run get-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization"
@@ -44,7 +44,7 @@ async function main() {
     contractAddress: daoCoreProposalsExtensionContractAddress,
     contractName: daoCoreProposalsExtensionContractName,
     functionName: "get-proposal",
-    functionArgs: [principalCV(proposalContractAddress)],
+    functionArgs: [principalCV(daoProposalContractAddress)],
     senderAddress,
     network: networkObj,
   });
