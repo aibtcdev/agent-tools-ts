@@ -36,9 +36,9 @@
 (define-constant ERR_FIRST_VOTING_PERIOD (err u3012))
 
 ;; contracts used for voting calculations
-(define-constant VOTING_TOKEN_DEX <% it.token_dex_contract %>)
-(define-constant VOTING_TOKEN_POOL <% it.token_pool_contract %>)
-(define-constant VOTING_TREASURY <% it.treasury_contract %>)
+(define-constant VOTING_TOKEN_DEX <%= it.token_dex_contract_address %>)
+(define-constant VOTING_TOKEN_POOL <%= it.token_pool_contract_address %>)
+(define-constant VOTING_TREASURY <%= it.treasury_contract_address %>)
 
 ;; data maps
 ;;

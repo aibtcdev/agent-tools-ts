@@ -38,11 +38,17 @@ export class ContractGenerator {
   // extension: aibtc-action-proposals
   private generateActionProposalsContract(
     daoContractAddress: string,
-    tokenContractAddress: string
+    tokenContractAddress: string,
+    tokenDexContractAddress: string,
+    tokenPoolContractAddress: string,
+    treasuryContractAddress: string
   ): string {
     const data = {
       dao_contract_address: daoContractAddress,
       token_contract_address: tokenContractAddress,
+      token_dex_contract_address: tokenDexContractAddress,
+      token_pool_contract_address: tokenPoolContractAddress,
+      treasury_contract_address: treasuryContractAddress,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
       action_proposals_trait: getTraitReference(
         this.network,
@@ -92,11 +98,17 @@ export class ContractGenerator {
   // extension: aibtc-core-proposals
   private generateCorePropasalsContract(
     daoContractAddress: string,
-    tokenContractAddress: string
+    tokenContractAddress: string,
+    tokenDexContractAddress: string,
+    tokenPoolContractAddress: string,
+    treasuryContractAddress: string
   ): string {
     const data = {
       dao_contract_address: daoContractAddress,
       token_contract_address: tokenContractAddress,
+      token_dex_contract_address: tokenDexContractAddress,
+      token_pool_contract_address: tokenPoolContractAddress,
+      treasury_contract_address: treasuryContractAddress,
       extension_trait: getTraitReference(this.network, "DAO_EXTENSION"),
       core_proposal_trait: getTraitReference(
         this.network,
@@ -449,9 +461,15 @@ export class ContractGenerator {
       contractType: ContractType | ContractActionType
     ) => `${senderAddress}.${contractNames[contractType]}`;
 
-    // construct token contract address
+    // construct token related contract addresses
     const tokenContractAddress = generateContractPrincipal(
       ContractType.DAO_TOKEN
+    );
+    const tokenDexContractAddress = generateContractPrincipal(
+      ContractType.DAO_TOKEN_DEX
+    );
+    const tokenPoolContractAddress = generateContractPrincipal(
+      ContractType.DAO_BITFLOW_POOL
     );
 
     // construct base dao contract address
@@ -527,11 +545,17 @@ export class ContractGenerator {
     );
     const coreProposalsContract = this.generateCorePropasalsContract(
       baseDaoContractAddress,
-      tokenContractAddress
+      tokenContractAddress,
+      tokenDexContractAddress,
+      tokenPoolContractAddress,
+      treasuryContractAddress
     );
     const actionProposalsContract = this.generateActionProposalsContract(
       baseDaoContractAddress,
-      tokenContractAddress
+      tokenContractAddress,
+      tokenDexContractAddress,
+      tokenPoolContractAddress,
+      treasuryContractAddress
     );
     const tokenOwnerContract = this.generateTokenOwnerContract(
       baseDaoContractAddress,
