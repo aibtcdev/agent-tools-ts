@@ -6,7 +6,6 @@
 ;; @version 2.0
 
 ;; traits
-(impl-trait '<%= it.token_dex_trait %>)
 (use-trait sip-010-trait '<%= it.sip10_trait %>)
 
 ;; error constants

@@ -4,7 +4,6 @@
 ;; @targetstx <%= it.target_stx %> 
 
 ;; Traits
-(impl-trait '<%= it.token_trait %>)
 (impl-trait '<%= it.sip10_trait %>)
 
 ;; Errors 
