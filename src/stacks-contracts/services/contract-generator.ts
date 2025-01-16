@@ -162,11 +162,21 @@ export class ContractGenerator {
 
     const decimals = parseInt(tokenDecimals, 10);
     const maxSupply = parseInt(tokenMaxSupply, 10);
-    const calculatedMaxSupply =
-      BigInt(maxSupply) * BigInt(10) ** BigInt(decimals);
-    const stxTargetAmount = parseInt("2000000000", 10);
-    const virtualSTXValue = Math.floor(stxTargetAmount / 5);
-    const completeFee = Math.floor(stxTargetAmount * 0.02);
+    const calculatedMaxSupply = maxSupply * Math.pow(10, decimals);
+
+    // Constants for bonding curve calculations
+    const VIRTUAL_STX_RATIO = 0.2; // 1/5 of target STX amount
+    const TARGET_STX_AMOUNT = 2000000000; // 2000 STX in microSTX
+    const FEE_PERCENTAGE = 0.02; // 2% fee
+
+    // Calculate virtual STX value (1/5 of target amount)
+    const virtualSTXValue = Math.floor(TARGET_STX_AMOUNT * VIRTUAL_STX_RATIO);
+
+    // Calculate complete fee (2% of target amount)
+    const completeFee = Math.floor(TARGET_STX_AMOUNT * FEE_PERCENTAGE);
+
+    // Calculate initial token balance for DEX (20% of total supply)
+    const dex_contract_mint_amount = Math.floor(calculatedMaxSupply * 0.2);
 
     const data = {
       stxcity_swap_fee: getAddressReference(this.network, "STXCITY_SWAP_FEE"),
@@ -189,7 +199,8 @@ export class ContractGenerator {
       token_decimals: tokenDecimals,
       creator: this.senderAddress,
       token_symbol: tokenSymbol,
-      stx_target_amount: stxTargetAmount.toString(),
+      stx_target_amount: TARGET_STX_AMOUNT.toString(),
+      dex_contract_mint_amount: dex_contract_mint_amount.toString(),
       virtual_stx_value: virtualSTXValue.toString(),
       complete_fee: completeFee.toString(),
       stxcity_dex_deployment_fee_address: getAddressReference(

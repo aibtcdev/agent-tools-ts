@@ -175,16 +175,11 @@
 
 ;; initialize contract based on token's details
 (begin
-  ;; Set the virtual STX amount
   (var-set virtual-stx-amount VIRTUAL_STX_VALUE)
-  ;; Set the token balance to 20% of the total supply using inline division
-  (var-set token-balance (/ (* token-supply u20) u100)) ;; Direct calculation of 20% of total supply
-  ;; Set tradable flag
+  (var-set token-balance u<%= it.dex_contract_mint_amount %>)
+  (var-set stx-balance u0)
   (var-set tradable true)
-  ;; Set burn percentage
   (var-set burn-percent u25)
-  ;; Transfer STX deployment fee
   (try! (stx-transfer? u500000 tx-sender '<%= it.stxcity_dex_deployment_fee_address %>))
-  ;; Return success
   (ok true)
 )

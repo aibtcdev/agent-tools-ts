@@ -106,10 +106,7 @@
 )
 
 (begin
-  ;; Send STX fees
   (try! (send-stx '<%= it.stxcity_token_deployment_fee_address %> u500000))
-  ;; mint tokens to the dex_contract (20%)
   (try! (ft-mint? <%= it.token_symbol %> u<%= it.dex_contract_mint_amount %> '<%= it.dex_contract %>))
-  ;; mint tokens to the treasury (80%)
   (try! (ft-mint? <%= it.token_symbol %> u<%= it.treasury_contract_mint_amount %> '<%= it.treasury_contract %>))
 )
