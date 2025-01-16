@@ -238,6 +238,8 @@ export class ContractGenerator {
     const decimals = parseInt(tokenDecimals, 10);
     const maxSupply = parseInt(tokenMaxSupply, 10);
     const calculatedMaxSupply = maxSupply * Math.pow(10, decimals);
+    const dex_contract_mint_amount = calculatedMaxSupply * 0.2;
+    const treasury_contract_mint_amount = calculatedMaxSupply * 0.8;
     const hash = await getStxCityHash(contractId);
 
     const data = {
@@ -248,6 +250,8 @@ export class ContractGenerator {
       token_symbol: tokenSymbol,
       token_name: tokenName,
       token_max_supply: calculatedMaxSupply.toString(),
+      dex_contract_mint_amount: dex_contract_mint_amount.toString(),
+      treasury_contract_mint_amount: treasury_contract_mint_amount.toString(),
       token_decimals: tokenDecimals,
       token_uri: tokenUri,
       creator: this.senderAddress,
