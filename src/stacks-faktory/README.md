@@ -66,7 +66,7 @@ bun run src/stacks-faktory/get-sell-quote.ts 100 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F
 
 ```bash
 # Get quote for buying with 100 STX, 15% slippage
-ts-node src/faktory/get-buy-quote.ts 100 "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.ampx-v1"
+bun run src/stacks-faktory/get-buy-quote.ts 100 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
 
 # Get quote with custom 5% slippage
 ts-node src/faktory/get-buy-quote.ts 100 "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.ampx-v1" 5
