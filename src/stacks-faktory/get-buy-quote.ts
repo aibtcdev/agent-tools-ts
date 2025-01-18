@@ -18,16 +18,16 @@ const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
 const network = (process.argv[5] || CONFIG.NETWORK || "mainnet") as NetworkType;
 
-console.log("\nGetting buy quote with parameters:");
+console.log("\n=== Buy Quote Parameters ===");
 console.log("STX Amount:", stxAmount);
 console.log("DEX Contract:", dexContract);
 console.log("Slippage (%):", slippage);
 console.log("Network:", network);
 
 if (!stxAmount || !dexContract) {
-  console.error("Please provide all required parameters:");
+  console.error("\nPlease provide all required parameters:");
   console.error(
-    "ts-node src/faktory/get-buy-quote.ts <stx_amount> <dex_contract> [slippage] [network]"
+    "bun run src/faktory/get-buy-quote.ts <stx_amount> <dex_contract> [slippage] [network]"
   );
   process.exit(1);
 }
@@ -45,30 +45,26 @@ const sdk = new FaktorySDK({
       CONFIG.ACCOUNT_INDEX
     );
 
-    // First get the quote
-    console.log("\nGetting quote...");
+    // Get quote
+    console.log("\n=== Raw Quote Response ===");
     const buyQuote = await sdk.getIn(
       dexContract,
       address,
       stxAmount * 1000000 // Convert to microSTX
     );
-
-    console.log("\nBuy Quote:");
     console.log(JSON.stringify(buyQuote, replacer, 2));
 
-    // Then get the full buy parameters
-    console.log("\nGetting buy parameters...");
+    // Get buy parameters
+    console.log("\n=== Raw Transaction Parameters ===");
     const buyParams = await sdk.getBuyParams({
       dexContract,
       ustx: stxAmount * 1000000,
       senderAddress: address,
       slippage,
     });
-
-    console.log("\nBuy Parameters:");
     console.log(JSON.stringify(buyParams, replacer, 2));
   } catch (error) {
-    console.error("Error getting buy quote:", error);
+    console.error("\nError getting buy quote:", error);
     process.exit(1);
   }
 })();
