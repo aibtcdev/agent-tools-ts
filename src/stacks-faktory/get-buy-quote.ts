@@ -5,6 +5,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// Helper function to handle BigInt serialization
+function replacer(key: string, value: any) {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+  return value;
+}
+
 const stxAmount = Number(process.argv[2]);
 const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
@@ -46,7 +54,7 @@ const sdk = new FaktorySDK({
     );
 
     console.log("\nBuy Quote:");
-    console.log(JSON.stringify(buyQuote, null, 2));
+    console.log(JSON.stringify(buyQuote, replacer, 2));
 
     // Then get the full buy parameters
     console.log("\nGetting buy parameters...");
@@ -58,7 +66,7 @@ const sdk = new FaktorySDK({
     });
 
     console.log("\nBuy Parameters:");
-    console.log(JSON.stringify(buyParams, null, 2));
+    console.log(JSON.stringify(buyParams, replacer, 2));
   } catch (error) {
     console.error("Error getting buy quote:", error);
     process.exit(1);
