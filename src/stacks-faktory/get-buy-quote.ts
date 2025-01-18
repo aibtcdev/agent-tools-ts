@@ -14,7 +14,7 @@ function replacer(key: string, value: any) {
   return value;
 }
 
-const stxAmount = Number(process.argv[2]);
+const stxAmount = Number(process.argv[2]); // STX amount in standard units
 const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
 const network = (process.argv[5] || CONFIG.NETWORK || "mainnet") as NetworkType;
@@ -51,7 +51,7 @@ const sdk = new FaktorySDK({
     const buyQuote = (await sdk.getIn(
       dexContract,
       address,
-      stxAmount * 1000000 // Convert to microSTX
+      stxAmount // SDK now handles microSTX conversion
     )) as any;
 
     console.log("\n=== Quote Summary ===");
@@ -95,7 +95,7 @@ const sdk = new FaktorySDK({
     console.log("\n=== Raw Transaction Parameters ===");
     const buyParams = await sdk.getBuyParams({
       dexContract,
-      ustx: stxAmount * 1000000,
+      stx: stxAmount, // Changed from ustx to stx
       senderAddress: address,
       slippage,
     });

@@ -15,7 +15,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const stxAmount = Number(process.argv[2]);
+const stxAmount = Number(process.argv[2]); // STX amount in normal units
 const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
 
@@ -45,19 +45,19 @@ const faktoryConfig = {
     );
 
     const sdk = new FaktorySDK(faktoryConfig);
-    const networkObj = getNetwork(CONFIG.NETWORK); // This returns StacksMainnet | StacksTestnet
+    const networkObj = getNetwork(CONFIG.NETWORK);
     const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
     // Get quote first for preview
     console.log("\nGetting quote...");
-    const inQuote = await sdk.getIn(dexContract, address, stxAmount * 1000000);
+    const inQuote = await sdk.getIn(dexContract, address, stxAmount); // No need to multiply by 1000000
     console.log("Quote:", JSON.stringify(inQuote, null, 2));
 
     // Get buy parameters
     console.log("\nGetting buy parameters...");
     const buyParams = await sdk.getBuyParams({
       dexContract,
-      ustx: stxAmount * 1000000, // Convert to microSTX
+      stx: stxAmount, // Changed from ustx, no need to multiply
       senderAddress: address,
       slippage,
     });

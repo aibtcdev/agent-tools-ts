@@ -15,7 +15,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const tokenAmount = Number(process.argv[2]);
+const tokenAmount = Number(process.argv[2]); // token amount in standard units (e.g., 1.5 tokens)
 const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
 
@@ -48,12 +48,12 @@ const faktoryConfig = {
     const networkObj = getNetwork(CONFIG.NETWORK);
     const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
-    // Get quote first for preview
+    // Get quote first for preview (SDK handles decimal conversion internally)
     console.log("\nGetting quote for selling tokens...");
     const outQuote = await sdk.getOut(dexContract, address, tokenAmount);
     console.log("Quote:", JSON.stringify(outQuote, null, 2));
 
-    // Get sell parameters
+    // Get sell parameters (SDK handles decimal conversion internally)
     console.log("\nGetting sell parameters...");
     const sellParams = await sdk.getSellParams({
       dexContract,
