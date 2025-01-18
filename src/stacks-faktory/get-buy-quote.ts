@@ -62,19 +62,30 @@ const sdk = new FaktorySDK({
     const baseContractName = contractName.replace("-dex", "");
     const tokenSymbol = baseContractName.split("-")[0].toUpperCase();
 
-    // Get the buyable token amount
-    const rawTokenAmount =
-      buyQuote.value.value.buyable_token ||
-      buyQuote.value.value["buyable-token"].value;
-    const slippageFactor = 1 - slippage / 100;
-    const tokenAmountWithSlippage = Math.floor(
-      Number(rawTokenAmount) * slippageFactor
-    );
+    // Get the buyable token amount based on DEX type
+    let rawTokenAmount;
+    if (isExternalDex) {
+      rawTokenAmount = buyQuote.value.value["buyable-token"]?.value;
+    } else {
+      rawTokenAmount = buyQuote.value.value["tokens-out"]?.value;
+    }
 
-    console.log(`Expected Output (with ${slippage}% slippage):`);
-    console.log(`${tokenAmountWithSlippage.toLocaleString()} ${tokenSymbol}`);
-    console.log(`\nDEX Contract: ${dexContract}`);
-    console.log(`DEX Type: ${isExternalDex ? "External" : "Internal"}`);
+    if (rawTokenAmount) {
+      const slippageFactor = 1 - slippage / 100;
+      const tokenAmountWithSlippage = Math.floor(
+        Number(rawTokenAmount) * slippageFactor
+      );
+
+      // Convert from micro units to actual token amount (divide by 10^6)
+      const actualTokenAmount = tokenAmountWithSlippage / 1_000_000;
+
+      console.log(`Expected Output (with ${slippage}% slippage):`);
+      console.log(`${actualTokenAmount.toLocaleString()} ${tokenSymbol}`);
+      console.log(`\nDEX Contract: ${dexContract}`);
+      console.log(`DEX Type: ${isExternalDex ? "External" : "Internal"}`);
+    } else {
+      console.log("Could not extract token amount from response");
+    }
 
     // Display raw quote response
     console.log("\n=== Raw Quote Response ===");
