@@ -62,7 +62,8 @@ bun run src/stacks-faktory/get-buy-quote.ts 100 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F1
 
 # Sell 100 STX worth of TCORN
 
-bun run src/stacks-faktory/get-sell-quote.ts 100 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
+bun run src/stacks-faktory/get-buy-quote.ts <stx_amount> <dex_contract> [slippage] [network]
+bun run src/stacks-faktory/get-sell-quote.ts <token_amount> <dex_contract> [slippage] [network]
 
 ```bash
 # Get quote for buying with 100 STX, 15% slippage
@@ -78,10 +79,11 @@ Get a price quote and transaction parameters for selling tokens.
 
 ```bash
 # For mainnet (default)
-bun run src/faktory/get-sell-quote.ts <token_amount> <dex_contract> [slippage]
+bun run src/stacks-faktory/get-buy-quote.ts <stx_amount> <dex_contract> [slippage] [network]
+bun run src/stacks-faktory/get-sell-quote.ts <token_amount> <dex_contract> [slippage] [network]
 
 # If you need testnet
-bun run src/faktory/get-sell-quote.ts <token_amount> <dex_contract> [slippage] testnet
+
 ```
 
 Parameters:

@@ -1,6 +1,7 @@
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 import { CONFIG, deriveChildAccount } from "../utilities";
 import type { NetworkType } from "@faktoryfun/core-sdk";
+import { hexToCV, cvToJSON } from "@stacks/transactions";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -27,7 +28,7 @@ console.log("Network:", network);
 if (!tokenAmount || !dexContract) {
   console.error("\nPlease provide all required parameters:");
   console.error(
-    "bun run src/faktory/get-sell-quote.ts <token_amount> <dex_contract> [slippage] [network]"
+    "bun run src/stacks-faktory/get-sell-quote.ts <token_amount> <dex_contract> [slippage] [network]"
   );
   process.exit(1);
 }
@@ -46,8 +47,40 @@ const sdk = new FaktorySDK({
     );
 
     // Get quote
-    console.log("\n=== Raw Quote Response ===");
+    console.log("\n=== Getting Quote ===");
     const sellQuote = await sdk.getOut(dexContract, address, tokenAmount);
+
+    if (sellQuote?.result) {
+      const clarityValue = hexToCV(sellQuote.result);
+      const jsonValue = cvToJSON(clarityValue);
+      const contractName = dexContract.split(".")[1];
+      const isExternalDex = !contractName.endsWith("faktory-dex");
+
+      // Both internal and external DEX use stx-out
+      const rawStxAmount = jsonValue.value.value["stx-out"]?.value;
+
+      if (rawStxAmount) {
+        const slippageFactor = 1 - slippage / 100;
+        const stxAmountWithSlippage = Math.floor(
+          Number(rawStxAmount) * slippageFactor
+        );
+        const stxDisplay = stxAmountWithSlippage / 1_000_000; // Convert from microSTX to STX
+
+        // Extract token symbol from contract - assuming format contractName-dex
+        const baseContractName = contractName.replace("-dex", "");
+        const tokenSymbol = baseContractName.split("-")[0].toUpperCase();
+
+        console.log("\n=== Quote Summary ===");
+        console.log(`Input: ${tokenAmount.toLocaleString()} ${tokenSymbol}`);
+        console.log(`Expected Output (with ${slippage}% slippage):`);
+        console.log(`${stxDisplay.toLocaleString()} STX`);
+        console.log(`\nDEX Contract: ${dexContract}`);
+        console.log(`DEX Type: ${isExternalDex ? "External" : "Internal"}`);
+      }
+    }
+
+    // Display raw quote response
+    console.log("\n=== Raw Quote Response ===");
     console.log(JSON.stringify(sellQuote, replacer, 2));
 
     // Get sell parameters

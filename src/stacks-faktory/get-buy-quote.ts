@@ -1,6 +1,7 @@
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 import { CONFIG, deriveChildAccount } from "../utilities";
 import type { NetworkType } from "@faktoryfun/core-sdk";
+import { hexToCV, cvToJSON } from "@stacks/transactions";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -27,7 +28,7 @@ console.log("Network:", network);
 if (!stxAmount || !dexContract) {
   console.error("\nPlease provide all required parameters:");
   console.error(
-    "bun run src/faktory/get-buy-quote.ts <stx_amount> <dex_contract> [slippage] [network]"
+    "bun run src/stacks-faktory/get-buy-quote.ts <stx_amount> <dex_contract> [slippage] [network]"
   );
   process.exit(1);
 }
@@ -46,12 +47,37 @@ const sdk = new FaktorySDK({
     );
 
     // Get quote
-    console.log("\n=== Raw Quote Response ===");
+    console.log("\n=== Getting Quote ===");
     const buyQuote = await sdk.getIn(
       dexContract,
       address,
       stxAmount * 1000000 // Convert to microSTX
     );
+
+    console.log("\n=== Quote Summary ===");
+    console.log(`Input: ${stxAmount.toLocaleString()} STX`);
+
+    const contractName = dexContract.split(".")[1];
+    const isExternalDex = !contractName.endsWith("faktory-dex");
+    const baseContractName = contractName.replace("-dex", "");
+    const tokenSymbol = baseContractName.split("-")[0].toUpperCase();
+
+    // Get the buyable token amount
+    const rawTokenAmount =
+      buyQuote.value.value.buyable_token ||
+      buyQuote.value.value["buyable-token"].value;
+    const slippageFactor = 1 - slippage / 100;
+    const tokenAmountWithSlippage = Math.floor(
+      Number(rawTokenAmount) * slippageFactor
+    );
+
+    console.log(`Expected Output (with ${slippage}% slippage):`);
+    console.log(`${tokenAmountWithSlippage.toLocaleString()} ${tokenSymbol}`);
+    console.log(`\nDEX Contract: ${dexContract}`);
+    console.log(`DEX Type: ${isExternalDex ? "External" : "Internal"}`);
+
+    // Display raw quote response
+    console.log("\n=== Raw Quote Response ===");
     console.log(JSON.stringify(buyQuote, replacer, 2));
 
     // Get buy parameters
