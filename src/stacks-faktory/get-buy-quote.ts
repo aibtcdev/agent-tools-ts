@@ -48,11 +48,11 @@ const sdk = new FaktorySDK({
 
     // Get quote
     console.log("\n=== Getting Quote ===");
-    const buyQuote = await sdk.getIn(
+    const buyQuote = (await sdk.getIn(
       dexContract,
       address,
       stxAmount * 1000000 // Convert to microSTX
-    );
+    )) as any;
 
     console.log("\n=== Quote Summary ===");
     console.log(`Input: ${stxAmount.toLocaleString()} STX`);
