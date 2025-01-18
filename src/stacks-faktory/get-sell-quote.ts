@@ -48,35 +48,36 @@ const sdk = new FaktorySDK({
 
     // Get quote
     console.log("\n=== Getting Quote ===");
-    const sellQuote = await sdk.getOut(dexContract, address, tokenAmount);
+    const sellQuote = (await sdk.getOut(
+      dexContract,
+      address,
+      tokenAmount
+    )) as any;
 
-    if (sellQuote?.result) {
-      const clarityValue = hexToCV(sellQuote.result);
-      const jsonValue = cvToJSON(clarityValue);
-      const contractName = dexContract.split(".")[1];
-      const isExternalDex = !contractName.endsWith("faktory-dex");
+    console.log("\n=== Quote Summary ===");
+    const contractName = dexContract.split(".")[1];
+    const isExternalDex = !contractName.endsWith("faktory-dex");
+    const baseContractName = contractName.replace("-dex", "");
+    const tokenSymbol = baseContractName.split("-")[0].toUpperCase();
 
-      // Both internal and external DEX use stx-out
-      const rawStxAmount = jsonValue.value.value["stx-out"]?.value;
+    console.log(`Input: ${tokenAmount.toLocaleString()} ${tokenSymbol}`);
 
-      if (rawStxAmount) {
-        const slippageFactor = 1 - slippage / 100;
-        const stxAmountWithSlippage = Math.floor(
-          Number(rawStxAmount) * slippageFactor
-        );
-        const stxDisplay = stxAmountWithSlippage / 1_000_000; // Convert from microSTX to STX
+    // Both internal and external DEX use stx-out
+    const rawStxAmount = sellQuote?.value?.value?.["stx-out"]?.value;
 
-        // Extract token symbol from contract - assuming format contractName-dex
-        const baseContractName = contractName.replace("-dex", "");
-        const tokenSymbol = baseContractName.split("-")[0].toUpperCase();
+    if (rawStxAmount) {
+      const slippageFactor = 1 - slippage / 100;
+      const stxAmountWithSlippage = Math.floor(
+        Number(rawStxAmount) * slippageFactor
+      );
+      const stxDisplay = stxAmountWithSlippage / 1_000_000; // Convert from microSTX to STX
 
-        console.log("\n=== Quote Summary ===");
-        console.log(`Input: ${tokenAmount.toLocaleString()} ${tokenSymbol}`);
-        console.log(`Expected Output (with ${slippage}% slippage):`);
-        console.log(`${stxDisplay.toLocaleString()} STX`);
-        console.log(`\nDEX Contract: ${dexContract}`);
-        console.log(`DEX Type: ${isExternalDex ? "External" : "Internal"}`);
-      }
+      console.log(`Expected Output (with ${slippage}% slippage):`);
+      console.log(`${stxDisplay.toLocaleString()} STX`);
+      console.log(`\nDEX Contract: ${dexContract}`);
+      console.log(`DEX Type: ${isExternalDex ? "External" : "Internal"}`);
+    } else {
+      console.log("Could not extract STX amount from response");
     }
 
     // Display raw quote response
