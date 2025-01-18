@@ -30,14 +30,14 @@ Parameters:
 Example:
 
 ```bash
-# Get first page of DAO tokens, 10 per page
-ts-node src/faktory/get-dao-tokens.ts
+# Basic usage (page 1, limit 10)
+bun run src/stacks-faktory/get-dao-tokens.ts
 
-# Search for "city" tokens, 20 per page
-ts-node src/faktory/get-dao-tokens.ts 1 20 "city"
+# With specific page and limit
+bun run src/stacks-faktory/get-dao-tokens.ts 1 20
 
-# Get tokens sorted in descending order
-ts-node src/faktory/get-dao-tokens.ts 1 10 "" "desc"
+# With search
+bun run src/stacks-faktory/get-dao-tokens.ts 1 20 "bitcoin"
 ```
 
 ### 2. Get Buy Quote
@@ -105,7 +105,11 @@ ts-node src/faktory/get-sell-quote.ts 1000 "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50
 Execute a buy transaction for tokens.
 
 ```bash
-ts-node src/faktory/exec-buy.ts <stx_amount> <dex_contract> [slippage]
+# Buy tokens using 100 STX with 15% slippage (default)
+bun run src/stacks-faktory/exec-buy.ts 100 SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory
+
+# Buy tokens using 50 STX with 10% slippage
+bun run src/stacks-faktory/exec-buy.ts 50 SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity 10
 ```
 
 Parameters:
@@ -117,11 +121,11 @@ Parameters:
 Example:
 
 ```bash
-# Buy using 50 STX with default slippage
-ts-node src/faktory/exec-buy.ts 50 "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.ampx-v1"
+# Buy tokens using 1 STX with 15% slippage (default)
+bun run src/stacks-faktory/exec-buy.ts 1 SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex
 
-# Buy with custom 3% slippage
-ts-node src/faktory/exec-buy.ts 50 "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.ampx-v1" 3
+# Buy tokens using 1 STX with 10% slippage
+bun run src/stacks-faktory/exec-buy.ts 1 SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex 10
 ```
 
 ### 5. Execute Sell
@@ -141,11 +145,11 @@ Parameters:
 Example:
 
 ```bash
-# Sell 500 tokens with default slippage
-ts-node src/faktory/exec-sell.ts 500 "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.ampx-v1"
+# Sell 200 tokens with 15% slippage (default)
+bun run src/stacks-faktory/exec-sell.ts 200 SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex
 
-# Sell with custom 7% slippage
-ts-node src/faktory/exec-sell.ts 500 "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.ampx-v1" 7
+# Sell 500 tokens with 5% slippage
+bun run src/stacks-faktory/exec-sell.ts 500 SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex 5
 ```
 
 ## Important Notes

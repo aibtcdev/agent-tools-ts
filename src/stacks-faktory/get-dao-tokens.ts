@@ -8,26 +8,30 @@ const page = Number(process.argv[2]) || 1;
 const limit = Number(process.argv[3]) || 10;
 const search = process.argv[4];
 const sortOrder = process.argv[5];
-const forcedNetwork = process.argv[6] || "mainnet"; // Allow network override via command line
 
-console.log("\nQuerying DAO tokens with parameters:");
+if (!page) {
+  console.error("\nPlease provide parameters:");
+  console.error(
+    "bun run src/stacks-faktory/get-dao-tokens.ts [page] [limit] [search] [sortOrder]"
+  );
+  process.exit(1);
+}
+
+console.log("\n=== DAO Query Parameters ===");
 console.log("Page:", page);
 console.log("Limit:", limit);
 console.log("Search term:", search || "none");
 console.log("Sort order:", sortOrder || "default");
-
-// Force mainnet by default, ignore CONFIG.NETWORK unless explicitly overridden
-const network = forcedNetwork as "mainnet" | "testnet";
-console.log("Network:", network);
+console.log("Network:", CONFIG.NETWORK);
 
 const sdk = new FaktorySDK({
-  network: "mainnet", // Force mainnet
-  apiHost: "https://faktory-be.vercel.app/api", // Force mainnet API
+  network: CONFIG.NETWORK as "mainnet" | "testnet",
+  hiroApiKey: CONFIG.HIRO_API_KEY,
 });
 
 (async () => {
   try {
-    console.log("\nFetching DAO tokens...");
+    console.log("\n=== Fetching DAO Tokens ===");
     const daoTokens = await sdk.getDaoTokens({
       page,
       limit,
@@ -35,10 +39,10 @@ const sdk = new FaktorySDK({
       sortOrder,
     });
 
-    console.log("\nResponse:");
-    console.log("DAO Tokens:", JSON.stringify(daoTokens, null, 2));
+    console.log("\n=== Response ===");
+    console.log(JSON.stringify(daoTokens, null, 2));
   } catch (error) {
-    console.error("Error fetching DAO tokens:", error);
+    console.error("\nError fetching DAO tokens:", error);
     process.exit(1);
   }
 })();
