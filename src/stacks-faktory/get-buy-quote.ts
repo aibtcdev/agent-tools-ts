@@ -65,9 +65,9 @@ const sdk = new FaktorySDK({
     // Get the buyable token amount based on DEX type
     let rawTokenAmount;
     if (isExternalDex) {
-      rawTokenAmount = buyQuote.value.value["buyable-token"]?.value;
+      rawTokenAmount = buyQuote?.value?.value?.["buyable-token"]?.value;
     } else {
-      rawTokenAmount = buyQuote.value.value["tokens-out"]?.value;
+      rawTokenAmount = buyQuote?.value?.value?.["tokens-out"]?.value;
     }
 
     if (rawTokenAmount) {
