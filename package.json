@@ -18,7 +18,7 @@
   ],
   "dependencies": {
     "@bitflowlabs/core-sdk": "^1.0.1",
-    "@faktoryfun/core-sdk": "^0.2.12",
+    "@faktoryfun/core-sdk": "^0.2.13",
     "@jingcash/core-sdk": "^0.1.4",
     "@stacks/blockchain-api-client": "^8.4.0",
     "@stacks/bns": "^6.15.0",
