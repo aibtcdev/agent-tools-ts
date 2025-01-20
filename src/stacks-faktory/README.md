@@ -80,10 +80,10 @@ Example:
 
 ```bash
 # Sell quote for external DEX (TCORN)
-bun run src/stacks-faktory/get-sell-quote.ts 1000 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
+bun run src/stacks-faktory/get-sell-quote.ts 100000 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
 
 # Sell quote for internal DEX (BAI)
-bun run src/stacks-faktory/get-sell-quote.ts 1000 "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex" 15
+bun run src/stacks-faktory/get-sell-quote.ts 100000 "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex" 15
 ```
 
 ### 4. Execute Buy
@@ -104,10 +104,10 @@ Example:
 
 ```bash
 # Buy from external DEX (TCORN)
-bun run src/stacks-faktory/exec-buy.ts 100 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
+bun run src/stacks-faktory/exec-buy.ts 1 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
 
 # Buy from internal DEX (BAI)
-bun run src/stacks-faktory/exec-buy.ts 100 "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex" 15
+bun run src/stacks-faktory/exec-buy.ts 1 "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex" 15
 ```
 
 ### 5. Execute Sell
@@ -132,6 +132,28 @@ bun run src/stacks-faktory/exec-sell.ts 1000 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y
 
 # Sell to internal DEX (BAI)
 bun run src/stacks-faktory/exec-sell.ts 1000 "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex" 15
+```
+
+### 6. Get a single Token
+
+Get details about a specific token by its DEX contract.
+
+```bash
+bun run src/stacks-faktory/get-token.ts <dex_contract>
+```
+
+Parameters:
+
+dex_contract: DEX contract identifier
+
+Example:
+
+```bash
+# Get token info (TCORN)
+bun run src/stacks-faktory/get-token.ts "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex"
+
+# Get token info (BAI)
+bun run src/stacks-faktory/get-token.ts "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex"
 ```
 
 ## Important Notes
