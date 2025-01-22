@@ -770,6 +770,7 @@ export class ContractGenerator {
   // generated at runtime based on script parameters
   generateTraitContract(traitType: TraitType): string {
     const data = {
+      // TODO: sip10_faktory_trait: getTraitReference(this.network, "SIP10_FAKTORY"),
       sip10_trait: getTraitReference(this.network, "SIP10"),
       sip09_trait: getTraitReference(this.network, "SIP09"),
       creator: this.senderAddress,

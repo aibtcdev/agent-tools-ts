@@ -29,12 +29,13 @@
   )
 )
 
+;; keeping old format for trait adherance
 (define-public (transfer-ownership (new-owner principal))
   (begin
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; transfer ownership
-    (try! (as-contract (contract-call? '<%= it.token_contract_address %> transfer-ownership new-owner)))
+    (try! (as-contract (contract-call? '<%= it.token_contract_address %> set-contract-owner new-owner)))
     (ok true)
   )
 )

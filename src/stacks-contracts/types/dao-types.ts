@@ -42,6 +42,8 @@ export enum TraitType {
   POOL = "xyk-pool-trait-v-1-2",
   DAO_BASE = "aibtcdev-dao-v1",
   DAO_TRAITS = "aibtcdev-dao-traits-v1",
+  // TODO: DAO_TRAITS_V1_1 = "aibtcdev-dao-traits-v1-1",
+  // TODO: FAKTORY_TRAIT_V1 = "faktory-dex-trait-v1-1",
   SIP09 = "nft-trait",
   SIP10 = "sip-010-trait-ft-standard",
 }
