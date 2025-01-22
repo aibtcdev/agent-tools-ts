@@ -19,9 +19,9 @@ const stxAmount = Number(process.argv[2]); // STX amount in normal units
 const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
 
-console.log("STX Amount:", stxAmount);
-console.log("DEX Contract:", dexContract);
-console.log("Slippage (%):", slippage);
+//console.log("STX Amount:", stxAmount);
+//console.log("DEX Contract:", dexContract);
+//console.log("Slippage (%):", slippage);
 
 if (!stxAmount || !dexContract) {
   console.error("Please provide all required parameters:");
@@ -49,12 +49,12 @@ const faktoryConfig = {
     const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
     // Get quote first for preview
-    console.log("\nGetting quote...");
+    //console.log("\nGetting quote...");
     const inQuote = await sdk.getIn(dexContract, address, stxAmount); // No need to multiply by 1000000
-    console.log("Quote:", JSON.stringify(inQuote, null, 2));
+    //console.log("Quote:", JSON.stringify(inQuote, null, 2));
 
     // Get buy parameters
-    console.log("\nGetting buy parameters...");
+    //console.log("\nGetting buy parameters...");
     const buyParams = await sdk.getBuyParams({
       dexContract,
       stx: stxAmount, // Changed from ustx, no need to multiply
@@ -73,10 +73,18 @@ const faktoryConfig = {
     };
 
     // Create and broadcast transaction
-    console.log("\nCreating and broadcasting transaction...");
+    //console.log("\nCreating and broadcasting transaction...");
     const tx = await makeContractCall(txOptions);
     const broadcastResponse = await broadcastTransaction(tx, networkObj);
 
+    const result = {
+      success: broadcastResponse.txid ? true : false,
+      message: "Transaction broadcast successfully!",
+      txid: broadcastResponse.txid,
+    };
+
+    console.log(JSON.stringify(result, null, 2));
+    /*
     console.log("\nTransaction broadcast successfully!");
     console.log("Transaction ID:", broadcastResponse.txid);
     console.log(
@@ -85,6 +93,7 @@ const faktoryConfig = {
         "?chain=" +
         CONFIG.NETWORK
     );
+    */
   } catch (error) {
     console.error("Error executing buy transaction:", error);
     process.exit(1);

@@ -17,12 +17,14 @@ if (!page) {
   process.exit(1);
 }
 
+/*
 console.log("\n=== DAO Query Parameters ===");
 console.log("Page:", page);
 console.log("Limit:", limit);
 console.log("Search term:", search || "none");
 console.log("Sort order:", sortOrder || "default");
 console.log("Network:", CONFIG.NETWORK);
+*/
 
 const sdk = new FaktorySDK({
   network: CONFIG.NETWORK as "mainnet" | "testnet",
@@ -31,7 +33,7 @@ const sdk = new FaktorySDK({
 
 (async () => {
   try {
-    console.log("\n=== Fetching DAO Tokens ===");
+    //console.log("\n=== Fetching DAO Tokens ===");
     const daoTokens = await sdk.getDaoTokens({
       page,
       limit,
@@ -39,8 +41,12 @@ const sdk = new FaktorySDK({
       sortOrder,
     });
 
-    console.log("\n=== Response ===");
-    console.log(JSON.stringify(daoTokens, null, 2));
+    //console.log("\n=== Response ===");
+    const result = {
+      success: true,
+      daoTokens,
+    };
+    console.log(JSON.stringify(result, null, 2));
   } catch (error) {
     console.error("\nError fetching DAO tokens:", error);
     process.exit(1);
