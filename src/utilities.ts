@@ -509,7 +509,7 @@ export async function getFaktoryContracts(
     },
     body: JSON.stringify(faktoryRequestBody),
   });
-  console.log(`Faktory response status: ${faktoryResponse.status}`);
+  //console.log(`Faktory response status: ${faktoryResponse.status}`);
   if (!faktoryResponse.ok) {
     throw new Error(`Failed to get token and dex from Faktory`);
   }
