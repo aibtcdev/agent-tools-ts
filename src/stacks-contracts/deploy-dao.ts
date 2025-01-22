@@ -79,7 +79,7 @@ async function main() {
 
     // Step 2 - deploy token-related contracts
 
-    console.log("- deploying aibtc-token-faktory...");
+    //console.log("- deploying aibtc-token-faktory...");
     const tokenDeployment = await contractDeployer.deployContract(
       token.code,
       ContractType.DAO_TOKEN,
@@ -93,7 +93,7 @@ async function main() {
     result.contracts.token = tokenDeployment.data;
     currentNonce++;
 
-    console.log("- deploying aibtc-bitflow-pool...");
+    //console.log("- deploying aibtc-bitflow-pool...");
     const poolDeployment = await contractDeployer.deployContract(
       pool.code,
       ContractType.DAO_BITFLOW_POOL,
@@ -107,7 +107,7 @@ async function main() {
     result.contracts.pool = poolDeployment.data;
     currentNonce++;
 
-    console.log("- deploying aibtc-token-dex...");
+    //console.log("- deploying aibtc-token-dex...");
     const dexDeployment = await contractDeployer.deployContract(
       dex.code,
       ContractType.DAO_TOKEN_DEX,
@@ -138,7 +138,7 @@ async function main() {
 
     // Deploy all contracts
     for (const [key, contract] of sortedContracts) {
-      console.log(`- deploying ${key}...`);
+      //console.log(`- deploying ${key}...`);
       const deployment = await contractDeployer.deployContract(
         contract.source,
         contract.type,
@@ -163,7 +163,7 @@ async function main() {
     }
 
     result.success = true;
-    console.log("Deployment successful!");
+    //console.log("Deployment successful!");
     console.log(JSON.stringify(result, null, 2));
     return result;
   } catch (error) {
