@@ -15,7 +15,6 @@ import {
   ContractActionType,
 } from "../types/dao-types";
 import { generateContractNames } from "../utils/contract-utils";
-import { DEPLOYERS } from "../../constants";
 
 export class ContractGenerator {
   private eta: Eta;

@@ -82,8 +82,8 @@ async function main() {
     console.log("- deploying aibtc-token-faktory...");
     const tokenDeployment = await contractDeployer.deployContract(
       token,
-      ContractType.DAO_TOKEN_FAKTORY,
-      contractNames[ContractType.DAO_TOKEN_FAKTORY],
+      ContractType.DAO_TOKEN,
+      contractNames[ContractType.DAO_TOKEN],
       currentNonce
     );
     if (!tokenDeployment.success) {
@@ -110,8 +110,8 @@ async function main() {
     console.log("- deploying aibtc-token-dex...");
     const dexDeployment = await contractDeployer.deployContract(
       dex,
-      ContractType.DAO_TOKEN_DEX_FAKTORY,
-      contractNames[ContractType.DAO_TOKEN_DEX_FAKTORY],
+      ContractType.DAO_TOKEN_DEX,
+      contractNames[ContractType.DAO_TOKEN_DEX],
       currentNonce
     );
     if (!dexDeployment.success) {

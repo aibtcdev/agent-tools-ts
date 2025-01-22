@@ -1,10 +1,8 @@
 export enum ContractType {
   // deployed before dao
-  DAO_TOKEN = "aibtc-token",
-  DAO_TOKEN_FAKTORY = "aibtc-token-faktory",
+  DAO_TOKEN = "aibtc-token-faktory",
   DAO_BITFLOW_POOL = "aibtc-bitflow-pool",
-  DAO_TOKEN_DEX = "aibtc-token-dex",
-  DAO_TOKEN_DEX_FAKTORY = "aibtc-token-faktory-dex",
+  DAO_TOKEN_DEX = "aibtc-token-faktory-dex",
   // base dao
   DAO_BASE = "aibtcdev-base-dao",
   // dao extensions

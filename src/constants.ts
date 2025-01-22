@@ -4,7 +4,7 @@ export const DEPLOYER = ""; // for testnet, need to redeploy
 export const CONTRACT_NAME = "aibtcdev-aibtc"; // for testnet, need to redeploy
 export const TOKEN_CONTRACT_NAME = "aibtc-token"; // for testnet, need to redeploy
 
-export const DEPLOYERS = {
+export const AIBTC_DEPLOYERS = {
   mainnet: "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46",
   testnet: "ST1994Y3P6ZDJX476QFSABEFE5T6YMTJT0T7RSQDW",
   devnet: "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
@@ -64,6 +64,8 @@ export const TRAITS: NetworkTraitsMap = {
   mainnet: {
     SIP10:
       "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait",
+    SIP10_FAKTORY:
+      "SP3XXMS38VTAWTVPE5682XSBFXPTH7XCPEBTX8AN2.faktory-trait-v1.sip-010-trait",
     SIP09: "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait.nft-trait",
     DAO_BASE:
       "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtcdev-dao-v1.aibtcdev-base-dao",
@@ -93,6 +95,8 @@ export const TRAITS: NetworkTraitsMap = {
       "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtcdev-dao-traits-v1.token-owner",
     DAO_TOKEN:
       "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtcdev-dao-traits-v1.token",
+    DAO_TOKEN_FAKTORY_DEX:
+      "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtcdev-dao-traits-v1-1.faktory-dex",
     DAO_BITFLOW_POOL:
       "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtcdev-dao-traits-v1.bitflow-pool",
     BITFLOW_POOL:
@@ -103,6 +107,8 @@ export const TRAITS: NetworkTraitsMap = {
   testnet: {
     SIP10:
       "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.sip-010-trait-ft-standard.sip-010-trait",
+    SIP10_FAKTORY:
+      "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.faktory-trait-v1.sip-010-trait",
     SIP09: "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.nft-trait.nft-trait",
     DAO_BASE:
       "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.aibtcdev-dao-v1.aibtcdev-base-dao",
@@ -132,6 +138,8 @@ export const TRAITS: NetworkTraitsMap = {
       "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.aibtcdev-dao-traits-v1.token-owner",
     DAO_TOKEN:
       "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.aibtcdev-dao-traits-v1.token",
+    DAO_TOKEN_FAKTORY_DEX:
+      "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.aibtcdev-dao-traits-v1-1.faktory-dex",
     DAO_BITFLOW_POOL:
       "STTWD9SPRQVD3P733V89SV0P8RZRZNQADG034F0A.aibtcdev-dao-traits-v1.bitflow-pool",
     BITFLOW_POOL:
@@ -141,6 +149,7 @@ export const TRAITS: NetworkTraitsMap = {
   },
   devnet: {
     SIP10: "",
+    SIP10_FAKTORY: "",
     SIP09: "",
     DAO_BASE: "",
     DAO_PROPOSAL: "",
@@ -156,12 +165,14 @@ export const TRAITS: NetworkTraitsMap = {
     DAO_TOKEN_DEX: "",
     DAO_TOKEN_OWNER: "",
     DAO_TOKEN: "",
+    DAO_TOKEN_FAKTORY_DEX: "",
     DAO_BITFLOW_POOL: "",
     BITFLOW_POOL: "",
     BITFLOW_SIP010: "",
   },
   mocknet: {
     SIP10: "",
+    SIP10_FAKTORY: "",
     SIP09: "",
     DAO_BASE: "",
     DAO_PROPOSAL: "",
@@ -177,6 +188,7 @@ export const TRAITS: NetworkTraitsMap = {
     DAO_TOKEN_DEX: "",
     DAO_TOKEN_OWNER: "",
     DAO_TOKEN: "",
+    DAO_TOKEN_FAKTORY_DEX: "",
     DAO_BITFLOW_POOL: "",
     BITFLOW_POOL: "",
     BITFLOW_SIP010: "",
