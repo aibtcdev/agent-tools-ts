@@ -374,9 +374,9 @@ export async function getStxCityHash(data: string): Promise<string> {
 }
 
 export type FaktoryGeneratedContracts = {
-  token: string;
-  dex: string;
-  pool: string;
+  token: FaktoryContractInfo;
+  dex: FaktoryContractInfo;
+  pool: FaktoryContractInfo;
 };
 
 type FaktoryResponse<T> = {
@@ -529,9 +529,9 @@ export async function getFaktoryContracts(
   //console.log(JSON.stringify(poolResult, null, 2));
 
   return {
-    token: result.data.contracts.token.code,
-    dex: result.data.contracts.dex.code,
-    pool: poolResult.data.pool.code,
+    token: result.data.contracts.token,
+    dex: result.data.contracts.dex,
+    pool: poolResult.data.pool,
   };
 }
 
@@ -586,7 +586,7 @@ export function getAddressReference(
   return getAddressDefinition(network, addressType);
 }
 
-export function convertStringToBoolean(value: string): boolean | null {
+export function convertStringToBoolean(value: string): boolean {
   // Convert to lowercase and trim whitespace
   const normalized = value.toLowerCase().trim();
 
@@ -601,5 +601,5 @@ export function convertStringToBoolean(value: string): boolean | null {
   }
 
   // Return null or throw error for invalid inputs
-  return null;
+  throw new Error(`Invalid boolean value: ${value}`);
 }

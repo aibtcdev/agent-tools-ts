@@ -1,5 +1,10 @@
 import { getAddressFromPrivateKey } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../utilities";
+import {
+  CONFIG,
+  convertStringToBoolean,
+  deriveChildAccount,
+  getNetwork,
+} from "../utilities";
 import { ContractType, DeploymentResult } from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
 import * as fs from "fs";
@@ -11,8 +16,8 @@ async function main() {
       tokenSymbol,
       tokenName,
       tokenMaxSupply,
-      tokenDecimals,
       tokenUri,
+      logoUrl,
       daoManifest,
       generateFiles = "false",
     ] = process.argv.slice(2);
@@ -21,16 +26,16 @@ async function main() {
       !tokenSymbol ||
       !tokenName ||
       !tokenMaxSupply ||
-      !tokenDecimals ||
-      !tokenUri
+      !tokenUri ||
+      !logoUrl
     ) {
       console.log(
-        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> <generateFiles>"
+        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <daoManifest> <generateFiles>"
       );
       process.exit(1);
     }
 
-    const shouldGenerateFiles = generateFiles.toLowerCase() === "true";
+    const shouldGenerateFiles = convertStringToBoolean(generateFiles);
 
     const result: DeploymentResult = {
       success: false,
@@ -65,39 +70,41 @@ async function main() {
         const filePath = path.join(outputDir, fileName);
         fs.writeFileSync(filePath, source);
         console.log(`Generated: ${filePath}`);
+      } else {
+        console.log(`===== ${name}`);
+        console.log(source);
       }
-      console.log(`===== ${name}`);
-      console.log(source);
     };
-
-    // Step 1 - generate token-related contracts
-    const tokenSource = await contractGenerator.generateTokenContract(
-      tokenSymbol,
-      tokenName,
-      tokenMaxSupply,
-      tokenDecimals,
-      tokenUri
-    );
-    saveContract(`${tokenSymbol.toLowerCase()}-stxcity`, tokenSource);
-
-    const poolSource =
-      contractGenerator.generateBitflowPoolContract(tokenSymbol);
-    saveContract(`xyk-pool-stx-${tokenSymbol.toLowerCase()}-v-1-1`, poolSource);
-
-    const dexSource = contractGenerator.generateTokenDexContract(
-      tokenMaxSupply,
-      tokenDecimals,
-      tokenSymbol
-    );
-    saveContract(`${tokenSymbol.toLowerCase()}-stxcity-dex`, dexSource);
-
-    // Step 2 - generate remaining dao contracts
 
     // set dao manifest, passed to proposal for dao construction
     // or default to dao name + token name
     const manifest = daoManifest
       ? daoManifest
       : `Bitcoin DeFAI ${tokenSymbol} ${tokenName}`;
+    console.log(`- manifest: ${manifest}`);
+
+    // Step 1 - generate token-related contracts
+
+    // query the faktory contracts
+
+    const { token, dex, pool } =
+      await contractGenerator.generateFaktoryContracts(
+        tokenSymbol,
+        tokenName,
+        tokenMaxSupply,
+        tokenUri,
+        senderAddress,
+        logoUrl,
+        manifest // description
+      );
+
+    // save token-related contracts (if generating files)
+
+    saveContract(token.name, token.code);
+    saveContract(dex.name, dex.code);
+    saveContract(pool.name, pool.code);
+
+    // Step 2 - generate remaining dao contracts
 
     const contracts = contractGenerator.generateDaoContracts(
       senderAddress,
@@ -119,13 +126,15 @@ async function main() {
 
     result.success = true;
     return result;
-  } catch (error: any) {
-    console.error(JSON.stringify({ success: false, message: error }));
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(JSON.stringify({ success: false, message: errorMsg }));
     process.exit(1);
   }
 }
 
 main().catch((error) => {
-  console.error(JSON.stringify({ success: false, message: error }));
+  const errorMsg = error instanceof Error ? error.message : String(error);
+  console.error(JSON.stringify({ success: false, message: errorMsg }));
   process.exit(1);
 });

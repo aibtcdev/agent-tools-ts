@@ -62,7 +62,7 @@ async function main() {
     const manifest = daoManifest
       ? daoManifest
       : `Bitcoin DeFAI ${tokenSymbol} ${tokenName}`;
-    console.log(`- manifest: ${manifest}`);
+    //console.log(`- manifest: ${manifest}`);
 
     // Step 1 - generate token-related contracts
 
@@ -81,7 +81,7 @@ async function main() {
 
     console.log("- deploying aibtc-token-faktory...");
     const tokenDeployment = await contractDeployer.deployContract(
-      token,
+      token.code,
       ContractType.DAO_TOKEN,
       contractNames[ContractType.DAO_TOKEN],
       currentNonce
@@ -95,7 +95,7 @@ async function main() {
 
     console.log("- deploying aibtc-bitflow-pool...");
     const poolDeployment = await contractDeployer.deployContract(
-      pool,
+      pool.code,
       ContractType.DAO_BITFLOW_POOL,
       contractNames[ContractType.DAO_BITFLOW_POOL],
       currentNonce
@@ -109,7 +109,7 @@ async function main() {
 
     console.log("- deploying aibtc-token-dex...");
     const dexDeployment = await contractDeployer.deployContract(
-      dex,
+      dex.code,
       ContractType.DAO_TOKEN_DEX,
       contractNames[ContractType.DAO_TOKEN_DEX],
       currentNonce
