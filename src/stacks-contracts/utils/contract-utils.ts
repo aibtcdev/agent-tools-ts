@@ -6,9 +6,9 @@ import {
 
 export function generateContractNames(tokenSymbol: string): ContractNames {
   return {
-    [ContractType.DAO_TOKEN]: `${tokenSymbol.toLowerCase()}-stxcity`,
+    [ContractType.DAO_TOKEN]: `${tokenSymbol.toLowerCase()}-faktory`,
     [ContractType.DAO_BITFLOW_POOL]: `xyk-pool-stx-${tokenSymbol.toLowerCase()}-v-1-1`,
-    [ContractType.DAO_TOKEN_DEX]: `${tokenSymbol.toLowerCase()}-stxcity-dex`,
+    [ContractType.DAO_TOKEN_DEX]: `${tokenSymbol.toLowerCase()}-faktory-dex`,
     [ContractType.DAO_TOKEN_OWNER]: `${tokenSymbol.toLowerCase()}-token-owner`,
     [ContractType.DAO_BASE]: `${tokenSymbol.toLowerCase()}-base-dao`,
     [ContractType.DAO_ACTION_PROPOSALS]: `${tokenSymbol.toLowerCase()}-action-proposals`,

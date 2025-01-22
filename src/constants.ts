@@ -4,6 +4,13 @@ export const DEPLOYER = ""; // for testnet, need to redeploy
 export const CONTRACT_NAME = "aibtcdev-aibtc"; // for testnet, need to redeploy
 export const TOKEN_CONTRACT_NAME = "aibtc-token"; // for testnet, need to redeploy
 
+export const DEPLOYERS = {
+  mainnet: "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46",
+  testnet: "ST1994Y3P6ZDJX476QFSABEFE5T6YMTJT0T7RSQDW",
+  devnet: "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
+  mocknet: "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
+};
+
 export const ADDRESSES: NetworkAddressMap = {
   mainnet: {
     BURN: "SP000000000000000000002Q6VF78",

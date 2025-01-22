@@ -118,6 +118,7 @@ export interface AppConfig {
   ACCOUNT_INDEX: number;
   HIRO_API_KEY: string;
   STXCITY_API_HOST: string;
+  AIBTC_FAKTORY_API_KEY: string;
 }
 
 // define default values for app config
@@ -127,6 +128,7 @@ const DEFAULT_CONFIG: AppConfig = {
   ACCOUNT_INDEX: 0,
   HIRO_API_KEY: "",
   STXCITY_API_HOST: "https://stx.city",
+  AIBTC_FAKTORY_API_KEY: "",
 };
 
 // load configuration from environment variables
@@ -139,6 +141,8 @@ function loadConfig(): AppConfig {
     HIRO_API_KEY: process.env.HIRO_API_KEY || DEFAULT_CONFIG.HIRO_API_KEY,
     STXCITY_API_HOST:
       process.env.STXCITY_API_HOST || DEFAULT_CONFIG.STXCITY_API_HOST,
+    AIBTC_FAKTORY_API_KEY:
+      process.env.AIBTC_FAKTORY_API_KEY || DEFAULT_CONFIG.AIBTC_FAKTORY_API_KEY,
   };
 }
 
@@ -178,6 +182,17 @@ export function getApiUrl(network: string) {
       return "https://api.testnet.hiro.so";
     default:
       return "https://api.testnet.hiro.so";
+  }
+}
+
+export function getFaktoryApiUrl(network: string) {
+  switch (network) {
+    case "mainnet":
+      return "https://faktory-be.vercel.app/api/aibtcdev";
+    case "testnet":
+      return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
+    default:
+      return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
   }
 }
 
@@ -356,6 +371,168 @@ export async function getStxCityHash(data: string): Promise<string> {
   const hashText = await response.text();
   // Remove quotes from the response
   return hashText.replace(/^"|"$/g, "");
+}
+
+export type FaktoryGeneratedContracts = {
+  token: string;
+  dex: string;
+  pool: string;
+};
+
+type FaktoryResponse<T> = {
+  success: boolean;
+  error?: string;
+  data: T & {
+    dbRecord: FaktoryDbRecord[];
+  };
+};
+
+type FaktoryTokenAndDex = {
+  contracts: {
+    token: FaktoryContractInfo;
+    dex: FaktoryContractInfo;
+  };
+};
+
+type FaktoryPool = {
+  pool: FaktoryContractInfo;
+};
+
+type FaktoryContractInfo = {
+  name: string;
+  code: string;
+  hash?: string;
+  contract: string;
+};
+
+type FaktoryDbRecord = {
+  id: string;
+  name: string;
+  symbol: string;
+  description: string;
+  tokenContract: string;
+  dexContract: string;
+  txId: string | null;
+  targetAmm: string;
+  supply: number;
+  decimals: number;
+  targetStx: number;
+  progress: number;
+  price: number;
+  price24hChanges: number | null;
+  tradingVolume: number;
+  holders: number;
+  tokenToDex: string;
+  tokenToDeployer: string;
+  stxToDex: number;
+  stxBuyFirstFee: number;
+  logoUrl: string;
+  mediaUrl: string;
+  uri: string;
+  twitter: string;
+  website: string;
+  telegram: string;
+  discord: string;
+  chatCount: number;
+  txsCount: number;
+  creatorAddress: string;
+  deployedAt: string;
+  tokenHash: string;
+  tokenVerified: number;
+  dexHash: string;
+  dexVerified: number;
+  tokenVerifiedAt: string | null;
+  dexVerifiedAt: string | null;
+  status: string;
+  tokenChainhookUuid: string | null;
+  tradingHookUuid: string | null;
+  lastBuyHash: string | null;
+  daoToken: boolean;
+};
+
+export async function getFaktoryContracts(
+  symbol: string,
+  name: string,
+  supply: number,
+  creatorAddress: string,
+  uri: string,
+  logoUrl?: string,
+  mediaUrl?: string,
+  twitter?: string,
+  website?: string,
+  telegram?: string,
+  discord?: string,
+  description?: string
+) {
+  const faktoryUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate`;
+  const faktoryPoolUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate-pool`;
+  //console.log(`Faktory URL: ${faktoryUrl.toString()}`);
+  //console.log(`Faktory Pool URL: ${faktoryPoolUrl.toString()}`);
+
+  const faktoryResponse = await fetch(faktoryUrl.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": CONFIG.AIBTC_FAKTORY_API_KEY,
+    },
+    body: JSON.stringify({
+      symbol,
+      name,
+      supply,
+      creatorAddress,
+      uri,
+      logoUrl,
+      mediaUrl,
+      twitter,
+      website,
+      telegram,
+      discord,
+      description,
+    }),
+  });
+  console.log(`Faktory response status: ${faktoryResponse.status}`);
+  if (!faktoryResponse.ok) {
+    throw new Error(`Failed to get token and dex from Faktory`);
+  }
+  const result =
+    (await faktoryResponse.json()) as FaktoryResponse<FaktoryTokenAndDex>;
+  //console.log("Faktory result:");
+  //console.log(JSON.stringify(result, null, 2));
+  if (!result.success) {
+    throw new Error(`Failed to get token and dex contract from Faktory`);
+  }
+
+  const tokenContract = result.data.contracts.token.contract;
+  const dexContract = result.data.contracts.dex.contract;
+
+  const poolResponse = await fetch(faktoryPoolUrl.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": CONFIG.AIBTC_FAKTORY_API_KEY,
+    },
+    body: JSON.stringify({
+      tokenContract,
+      dexContract,
+      senderAddress: creatorAddress,
+      symbol,
+    }),
+  });
+  //console.log(`Faktory pool response status: ${poolResponse.status}`);
+  if (!poolResponse.ok) {
+    throw new Error(`Failed to get pool contract from Faktory`);
+  }
+  const poolResult =
+    (await poolResponse.json()) as FaktoryResponse<FaktoryPool>;
+
+  //console.log("Faktory pool result:");
+  //console.log(JSON.stringify(poolResult, null, 2));
+
+  return {
+    token: result.data.contracts.token.code,
+    dex: result.data.contracts.dex.code,
+    pool: poolResult.data.pool.code,
+  };
 }
 
 export function getTraitDefinition(

@@ -4,6 +4,8 @@ import {
   getTraitReference,
   getAddressReference,
   getStxCityHash,
+  FaktoryGeneratedContracts,
+  getFaktoryContracts,
 } from "../../utilities";
 import { NetworkType } from "../../types";
 import {
@@ -13,6 +15,7 @@ import {
   ContractActionType,
 } from "../types/dao-types";
 import { generateContractNames } from "../utils/contract-utils";
+import { DEPLOYERS } from "../../constants";
 
 export class ContractGenerator {
   private eta: Eta;
@@ -225,6 +228,32 @@ export class ContractGenerator {
       creator: this.senderAddress,
     };
     return this.eta.render("extensions/aibtc-token-owner.clar", data);
+  }
+
+  // extension: aibtc-token-faktory (h/t fak.fun)
+  // extension: aibtc-token-faktory-dex (h/t fak.fun)
+  // extension: aibtc-bitflow-pool (h/t fak.fun)
+  // generated at runtime based on script parameters
+  // async due to querying fak.fun contract generator
+  async generateFaktoryContracts(
+    tokenSymbol: string,
+    tokenName: string,
+    tokenMaxSupply: string,
+    tokenUri: string,
+    creatorAddress: string,
+    logoUrl?: string,
+    description?: string
+  ): Promise<FaktoryGeneratedContracts> {
+    const { token, dex, pool } = await getFaktoryContracts(
+      tokenSymbol,
+      tokenName,
+      parseInt(tokenMaxSupply),
+      creatorAddress,
+      tokenUri,
+      logoUrl ? logoUrl : "",
+      description ? description : ""
+    );
+    return { token, dex, pool };
   }
 
   // extension: aibtc-token (h/t stxcity)
