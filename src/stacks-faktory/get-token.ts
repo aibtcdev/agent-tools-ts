@@ -12,9 +12,9 @@ if (!dexContract) {
   process.exit(1);
 }
 
-console.log("\n=== Token Query Parameters ===");
-console.log("DEX Contract:", dexContract);
-console.log("Network:", CONFIG.NETWORK);
+//console.log("\n=== Token Query Parameters ===");
+//console.log("DEX Contract:", dexContract);
+//console.log("Network:", CONFIG.NETWORK);
 
 const sdk = new FaktorySDK({
   network: CONFIG.NETWORK as "mainnet" | "testnet",
@@ -23,11 +23,15 @@ const sdk = new FaktorySDK({
 
 (async () => {
   try {
-    console.log("\n=== Fetching Token ===");
+    //console.log("\n=== Fetching Token ===");
     const token = await sdk.getToken(dexContract);
 
-    console.log("\n=== Response ===");
-    console.log(JSON.stringify(token, null, 2));
+    //console.log("\n=== Response ===");
+    const result = {
+      success: true,
+      token,
+    };
+    console.log(JSON.stringify(result, null, 2));
   } catch (error) {
     console.error("\nError fetching token:", error);
     process.exit(1);

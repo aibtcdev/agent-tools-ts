@@ -19,9 +19,9 @@ const tokenAmount = Number(process.argv[2]); // token amount in standard units (
 const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
 
-console.log("Token Amount:", tokenAmount);
-console.log("DEX Contract:", dexContract);
-console.log("Slippage (%):", slippage);
+//console.log("Token Amount:", tokenAmount);
+//console.log("DEX Contract:", dexContract);
+//console.log("Slippage (%):", slippage);
 
 if (!tokenAmount || !dexContract) {
   console.error("Please provide all required parameters:");
@@ -49,12 +49,12 @@ const faktoryConfig = {
     const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
     // Get quote first for preview (SDK handles decimal conversion internally)
-    console.log("\nGetting quote for selling tokens...");
+    //console.log("\nGetting quote for selling tokens...");
     const outQuote = await sdk.getOut(dexContract, address, tokenAmount);
-    console.log("Quote:", JSON.stringify(outQuote, null, 2));
+    //console.log("Quote:", JSON.stringify(outQuote, null, 2));
 
     // Get sell parameters (SDK handles decimal conversion internally)
-    console.log("\nGetting sell parameters...");
+    //console.log("\nGetting sell parameters...");
     const sellParams = await sdk.getSellParams({
       dexContract,
       amount: tokenAmount,
@@ -73,10 +73,18 @@ const faktoryConfig = {
     };
 
     // Create and broadcast transaction
-    console.log("\nCreating and broadcasting transaction...");
+    //console.log("\nCreating and broadcasting transaction...");
     const tx = await makeContractCall(txOptions);
     const broadcastResponse = await broadcastTransaction(tx, networkObj);
 
+    const result = {
+      success: broadcastResponse.txid ? true : false,
+      message: "Transaction broadcast successfully!",
+      txid: broadcastResponse.txid,
+    };
+
+    console.log(JSON.stringify(result, null, 2));
+    /*
     console.log("\nTransaction broadcast successfully!");
     console.log("Transaction ID:", broadcastResponse.txid);
     console.log(
@@ -85,6 +93,7 @@ const faktoryConfig = {
         "?chain=" +
         CONFIG.NETWORK
     );
+    */
   } catch (error) {
     console.error("Error executing sell transaction:", error);
     process.exit(1);

@@ -19,11 +19,13 @@ const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
 const network = (process.argv[5] || CONFIG.NETWORK || "mainnet") as NetworkType;
 
+/*
 console.log("\n=== Sell Quote Parameters ===");
 console.log("Token Amount:", tokenAmount);
 console.log("DEX Contract:", dexContract);
 console.log("Slippage (%):", slippage);
 console.log("Network:", network);
+*/
 
 if (!tokenAmount || !dexContract) {
   console.error("\nPlease provide all required parameters:");
@@ -47,20 +49,20 @@ const sdk = new FaktorySDK({
     );
 
     // Get quote
-    console.log("\n=== Getting Quote ===");
+    //console.log("\n=== Getting Quote ===");
     const sellQuote = (await sdk.getOut(
       dexContract,
       address,
       tokenAmount
     )) as any;
 
-    console.log("\n=== Quote Summary ===");
+    //console.log("\n=== Quote Summary ===");
     const contractName = dexContract.split(".")[1];
     const isExternalDex = !contractName.endsWith("faktory-dex");
     const baseContractName = contractName.replace("-dex", "");
     const tokenSymbol = baseContractName.split("-")[0].toUpperCase();
 
-    console.log(`Input: ${tokenAmount.toLocaleString()} ${tokenSymbol}`);
+    //console.log(`Input: ${tokenAmount.toLocaleString()} ${tokenSymbol}`);
 
     // Both internal and external DEX use stx-out
     const rawStxAmount = sellQuote?.value?.value?.["stx-out"]?.value;
@@ -72,27 +74,34 @@ const sdk = new FaktorySDK({
       );
       const stxDisplay = stxAmountWithSlippage / 1_000_000; // Convert from microSTX to STX
 
+      /*
       console.log(`Expected Output (with ${slippage}% slippage):`);
       console.log(`${stxDisplay.toLocaleString()} STX`);
       console.log(`\nDEX Contract: ${dexContract}`);
       console.log(`DEX Type: ${isExternalDex ? "External" : "Internal"}`);
+      */
     } else {
       console.log("Could not extract STX amount from response");
     }
 
     // Display raw quote response
-    console.log("\n=== Raw Quote Response ===");
-    console.log(JSON.stringify(sellQuote, replacer, 2));
+    //console.log("\n=== Raw Quote Response ===");
+    //console.log(JSON.stringify(sellQuote, replacer, 2));
 
     // Get sell parameters
-    console.log("\n=== Raw Transaction Parameters ===");
+    //console.log("\n=== Raw Transaction Parameters ===");
     const sellParams = await sdk.getSellParams({
       dexContract,
       amount: tokenAmount,
       senderAddress: address,
       slippage,
     });
-    console.log(JSON.stringify(sellParams, replacer, 2));
+    const result = {
+      success: true,
+      sellQuote,
+      sellParams,
+    };
+    console.log(JSON.stringify(result, replacer, 2));
   } catch (error) {
     console.error("\nError getting sell quote:", error);
     process.exit(1);
