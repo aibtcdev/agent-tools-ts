@@ -14,6 +14,8 @@ import {
   NetworkAddressType,
 } from "./types";
 import { ADDRESSES, TRAITS } from "./constants";
+import { generateContractNames } from "./stacks-contracts/utils/contract-utils";
+import { ContractType } from "./stacks-contracts/types/dao-types";
 
 type Metrics = {
   price_usd: number;
@@ -118,6 +120,7 @@ export interface AppConfig {
   ACCOUNT_INDEX: number;
   HIRO_API_KEY: string;
   STXCITY_API_HOST: string;
+  AIBTC_FAKTORY_API_KEY: string;
 }
 
 // define default values for app config
@@ -127,6 +130,7 @@ const DEFAULT_CONFIG: AppConfig = {
   ACCOUNT_INDEX: 0,
   HIRO_API_KEY: "",
   STXCITY_API_HOST: "https://stx.city",
+  AIBTC_FAKTORY_API_KEY: "",
 };
 
 // load configuration from environment variables
@@ -139,6 +143,8 @@ function loadConfig(): AppConfig {
     HIRO_API_KEY: process.env.HIRO_API_KEY || DEFAULT_CONFIG.HIRO_API_KEY,
     STXCITY_API_HOST:
       process.env.STXCITY_API_HOST || DEFAULT_CONFIG.STXCITY_API_HOST,
+    AIBTC_FAKTORY_API_KEY:
+      process.env.AIBTC_FAKTORY_API_KEY || DEFAULT_CONFIG.AIBTC_FAKTORY_API_KEY,
   };
 }
 
@@ -178,6 +184,17 @@ export function getApiUrl(network: string) {
       return "https://api.testnet.hiro.so";
     default:
       return "https://api.testnet.hiro.so";
+  }
+}
+
+export function getFaktoryApiUrl(network: string) {
+  switch (network) {
+    case "mainnet":
+      return "https://faktory-be.vercel.app/api/aibtcdev";
+    case "testnet":
+      return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
+    default:
+      return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
   }
 }
 
@@ -358,6 +375,251 @@ export async function getStxCityHash(data: string): Promise<string> {
   return hashText.replace(/^"|"$/g, "");
 }
 
+export type FaktoryGeneratedContracts = {
+  token: FaktoryContractInfo;
+  dex: FaktoryContractInfo;
+  pool: FaktoryContractInfo;
+};
+
+type FaktoryRequestBody = {
+  symbol: string;
+  name: string;
+  supply: number;
+  creatorAddress: string;
+  uri: string;
+  logoUrl?: string;
+  mediaUrl?: string;
+  twitter?: string;
+  website?: string;
+  telegram?: string;
+  discord?: string;
+  description?: string;
+};
+
+type FaktoryResponse<T> = {
+  success: boolean;
+  error?: string;
+  data: T & {
+    dbRecord: FaktoryDbRecord[];
+  };
+};
+
+type FaktoryTokenAndDex = {
+  contracts: {
+    token: FaktoryContractInfo;
+    dex: FaktoryContractInfo;
+  };
+};
+
+type FaktoryPool = {
+  pool: FaktoryContractInfo;
+};
+
+type FaktoryContractInfo = {
+  name: string;
+  code: string;
+  hash?: string;
+  contract: string;
+};
+
+type FaktoryDbRecord = {
+  id: string;
+  name: string;
+  symbol: string;
+  description: string;
+  tokenContract: string;
+  dexContract: string;
+  txId: string | null;
+  targetAmm: string;
+  supply: number;
+  decimals: number;
+  targetStx: number;
+  progress: number;
+  price: number;
+  price24hChanges: number | null;
+  tradingVolume: number;
+  holders: number;
+  tokenToDex: string;
+  tokenToDeployer: string;
+  stxToDex: number;
+  stxBuyFirstFee: number;
+  logoUrl: string;
+  mediaUrl: string;
+  uri: string;
+  twitter: string;
+  website: string;
+  telegram: string;
+  discord: string;
+  chatCount: number;
+  txsCount: number;
+  creatorAddress: string;
+  deployedAt: string;
+  tokenHash: string;
+  tokenVerified: number;
+  dexHash: string;
+  dexVerified: number;
+  tokenVerifiedAt: string | null;
+  dexVerifiedAt: string | null;
+  status: string;
+  tokenChainhookUuid: string | null;
+  tradingHookUuid: string | null;
+  lastBuyHash: string | null;
+  daoToken: boolean;
+};
+
+export async function getFaktoryContracts(
+  symbol: string,
+  name: string,
+  supply: number,
+  creatorAddress: string,
+  uri: string,
+  logoUrl?: string,
+  mediaUrl?: string,
+  twitter?: string,
+  website?: string,
+  telegram?: string,
+  discord?: string,
+  description?: string
+) {
+  const faktoryUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate`;
+  const faktoryPoolUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate-pool`;
+  //console.log(`Faktory URL: ${faktoryUrl.toString()}`);
+  //console.log(`Faktory Pool URL: ${faktoryPoolUrl.toString()}`);
+
+  const faktoryRequestBody: FaktoryRequestBody = {
+    symbol,
+    name,
+    supply,
+    creatorAddress,
+    uri,
+    logoUrl,
+    mediaUrl,
+    twitter,
+    website,
+    telegram,
+    discord,
+    description,
+  };
+
+  const faktoryResponse = await fetch(faktoryUrl.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": CONFIG.AIBTC_FAKTORY_API_KEY,
+    },
+    body: JSON.stringify(faktoryRequestBody),
+  });
+  console.log(`Faktory response status: ${faktoryResponse.status}`);
+  if (!faktoryResponse.ok) {
+    throw new Error(`Failed to get token and dex from Faktory`);
+  }
+  const result =
+    (await faktoryResponse.json()) as FaktoryResponse<FaktoryTokenAndDex>;
+  //console.log("Faktory result:");
+  //console.log(JSON.stringify(result, null, 2));
+  if (!result.success) {
+    throw new Error(`Failed to get token and dex contract from Faktory`);
+  }
+
+  const tokenContract = result.data.contracts.token.contract;
+  const dexContract = result.data.contracts.dex.contract;
+
+  const poolResponse = await fetch(faktoryPoolUrl.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": CONFIG.AIBTC_FAKTORY_API_KEY,
+    },
+    body: JSON.stringify({
+      tokenContract,
+      dexContract,
+      senderAddress: creatorAddress,
+      symbol,
+    }),
+  });
+  //console.log(`Faktory pool response status: ${poolResponse.status}`);
+  if (!poolResponse.ok) {
+    throw new Error(`Failed to get pool contract from Faktory`);
+  }
+  const poolResult =
+    (await poolResponse.json()) as FaktoryResponse<FaktoryPool>;
+
+  //console.log("Faktory pool result:");
+  //console.log(JSON.stringify(poolResult, null, 2));
+
+  const faktoryContracts: FaktoryGeneratedContracts = {
+    token: result.data.contracts.token,
+    dex: result.data.contracts.dex,
+    pool: poolResult.data.pool,
+  };
+
+  const verified = verifyFaktoryContracts(faktoryContracts, faktoryRequestBody);
+  if (!verified) {
+    throw new Error(`Failed to verify Faktory contracts`);
+  }
+
+  return faktoryContracts;
+}
+
+function verifyFaktoryContracts(
+  contracts: FaktoryGeneratedContracts,
+  requestBody: FaktoryRequestBody
+) {
+  if (!contracts.token || !contracts.dex || !contracts.pool) {
+    console.log("Missing contracts to verify");
+    return false;
+  }
+  if (!requestBody) {
+    console.log("Missing request body to verify");
+    return false;
+  }
+  // check contract names match expected
+  const contractNames = generateContractNames(requestBody.symbol);
+  if (
+    contracts.token.name !== contractNames[ContractType.DAO_TOKEN] ||
+    contracts.dex.name !== contractNames[ContractType.DAO_TOKEN_DEX] ||
+    contracts.pool.name !== contractNames[ContractType.DAO_BITFLOW_POOL]
+  ) {
+    console.log("Contract names do not match");
+    return false;
+  }
+  // check that token symbol is used in token contract
+  if (!contracts.token.code.includes(requestBody.symbol)) {
+    console.log("Token symbol not found in token contract code");
+    return false;
+  }
+  // check that token owner is used in the token contract
+  if (
+    !contracts.token.code.includes(contractNames[ContractType.DAO_TOKEN_OWNER])
+  ) {
+    console.log("Token owner contract name not found in token contract code");
+    return false;
+  }
+  // check that token contract name is used in the dex
+  if (!contracts.dex.code.includes(contractNames[ContractType.DAO_TOKEN])) {
+    console.log("Token contract name not found in dex contract code");
+    return false;
+  }
+  // check that dex contract name is used in the pool
+  if (
+    !contracts.pool.code.includes(contractNames[ContractType.DAO_TOKEN_DEX])
+  ) {
+    console.log("Dex contract name not found in pool contract code");
+    return false;
+  }
+  // check creator address is used in each of the contracts
+  if (
+    !contracts.token.code.includes(requestBody.creatorAddress) ||
+    !contracts.dex.code.includes(requestBody.creatorAddress) ||
+    !contracts.pool.code.includes(requestBody.creatorAddress)
+  ) {
+    console.log("Creator address not found in contract code");
+    return false;
+  }
+  // passes all verification checks
+  return true;
+}
+
 export function getTraitDefinition(
   network: NetworkType,
   traitType: NetworkTraitType
@@ -409,7 +671,7 @@ export function getAddressReference(
   return getAddressDefinition(network, addressType);
 }
 
-export function convertStringToBoolean(value: string): boolean | null {
+export function convertStringToBoolean(value: string): boolean {
   // Convert to lowercase and trim whitespace
   const normalized = value.toLowerCase().trim();
 
@@ -424,5 +686,5 @@ export function convertStringToBoolean(value: string): boolean | null {
   }
 
   // Return null or throw error for invalid inputs
-  return null;
+  throw new Error(`Invalid boolean value: ${value}`);
 }

@@ -1,8 +1,8 @@
 export enum ContractType {
   // deployed before dao
-  DAO_TOKEN = "aibtc-token",
+  DAO_TOKEN = "aibtc-token-faktory",
   DAO_BITFLOW_POOL = "aibtc-bitflow-pool",
-  DAO_TOKEN_DEX = "aibtc-token-dex",
+  DAO_TOKEN_DEX = "aibtc-token-faktory-dex",
   // base dao
   DAO_BASE = "aibtcdev-base-dao",
   // dao extensions
@@ -42,6 +42,8 @@ export enum TraitType {
   POOL = "xyk-pool-trait-v-1-2",
   DAO_BASE = "aibtcdev-dao-v1",
   DAO_TRAITS = "aibtcdev-dao-traits-v1",
+  // TODO: DAO_TRAITS_V1_1 = "aibtcdev-dao-traits-v1-1",
+  // TODO: FAKTORY_TRAIT_V1 = "faktory-dex-trait-v1-1",
   SIP09 = "nft-trait",
   SIP10 = "sip-010-trait-ft-standard",
 }

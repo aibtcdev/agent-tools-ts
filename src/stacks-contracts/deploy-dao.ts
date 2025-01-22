@@ -16,8 +16,8 @@ async function main() {
       tokenSymbol,
       tokenName,
       tokenMaxSupply,
-      tokenDecimals,
       tokenUri,
+      logoUrl,
       daoManifest,
     ] = process.argv.slice(2);
 
@@ -25,11 +25,11 @@ async function main() {
       !tokenSymbol ||
       !tokenName ||
       !tokenMaxSupply ||
-      !tokenDecimals ||
-      !tokenUri
+      !tokenUri ||
+      !logoUrl
     ) {
       console.log(
-        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> <daoManifest>"
+        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <daoManifest>"
       );
       process.exit(1);
     }
@@ -57,19 +57,31 @@ async function main() {
     );
     const contractDeployer = new ContractDeployer(CONFIG.NETWORK);
 
+    // set dao manifest, passed to proposal for dao construction
+    // or default to dao name + token name
+    const manifest = daoManifest
+      ? daoManifest
+      : `Bitcoin DeFAI ${tokenSymbol} ${tokenName}`;
+    //console.log(`- manifest: ${manifest}`);
+
     // Step 1 - generate token-related contracts
 
-    // deploy aibtc-token
-    //console.log("- deploying aibtc-token...");
-    const tokenSource = await contractGenerator.generateTokenContract(
-      tokenSymbol,
-      tokenName,
-      tokenMaxSupply,
-      tokenDecimals,
-      tokenUri
-    );
+    const { token, dex, pool } =
+      await contractGenerator.generateFaktoryContracts(
+        tokenSymbol,
+        tokenName,
+        tokenMaxSupply,
+        tokenUri,
+        senderAddress,
+        logoUrl,
+        manifest // description
+      );
+
+    // Step 2 - deploy token-related contracts
+
+    console.log("- deploying aibtc-token-faktory...");
     const tokenDeployment = await contractDeployer.deployContract(
-      tokenSource,
+      token.code,
       ContractType.DAO_TOKEN,
       contractNames[ContractType.DAO_TOKEN],
       currentNonce
@@ -81,12 +93,9 @@ async function main() {
     result.contracts.token = tokenDeployment.data;
     currentNonce++;
 
-    // deploy aibtc-bitflow-pool
-    //console.log("- deploying aibtc-bitflow-pool...");
-    const poolSource =
-      contractGenerator.generateBitflowPoolContract(tokenSymbol);
+    console.log("- deploying aibtc-bitflow-pool...");
     const poolDeployment = await contractDeployer.deployContract(
-      poolSource,
+      pool.code,
       ContractType.DAO_BITFLOW_POOL,
       contractNames[ContractType.DAO_BITFLOW_POOL],
       currentNonce
@@ -98,15 +107,9 @@ async function main() {
     result.contracts.pool = poolDeployment.data;
     currentNonce++;
 
-    // deploy aibtc-token-dex
-    //console.log("- deploying aibtc-token-dex...");
-    const dexSource = contractGenerator.generateTokenDexContract(
-      tokenMaxSupply,
-      tokenDecimals,
-      tokenSymbol
-    );
+    console.log("- deploying aibtc-token-dex...");
     const dexDeployment = await contractDeployer.deployContract(
-      dexSource,
+      dex.code,
       ContractType.DAO_TOKEN_DEX,
       contractNames[ContractType.DAO_TOKEN_DEX],
       currentNonce
@@ -118,13 +121,7 @@ async function main() {
     result.contracts.dex = dexDeployment.data;
     currentNonce++;
 
-    // Step 2 - generate remaining dao contracts
-
-    // set dao manifest, passed to proposal for dao construction
-    // or default to dao name + token name
-    const manifest = daoManifest
-      ? daoManifest
-      : `Bitcoin DeFAI ${tokenSymbol} ${tokenName}`;
+    // Step 3 - generate remaining dao contracts
 
     const contracts = contractGenerator.generateDaoContracts(
       senderAddress,
@@ -141,7 +138,7 @@ async function main() {
 
     // Deploy all contracts
     for (const [key, contract] of sortedContracts) {
-      //console.log(`- deploying ${key}...`);
+      console.log(`- deploying ${key}...`);
       const deployment = await contractDeployer.deployContract(
         contract.source,
         contract.type,
@@ -150,8 +147,8 @@ async function main() {
       );
 
       if (!deployment.success) {
-        //console.log(`Deployment failed for ${contract.type}`);
-        //console.log(JSON.stringify(deployment.error, null, 2));
+        console.log(`Deployment failed for ${contract.type}`);
+        console.log(JSON.stringify(deployment.error, null, 2));
         result.error = {
           stage: `Deploying ${contract.type}`,
           message: deployment.error?.message,
@@ -166,16 +163,18 @@ async function main() {
     }
 
     result.success = true;
-    //console.log("Deployment successful!");
+    console.log("Deployment successful!");
     console.log(JSON.stringify(result, null, 2));
     return result;
-  } catch (error: any) {
-    console.error(JSON.stringify({ success: false, message: error }));
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(JSON.stringify({ success: false, message: errorMsg }));
     process.exit(1);
   }
 }
 
 main().catch((error) => {
-  console.error(JSON.stringify({ success: false, message: error }));
+  const errorMsg = error instanceof Error ? error.message : String(error);
+  console.error(JSON.stringify({ success: false, message: errorMsg }));
   process.exit(1);
 });
