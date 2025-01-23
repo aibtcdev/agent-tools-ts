@@ -17,7 +17,6 @@ function replacer(key: string, value: any) {
 const stxAmount = Number(process.argv[2]); // STX amount in standard units
 const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
-const network = (process.argv[5] || CONFIG.NETWORK || "mainnet") as NetworkType;
 
 //console.log("\n=== Buy Quote Parameters ===");
 //console.log("STX Amount:", stxAmount);
@@ -34,14 +33,14 @@ if (!stxAmount || !dexContract) {
 }
 
 const sdk = new FaktorySDK({
-  network,
+  network: CONFIG.NETWORK,
   hiroApiKey: CONFIG.HIRO_API_KEY,
 });
 
 (async () => {
   try {
     const { address } = await deriveChildAccount(
-      network,
+      CONFIG.NETWORK,
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
     );

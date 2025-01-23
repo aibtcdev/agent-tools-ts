@@ -17,7 +17,6 @@ function replacer(key: string, value: any) {
 const tokenAmount = Number(process.argv[2]);
 const dexContract = process.argv[3];
 const slippage = Number(process.argv[4]) || 15; // default 15%
-const network = (process.argv[5] || CONFIG.NETWORK || "mainnet") as NetworkType;
 
 /*
 console.log("\n=== Sell Quote Parameters ===");
@@ -36,14 +35,14 @@ if (!tokenAmount || !dexContract) {
 }
 
 const sdk = new FaktorySDK({
-  network,
+  network: CONFIG.NETWORK,
   hiroApiKey: CONFIG.HIRO_API_KEY,
 });
 
 (async () => {
   try {
     const { address } = await deriveChildAccount(
-      network,
+      CONFIG.NETWORK,
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
     );
