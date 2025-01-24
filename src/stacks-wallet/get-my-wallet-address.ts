@@ -15,15 +15,13 @@ async function main() {
   if (!mnemonic) {
     throw new Error("No mnemonic provided in environment variables");
   }
-  if (!accountIndex) {
-    throw new Error("No account index provided in environment variables");
-  }
+
 
   // get account address
   const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
 
   // log account address with account index
-  console.log(`${accountIndex}: ${address}`);
+  console.log(`${address}`);
 }
 
 main();
