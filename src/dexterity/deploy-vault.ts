@@ -13,12 +13,12 @@ try {
     const reservesA = parseInt(process.argv[8]);
     const reservesB = parseInt(process.argv[9]);
 
-    if (!name || !symbol || !tokenIdA || !tokenIdB) {
-        throw new Error(`Invalid inputs, please provide: <name> <symbol> <tokenIdA> <tokenIdB>`)
+    if (!name || !symbol || !image || !fee || !tokenIdA || !tokenIdB || !reservesA || !reservesB) {
+        throw new Error(`Invalid inputs, please provide: <name> <symbol> <image> <fee> <tokenIdA> <tokenIdB> <reservesA> <reservesB>`)
     }
 
     const safeName = name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-    const description = `Liquidity Vault for ${name}`;
+    const description = `Liquidity vault for ${name}`;
     
     const config: LPToken = {
         contractId: `${Dexterity.config.stxAddress}.${safeName}`,
@@ -52,7 +52,7 @@ try {
     // setup vault metadata
     const vault = new Vault(config)
     console.log(JSON.stringify(vault, null, 2))
-    vault.updateMetadataWithStorage(metadata)
+    await vault.updateMetadataWithStorage(metadata)
 
     // deploy vault
     const tx = await vault.deployContract()
