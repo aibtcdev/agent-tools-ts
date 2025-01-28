@@ -241,14 +241,17 @@ export class ContractGenerator {
     tokenMaxSupply: string,
     tokenUri: string,
     creatorAddress: string,
+    originAddress: string,
     logoUrl?: string,
-    description?: string
+    description?: string,
+    tweetOrigin?: string
   ): Promise<FaktoryGeneratedContracts> {
     const { token, dex, pool } = await getFaktoryContracts(
       tokenSymbol,
       tokenName,
       parseInt(tokenMaxSupply),
       creatorAddress,
+      originAddress,
       tokenUri,
       logoUrl ? logoUrl : "",
       description ? description : ""

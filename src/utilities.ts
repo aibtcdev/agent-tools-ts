@@ -386,6 +386,7 @@ type FaktoryRequestBody = {
   name: string;
   supply: number;
   creatorAddress: string;
+  originAddress: string;
   uri: string;
   logoUrl?: string;
   mediaUrl?: string;
@@ -394,6 +395,7 @@ type FaktoryRequestBody = {
   telegram?: string;
   discord?: string;
   description?: string;
+  tweetOrigin?: string;
 };
 
 type FaktoryResponse<T> = {
@@ -472,6 +474,7 @@ export async function getFaktoryContracts(
   name: string,
   supply: number,
   creatorAddress: string,
+  originAddress: string,
   uri: string,
   logoUrl?: string,
   mediaUrl?: string,
@@ -479,7 +482,8 @@ export async function getFaktoryContracts(
   website?: string,
   telegram?: string,
   discord?: string,
-  description?: string
+  description?: string,
+  tweetOrigin?: string
 ) {
   const faktoryUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate`;
   const faktoryPoolUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate-pool`;
@@ -491,6 +495,7 @@ export async function getFaktoryContracts(
     name,
     supply,
     creatorAddress,
+    originAddress,
     uri,
     logoUrl,
     mediaUrl,
@@ -499,6 +504,7 @@ export async function getFaktoryContracts(
     telegram,
     discord,
     description,
+    tweetOrigin,
   };
 
   const faktoryResponse = await fetch(faktoryUrl.toString(), {
