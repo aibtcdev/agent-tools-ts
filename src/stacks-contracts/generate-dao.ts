@@ -22,7 +22,9 @@ async function main() {
       tokenMaxSupply,
       tokenUri,
       logoUrl,
+      originAddress,
       daoManifest,
+      tweetOrigin,
       generateFiles = "false",
     ] = process.argv.slice(2);
 
@@ -31,10 +33,11 @@ async function main() {
       !tokenName ||
       !tokenMaxSupply ||
       !tokenUri ||
-      !logoUrl
+      !logoUrl ||
+      !originAddress
     ) {
       console.log(
-        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <daoManifest> <generateFiles>"
+        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <generateFiles>"
       );
       process.exit(1);
     }
@@ -97,9 +100,11 @@ async function main() {
         tokenName,
         tokenMaxSupply,
         tokenUri,
-        senderAddress,
+        senderAddress, // creatorAddress
+        originAddress,
         logoUrl,
-        manifest // description
+        manifest, // description
+        tweetOrigin
       );
 
     // save token-related contracts (if generating files)

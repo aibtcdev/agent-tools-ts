@@ -22,7 +22,9 @@ async function main() {
       tokenMaxSupply,
       tokenUri,
       logoUrl,
+      originAddress,
       daoManifest,
+      tweetOrigin,
     ] = process.argv.slice(2);
 
     if (
@@ -30,10 +32,11 @@ async function main() {
       !tokenName ||
       !tokenMaxSupply ||
       !tokenUri ||
-      !logoUrl
+      !logoUrl ||
+      !originAddress
     ) {
       console.log(
-        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <daoManifest>"
+        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin>"
       );
       process.exit(1);
     }
@@ -76,9 +79,11 @@ async function main() {
         tokenName,
         tokenMaxSupply,
         tokenUri,
-        senderAddress,
+        senderAddress, // creatorAddress
+        originAddress,
         logoUrl,
-        manifest // description
+        manifest, // description
+        tweetOrigin
       );
 
     // Step 2 - deploy token-related contracts

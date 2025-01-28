@@ -253,8 +253,9 @@ export class ContractGenerator {
       creatorAddress,
       originAddress,
       tokenUri,
-      logoUrl ? logoUrl : "",
-      description ? description : ""
+      logoUrl,
+      description,
+      tweetOrigin
     );
     return { token, dex, pool };
   }
