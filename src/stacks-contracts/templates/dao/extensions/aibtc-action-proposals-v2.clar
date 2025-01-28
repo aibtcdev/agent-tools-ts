@@ -72,7 +72,7 @@
   }
 )
 
-(define-map VotingRecords
+(define-map VoteRecords
   {
     proposalId: uint, ;; proposal id
     voter: principal ;; voter address

@@ -70,7 +70,7 @@
   }
 )
 
-(define-map VotingRecords
+(define-map VoteRecords
   {
     proposal: principal, ;; proposal contract
     voter: principal ;; voter address
