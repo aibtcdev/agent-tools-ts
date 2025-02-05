@@ -1,7 +1,7 @@
 {
   "name": "@aibtcdev/tools",
   "version": "0.0.11",
-  "private": false,
+  "private": true,
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -47,8 +47,6 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "cli:dao": "bun run src/stacks-dao/cli.ts",
-    "test": "bun test -t 'DAO SDK'",
     "version:patch": "npm version patch -m \"chore: release v%s\"",
     "version:minor": "npm version minor -m \"chore: release v%s\"",
     "version:major": "npm version major -m \"chore: release v%s\"",
@@ -58,8 +56,5 @@
     "preversion": "npm run build && npm test",
     "postversion": "git push && git push --tags",
     "prepublishOnly": "npm run build && npm test"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }
