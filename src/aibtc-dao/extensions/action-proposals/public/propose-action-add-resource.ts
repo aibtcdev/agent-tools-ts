@@ -1,50 +1,96 @@
 import {
   AnchorMode,
-  broadcastTransaction,
   Cl,
   makeContractCall,
   SignedContractCallOptions,
-  TxBroadcastResult,
 } from "@stacks/transactions";
 import {
+  broadcastTx,
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
   sendToLLM,
-  ToolResponse,
 } from "../../../../utilities";
 
-// creates a new action proposal
-async function main() {
-  const [
-    daoActionProposalsExtensionContractAddress,
-    daoActionProposalsExtensionContractName,
-  ] = process.argv[2]?.split(".") || [];
-  const daoActionProposalContractAddress = process.argv[3];
-  const resourceName = process.argv[4];
-  const resourceDescription = process.argv[5];
-  const resourcePrice = parseInt(process.argv[6]);
-  const resourceUrl = process.argv[7];
+const usage =
+  "Usage: bun run propose-action-add-resource.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <resourceName> <resourceDescription> <resourcePrice> <resourceUrl>";
+const usageExample =
+  'Example: bun run propose-action-add-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-add-resource consultation "consult with me for 1hr" 100000000 https://aibtc.dev';
 
+interface ExpectedArgs {
+  daoActionProposalsExtensionContract: string;
+  daoActionProposalContract: string;
+  resourceName: string;
+  resourceDescription: string;
+  resourcePrice: number;
+  resourceUrl: string;
+}
+
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [
+    daoActionProposalsExtensionContract,
+    daoActionProposalContract,
+    resourceName,
+    resourceDescription,
+    resourcePriceStr,
+    resourceUrl,
+  ] = process.argv.slice(2);
+  const resourcePrice = parseInt(resourcePriceStr);
   if (
-    !daoActionProposalsExtensionContractAddress ||
-    !daoActionProposalsExtensionContractName ||
-    !daoActionProposalContractAddress ||
+    !daoActionProposalsExtensionContract ||
+    !daoActionProposalContract ||
     !resourceName ||
     !resourceDescription ||
     !resourcePrice
   ) {
-    console.log(
-      "Usage: bun run propose-action-add-resource.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <resourceName> <resourceDescription> <resourcePrice> <resourceUrl>"
-    );
-    console.log(
-      '- e.g. bun run propose-action-add-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-add-resource consultation "consult with me for 1hr" 100000000 https://aibtc.dev'
-    );
-
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+    });
     process.exit(1);
   }
+  // verify contract addresses extracted from arguments
+  const [extensionAddress, extensionName] =
+    daoActionProposalsExtensionContract.split(".");
+  const [actionAddress, actionName] = daoActionProposalContract.split(".");
+  if (!extensionAddress || !extensionName || !actionAddress || !actionName) {
+    const errorMessage = [
+      `Invalid contract addresses: ${daoActionProposalsExtensionContract} ${daoActionProposalContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+    });
+    process.exit(1);
+  }
+  // return validated arguments
+  return {
+    daoActionProposalsExtensionContract,
+    daoActionProposalContract,
+    resourceName,
+    resourceDescription,
+    resourcePrice,
+    resourceUrl,
+  };
+}
 
+// creates a new action proposal
+async function main() {
+  // validate and store provided args
+  const args = validateArgs();
+  const [extensionAddress, extensionName] =
+    args.daoActionProposalsExtensionContract.split(".");
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -52,52 +98,36 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-
+  // configure contract call parameters
   const paramsCV = Cl.tuple({
-    name: Cl.stringUtf8(resourceName),
-    description: Cl.stringUtf8(resourceDescription),
-    price: Cl.uint(resourcePrice),
-    url: resourceUrl ? Cl.stringUtf8(resourceUrl) : Cl.none(),
+    name: Cl.stringUtf8(args.resourceName),
+    description: Cl.stringUtf8(args.resourceDescription),
+    price: Cl.uint(args.resourcePrice),
+    url: args.resourceUrl ? Cl.stringUtf8(args.resourceUrl) : Cl.none(),
   });
-
+  // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
-    contractAddress: daoActionProposalsExtensionContractAddress,
-    contractName: daoActionProposalsExtensionContractName,
+    contractAddress: extensionAddress,
+    contractName: extensionName,
     functionName: "propose-action",
     functionArgs: [
-      Cl.principal(daoActionProposalContractAddress),
+      Cl.principal(args.daoActionProposalContract),
       Cl.buffer(Cl.serialize(paramsCV)),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
   };
-
+  // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTransaction(transaction, networkObj);
-
-  const response: ToolResponse<TxBroadcastResult> = {
-    success: true,
-    message: `Action proposal to add a resource created successfully: 0x${broadcastResponse.txid}`,
-    data: broadcastResponse,
-  };
-  return response;
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
 }
 
 main()
-  .then((response) => {
-    sendToLLM(response);
-    process.exit(0);
-  })
+  .then(sendToLLM)
   .catch((error) => {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorData = error instanceof Error ? error : undefined;
-    const response: ToolResponse<Error | undefined> = {
-      success: false,
-      message: errorMessage,
-      data: errorData,
-    };
-    sendToLLM(response);
+    sendToLLM(createErrorResponse(error));
     process.exit(1);
   });
