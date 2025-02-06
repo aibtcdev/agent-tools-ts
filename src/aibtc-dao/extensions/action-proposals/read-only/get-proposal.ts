@@ -55,7 +55,8 @@ function validateArgs(): ExpectedArgs {
 }
 
 // gets action proposal info from contract
-async function main() {
+// TODO: type this based on Proposals map
+async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =
@@ -76,16 +77,24 @@ async function main() {
     senderAddress: address,
     network: networkObj,
   });
-
-  const response: ToolResponse<any> = {
-    success: true,
-    message:
-      result.type === ClarityType.OptionalNone
-        ? "Proposal not found"
-        : "Proposal retrieved successfully",
-    data: result.type === ClarityType.OptionalSome ? cvToJSON(result) : null,
-  };
-  return response;
+  // extract and return proposal
+  if (result.type === ClarityType.OptionalSome) {
+    const proposal = cvToJSON(result.value);
+    return {
+      success: true,
+      message: "Proposal retrieved successfully",
+      data: proposal,
+    };
+  } else if (result.type === ClarityType.OptionalNone) {
+    return {
+      success: true,
+      message: "Proposal not found",
+      data: null,
+    };
+  } else {
+    const errorMessage = `Error retrieving proposal: ${JSON.stringify(result)}`;
+    throw new Error(errorMessage);
+  }
 }
 
 main()

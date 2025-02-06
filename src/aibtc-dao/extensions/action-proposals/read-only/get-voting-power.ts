@@ -1,6 +1,7 @@
 import {
   callReadOnlyFunction,
   Cl,
+  ClarityType,
   cvToValue,
   validateStacksAddress,
 } from "@stacks/transactions";
@@ -66,7 +67,7 @@ function validateArgs(): ExpectedArgs {
 }
 
 // gets voting power for an address on a proposal
-async function main() {
+async function main(): Promise<ToolResponse<number>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =
@@ -87,17 +88,24 @@ async function main() {
     senderAddress: address,
     network: networkObj,
   });
-
-  const parsedResult = parseInt(cvToValue(result, true));
-  if (isNaN(parsedResult)) {
-    throw new Error(`Failed to parse voting power from result: ${result}`);
+  // extract and return voting power
+  if (result.type === ClarityType.ResponseOk) {
+    const parsedResult = parseInt(cvToValue(result, true));
+    if (isNaN(parsedResult)) {
+      throw new Error(`Failed to parse voting power from result: ${result}`);
+    }
+    const response: ToolResponse<number> = {
+      success: true,
+      message: "Retrieved voting power successfully",
+      data: parsedResult,
+    };
+    return response;
+  } else {
+    const errorMessage = `Error retrieving voting power: ${JSON.stringify(
+      result
+    )}`;
+    throw new Error(errorMessage);
   }
-  const response: ToolResponse<any> = {
-    success: true,
-    message: "Retrieved voting power successfully",
-    data: parsedResult,
-  };
-  return response;
 }
 
 main()

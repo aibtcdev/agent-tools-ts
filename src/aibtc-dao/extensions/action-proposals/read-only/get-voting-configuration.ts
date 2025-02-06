@@ -1,10 +1,11 @@
-import { callReadOnlyFunction } from "@stacks/transactions";
+import { callReadOnlyFunction, cvToJSON } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
   sendToLLM,
+  ToolResponse,
 } from "../../../../utilities";
 
 const usage =
@@ -44,7 +45,8 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main() {
+// TODO: type this based on voting config object
+async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =
@@ -66,10 +68,11 @@ async function main() {
     network: networkObj,
   });
   // return voting configuration
+  const votingConfig = cvToJSON(result);
   return {
     success: true,
     message: "Voting configuration retrieved successfully",
-    data: result,
+    data: votingConfig,
   };
 }
 

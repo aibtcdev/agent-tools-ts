@@ -1,10 +1,11 @@
-import { callReadOnlyFunction } from "@stacks/transactions";
+import { callReadOnlyFunction, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
   sendToLLM,
+  ToolResponse,
 } from "../../../../utilities";
 
 const usage =
@@ -44,7 +45,7 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main() {
+async function main(): Promise<ToolResponse<number>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =
@@ -65,11 +66,12 @@ async function main() {
     senderAddress: address,
     network: networkObj,
   });
-  // return response
+  // extract and return response
+  const lastProposalCreated = parseInt(cvToValue(response, true));
   return {
     success: true,
     message: "Last proposal created successfully retrieved",
-    data: response,
+    data: lastProposalCreated,
   };
 }
 

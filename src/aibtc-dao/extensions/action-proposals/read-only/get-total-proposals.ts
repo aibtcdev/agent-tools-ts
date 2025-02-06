@@ -46,7 +46,7 @@ function validateArgs(): ExpectedArgs {
 }
 
 // gets total proposals in action proposal contract
-async function main() {
+async function main(): Promise<ToolResponse<number>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =

@@ -11,6 +11,8 @@ import type {
 } from "@stacks/stacks-blockchain-api-types";
 import {
   broadcastTransaction,
+  ClarityType,
+  ClarityValue,
   StacksTransaction,
   TxBroadcastResult,
   validateStacksAddress,

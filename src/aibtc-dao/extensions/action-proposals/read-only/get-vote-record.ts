@@ -1,10 +1,11 @@
-import { Cl, callReadOnlyFunction } from "@stacks/transactions";
+import { Cl, callReadOnlyFunction, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
   sendToLLM,
+  ToolResponse,
 } from "../../../../utilities";
 
 const usage =
@@ -51,7 +52,7 @@ function validateArgs(): ExpectedArgs {
 }
 
 // gets total votes from core proposal contract for a given voter
-async function main() {
+async function main(): Promise<ToolResponse<number>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =
@@ -73,10 +74,11 @@ async function main() {
     network: networkObj,
   });
   // return total votes
+  const totalVotes = parseInt(cvToValue(result));
   return {
     success: true,
     message: "Votes retrieved successfully",
-    result,
+    data: totalVotes,
   };
 }
 

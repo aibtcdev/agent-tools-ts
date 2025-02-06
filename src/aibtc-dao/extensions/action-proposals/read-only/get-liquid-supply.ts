@@ -1,10 +1,16 @@
-import { callReadOnlyFunction, Cl } from "@stacks/transactions";
+import {
+  callReadOnlyFunction,
+  Cl,
+  ClarityType,
+  cvToValue,
+} from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
   sendToLLM,
+  ToolResponse,
 } from "../../../../utilities";
 
 const usage =
@@ -48,7 +54,7 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main() {
+async function main(): Promise<ToolResponse<number>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =
@@ -69,12 +75,20 @@ async function main() {
     senderAddress: address,
     network: networkObj,
   });
-  // return liquid supply
-  return {
-    success: true,
-    message: "Liquid supply retrieved successfully",
-    data: result,
-  };
+  // extract and return liquid supply
+  if (result.type === ClarityType.ResponseOk) {
+    const liquidSupply = parseInt(cvToValue(result.value, true));
+    return {
+      success: true,
+      message: "Liquid supply retrieved successfully",
+      data: liquidSupply,
+    };
+  } else {
+    const errorMessage = `Error retrieving liquid supply: ${JSON.stringify(
+      result
+    )}`;
+    throw new Error(errorMessage);
+  }
 }
 
 main()
