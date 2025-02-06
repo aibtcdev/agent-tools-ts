@@ -3,7 +3,13 @@ import {
   cvToValue,
   getAddressFromPrivateKey,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
+import {
+  CONFIG,
+  deriveChildAccount,
+  getNetwork,
+  sendToLLM,
+  ToolResponse,
+} from "../../../../utilities";
 
 // gets total proposals in action proposal contract
 async function main() {
@@ -43,12 +49,27 @@ async function main() {
     network: networkObj,
   });
 
-  console.log(cvToValue(result));
+  const response: ToolResponse<any> = {
+    success: true,
+    message: "Retrieved total proposals successfully",
+    data: cvToValue(result),
+  };
+  return response;
 }
 
-main().catch((error) => {
-  error instanceof Error
-    ? console.error(JSON.stringify({ success: false, message: error.message }))
-    : console.error(JSON.stringify({ success: false, message: String(error) }));
-  process.exit(1);
-});
+main()
+  .then((response) => {
+    sendToLLM(response);
+    process.exit(0);
+  })
+  .catch((error) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = error instanceof Error ? error : undefined;
+    const response: ToolResponse<Error | undefined> = {
+      success: false,
+      message: errorMessage,
+      data: errorData,
+    };
+    sendToLLM(response);
+    process.exit(1);
+  });
