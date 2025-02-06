@@ -58,7 +58,7 @@ async function main(): Promise<ToolResponse<number>> {
     CONFIG.ACCOUNT_INDEX
   );
   // call read-only function
-  const response = await callReadOnlyFunction({
+  const result = await callReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-last-proposal-created",
@@ -67,7 +67,10 @@ async function main(): Promise<ToolResponse<number>> {
     network: networkObj,
   });
   // extract and return response
-  const lastProposalCreated = parseInt(cvToValue(response, true));
+  const lastProposalCreated = parseInt(cvToValue(result, true));
+  if (isNaN(lastProposalCreated)) {
+    throw new Error(`Failed to retrieve last proposal created: ${result}`);
+  }
   return {
     success: true,
     message: "Last proposal created successfully retrieved",

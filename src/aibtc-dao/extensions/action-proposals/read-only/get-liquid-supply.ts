@@ -78,6 +78,9 @@ async function main(): Promise<ToolResponse<number>> {
   // extract and return liquid supply
   if (result.type === ClarityType.ResponseOk) {
     const liquidSupply = parseInt(cvToValue(result.value, true));
+    if (isNaN(liquidSupply)) {
+      throw new Error(`Failed to retrieve liquid supply: ${result}`);
+    }
     return {
       success: true,
       message: "Liquid supply retrieved successfully",

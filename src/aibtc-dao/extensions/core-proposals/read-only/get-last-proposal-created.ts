@@ -68,6 +68,9 @@ async function main(): Promise<ToolResponse<number>> {
   });
   // extract and return result
   const lastProposalCreated = parseInt(cvToValue(result, true));
+  if (isNaN(lastProposalCreated)) {
+    throw new Error(`Failed to parse last proposal created: ${result}`);
+  }
   return {
     success: true,
     message: "Last proposal created successfully retrieved",

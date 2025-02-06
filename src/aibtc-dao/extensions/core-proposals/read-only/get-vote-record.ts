@@ -75,6 +75,9 @@ async function main(): Promise<ToolResponse<number>> {
   });
   // return total votes
   const totalVotes = parseInt(cvToValue(result));
+  if (isNaN(totalVotes)) {
+    throw new Error(`Failed to parse total votes: ${result}`);
+  }
   return {
     success: true,
     message: "Votes retrieved successfully",
