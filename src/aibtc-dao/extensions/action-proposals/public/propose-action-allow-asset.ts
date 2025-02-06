@@ -17,7 +17,7 @@ import {
 const usage =
   "Usage: bun run propose-action-allow-asset.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <tokenContractAddress>";
 const usageExample =
-  'Example: bun run propose-action-allow-asset.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-allow-asset ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.shiny-new-token';
+  "Example: bun run propose-action-allow-asset.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-allow-asset ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.shiny-new-token";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
@@ -42,11 +42,7 @@ function validateArgs(): ExpectedArgs {
       usage,
       usageExample,
     ].join("\n");
-    sendToLLM({
-      success: false,
-      message: errorMessage,
-    });
-    process.exit(1);
+    throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
   const [extensionAddress, extensionName] =
@@ -65,11 +61,7 @@ function validateArgs(): ExpectedArgs {
       usage,
       usageExample,
     ].join("\n");
-    sendToLLM({
-      success: false,
-      message: errorMessage,
-    });
-    process.exit(1);
+    throw new Error(errorMessage);
   }
   // return validated arguments
   return {

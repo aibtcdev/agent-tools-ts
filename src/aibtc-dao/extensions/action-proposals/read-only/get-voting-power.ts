@@ -6,6 +6,7 @@ import {
 } from "@stacks/transactions";
 import {
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   sendToLLM,
@@ -34,11 +35,7 @@ function validateArgs(): ExpectedArgs {
       usage,
       usageExample,
     ].join("\n");
-    sendToLLM({
-      success: false,
-      message: errorMessage,
-    });
-    process.exit(1);
+    throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
   const [extensionAddress, extensionName] =
@@ -49,11 +46,7 @@ function validateArgs(): ExpectedArgs {
       usage,
       usageExample,
     ].join("\n");
-    sendToLLM({
-      success: false,
-      message: errorMessage,
-    });
-    process.exit(1);
+    throw new Error(errorMessage);
   }
   // verify address is valid
   if (!validateStacksAddress(voterAddress)) {
@@ -62,11 +55,7 @@ function validateArgs(): ExpectedArgs {
       usage,
       usageExample,
     ].join("\n");
-    sendToLLM({
-      success: false,
-      message: errorMessage,
-    });
-    process.exit(1);
+    throw new Error(errorMessage);
   }
   // return validated arguments
   return {
@@ -112,18 +101,8 @@ async function main() {
 }
 
 main()
-  .then((response) => {
-    sendToLLM(response);
-    process.exit(0);
-  })
+  .then(sendToLLM)
   .catch((error) => {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorData = error instanceof Error ? error : undefined;
-    const response: ToolResponse<Error | undefined> = {
-      success: false,
-      message: errorMessage,
-      data: errorData,
-    };
-    sendToLLM(response);
+    sendToLLM(createErrorResponse(error));
     process.exit(1);
   });

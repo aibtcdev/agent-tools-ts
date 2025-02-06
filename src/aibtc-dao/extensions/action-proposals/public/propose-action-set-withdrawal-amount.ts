@@ -17,7 +17,7 @@ import {
 const usage =
   "Usage: bun run propose-action-set-withdrawal-amount.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <withdrawalAmount>";
 const usageExample =
-  'Example: bun run propose-action-set-withdrawal-amount.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-set-withdrawal-amount 50';
+  "Example: bun run propose-action-set-withdrawal-amount.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-set-withdrawal-amount 50";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
@@ -43,11 +43,7 @@ function validateArgs(): ExpectedArgs {
       usage,
       usageExample,
     ].join("\n");
-    sendToLLM({
-      success: false,
-      message: errorMessage,
-    });
-    process.exit(1);
+    throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
   const [extensionAddress, extensionName] =
@@ -59,11 +55,7 @@ function validateArgs(): ExpectedArgs {
       usage,
       usageExample,
     ].join("\n");
-    sendToLLM({
-      success: false,
-      message: errorMessage,
-    });
-    process.exit(1);
+    throw new Error(errorMessage);
   }
   // return validated arguments
   return {

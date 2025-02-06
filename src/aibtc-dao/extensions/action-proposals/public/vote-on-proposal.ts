@@ -18,7 +18,7 @@ import {
 const usage =
   "Usage: bun run vote-on-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <vote>";
 const usageExample =
-  'Example: bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 1 true';
+  "Example: bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 1 true";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
@@ -28,11 +28,8 @@ interface ExpectedArgs {
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [
-    daoActionProposalsExtensionContract,
-    proposalIdStr,
-    voteStr,
-  ] = process.argv.slice(2);
+  const [daoActionProposalsExtensionContract, proposalIdStr, voteStr] =
+    process.argv.slice(2);
   const proposalId = parseInt(proposalIdStr);
   const vote = convertStringToBoolean(voteStr);
   if (
@@ -45,11 +42,7 @@ function validateArgs(): ExpectedArgs {
       usage,
       usageExample,
     ].join("\n");
-    sendToLLM({
-      success: false,
-      message: errorMessage,
-    });
-    process.exit(1);
+    throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
   const [extensionAddress, extensionName] =
@@ -60,11 +53,7 @@ function validateArgs(): ExpectedArgs {
       usage,
       usageExample,
     ].join("\n");
-    sendToLLM({
-      success: false,
-      message: errorMessage,
-    });
-    process.exit(1);
+    throw new Error(errorMessage);
   }
   // return validated arguments
   return {
@@ -94,10 +83,7 @@ async function main() {
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "vote-on-proposal",
-    functionArgs: [
-      Cl.uint(args.proposalId),
-      Cl.bool(args.vote),
-    ],
+    functionArgs: [Cl.uint(args.proposalId), Cl.bool(args.vote)],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
