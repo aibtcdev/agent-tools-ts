@@ -17,7 +17,7 @@ import {
 const usage =
   "Usage: bun run propose-action-add-resource.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <resourceName> <resourceDescription> <resourcePrice> <resourceUrl>";
 const usageExample =
-  'Example: bun run propose-action-add-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-add-resource "consultation" "consult with me for 1hr" 100000000 "https://aibtc.dev"';
+  'Example: bun run propose-action-add-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-action-add-resource "consultation" "consult with me for 1hr" 100000000 "https://aibtc.dev"';
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;

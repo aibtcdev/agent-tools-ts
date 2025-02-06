@@ -16,7 +16,7 @@ import {
 const usage =
   "Usage: bun run get-liquid-supply.ts <daoActionProposalsExtensionContract> <stacksBlockHeight>";
 const usageExample =
-  "Example: bun run get-liquid-supply.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 562120";
+  "Example: bun run get-liquid-supply.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-action-proposals-v2 562120";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
