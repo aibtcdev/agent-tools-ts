@@ -1,9 +1,8 @@
 import {
   callReadOnlyFunction,
+  Cl,
   cvToValue,
-  getAddressFromPrivateKey,
-  principalCV,
-  uintCV,
+  validateStacksAddress,
 } from "@stacks/transactions";
 import {
   CONFIG,
@@ -13,50 +12,97 @@ import {
   ToolResponse,
 } from "../../../../utilities";
 
-// gets voting power for an address on a proposal
+const usage =
+  "Usage: bun run get-voting-power.ts <daoActionProposalsExtensionContractAddress> <proposalId> <voterAddress>";
+const usageExample =
+  "Example: bun run get-voting-power.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
 
-async function main() {
-  const [
-    daoActionProposalsExtensionContractAddress,
-    daoActionProposalsExtensionContractName,
-  ] = process.argv[2]?.split(".") || [];
-  const proposalId = parseInt(process.argv[3]);
-  const voterAddress = process.argv[4];
+interface ExpectedArgs {
+  daoActionProposalsExtensionContract: string;
+  proposalId: number;
+  voterAddress: string;
+}
 
-  if (
-    !daoActionProposalsExtensionContractAddress ||
-    !daoActionProposalsExtensionContractName ||
-    !proposalId ||
-    !voterAddress
-  ) {
-    console.log(
-      "Usage: bun run get-voting-power.ts <daoActionProposalsExtensionContractAddress> <proposalId> <voterAddress>"
-    );
-    console.log(
-      "- e.g. bun run get-voting-power.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
-    );
-
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [daoActionProposalsExtensionContract, proposalIdStr, voterAddress] =
+    process.argv.slice(2);
+  const proposalId = parseInt(proposalIdStr);
+  if (!daoActionProposalsExtensionContract || !proposalId || !voterAddress) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+    });
     process.exit(1);
   }
+  // verify contract addresses extracted from arguments
+  const [extensionAddress, extensionName] =
+    daoActionProposalsExtensionContract.split(".");
+  if (!extensionAddress || !extensionName) {
+    const errorMessage = [
+      `Invalid contract address: ${daoActionProposalsExtensionContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+    });
+    process.exit(1);
+  }
+  // verify address is valid
+  if (!validateStacksAddress(voterAddress)) {
+    const errorMessage = [
+      `Invalid voter address: ${voterAddress}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+    });
+    process.exit(1);
+  }
+  // return validated arguments
+  return {
+    daoActionProposalsExtensionContract,
+    proposalId,
+    voterAddress,
+  };
+}
 
+// gets voting power for an address on a proposal
+async function main() {
+  // validate and store provided args
+  const args = validateArgs();
+  const [extensionAddress, extensionName] =
+    args.daoActionProposalsExtensionContract.split(".");
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { key } = await deriveChildAccount(
+  const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-
+  // get voting power
   const result = await callReadOnlyFunction({
-    contractAddress: daoActionProposalsExtensionContractAddress,
-    contractName: daoActionProposalsExtensionContractName,
+    contractAddress: extensionAddress,
+    contractName: extensionName,
     functionName: "get-voting-power",
-    functionArgs: [principalCV(voterAddress), uintCV(proposalId)],
-    senderAddress,
+    functionArgs: [Cl.principal(args.voterAddress), Cl.uint(args.proposalId)],
+    senderAddress: address,
     network: networkObj,
   });
 
-  const parsedResult = cvToValue(result, true);
+  const parsedResult = parseInt(cvToValue(result, true));
+  if (isNaN(parsedResult)) {
+    throw new Error(`Failed to parse voting power from result: ${result}`);
+  }
   const response: ToolResponse<any> = {
     success: true,
     message: "Retrieved voting power successfully",

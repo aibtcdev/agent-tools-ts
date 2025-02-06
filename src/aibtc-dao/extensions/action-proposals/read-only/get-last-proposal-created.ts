@@ -1,17 +1,16 @@
-import { callReadOnlyFunction, cvToValue } from "@stacks/transactions";
+import { callReadOnlyFunction } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
   sendToLLM,
-  ToolResponse,
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-total-proposals.ts <daoActionProposalExtensionContract>";
+  "Usage: bun run get-last-proposal-created.ts <daoActionProposalsExtensionContract>";
 const usageExample =
-  "Example: bun run get-total-proposals.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2";
+  "Example: bun run get-last-proposal-created.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
@@ -53,7 +52,6 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-// gets total proposals in action proposal contract
 async function main() {
   // validate and store provided args
   const args = validateArgs();
@@ -66,22 +64,21 @@ async function main() {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // get total proposals
-  const result = await callReadOnlyFunction({
+  // call read-only function
+  const response = await callReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
-    functionName: "get-total-proposals",
+    functionName: "get-last-proposal-created",
     functionArgs: [],
     senderAddress: address,
     network: networkObj,
   });
-  // return total proposals
-  const response: ToolResponse<number> = {
+  // return response
+  return {
     success: true,
-    message: "Retrieved total proposals successfully",
-    data: parseInt(cvToValue(result)),
+    message: "Last proposal created successfully retrieved",
+    data: response,
   };
-  return response;
 }
 
 main()

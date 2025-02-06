@@ -1,4 +1,4 @@
-import { AnchorMode, Cl, callReadOnlyFunction } from "@stacks/transactions";
+import { callReadOnlyFunction, Cl } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -8,18 +8,21 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-linked-voting-contracts.ts <daoActionProposalsExtensionContract>";
+  "Usage: bun run get-liquid-supply.ts <daoActionProposalsExtensionContract> <stacksBlockHeight>";
 const usageExample =
-  'Example: bun run get-linked-voting-contracts.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2';
+  "Example: bun run get-liquid-supply.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 562120";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
+  stacksBlockHeight: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [daoActionProposalsExtensionContract] = process.argv.slice(2);
-  if (!daoActionProposalsExtensionContract) {
+  const [daoActionProposalsExtensionContract, stacksBlockHeightStr] =
+    process.argv.slice(2);
+  const stacksBlockHeight = parseInt(stacksBlockHeightStr);
+  if (!daoActionProposalsExtensionContract || !stacksBlockHeight) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -49,10 +52,10 @@ function validateArgs(): ExpectedArgs {
   // return validated arguments
   return {
     daoActionProposalsExtensionContract,
+    stacksBlockHeight,
   };
 }
 
-// gets set treasury, dex, and pool for a proposal extension
 async function main() {
   // validate and store provided args
   const args = validateArgs();
@@ -60,22 +63,26 @@ async function main() {
     args.daoActionProposalsExtensionContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { address, key } = await deriveChildAccount(
+  const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // configure read-only function call
+  // get the liquid supply
   const result = await callReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
-    functionName: "get-linked-voting-contracts",
-    functionArgs: [],
+    functionName: "get-liquid-supply",
+    functionArgs: [Cl.uint(args.stacksBlockHeight)],
     senderAddress: address,
     network: networkObj,
   });
-
-  return result;
+  // return liquid supply
+  return {
+    success: true,
+    message: "Liquid supply retrieved successfully",
+    data: result,
+  };
 }
 
 main()

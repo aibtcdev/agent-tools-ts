@@ -1,4 +1,4 @@
-import { AnchorMode, Cl, callReadOnlyFunction } from "@stacks/transactions";
+import { callReadOnlyFunction } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -8,29 +8,18 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-total-votes.ts <daoActionProposalsExtensionContract> <proposalId> <voterAddress>";
+  "Usage: bun run get-voting-configuration.ts <daoActionProposalsExtensionContract>";
 const usageExample =
-  'Example: bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA';
+  "Example: bun run get-voting-configuration.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
-  proposalId: number;
-  voterAddress: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [
-    daoActionProposalsExtensionContract,
-    proposalIdStr,
-    voterAddress,
-  ] = process.argv.slice(2);
-  const proposalId = parseInt(proposalIdStr);
-  if (
-    !daoActionProposalsExtensionContract ||
-    !proposalId ||
-    !voterAddress
-  ) {
+  const [daoActionProposalsExtensionContract] = process.argv.slice(2);
+  if (!daoActionProposalsExtensionContract) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -60,12 +49,9 @@ function validateArgs(): ExpectedArgs {
   // return validated arguments
   return {
     daoActionProposalsExtensionContract,
-    proposalId,
-    voterAddress,
   };
 }
 
-// gets total votes from core proposal contract for a given voter
 async function main() {
   // validate and store provided args
   const args = validateArgs();
@@ -73,25 +59,26 @@ async function main() {
     args.daoActionProposalsExtensionContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { address, key } = await deriveChildAccount(
+  const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // configure read-only function call
+  // get voting configuration
   const result = await callReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
-    functionName: "get-total-votes",
-    functionArgs: [
-      Cl.uint(args.proposalId),
-      Cl.principal(args.voterAddress),
-    ],
+    functionName: "get-voting-configuration",
+    functionArgs: [],
     senderAddress: address,
     network: networkObj,
   });
-
-  return result;
+  // return voting configuration
+  return {
+    success: true,
+    message: "Voting configuration retrieved successfully",
+    data: result,
+  };
 }
 
 main()
