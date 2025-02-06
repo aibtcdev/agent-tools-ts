@@ -71,9 +71,6 @@ async function main() {
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTransaction(transaction, networkObj);
 
-  console.log(`Proposal concluded successfully: 0x${broadcastResponse.txid}`);
-  console.log(`Full response: ${JSON.stringify(broadcastResponse, null, 2)}`);
-
   const response: ToolResponse<TxBroadcastResult> = {
     success: true,
     message: `Action proposal concluded successfully: 0x${broadcastResponse.txid}`,
