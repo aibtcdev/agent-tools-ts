@@ -701,6 +701,19 @@ export type ToolResponse<T> = {
   data?: T;
 };
 
+export function createErrorResponse(
+  error: any
+): ToolResponse<Error | undefined> {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorData = error instanceof Error ? error : undefined;
+  const response: ToolResponse<Error | undefined> = {
+    success: false,
+    message: errorMessage,
+    data: errorData,
+  };
+  return response;
+}
+
 export function sendToLLM(toolResponse: ToolResponse<any>) {
   console.log(JSON.stringify(toolResponse, null, 2));
 }
