@@ -5,7 +5,11 @@ import {
   getNetwork,
   getNextNonce,
 } from "../utilities";
-import { ContractType, DeploymentResult } from "./types/dao-types";
+import {
+  ContractProposalType,
+  ContractType,
+  DeploymentResult,
+} from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
 import { ContractDeployer } from "./services/contract-deployer";
 import { generateContractNames } from "./utils/contract-utils";
@@ -18,7 +22,9 @@ async function main() {
       tokenMaxSupply,
       tokenUri,
       logoUrl,
+      originAddress,
       daoManifest,
+      tweetOrigin,
     ] = process.argv.slice(2);
 
     if (
@@ -26,10 +32,11 @@ async function main() {
       !tokenName ||
       !tokenMaxSupply ||
       !tokenUri ||
-      !logoUrl
+      !logoUrl ||
+      !originAddress
     ) {
       console.log(
-        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <daoManifest>"
+        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin>"
       );
       process.exit(1);
     }
@@ -72,9 +79,11 @@ async function main() {
         tokenName,
         tokenMaxSupply,
         tokenUri,
-        senderAddress,
+        senderAddress, // creatorAddress
+        originAddress,
         logoUrl,
-        manifest // description
+        manifest, // description
+        tweetOrigin
       );
 
     // Step 2 - deploy token-related contracts
@@ -131,8 +140,10 @@ async function main() {
 
     // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
     const sortedContracts = Object.entries(contracts).sort(([, a], [, b]) => {
-      if (a.type === ContractType.DAO_PROPOSAL_BOOTSTRAP) return 1;
-      if (b.type === ContractType.DAO_PROPOSAL_BOOTSTRAP) return -1;
+      if (a.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
+        return 1;
+      if (b.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
+        return -1;
       return 0;
     });
 

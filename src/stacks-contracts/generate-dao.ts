@@ -5,7 +5,11 @@ import {
   deriveChildAccount,
   getNetwork,
 } from "../utilities";
-import { ContractType, DeploymentResult } from "./types/dao-types";
+import {
+  ContractProposalType,
+  ContractType,
+  DeploymentResult,
+} from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
 import * as fs from "fs";
 import * as path from "path";
@@ -18,7 +22,9 @@ async function main() {
       tokenMaxSupply,
       tokenUri,
       logoUrl,
+      originAddress,
       daoManifest,
+      tweetOrigin,
       generateFiles = "false",
     ] = process.argv.slice(2);
 
@@ -27,10 +33,11 @@ async function main() {
       !tokenName ||
       !tokenMaxSupply ||
       !tokenUri ||
-      !logoUrl
+      !logoUrl ||
+      !originAddress
     ) {
       console.log(
-        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <daoManifest> <generateFiles>"
+        "Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <generateFiles>"
       );
       process.exit(1);
     }
@@ -93,9 +100,11 @@ async function main() {
         tokenName,
         tokenMaxSupply,
         tokenUri,
-        senderAddress,
+        senderAddress, // creatorAddress
+        originAddress,
         logoUrl,
-        manifest // description
+        manifest, // description
+        tweetOrigin
       );
 
     // save token-related contracts (if generating files)
@@ -114,8 +123,10 @@ async function main() {
 
     // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
     const sortedContracts = Object.entries(contracts).sort(([, a], [, b]) => {
-      if (a.type === ContractType.DAO_PROPOSAL_BOOTSTRAP) return 1;
-      if (b.type === ContractType.DAO_PROPOSAL_BOOTSTRAP) return -1;
+      if (a.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
+        return 1;
+      if (b.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
+        return -1;
       return 0;
     });
 

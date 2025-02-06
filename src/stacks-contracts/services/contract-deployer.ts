@@ -8,6 +8,7 @@ import {
 } from "@stacks/transactions";
 import {
   ContractActionType,
+  ContractProposalType,
   ContractType,
   TraitType,
 } from "../types/dao-types";
@@ -25,7 +26,11 @@ export class ContractDeployer {
 
   async deployContract(
     sourceCode: string,
-    contractType: ContractType | ContractActionType | TraitType,
+    contractType:
+      | ContractType
+      | ContractActionType
+      | ContractProposalType
+      | TraitType,
     contractName: string,
     nonce?: number
   ): Promise<{ success: boolean; data?: any; error?: any }> {

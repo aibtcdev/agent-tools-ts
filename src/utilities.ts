@@ -1,12 +1,22 @@
 import { TransactionVersion } from "@stacks/common";
-import { StacksMainnet, StacksTestnet } from "@stacks/network";
+import { StacksMainnet, StacksNetwork, StacksTestnet } from "@stacks/network";
 import {
   generateNewAccount,
   generateWallet,
   getStxAddress,
 } from "@stacks/wallet-sdk";
-import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
-import { TxBroadcastResult, validateStacksAddress } from "@stacks/transactions";
+import type {
+  AddressNonces,
+  Transaction,
+} from "@stacks/stacks-blockchain-api-types";
+import {
+  broadcastTransaction,
+  ClarityType,
+  ClarityValue,
+  StacksTransaction,
+  TxBroadcastResult,
+  validateStacksAddress,
+} from "@stacks/transactions";
 import {
   NetworkType,
   NetworkTraits,
@@ -386,6 +396,7 @@ type FaktoryRequestBody = {
   name: string;
   supply: number;
   creatorAddress: string;
+  originAddress: string;
   uri: string;
   logoUrl?: string;
   mediaUrl?: string;
@@ -394,6 +405,7 @@ type FaktoryRequestBody = {
   telegram?: string;
   discord?: string;
   description?: string;
+  tweetOrigin?: string;
 };
 
 type FaktoryResponse<T> = {
@@ -472,6 +484,7 @@ export async function getFaktoryContracts(
   name: string,
   supply: number,
   creatorAddress: string,
+  originAddress: string,
   uri: string,
   logoUrl?: string,
   mediaUrl?: string,
@@ -479,7 +492,8 @@ export async function getFaktoryContracts(
   website?: string,
   telegram?: string,
   discord?: string,
-  description?: string
+  description?: string,
+  tweetOrigin?: string
 ) {
   const faktoryUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate`;
   const faktoryPoolUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate-pool`;
@@ -491,6 +505,7 @@ export async function getFaktoryContracts(
     name,
     supply,
     creatorAddress,
+    originAddress,
     uri,
     logoUrl,
     mediaUrl,
@@ -499,6 +514,7 @@ export async function getFaktoryContracts(
     telegram,
     discord,
     description,
+    tweetOrigin,
   };
 
   const faktoryResponse = await fetch(faktoryUrl.toString(), {
@@ -687,4 +703,71 @@ export function convertStringToBoolean(value: string): boolean {
 
   // Return null or throw error for invalid inputs
   throw new Error(`Invalid boolean value: ${value}`);
+}
+
+export type ToolResponse<T> = {
+  success: boolean;
+  message: string;
+  data?: T;
+};
+
+export function createErrorResponse(
+  error: any
+): ToolResponse<Error | undefined> {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorData = error instanceof Error ? error : undefined;
+  const response: ToolResponse<Error | undefined> = {
+    success: false,
+    message: errorMessage,
+    data: errorData,
+  };
+  return response;
+}
+
+export function sendToLLM(toolResponse: ToolResponse<any>) {
+  console.log(JSON.stringify(toolResponse, null, 2));
+}
+
+// helper that wraps broadcastTransaction from stacks/transactions
+export function broadcastTx(
+  transaction: StacksTransaction,
+  network: StacksNetwork
+): Promise<ToolResponse<TxBroadcastResult>> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const broadcastResponse = await broadcastTransaction(
+        transaction,
+        network
+      );
+      // check that error property is not present
+      // (since we can't instanceof the union type)
+      if (!("error" in broadcastResponse)) {
+        const response: ToolResponse<TxBroadcastResult> = {
+          success: true,
+          message: `Transaction broadcasted successfully: 0x${broadcastResponse.txid}`,
+          data: broadcastResponse,
+        };
+        resolve(response);
+      } else {
+        // create error message from broadcast response
+        let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
+        if (broadcastResponse.reason_data) {
+          if ("message" in broadcastResponse.reason_data) {
+            errorMessage += ` - ${broadcastResponse.reason_data.message}`;
+          } else if ("expected" in broadcastResponse.reason_data) {
+            errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
+          }
+        }
+        // create response object
+        const response: ToolResponse<TxBroadcastResult> = {
+          success: false,
+          message: errorMessage,
+          data: broadcastResponse,
+        };
+        resolve(response);
+      }
+    } catch (error) {
+      reject(createErrorResponse(error));
+    }
+  });
 }

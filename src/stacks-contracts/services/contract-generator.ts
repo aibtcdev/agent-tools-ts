@@ -13,6 +13,7 @@ import {
   TraitType,
   GeneratedDaoContracts,
   ContractActionType,
+  ContractProposalType,
 } from "../types/dao-types";
 import { generateContractNames } from "../utils/contract-utils";
 
@@ -60,7 +61,7 @@ export class ContractGenerator {
       treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
       action_trait: getTraitReference(this.network, "DAO_ACTION"),
     };
-    return this.eta.render("extensions/aibtc-action-proposals.clar", data);
+    return this.eta.render("extensions/aibtc-action-proposals-v2.clar", data);
   }
 
   // extension: aibtc-bank-account
@@ -120,7 +121,7 @@ export class ContractGenerator {
       proposal_trait: getTraitReference(this.network, "DAO_PROPOSAL"),
       treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
     };
-    return this.eta.render("extensions/aibtc-core-proposals.clar", data);
+    return this.eta.render("extensions/aibtc-core-proposals-v2.clar", data);
   }
 
   // extension: aibtc-onchain-messaging
@@ -240,17 +241,21 @@ export class ContractGenerator {
     tokenMaxSupply: string,
     tokenUri: string,
     creatorAddress: string,
+    originAddress: string,
     logoUrl?: string,
-    description?: string
+    description?: string,
+    tweetOrigin?: string
   ): Promise<FaktoryGeneratedContracts> {
     const { token, dex, pool } = await getFaktoryContracts(
       tokenSymbol,
       tokenName,
       parseInt(tokenMaxSupply),
       creatorAddress,
+      originAddress,
       tokenUri,
-      logoUrl ? logoUrl : "",
-      description ? description : ""
+      logoUrl,
+      description,
+      tweetOrigin
     );
     return { token, dex, pool };
   }
@@ -499,7 +504,7 @@ export class ContractGenerator {
     const contractNames = generateContractNames(tokenSymbol);
 
     const generateContractPrincipal = (
-      contractType: ContractType | ContractActionType
+      contractType: ContractType | ContractActionType | ContractProposalType
     ) => `${senderAddress}.${contractNames[contractType]}`;
 
     // construct token related contract addresses
@@ -520,13 +525,13 @@ export class ContractGenerator {
 
     // construct extension contract addresses
     const actionProposalsContractAddress = generateContractPrincipal(
-      ContractType.DAO_ACTION_PROPOSALS
+      ContractType.DAO_ACTION_PROPOSALS_V2
     );
     const bankAccountContractAddress = generateContractPrincipal(
       ContractType.DAO_BANK_ACCOUNT
     );
     const coreProposalsContractAddress = generateContractPrincipal(
-      ContractType.DAO_CORE_PROPOSALS
+      ContractType.DAO_CORE_PROPOSALS_V2
     );
     const messagingContractAddress = generateContractPrincipal(
       ContractType.DAO_MESSAGING
@@ -566,7 +571,7 @@ export class ContractGenerator {
 
     // construct bootstrap proposal contract address
     const bootstrapContractAddress = generateContractPrincipal(
-      ContractType.DAO_PROPOSAL_BOOTSTRAP
+      ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2
     );
 
     // generate extension contract code
@@ -669,8 +674,8 @@ export class ContractGenerator {
       // extensions
       "action-proposals": {
         source: actionProposalsContract,
-        name: contractNames[ContractType.DAO_ACTION_PROPOSALS],
-        type: ContractType.DAO_ACTION_PROPOSALS,
+        name: contractNames[ContractType.DAO_ACTION_PROPOSALS_V2],
+        type: ContractType.DAO_ACTION_PROPOSALS_V2,
         address: actionProposalsContractAddress,
       },
       "bank-account": {
@@ -681,8 +686,8 @@ export class ContractGenerator {
       },
       "core-proposals": {
         source: coreProposalsContract,
-        name: contractNames[ContractType.DAO_CORE_PROPOSALS],
-        type: ContractType.DAO_CORE_PROPOSALS,
+        name: contractNames[ContractType.DAO_CORE_PROPOSALS_V2],
+        type: ContractType.DAO_CORE_PROPOSALS_V2,
         address: coreProposalsContractAddress,
       },
       "onchain-messaging": {
@@ -759,8 +764,10 @@ export class ContractGenerator {
       // proposals
       "base-bootstrap-initialization": {
         source: bootstrapContract,
-        name: contractNames[ContractType.DAO_PROPOSAL_BOOTSTRAP],
-        type: ContractType.DAO_PROPOSAL_BOOTSTRAP,
+        name: contractNames[
+          ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2
+        ],
+        type: ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2,
         address: bootstrapContractAddress,
       },
     };
