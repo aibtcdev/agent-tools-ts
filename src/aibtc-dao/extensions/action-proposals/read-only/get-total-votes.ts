@@ -1,83 +1,102 @@
-import {
-  callReadOnlyFunction,
-  cvToValue,
-  getAddressFromPrivateKey,
-  principalCV,
-  uintCV,
-} from "@stacks/transactions";
+import { AnchorMode, Cl, callReadOnlyFunction } from "@stacks/transactions";
 import {
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   sendToLLM,
-  ToolResponse,
 } from "../../../../utilities";
 
-// gets total votes from core proposal contract for a given voter
+const usage =
+  "Usage: bun run get-total-votes.ts <daoActionProposalsExtensionContract> <proposalId> <voterAddress>";
+const usageExample =
+  'Example: bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA';
 
-async function main() {
+interface ExpectedArgs {
+  daoActionProposalsExtensionContract: string;
+  proposalId: number;
+  voterAddress: string;
+}
+
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
   const [
-    daoActionProposalsExtensionContractAddress,
-    daoActionProposalsExtensionContractName,
-  ] = process.argv[2]?.split(".") || [];
-  const proposalId = parseInt(process.argv[3]);
-  const voterAddress = process.argv[4];
-
+    daoActionProposalsExtensionContract,
+    proposalIdStr,
+    voterAddress,
+  ] = process.argv.slice(2);
+  const proposalId = parseInt(proposalIdStr);
   if (
-    !daoActionProposalsExtensionContractAddress ||
-    !daoActionProposalsExtensionContractName ||
+    !daoActionProposalsExtensionContract ||
     !proposalId ||
     !voterAddress
   ) {
-    console.log(
-      "Usage: bun run get-total-votes.ts <daoActionProposalsExtensionContractAddress> <proposalId> <voterAddress>"
-    );
-    console.log(
-      "- e.g. bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
-    );
-
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+    });
     process.exit(1);
   }
+  // verify contract addresses extracted from arguments
+  const [extensionAddress, extensionName] =
+    daoActionProposalsExtensionContract.split(".");
+  if (!extensionAddress || !extensionName) {
+    const errorMessage = [
+      `Invalid contract address: ${daoActionProposalsExtensionContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+    });
+    process.exit(1);
+  }
+  // return validated arguments
+  return {
+    daoActionProposalsExtensionContract,
+    proposalId,
+    voterAddress,
+  };
+}
 
+// gets total votes from core proposal contract for a given voter
+async function main() {
+  // validate and store provided args
+  const args = validateArgs();
+  const [extensionAddress, extensionName] =
+    args.daoActionProposalsExtensionContract.split(".");
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { key } = await deriveChildAccount(
+  const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-
+  // configure read-only function call
   const result = await callReadOnlyFunction({
-    contractAddress: daoActionProposalsExtensionContractAddress,
-    contractName: daoActionProposalsExtensionContractName,
+    contractAddress: extensionAddress,
+    contractName: extensionName,
     functionName: "get-total-votes",
-    functionArgs: [uintCV(proposalId), principalCV(voterAddress)],
-    senderAddress,
+    functionArgs: [
+      Cl.uint(args.proposalId),
+      Cl.principal(args.voterAddress),
+    ],
+    senderAddress: address,
     network: networkObj,
   });
 
-  const parsedResult = cvToValue(result, true);
-  const response: ToolResponse<any> = {
-    success: true,
-    message: "Retrieved total votes successfully",
-    data: parsedResult,
-  };
-  return response;
+  return result;
 }
 
 main()
-  .then((response) => {
-    sendToLLM(response);
-    process.exit(0);
-  })
+  .then(sendToLLM)
   .catch((error) => {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorData = error instanceof Error ? error : undefined;
-    const response: ToolResponse<Error | undefined> = {
-      success: false,
-      message: errorMessage,
-      data: errorData,
-    };
-    sendToLLM(response);
+    sendToLLM(createErrorResponse(error));
     process.exit(1);
   });
