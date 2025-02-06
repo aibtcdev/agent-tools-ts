@@ -5,7 +5,13 @@ import {
   getAddressFromPrivateKey,
   uintCV,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
+import {
+  CONFIG,
+  deriveChildAccount,
+  getNetwork,
+  sendToLLM,
+  ToolResponse,
+} from "../../../../utilities";
 
 // gets action proposal info from contract
 async function main() {
@@ -47,19 +53,29 @@ async function main() {
     network: networkObj,
   });
 
-  if (result.type === ClarityType.OptionalNone) {
-    console.log("Proposal not found");
-  }
-  if (result.type === ClarityType.OptionalSome) {
-    const jsonResult = cvToJSON(result);
-    // TODO: might need a better way to display the result
-    console.log(jsonResult);
-  }
+  const response: ToolResponse<any> = {
+    success: true,
+    message: result.type === ClarityType.OptionalNone 
+      ? "Proposal not found" 
+      : "Proposal retrieved successfully",
+    data: result.type === ClarityType.OptionalSome ? cvToJSON(result) : null,
+  };
+  return response;
 }
 
-main().catch((error) => {
-  error instanceof Error
-    ? console.error(JSON.stringify({ success: false, message: error.message }))
-    : console.error(JSON.stringify({ success: false, message: String(error) }));
-  process.exit(1);
-});
+main()
+  .then((response) => {
+    sendToLLM(response);
+    process.exit(0);
+  })
+  .catch((error) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = error instanceof Error ? error : undefined;
+    const response: ToolResponse<Error | undefined> = {
+      success: false,
+      message: errorMessage,
+      data: errorData,
+    };
+    sendToLLM(response);
+    process.exit(1);
+  });
