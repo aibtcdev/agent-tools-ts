@@ -4,6 +4,8 @@ import {
   getTraitReference,
   getAddressReference,
   getStxCityHash,
+  FaktoryGeneratedContracts,
+  getFaktoryContracts,
 } from "../../utilities";
 import { NetworkType } from "../../types";
 import {
@@ -11,6 +13,7 @@ import {
   TraitType,
   GeneratedDaoContracts,
   ContractActionType,
+  ContractProposalType,
 } from "../types/dao-types";
 import { generateContractNames } from "../utils/contract-utils";
 
@@ -58,7 +61,7 @@ export class ContractGenerator {
       treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
       action_trait: getTraitReference(this.network, "DAO_ACTION"),
     };
-    return this.eta.render("extensions/aibtc-action-proposals.clar", data);
+    return this.eta.render("extensions/aibtc-action-proposals-v2.clar", data);
   }
 
   // extension: aibtc-bank-account
@@ -118,7 +121,7 @@ export class ContractGenerator {
       proposal_trait: getTraitReference(this.network, "DAO_PROPOSAL"),
       treasury_trait: getTraitReference(this.network, "DAO_TREASURY"),
     };
-    return this.eta.render("extensions/aibtc-core-proposals.clar", data);
+    return this.eta.render("extensions/aibtc-core-proposals-v2.clar", data);
   }
 
   // extension: aibtc-onchain-messaging
@@ -225,6 +228,36 @@ export class ContractGenerator {
       creator: this.senderAddress,
     };
     return this.eta.render("extensions/aibtc-token-owner.clar", data);
+  }
+
+  // extension: aibtc-token-faktory (h/t fak.fun)
+  // extension: aibtc-token-faktory-dex (h/t fak.fun)
+  // extension: aibtc-bitflow-pool (h/t fak.fun)
+  // generated at runtime based on script parameters
+  // async due to querying fak.fun contract generator
+  async generateFaktoryContracts(
+    tokenSymbol: string,
+    tokenName: string,
+    tokenMaxSupply: string,
+    tokenUri: string,
+    creatorAddress: string,
+    originAddress: string,
+    logoUrl?: string,
+    description?: string,
+    tweetOrigin?: string
+  ): Promise<FaktoryGeneratedContracts> {
+    const { token, dex, pool } = await getFaktoryContracts(
+      tokenSymbol,
+      tokenName,
+      parseInt(tokenMaxSupply),
+      creatorAddress,
+      originAddress,
+      tokenUri,
+      logoUrl,
+      description,
+      tweetOrigin
+    );
+    return { token, dex, pool };
   }
 
   // extension: aibtc-token (h/t stxcity)
@@ -471,7 +504,7 @@ export class ContractGenerator {
     const contractNames = generateContractNames(tokenSymbol);
 
     const generateContractPrincipal = (
-      contractType: ContractType | ContractActionType
+      contractType: ContractType | ContractActionType | ContractProposalType
     ) => `${senderAddress}.${contractNames[contractType]}`;
 
     // construct token related contract addresses
@@ -492,13 +525,13 @@ export class ContractGenerator {
 
     // construct extension contract addresses
     const actionProposalsContractAddress = generateContractPrincipal(
-      ContractType.DAO_ACTION_PROPOSALS
+      ContractType.DAO_ACTION_PROPOSALS_V2
     );
     const bankAccountContractAddress = generateContractPrincipal(
       ContractType.DAO_BANK_ACCOUNT
     );
     const coreProposalsContractAddress = generateContractPrincipal(
-      ContractType.DAO_CORE_PROPOSALS
+      ContractType.DAO_CORE_PROPOSALS_V2
     );
     const messagingContractAddress = generateContractPrincipal(
       ContractType.DAO_MESSAGING
@@ -538,7 +571,7 @@ export class ContractGenerator {
 
     // construct bootstrap proposal contract address
     const bootstrapContractAddress = generateContractPrincipal(
-      ContractType.DAO_PROPOSAL_BOOTSTRAP
+      ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2
     );
 
     // generate extension contract code
@@ -641,8 +674,8 @@ export class ContractGenerator {
       // extensions
       "action-proposals": {
         source: actionProposalsContract,
-        name: contractNames[ContractType.DAO_ACTION_PROPOSALS],
-        type: ContractType.DAO_ACTION_PROPOSALS,
+        name: contractNames[ContractType.DAO_ACTION_PROPOSALS_V2],
+        type: ContractType.DAO_ACTION_PROPOSALS_V2,
         address: actionProposalsContractAddress,
       },
       "bank-account": {
@@ -653,8 +686,8 @@ export class ContractGenerator {
       },
       "core-proposals": {
         source: coreProposalsContract,
-        name: contractNames[ContractType.DAO_CORE_PROPOSALS],
-        type: ContractType.DAO_CORE_PROPOSALS,
+        name: contractNames[ContractType.DAO_CORE_PROPOSALS_V2],
+        type: ContractType.DAO_CORE_PROPOSALS_V2,
         address: coreProposalsContractAddress,
       },
       "onchain-messaging": {
@@ -731,8 +764,10 @@ export class ContractGenerator {
       // proposals
       "base-bootstrap-initialization": {
         source: bootstrapContract,
-        name: contractNames[ContractType.DAO_PROPOSAL_BOOTSTRAP],
-        type: ContractType.DAO_PROPOSAL_BOOTSTRAP,
+        name: contractNames[
+          ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2
+        ],
+        type: ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2,
         address: bootstrapContractAddress,
       },
     };
@@ -742,6 +777,7 @@ export class ContractGenerator {
   // generated at runtime based on script parameters
   generateTraitContract(traitType: TraitType): string {
     const data = {
+      // TODO: sip10_faktory_trait: getTraitReference(this.network, "SIP10_FAKTORY"),
       sip10_trait: getTraitReference(this.network, "SIP10"),
       sip09_trait: getTraitReference(this.network, "SIP09"),
       creator: this.senderAddress,

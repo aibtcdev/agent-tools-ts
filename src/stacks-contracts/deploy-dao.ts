@@ -5,7 +5,11 @@ import {
   getNetwork,
   getNextNonce,
 } from "../utilities";
-import { ContractType, DeploymentResult } from "./types/dao-types";
+import {
+  ContractProposalType,
+  ContractType,
+  DeploymentResult,
+} from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
 import { ContractDeployer } from "./services/contract-deployer";
 import { generateContractNames } from "./utils/contract-utils";
@@ -16,20 +20,23 @@ async function main() {
       tokenSymbol,
       tokenName,
       tokenMaxSupply,
-      tokenDecimals,
       tokenUri,
+      logoUrl,
+      originAddress,
       daoManifest,
+      tweetOrigin,
     ] = process.argv.slice(2);
 
     if (
       !tokenSymbol ||
       !tokenName ||
       !tokenMaxSupply ||
-      !tokenDecimals ||
-      !tokenUri
+      !tokenUri ||
+      !logoUrl ||
+      !originAddress
     ) {
       console.log(
-        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenDecimals> <tokenUri> <daoManifest>"
+        "Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin>"
       );
       process.exit(1);
     }
@@ -57,19 +64,33 @@ async function main() {
     );
     const contractDeployer = new ContractDeployer(CONFIG.NETWORK);
 
+    // set dao manifest, passed to proposal for dao construction
+    // or default to dao name + token name
+    const manifest = daoManifest
+      ? daoManifest
+      : `Bitcoin DeFAI ${tokenSymbol} ${tokenName}`;
+    //console.log(`- manifest: ${manifest}`);
+
     // Step 1 - generate token-related contracts
 
-    // deploy aibtc-token
-    //console.log("- deploying aibtc-token...");
-    const tokenSource = await contractGenerator.generateTokenContract(
-      tokenSymbol,
-      tokenName,
-      tokenMaxSupply,
-      tokenDecimals,
-      tokenUri
-    );
+    const { token, dex, pool } =
+      await contractGenerator.generateFaktoryContracts(
+        tokenSymbol,
+        tokenName,
+        tokenMaxSupply,
+        tokenUri,
+        senderAddress, // creatorAddress
+        originAddress,
+        logoUrl,
+        manifest, // description
+        tweetOrigin
+      );
+
+    // Step 2 - deploy token-related contracts
+
+    //console.log("- deploying aibtc-token-faktory...");
     const tokenDeployment = await contractDeployer.deployContract(
-      tokenSource,
+      token.code,
       ContractType.DAO_TOKEN,
       contractNames[ContractType.DAO_TOKEN],
       currentNonce
@@ -81,12 +102,9 @@ async function main() {
     result.contracts.token = tokenDeployment.data;
     currentNonce++;
 
-    // deploy aibtc-bitflow-pool
     //console.log("- deploying aibtc-bitflow-pool...");
-    const poolSource =
-      contractGenerator.generateBitflowPoolContract(tokenSymbol);
     const poolDeployment = await contractDeployer.deployContract(
-      poolSource,
+      pool.code,
       ContractType.DAO_BITFLOW_POOL,
       contractNames[ContractType.DAO_BITFLOW_POOL],
       currentNonce
@@ -98,15 +116,9 @@ async function main() {
     result.contracts.pool = poolDeployment.data;
     currentNonce++;
 
-    // deploy aibtc-token-dex
     //console.log("- deploying aibtc-token-dex...");
-    const dexSource = contractGenerator.generateTokenDexContract(
-      tokenMaxSupply,
-      tokenDecimals,
-      tokenSymbol
-    );
     const dexDeployment = await contractDeployer.deployContract(
-      dexSource,
+      dex.code,
       ContractType.DAO_TOKEN_DEX,
       contractNames[ContractType.DAO_TOKEN_DEX],
       currentNonce
@@ -118,13 +130,7 @@ async function main() {
     result.contracts.dex = dexDeployment.data;
     currentNonce++;
 
-    // Step 2 - generate remaining dao contracts
-
-    // set dao manifest, passed to proposal for dao construction
-    // or default to dao name + token name
-    const manifest = daoManifest
-      ? daoManifest
-      : `Bitcoin DeFAI ${tokenSymbol} ${tokenName}`;
+    // Step 3 - generate remaining dao contracts
 
     const contracts = contractGenerator.generateDaoContracts(
       senderAddress,
@@ -134,8 +140,10 @@ async function main() {
 
     // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
     const sortedContracts = Object.entries(contracts).sort(([, a], [, b]) => {
-      if (a.type === ContractType.DAO_PROPOSAL_BOOTSTRAP) return 1;
-      if (b.type === ContractType.DAO_PROPOSAL_BOOTSTRAP) return -1;
+      if (a.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
+        return 1;
+      if (b.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
+        return -1;
       return 0;
     });
 
@@ -150,8 +158,8 @@ async function main() {
       );
 
       if (!deployment.success) {
-        //console.log(`Deployment failed for ${contract.type}`);
-        //console.log(JSON.stringify(deployment.error, null, 2));
+        console.log(`Deployment failed for ${contract.type}`);
+        console.log(JSON.stringify(deployment.error, null, 2));
         result.error = {
           stage: `Deploying ${contract.type}`,
           message: deployment.error?.message,
@@ -169,13 +177,15 @@ async function main() {
     //console.log("Deployment successful!");
     console.log(JSON.stringify(result, null, 2));
     return result;
-  } catch (error: any) {
-    console.error(JSON.stringify({ success: false, message: error }));
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(JSON.stringify({ success: false, message: errorMsg }));
     process.exit(1);
   }
 }
 
 main().catch((error) => {
-  console.error(JSON.stringify({ success: false, message: error }));
+  const errorMsg = error instanceof Error ? error.message : String(error);
+  console.error(JSON.stringify({ success: false, message: errorMsg }));
   process.exit(1);
 });

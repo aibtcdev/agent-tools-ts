@@ -5,6 +5,7 @@ export type NetworkType = "mainnet" | "testnet" | "devnet" | "mocknet";
 
 export type NetworkTraits = {
   SIP10: string;
+  SIP10_FAKTORY: string;
   SIP09: string;
   DAO_BASE: string;
   DAO_PROPOSAL: string;
@@ -18,6 +19,7 @@ export type NetworkTraits = {
   DAO_INVOICES: string;
   DAO_ACTION: string;
   DAO_TOKEN_DEX: string;
+  DAO_TOKEN_FAKTORY_DEX: string;
   DAO_TOKEN_OWNER: string;
   DAO_TOKEN: string;
   DAO_BITFLOW_POOL: string;

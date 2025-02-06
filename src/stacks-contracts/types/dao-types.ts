@@ -7,14 +7,14 @@ export enum ContractType {
   DAO_BASE = "aibtcdev-base-dao",
   // dao extensions
   DAO_ACTION_PROPOSALS = "aibtc-action-proposals",
+  DAO_ACTION_PROPOSALS_V2 = "aibtc-action-proposals-v2",
   DAO_BANK_ACCOUNT = "aibtc-bank-account",
   DAO_CORE_PROPOSALS = "aibtc-core-proposals",
+  DAO_CORE_PROPOSALS_V2 = "aibtc-core-proposals-v2",
   DAO_MESSAGING = "aibtc-onchain-messaging",
   DAO_PAYMENTS = "aibtc-payments-invoices",
   DAO_TOKEN_OWNER = "aibtc-token-owner",
   DAO_TREASURY = "aibtc-treasury",
-  // dao proposals
-  DAO_PROPOSAL_BOOTSTRAP = "aibtc-base-bootstrap-initialization",
 }
 
 export enum ContractActionType {
@@ -28,6 +28,12 @@ export enum ContractActionType {
   DAO_ACTION_TOGGLE_RESOURCE = "aibtc-action-toggle-resource",
 }
 
+export enum ContractProposalType {
+  // dao proposal templates
+  DAO_BASE_BOOTSTRAP_INITIALIZATION = "aibtc-base-bootstrap-initialization",
+  DAO_BASE_BOOTSTRAP_INITIALIZATION_V2 = "aibtc-base-bootstrap-initialization-v2",
+}
+
 type ContractExtensionNames = {
   [key in ContractType]: string;
 };
@@ -36,12 +42,20 @@ type ContractActionNames = {
   [key in ContractActionType]: string;
 };
 
-export type ContractNames = ContractExtensionNames & ContractActionNames;
+type ContractProposalNames = {
+  [key in ContractProposalType]: string;
+};
+
+export type ContractNames = ContractExtensionNames &
+  ContractActionNames &
+  ContractProposalNames;
 
 export enum TraitType {
   POOL = "xyk-pool-trait-v-1-2",
   DAO_BASE = "aibtcdev-dao-v1",
   DAO_TRAITS = "aibtcdev-dao-traits-v1",
+  // TODO: DAO_TRAITS_V1_1 = "aibtcdev-dao-traits-v1-1",
+  // TODO: FAKTORY_TRAIT_V1 = "faktory-dex-trait-v1-1",
   SIP09 = "nft-trait",
   SIP10 = "sip-010-trait-ft-standard",
 }
@@ -67,7 +81,7 @@ export type DaoContractInfo = {
   source: string;
   name: string;
   address: string;
-  type: ContractType | ContractActionType;
+  type: ContractType | ContractActionType | ContractProposalType;
 };
 
 export type GeneratedDaoContracts = GeneratedDaoBaseContract &
