@@ -1,20 +1,18 @@
 import {
   AnchorMode,
-  broadcastTransaction,
   makeContractCall,
   principalCV,
   SignedContractCallOptions,
-  TxBroadcastResult,
   uintCV,
 } from "@stacks/transactions";
 import {
+  broadcastTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
   sendToLLM,
-  ToolResponse,
 } from "../../../../utilities";
 
 const usage =
@@ -22,13 +20,13 @@ const usage =
 const usageExample =
   "Example: bun run conclude-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-send-message";
 
-interface ProposalArgs {
+interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
   proposalId: number;
   daoActionProposalContract: string;
 }
 
-function validateArgs(): ProposalArgs {
+function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
   const [actionProposalsExtension, proposalIdStr, actionContract] =
     process.argv.slice(2);
@@ -74,15 +72,15 @@ async function main() {
   const args = validateArgs();
   const [extensionAddress, extensionName] =
     args.daoActionProposalsExtensionContract.split(".");
-
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
     contractAddress: extensionAddress,
@@ -96,15 +94,10 @@ async function main() {
     nonce: nextPossibleNonce,
     senderKey: key,
   };
+  // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTransaction(transaction, networkObj);
-
-  const response: ToolResponse<TxBroadcastResult> = {
-    success: true,
-    message: `Action proposal concluded successfully: 0x${broadcastResponse.txid}`,
-    data: broadcastResponse,
-  };
-  return response;
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
 }
 
 main()
