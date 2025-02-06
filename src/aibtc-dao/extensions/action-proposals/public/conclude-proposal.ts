@@ -1,9 +1,8 @@
 import {
   AnchorMode,
+  Cl,
   makeContractCall,
-  principalCV,
   SignedContractCallOptions,
-  uintCV,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -87,8 +86,8 @@ async function main() {
     contractName: extensionName,
     functionName: "conclude-proposal",
     functionArgs: [
-      uintCV(args.proposalId),
-      principalCV(args.daoActionProposalContract),
+      Cl.uint(args.proposalId),
+      Cl.principal(args.daoActionProposalContract),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,

@@ -85,7 +85,7 @@ async function main() {
   const args = validateArgs();
   const [extensionAddress, extensionName] =
     args.daoActionProposalsExtensionContract.split(".");
-  // setup netwokr and wallet info
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -99,7 +99,7 @@ async function main() {
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
     contractAddress: extensionAddress,
-    contractName: extensionAddress,
+    contractName: extensionName,
     functionName: "propose-action",
     functionArgs: [
       Cl.principal(args.daoActionProposalContract),
