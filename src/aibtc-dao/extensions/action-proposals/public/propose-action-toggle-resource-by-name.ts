@@ -17,7 +17,7 @@ import {
 const usage =
   "Usage: bun run propose-action-toggle-resource-by-name.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <resourceName>";
 const usageExample =
-  'Example: bun run propose-action-toggle-resource-by-name.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-toggle-resource-by-name "consulting"';
+  'Example: bun run propose-action-toggle-resource-by-name.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-toggle-resource-by-name "consulting"';
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
