@@ -2,66 +2,108 @@ import {
   callReadOnlyFunction,
   ClarityType,
   cvToJSON,
-  getAddressFromPrivateKey,
   principalCV,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
+import {
+  CONFIG,
+  createErrorResponse,
+  deriveChildAccount,
+  getNetwork,
+  sendToLLM,
+  ToolResponse,
+} from "../../../../utilities";
+
+const usage =
+  "Usage: bun run get-proposal.ts <daoCoreProposalsExtensionContract> <daoProposalContract>";
+const usageExample =
+  "Example: bun run get-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization";
+
+interface ExpectedArgs {
+  daoCoreProposalsExtensionContract: string;
+  daoProposalContract: string;
+}
+
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [daoCoreProposalsExtensionContract, daoProposalContract] =
+    process.argv.slice(2);
+  if (!daoCoreProposalsExtensionContract || !daoProposalContract) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // verify contract addresses extracted from arguments
+  const [extensionAddress, extensionName] =
+    daoCoreProposalsExtensionContract.split(".");
+  const [proposalAddress, proposalName] = daoProposalContract.split(".");
+  if (
+    !extensionAddress ||
+    !extensionName ||
+    !proposalAddress ||
+    !proposalName
+  ) {
+    const errorMessage = [
+      `Invalid contract addresses: ${daoCoreProposalsExtensionContract} ${daoProposalContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // return validated arguments
+  return {
+    daoCoreProposalsExtensionContract: daoCoreProposalsExtensionContract,
+    daoProposalContract: daoProposalContract,
+  };
+}
 
 // gets core proposal info from contract
-async function main() {
-  const [
-    daoCoreProposalsExtensionContractAddress,
-    daoCoreProposalsExtensionContractName,
-  ] = process.argv[2]?.split(".") || [];
-  const [daoProposalContractAddress, daoProposalContractName] =
-    process.argv[3]?.split(".") || [];
-
-  if (
-    !daoCoreProposalsExtensionContractAddress ||
-    !daoCoreProposalsExtensionContractName ||
-    !daoProposalContractAddress ||
-    !daoProposalContractName
-  ) {
-    console.log(
-      "Usage: bun run get-proposal.ts <daoCoreProposalsExtensionContract> <daoProposalContract>"
-    );
-    console.log(
-      "- e.g. bun run get-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization"
-    );
-
-    process.exit(1);
-  }
-
+async function main(): Promise<ToolResponse<unknown>> {
+  // validate and store provided args
+  const args = validateArgs();
+  const [extensionAddress, extensionName] =
+    args.daoCoreProposalsExtensionContract.split(".");
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { key } = await deriveChildAccount(
+  const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-
+  // get the proposal
   const result = await callReadOnlyFunction({
-    contractAddress: daoCoreProposalsExtensionContractAddress,
-    contractName: daoCoreProposalsExtensionContractName,
+    contractAddress: extensionAddress,
+    contractName: extensionName,
     functionName: "get-proposal",
-    functionArgs: [principalCV(daoProposalContractAddress)],
-    senderAddress,
+    functionArgs: [principalCV(args.daoProposalContract)],
+    senderAddress: address,
     network: networkObj,
   });
-
-  if (result.type === ClarityType.OptionalNone) {
-    console.log("Proposal not found");
-  }
+  // extract and return proposal
   if (result.type === ClarityType.OptionalSome) {
-    const jsonResult = cvToJSON(result);
-    // TODO: might need a better way to display the result
-    console.log(jsonResult);
+    const proposal = cvToJSON(result.value);
+    return {
+      success: true,
+      message: "Proposal retrieved successfully",
+      data: proposal,
+    };
+  } else if (result.type === ClarityType.OptionalNone) {
+    return {
+      success: true,
+      message: "Proposal not found",
+      data: null,
+    };
+  } else {
+    const errorMessage = `Error retrieving proposal: ${JSON.stringify(result)}`;
+    throw new Error(errorMessage);
   }
 }
 
-main().catch((error) => {
-  error instanceof Error
-    ? console.error(JSON.stringify({ success: false, message: error.message }))
-    : console.error(JSON.stringify({ success: false, message: String(error) }));
-  process.exit(1);
-});
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });

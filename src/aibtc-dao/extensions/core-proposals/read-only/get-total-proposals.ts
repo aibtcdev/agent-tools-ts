@@ -1,66 +1,106 @@
 import {
   callReadOnlyFunction,
   cvToValue,
-  getAddressFromPrivateKey,
   principalCV,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
+import {
+  CONFIG,
+  createErrorResponse,
+  deriveChildAccount,
+  getNetwork,
+  sendToLLM,
+  ToolResponse,
+} from "../../../../utilities";
 
-// gets total votes from core proposal contract for a given voter
+const usage =
+  "Usage: bun run get-total-votes.ts <daoCoreProposalsExtensionContract> <daoProposalContract> <voterAddress>";
+const usageExample =
+  "Example: bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-onchain-messaging-send ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
 
-async function main() {
-  const [
-    daoCoreProposalsExtensionContractAddress,
-    daoCoreProposalsExtensionContractName,
-  ] = process.argv[2]?.split(".") || [];
-  const [daoProposalContractAddress, daoProposalContractName] =
-    process.argv[3]?.split(".") || [];
-  const voterAddress = process.argv[4];
+interface ExpectedArgs {
+  daoCoreProposalsExtensionContract: string;
+  daoProposalContract: string;
+  voterAddress: string;
+}
 
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [daoCoreProposalsExtensionContract, daoProposalContract, voterAddress] =
+    process.argv.slice(2);
   if (
-    !daoCoreProposalsExtensionContractAddress ||
-    !daoCoreProposalsExtensionContractName ||
-    !daoProposalContractAddress ||
-    !daoProposalContractName ||
+    !daoCoreProposalsExtensionContract ||
+    !daoProposalContract ||
     !voterAddress
   ) {
-    console.log(
-      "Usage: bun run get-total-votes.ts <daoCoreProposalsExtensionContract> <daoProposalContract> <voterAddress>"
-    );
-    console.log(
-      "- e.g. bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
-    );
-
-    process.exit(1);
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
+  // verify contract addresses extracted from arguments
+  const [coreExtensionAddress, coreExtensionName] =
+    daoCoreProposalsExtensionContract.split(".");
+  const [proposalAddress, proposalName] = daoProposalContract.split(".");
+  if (
+    !coreExtensionAddress ||
+    !coreExtensionName ||
+    !proposalAddress ||
+    !proposalName
+  ) {
+    const errorMessage = [
+      `Invalid contract addresses: ${daoCoreProposalsExtensionContract} ${daoProposalContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // return validated arguments
+  return {
+    daoCoreProposalsExtensionContract,
+    daoProposalContract,
+    voterAddress,
+  };
+}
 
+// gets total votes from core proposal contract for a given voter
+async function main(): Promise<ToolResponse<number>> {
+  // validate and store provided args
+  const args = validateArgs();
+  const [extensionAddress, extensionName] =
+    args.daoCoreProposalsExtensionContract.split(".");
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { key } = await deriveChildAccount(
+  const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-
+  // get total votes
   const result = await callReadOnlyFunction({
-    contractAddress: daoCoreProposalsExtensionContractAddress,
-    contractName: daoCoreProposalsExtensionContractName,
+    contractAddress: extensionAddress,
+    contractName: extensionName,
     functionName: "get-total-votes",
     functionArgs: [
-      principalCV(daoProposalContractAddress),
-      principalCV(voterAddress),
+      principalCV(args.daoProposalContract),
+      principalCV(args.voterAddress),
     ],
-    senderAddress,
+    senderAddress: address,
     network: networkObj,
   });
-
-  const parsedResult = cvToValue(result, true);
-  console.log(parsedResult);
+  // return total proposals
+  const response: ToolResponse<number> = {
+    success: true,
+    message: "Retrieved total proposals successfully",
+    data: parseInt(cvToValue(result)),
+  };
+  return response;
 }
 
-main().catch((error) => {
-  error instanceof Error
-    ? console.error(JSON.stringify({ success: false, message: error.message }))
-    : console.error(JSON.stringify({ success: false, message: String(error) }));
-  process.exit(1);
-});
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });

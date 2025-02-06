@@ -1,87 +1,97 @@
 import {
   AnchorMode,
-  broadcastTransaction,
   makeContractCall,
   principalCV,
   SignedContractCallOptions,
-  TxBroadcastResult,
 } from "@stacks/transactions";
 import {
+  broadcastTx,
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
   sendToLLM,
-  ToolResponse,
 } from "../../../../utilities";
+
+const usage =
+  "Usage: bun run create-proposal.ts <daoCoreProposalsExtensionContract> <daoCoreProposalContract>";
+const usageExample =
+  "Example: bun run create-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-onchain-messaging-send";
+
+interface ExpectedArgs {
+  daoCoreProposalsExtensionContract: string;
+  daoProposalContract: string;
+}
+
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [coreProposalsExtension, proposalContract] = process.argv.slice(2);
+  if (!coreProposalsExtension || !proposalContract) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // verify contract addresses extracted from arguments
+  const [extensionAddress, extensionName] = coreProposalsExtension.split(".");
+  const [proposalAddress, proposalName] = proposalContract.split(".");
+  if (
+    !extensionAddress ||
+    !extensionName ||
+    !proposalAddress ||
+    !proposalName
+  ) {
+    const errorMessage = [
+      `Invalid contract addresses: ${coreProposalsExtension} ${proposalContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // return validated arguments
+  return {
+    daoCoreProposalsExtensionContract: coreProposalsExtension,
+    daoProposalContract: proposalContract,
+  };
+}
 
 // creates a new core proposal
 async function main() {
-  const [
-    daoCoreProposalsExtensionContractAddress,
-    daoCoreProposalsExtensionContractName,
-  ] = process.argv[2]?.split(".") || [];
-  const [daoProposalContractAddress, daoProposalContractName] =
-    process.argv[3]?.split(".") || [];
-
-  if (
-    !daoCoreProposalsExtensionContractAddress ||
-    !daoCoreProposalsExtensionContractName ||
-    !daoProposalContractAddress ||
-    !daoProposalContractName
-  ) {
-    console.log(
-      "Usage: bun run create-proposal.ts <daoCoreProposalsExtensionContract> <daoCoreProposalContract>"
-    );
-    console.log(
-      "- e.g. bun run create-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-onchain-messaging-send"
-    );
-
-    process.exit(1);
-  }
-
+  // validate and store provided args
+  const args = validateArgs();
+  const [extensionAddress, extensionName] =
+    args.daoCoreProposalsExtensionContract.split(".");
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
-    contractAddress: daoCoreProposalsExtensionContractAddress,
-    contractName: daoCoreProposalsExtensionContractName,
+    contractAddress: extensionAddress,
+    contractName: extensionName,
     functionName: "create-proposal",
-    functionArgs: [principalCV(daoProposalContractAddress)],
+    functionArgs: [principalCV(args.daoProposalContract)],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
   };
+  // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTransaction(transaction, networkObj);
-
-  const response: ToolResponse<TxBroadcastResult> = {
-    success: true,
-    message: `Core proposal created successfully: 0x${broadcastResponse.txid}`,
-    data: broadcastResponse,
-  };
-  return response;
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
 }
 
 main()
-  .then((response) => {
-    sendToLLM(response);
-    process.exit(0);
-  })
+  .then(sendToLLM)
   .catch((error) => {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorData = error instanceof Error ? error : undefined;
-    const response: ToolResponse<Error | undefined> = {
-      success: false,
-      message: errorMessage,
-      data: errorData,
-    };
-    sendToLLM(response);
+    sendToLLM(createErrorResponse(error));
     process.exit(1);
   });

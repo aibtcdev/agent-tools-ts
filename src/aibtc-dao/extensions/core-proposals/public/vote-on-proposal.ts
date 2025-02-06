@@ -1,80 +1,103 @@
 import {
   AnchorMode,
   boolCV,
-  broadcastTransaction,
-  getAddressFromPrivateKey,
   makeContractCall,
   principalCV,
   SignedContractCallOptions,
 } from "@stacks/transactions";
 import {
+  broadcastTx,
   CONFIG,
   convertStringToBoolean,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  sendToLLM,
 } from "../../../../utilities";
+
+const usage =
+  "Usage: bun run vote-on-proposal.ts <daoCoreProposalsExtensionContract> <daoProposalContract> <vote>";
+const usageExample =
+  "Example: bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-onchain-messaging-send true";
+
+interface ExpectedArgs {
+  daoCoreProposalsExtensionContract: string;
+  daoProposalContract: string;
+  vote: boolean;
+}
+
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [coreProposalsExtension, proposalContract, voteStr] =
+    process.argv.slice(2);
+  const vote = convertStringToBoolean(voteStr);
+  if (!coreProposalsExtension || !proposalContract || !vote) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // verify contract addresses extracted from arguments
+  const [extensionAddress, extensionName] = coreProposalsExtension.split(".");
+  const [proposalAddress, proposalName] = proposalContract.split(".");
+  if (
+    !extensionAddress ||
+    !extensionName ||
+    !proposalAddress ||
+    !proposalName
+  ) {
+    const errorMessage = [
+      `Invalid contract addresses: ${coreProposalsExtension} ${proposalContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // return validated arguments
+  return {
+    daoCoreProposalsExtensionContract: coreProposalsExtension,
+    daoProposalContract: proposalContract,
+    vote,
+  };
+}
 
 // votes on a core proposal
 async function main() {
-  const [
-    daoCoreProposalsExtensionContractAddress,
-    daoCoreProposalsExtensionContractName,
-  ] = process.argv[2]?.split(".") || [];
-  const [daoProposalContractAddress, daoProposalContractName] =
-    process.argv[3]?.split(".") || [];
-  const vote = convertStringToBoolean(process.argv[4]);
-
-  if (
-    !daoCoreProposalsExtensionContractAddress ||
-    !daoCoreProposalsExtensionContractName ||
-    !daoProposalContractAddress ||
-    !daoProposalContractName ||
-    !vote
-  ) {
-    console.log(
-      "Usage: bun run vote-on-proposal.ts <daoCoreProposalsExtensionContract> <newProposalContract> <vote>"
-    );
-    console.log(
-      "- e.g. bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization true"
-    );
-
-    process.exit(1);
-  }
-
+  // validate and store provided args
+  const args = validateArgs();
+  const [extensionAddress, extensionName] =
+    args.daoCoreProposalsExtensionContract.split(".");
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { key } = await deriveChildAccount(
+  const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
-
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
-    contractAddress: daoCoreProposalsExtensionContractAddress,
-    contractName: daoCoreProposalsExtensionContractName,
+    contractAddress: extensionAddress,
+    contractName: extensionName,
     functionName: "vote-on-proposal",
-    functionArgs: [principalCV(daoProposalContractAddress), boolCV(vote)],
+    functionArgs: [principalCV(args.daoProposalContract), boolCV(args.vote)],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
   };
-
+  // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTransaction(transaction, networkObj);
-
-  console.log(
-    `Vote transaction broadcast successfully: 0x${broadcastResponse.txid}`
-  );
-  console.log(`Full response: ${JSON.stringify(broadcastResponse, null, 2)}`);
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
 }
 
-main().catch((error) => {
-  error instanceof Error
-    ? console.error(JSON.stringify({ success: false, message: error.message }))
-    : console.error(JSON.stringify({ success: false, message: String(error) }));
-
-  process.exit(1);
-});
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });
