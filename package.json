@@ -28,6 +28,8 @@
     "@stacks/transactions": "^6.17.0",
     "@stacks/wallet-sdk": "^6.17.0",
     "bitflow-sdk": "^1.6.1",
+    "dexterity-sdk": "0.8.12",
+    "dotenv": "^16.3.1",
     "chalk": "^5.4.1",
     "commander": "^11.1.0",
     "dotenv": "^16.4.7",
