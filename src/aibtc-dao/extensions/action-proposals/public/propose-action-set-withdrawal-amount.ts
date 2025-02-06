@@ -11,7 +11,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
-} from "../../../utilities";
+} from "../../../../utilities";
 
 // creates a new action proposal
 async function main() {
@@ -20,24 +20,19 @@ async function main() {
     daoActionProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
   const daoActionProposalContractAddress = process.argv[3];
-  const resourceName = process.argv[4];
-  const resourceDescription = process.argv[5];
-  const resourcePrice = parseInt(process.argv[6]);
-  const resourceUrl = process.argv[7];
+  const withdrawalAmount = parseInt(process.argv[4]);
 
   if (
     !daoActionProposalsExtensionContractAddress ||
     !daoActionProposalsExtensionContractName ||
     !daoActionProposalContractAddress ||
-    !resourceName ||
-    !resourceDescription ||
-    !resourcePrice
+    !withdrawalAmount
   ) {
     console.log(
-      "Usage: bun run propose-action-add-resource.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <resourceName> <resourceDescription> <resourcePrice> <resourceUrl>"
+      "Usage: bun run propose-action-set-withdrawal-amount.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <withdrawalAmount>"
     );
     console.log(
-      '- e.g. bun run propose-action-add-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-add-resource consultation "consult with me for 1hr" 100000000 https://aibtc.dev'
+      "- e.g. bun run propose-action-set-withdrawal-amount.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-set-withdrawal-amount 50"
     );
 
     process.exit(1);
@@ -52,12 +47,7 @@ async function main() {
   const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
 
-  const paramsCV = Cl.tuple({
-    name: Cl.stringUtf8(resourceName),
-    description: Cl.stringUtf8(resourceDescription),
-    price: Cl.uint(resourcePrice),
-    url: resourceUrl ? Cl.stringUtf8(resourceUrl) : Cl.none(),
-  });
+  const paramsCV = Cl.uint(withdrawalAmount);
 
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,

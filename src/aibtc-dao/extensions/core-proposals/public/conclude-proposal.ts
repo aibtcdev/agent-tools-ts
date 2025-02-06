@@ -1,18 +1,19 @@
 import {
   AnchorMode,
   broadcastTransaction,
-  getAddressFromPrivateKey,
   makeContractCall,
   principalCV,
   SignedContractCallOptions,
+  TxBroadcastResult,
 } from "@stacks/transactions";
 import {
   CONFIG,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
-} from "../../../utilities";
-import { dao } from "../../..";
+  sendToLLM,
+  ToolResponse,
+} from "../../../../utilities";
 
 // concludes a core proposal
 async function main() {
@@ -40,13 +41,12 @@ async function main() {
   }
 
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { key } = await deriveChildAccount(
+  const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
@@ -62,14 +62,27 @@ async function main() {
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTransaction(transaction, networkObj);
 
-  console.log(`Proposal concluded successfully: 0x${broadcastResponse.txid}`);
-  console.log(`Full response: ${JSON.stringify(broadcastResponse, null, 2)}`);
+  const response: ToolResponse<TxBroadcastResult> = {
+    success: true,
+    message: `Core proposal concluded successfully: 0x${broadcastResponse.txid}`,
+    data: broadcastResponse,
+  };
+  return response;
 }
 
-main().catch((error) => {
-  error instanceof Error
-    ? console.error(JSON.stringify({ success: false, message: error.message }))
-    : console.error(JSON.stringify({ success: false, message: String(error) }));
-
-  process.exit(1);
-});
+main()
+  .then((response) => {
+    sendToLLM(response);
+    process.exit(0);
+  })
+  .catch((error) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = error instanceof Error ? error : undefined;
+    const response: ToolResponse<Error | undefined> = {
+      success: false,
+      message: errorMessage,
+      data: errorData,
+    };
+    sendToLLM(response);
+    process.exit(1);
+  });

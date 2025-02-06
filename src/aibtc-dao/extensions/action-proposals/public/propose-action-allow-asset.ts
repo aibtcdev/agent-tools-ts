@@ -1,43 +1,38 @@
 import {
   AnchorMode,
-  boolCV,
   broadcastTransaction,
+  Cl,
   getAddressFromPrivateKey,
   makeContractCall,
   SignedContractCallOptions,
-  uintCV,
 } from "@stacks/transactions";
 import {
   CONFIG,
-  convertStringToBoolean,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
-} from "../../../utilities";
+} from "../../../../utilities";
 
-// votes on an action proposal
+// creates a new action proposal
 async function main() {
-  // contract for the action extension in the dao
   const [
     daoActionProposalsExtensionContractAddress,
     daoActionProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
-  // proposal id to be concluded
-  const proposalId = parseInt(process.argv[3]);
-  // action contract in the dao to be executed / concluded
-  const vote = convertStringToBoolean(process.argv[4]);
+  const daoActionProposalContractAddress = process.argv[3];
+  const tokenContractAddress = process.argv[4];
 
   if (
     !daoActionProposalsExtensionContractAddress ||
     !daoActionProposalsExtensionContractName ||
-    !proposalId ||
-    !vote
+    !daoActionProposalContractAddress ||
+    !tokenContractAddress
   ) {
     console.log(
-      "Usage: bun run vote-on-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <vote>"
+      "Usage: bun run propose-action-allow-asset.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <tokenContractAddress>"
     );
     console.log(
-      "- e.g. bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals 1 true"
+      "- e.g. bun run propose-action-allow-asset.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-allow-asset ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.shiny-new-token"
     );
 
     process.exit(1);
@@ -52,12 +47,17 @@ async function main() {
   const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
 
+  const paramsCV = Cl.principal(tokenContractAddress);
+
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
     contractAddress: daoActionProposalsExtensionContractAddress,
     contractName: daoActionProposalsExtensionContractName,
-    functionName: "vote-on-proposal",
-    functionArgs: [uintCV(proposalId), boolCV(vote)],
+    functionName: "propose-action",
+    functionArgs: [
+      Cl.principal(daoActionProposalContractAddress),
+      Cl.buffer(Cl.serialize(paramsCV)),
+    ],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
@@ -66,7 +66,7 @@ async function main() {
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTransaction(transaction, networkObj);
 
-  console.log(`Proposal vote sent successfully: 0x${broadcastResponse.txid}`);
+  console.log(`Proposal created successfully: 0x${broadcastResponse.txid}`);
   console.log(`Full response: ${JSON.stringify(broadcastResponse, null, 2)}`);
 }
 

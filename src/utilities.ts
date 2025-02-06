@@ -694,3 +694,13 @@ export function convertStringToBoolean(value: string): boolean {
   // Return null or throw error for invalid inputs
   throw new Error(`Invalid boolean value: ${value}`);
 }
+
+export type ToolResponse<T> = {
+  success: boolean;
+  message: string;
+  data?: T;
+};
+
+export function sendToLLM(toolResponse: ToolResponse<any>) {
+  console.log(JSON.stringify(toolResponse, null, 2));
+}

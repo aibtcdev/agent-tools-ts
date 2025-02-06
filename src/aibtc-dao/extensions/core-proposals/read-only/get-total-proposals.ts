@@ -4,9 +4,9 @@ import {
   getAddressFromPrivateKey,
   principalCV,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../utilities";
+import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
 
-// gets voting power for an address on a proposal
+// gets total votes from core proposal contract for a given voter
 
 async function main() {
   const [
@@ -25,10 +25,10 @@ async function main() {
     !voterAddress
   ) {
     console.log(
-      "Usage: bun run get-voting-power.ts <daoCoreProposalsExtensionContractAddress> <daoProposalContract> <voterAddress>"
+      "Usage: bun run get-total-votes.ts <daoCoreProposalsExtensionContract> <daoProposalContract> <voterAddress>"
     );
     console.log(
-      "- e.g. bun run get-voting-power.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
+      "- e.g. bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
     );
 
     process.exit(1);
@@ -45,10 +45,10 @@ async function main() {
   const result = await callReadOnlyFunction({
     contractAddress: daoCoreProposalsExtensionContractAddress,
     contractName: daoCoreProposalsExtensionContractName,
-    functionName: "get-voting-power",
+    functionName: "get-total-votes",
     functionArgs: [
-      principalCV(voterAddress),
       principalCV(daoProposalContractAddress),
+      principalCV(voterAddress),
     ],
     senderAddress,
     network: networkObj,

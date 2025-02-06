@@ -11,7 +11,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
-} from "../../../utilities";
+} from "../../../../utilities";
 
 // creates a new action proposal
 async function main() {
@@ -20,19 +20,19 @@ async function main() {
     daoActionProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
   const daoActionProposalContractAddress = process.argv[3];
-  const message = process.argv[4];
+  const withdrawalPeriod = parseInt(process.argv[4]);
 
   if (
     !daoActionProposalsExtensionContractAddress ||
     !daoActionProposalsExtensionContractName ||
     !daoActionProposalContractAddress ||
-    !message
+    !withdrawalPeriod
   ) {
     console.log(
-      "Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <message>"
+      "Usage: bun run propose-action-set-withdrawal-period.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <withdrawalPeriod>"
     );
     console.log(
-      '- e.g. bun run propose-action-send-message.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-send-message "hello world"'
+      "- e.g. bun run propose-action-set-withdrawal-period.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-set-withdrawal-period 50"
     );
 
     process.exit(1);
@@ -47,7 +47,7 @@ async function main() {
   const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
 
-  const paramsCV = Cl.stringAscii(message);
+  const paramsCV = Cl.uint(withdrawalPeriod);
 
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,

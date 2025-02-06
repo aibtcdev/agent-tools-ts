@@ -3,7 +3,7 @@ import {
   cvToValue,
   getAddressFromPrivateKey,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../utilities";
+import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
 
 // gets total proposals in action proposal contract
 async function main() {

@@ -5,7 +5,7 @@ import {
   principalCV,
   uintCV,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../utilities";
+import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
 
 // gets voting power for an address on a proposal
 

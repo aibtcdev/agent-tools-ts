@@ -3,30 +3,28 @@ import {
   ClarityType,
   cvToJSON,
   getAddressFromPrivateKey,
-  principalCV,
+  uintCV,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../utilities";
+import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
 
-// gets core proposal info from contract
+// gets action proposal info from contract
 async function main() {
   const [
-    daoCoreProposalsExtensionContractAddress,
-    daoCoreProposalsExtensionContractName,
+    daoActionProposalsExtensionContractAddress,
+    daoActionProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
-  const [daoProposalContractAddress, daoProposalContractName] =
-    process.argv[3]?.split(".") || [];
+  const proposalId = parseInt(process.argv[3]);
 
   if (
-    !daoCoreProposalsExtensionContractAddress ||
-    !daoCoreProposalsExtensionContractName ||
-    !daoProposalContractAddress ||
-    !daoProposalContractName
+    !daoActionProposalsExtensionContractAddress ||
+    !daoActionProposalsExtensionContractName ||
+    !proposalId
   ) {
     console.log(
-      "Usage: bun run get-proposal.ts <daoCoreProposalsExtensionContract> <daoProposalContract>"
+      "Usage: bun run get-proposal.ts <daoActionProposalsExtensionContract> <proposalId>"
     );
     console.log(
-      "- e.g. bun run get-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-core-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-base-bootstrap-initialization"
+      "- e.g. bun run get-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals 1"
     );
 
     process.exit(1);
@@ -41,10 +39,10 @@ async function main() {
   const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
 
   const result = await callReadOnlyFunction({
-    contractAddress: daoCoreProposalsExtensionContractAddress,
-    contractName: daoCoreProposalsExtensionContractName,
+    contractAddress: daoActionProposalsExtensionContractAddress,
+    contractName: daoActionProposalsExtensionContractName,
     functionName: "get-proposal",
-    functionArgs: [principalCV(daoProposalContractAddress)],
+    functionArgs: [uintCV(proposalId)],
     senderAddress,
     network: networkObj,
   });

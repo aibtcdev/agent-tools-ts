@@ -2,32 +2,26 @@ import {
   callReadOnlyFunction,
   cvToValue,
   getAddressFromPrivateKey,
-  principalCV,
-  uintCV,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../utilities";
+import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
 
-// gets total votes from core proposal contract for a given voter
+// gets set treasury, dex, and pool for a proposal extension
 
 async function main() {
   const [
     daoActionProposalsExtensionContractAddress,
     daoActionProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
-  const proposalId = parseInt(process.argv[3]);
-  const voterAddress = process.argv[4];
 
   if (
     !daoActionProposalsExtensionContractAddress ||
-    !daoActionProposalsExtensionContractName ||
-    !proposalId ||
-    !voterAddress
+    !daoActionProposalsExtensionContractName
   ) {
     console.log(
-      "Usage: bun run get-total-votes.ts <daoActionProposalsExtensionContractAddress> <proposalId> <voterAddress>"
+      "Usage: bun run get-linked-voting-contracts.ts <daoActionProposalExtensionContract>"
     );
     console.log(
-      "- e.g. bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
+      "- e.g. bun run get-linked-voting-contracts.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals"
     );
 
     process.exit(1);
@@ -44,14 +38,13 @@ async function main() {
   const result = await callReadOnlyFunction({
     contractAddress: daoActionProposalsExtensionContractAddress,
     contractName: daoActionProposalsExtensionContractName,
-    functionName: "get-total-votes",
-    functionArgs: [uintCV(proposalId), principalCV(voterAddress)],
+    functionName: "get-linked-voting-contracts",
+    functionArgs: [],
     senderAddress,
     network: networkObj,
   });
 
-  const parsedResult = cvToValue(result, true);
-  console.log(parsedResult);
+  console.log(cvToValue(result));
 }
 
 main().catch((error) => {

@@ -11,7 +11,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
-} from "../../../utilities";
+} from "../../../../utilities";
 
 // creates a new action proposal
 async function main() {
@@ -20,19 +20,19 @@ async function main() {
     daoActionProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
   const daoActionProposalContractAddress = process.argv[3];
-  const tokenContractAddress = process.argv[4];
+  const resourceName = process.argv[4];
 
   if (
     !daoActionProposalsExtensionContractAddress ||
     !daoActionProposalsExtensionContractName ||
     !daoActionProposalContractAddress ||
-    !tokenContractAddress
+    !resourceName
   ) {
     console.log(
-      "Usage: bun run propose-action-allow-asset.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <tokenContractAddress>"
+      "Usage: bun run propose-action-toggle-resource-by-name.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <resourceName>"
     );
     console.log(
-      "- e.g. bun run propose-action-allow-asset.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-allow-asset ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.shiny-new-token"
+      '- e.g. bun run propose-action-toggle-resource-by-name.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-toggle-resource-by-name "consulting"'
     );
 
     process.exit(1);
@@ -47,7 +47,7 @@ async function main() {
   const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
 
-  const paramsCV = Cl.principal(tokenContractAddress);
+  const paramsCV = Cl.stringAscii(resourceName);
 
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,

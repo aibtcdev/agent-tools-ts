@@ -1,30 +1,33 @@
 import {
   callReadOnlyFunction,
-  ClarityType,
-  cvToJSON,
+  cvToValue,
   getAddressFromPrivateKey,
+  principalCV,
   uintCV,
 } from "@stacks/transactions";
-import { CONFIG, deriveChildAccount, getNetwork } from "../../../utilities";
+import { CONFIG, deriveChildAccount, getNetwork } from "../../../../utilities";
 
-// gets action proposal info from contract
+// gets total votes from core proposal contract for a given voter
+
 async function main() {
   const [
     daoActionProposalsExtensionContractAddress,
     daoActionProposalsExtensionContractName,
   ] = process.argv[2]?.split(".") || [];
   const proposalId = parseInt(process.argv[3]);
+  const voterAddress = process.argv[4];
 
   if (
     !daoActionProposalsExtensionContractAddress ||
     !daoActionProposalsExtensionContractName ||
-    !proposalId
+    !proposalId ||
+    !voterAddress
   ) {
     console.log(
-      "Usage: bun run get-proposal.ts <daoActionProposalsExtensionContract> <proposalId>"
+      "Usage: bun run get-total-votes.ts <daoActionProposalsExtensionContractAddress> <proposalId> <voterAddress>"
     );
     console.log(
-      "- e.g. bun run get-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals 1"
+      "- e.g. bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA"
     );
 
     process.exit(1);
@@ -41,20 +44,14 @@ async function main() {
   const result = await callReadOnlyFunction({
     contractAddress: daoActionProposalsExtensionContractAddress,
     contractName: daoActionProposalsExtensionContractName,
-    functionName: "get-proposal",
-    functionArgs: [uintCV(proposalId)],
+    functionName: "get-total-votes",
+    functionArgs: [uintCV(proposalId), principalCV(voterAddress)],
     senderAddress,
     network: networkObj,
   });
 
-  if (result.type === ClarityType.OptionalNone) {
-    console.log("Proposal not found");
-  }
-  if (result.type === ClarityType.OptionalSome) {
-    const jsonResult = cvToJSON(result);
-    // TODO: might need a better way to display the result
-    console.log(jsonResult);
-  }
+  const parsedResult = cvToValue(result, true);
+  console.log(parsedResult);
 }
 
 main().catch((error) => {
