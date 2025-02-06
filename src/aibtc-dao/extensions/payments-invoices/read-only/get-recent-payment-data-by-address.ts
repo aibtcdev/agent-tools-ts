@@ -26,7 +26,8 @@ interface ExpectedArgs {
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentsInvoicesContract, resourceName, userAddress] = process.argv.slice(2);
+  const [paymentsInvoicesContract, resourceName, userAddress] =
+    process.argv.slice(2);
   if (!paymentsInvoicesContract || !resourceName || !userAddress) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
@@ -56,7 +57,8 @@ function validateArgs(): ExpectedArgs {
 async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
-  const [contractAddress, contractName] = args.paymentsInvoicesContract.split(".");
+  const [contractAddress, contractName] =
+    args.paymentsInvoicesContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(

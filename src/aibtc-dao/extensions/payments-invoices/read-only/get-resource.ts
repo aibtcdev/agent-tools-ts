@@ -13,9 +13,10 @@ import {
   ToolResponse,
 } from "../../../../utilities";
 
-const usage = "Usage: bun run get-resource.ts <paymentsInvoicesContract> <resourceIndex>";
+const usage =
+  "Usage: bun run get-resource.ts <paymentsInvoicesContract> <resourceIndex>";
 const usageExample =
-  "Example: bun run get-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices u1";
+  "Example: bun run get-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-payments-invoices u1";
 
 interface ExpectedArgs {
   paymentsInvoicesContract: string;
@@ -54,7 +55,8 @@ function validateArgs(): ExpectedArgs {
 async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
-  const [contractAddress, contractName] = args.paymentsInvoicesContract.split(".");
+  const [contractAddress, contractName] =
+    args.paymentsInvoicesContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(

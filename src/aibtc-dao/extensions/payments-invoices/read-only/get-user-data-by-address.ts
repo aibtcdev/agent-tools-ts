@@ -54,7 +54,8 @@ function validateArgs(): ExpectedArgs {
 async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
-  const [contractAddress, contractName] = args.paymentsInvoicesContract.split(".");
+  const [contractAddress, contractName] =
+    args.paymentsInvoicesContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(

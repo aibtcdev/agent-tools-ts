@@ -57,7 +57,8 @@ function validateArgs(): ExpectedArgs {
 async function main() {
   // validate and store provided args
   const args = validateArgs();
-  const [contractAddress, contractName] = args.paymentsInvoicesContract.split(".");
+  const [contractAddress, contractName] =
+    args.paymentsInvoicesContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -67,12 +68,10 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   // prepare function arguments
-  const functionArgs = [Cl.stringUtf8(args.resourceName)];
-  if (args.memo) {
-    functionArgs.push(Cl.some(Cl.bufferFromUtf8(args.memo)));
-  } else {
-    functionArgs.push(Cl.none());
-  }
+  const functionArgs = [
+    Cl.stringUtf8(args.resourceName),
+    args.memo ? Cl.some(Cl.stringUtf8(args.memo)) : Cl.none(),
+  ];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
