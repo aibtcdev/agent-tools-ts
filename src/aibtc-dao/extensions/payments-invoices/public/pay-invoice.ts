@@ -17,7 +17,7 @@ import {
 const usage =
   "Usage: bun run pay-invoice.ts <paymentsInvoicesContract> <resourceIndex> [memo]";
 const usageExample =
-  "Example: bun run pay-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices 1";
+  "Example: bun run pay-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-payments-invoices 1";
 
 interface ExpectedArgs {
   paymentsInvoicesContract: string;

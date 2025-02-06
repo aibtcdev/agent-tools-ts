@@ -16,7 +16,7 @@ import {
 const usage =
   "Usage: bun run get-user-data-by-address.ts <paymentsInvoicesContract> <userAddress>";
 const usageExample =
-  "Example: bun run get-user-data-by-address.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
+  "Example: bun run get-user-data-by-address.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-payments-invoices ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
 
 interface ExpectedArgs {
   paymentsInvoicesContract: string;
