@@ -1,95 +1,116 @@
 import {
   AnchorMode,
-  broadcastTransaction,
   Cl,
-  getAddressFromPrivateKey,
   makeContractCall,
   SignedContractCallOptions,
-  TxBroadcastResult,
 } from "@stacks/transactions";
 import {
+  broadcastTx,
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
   sendToLLM,
-  ToolResponse,
 } from "../../../../utilities";
+
+const usage =
+  "Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <message>";
+const usageExample =
+  'Example: bun run propose-action-send-message.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-send-message "hello world"';
+
+interface ExpectedArgs {
+  daoActionProposalsExtensionContract: string;
+  daoActionProposalContract: string;
+  message: string;
+}
+
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [
+    daoActionProposalsExtensionContract,
+    daoActionProposalContract,
+    message,
+  ] = process.argv.slice(2);
+  if (
+    !daoActionProposalsExtensionContract ||
+    !daoActionProposalContract ||
+    !message
+  ) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+    });
+    process.exit(1);
+  }
+  // verify contract addresses extracted from arguments
+  const [extensionAddress, extensionName] =
+    daoActionProposalsExtensionContract.split(".");
+  const [actionAddress, actionName] = daoActionProposalContract.split(".");
+  if (!extensionAddress || !extensionName || !actionAddress || !actionName) {
+    const errorMessage = [
+      `Invalid contract addresses: ${daoActionProposalsExtensionContract} ${daoActionProposalContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+    });
+    process.exit(1);
+  }
+  // return validated arguments
+  return {
+    daoActionProposalsExtensionContract,
+    daoActionProposalContract,
+    message,
+  };
+}
 
 // creates a new action proposal
 async function main() {
-  const [
-    daoActionProposalsExtensionContractAddress,
-    daoActionProposalsExtensionContractName,
-  ] = process.argv[2]?.split(".") || [];
-  const daoActionProposalContractAddress = process.argv[3];
-  const message = process.argv[4];
-
-  if (
-    !daoActionProposalsExtensionContractAddress ||
-    !daoActionProposalsExtensionContractName ||
-    !daoActionProposalContractAddress ||
-    !message
-  ) {
-    console.log(
-      "Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <message>"
-    );
-    console.log(
-      '- e.g. bun run propose-action-send-message.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-proposals ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.wed-action-send-message "hello world"'
-    );
-
-    process.exit(1);
-  }
-
+  // validate and store provided args
+  const args = validateArgs();
+  const [extensionAddress, extensionName] =
+    args.daoActionProposalsExtensionContract.split(".");
+  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { key } = await deriveChildAccount(
+  const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
-
-  const paramsCV = Cl.stringAscii(message);
-
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  // configure contract call parameters
+  const paramsCV = Cl.stringAscii(args.message);
+  // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
-    contractAddress: daoActionProposalsExtensionContractAddress,
-    contractName: daoActionProposalsExtensionContractName,
+    contractAddress: extensionAddress,
+    contractName: extensionName,
     functionName: "propose-action",
     functionArgs: [
-      Cl.principal(daoActionProposalContractAddress),
+      Cl.principal(args.daoActionProposalContract),
       Cl.buffer(Cl.serialize(paramsCV)),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
   };
-
+  // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTransaction(transaction, networkObj);
-
-  const response: ToolResponse<TxBroadcastResult> = {
-    success: true,
-    message: `Action proposal to send message created successfully: 0x${broadcastResponse.txid}`,
-    data: broadcastResponse,
-  };
-  return response;
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
 }
 
 main()
-  .then((response) => {
-    sendToLLM(response);
-    process.exit(0);
-  })
+  .then(sendToLLM)
   .catch((error) => {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorData = error instanceof Error ? error : undefined;
-    const response: ToolResponse<Error | undefined> = {
-      success: false,
-      message: errorMessage,
-      data: errorData,
-    };
-    sendToLLM(response);
+    sendToLLM(createErrorResponse(error));
     process.exit(1);
   });
