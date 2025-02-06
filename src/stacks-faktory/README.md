@@ -156,6 +156,38 @@ bun run src/stacks-faktory/get-token.ts "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA
 bun run src/stacks-faktory/get-token.ts "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex"
 ```
 
+### 7. Get Token Trades
+
+Get the most recent trading history (last 100 trades) for a specific token, including trade statistics and aggregated data.
+
+```bash
+bun run src/stacks-faktory/get-token-trades.ts <token_contract>
+```
+
+Parameters:
+
+- `token_contract`: Token contract identifier (the contract for the token itself, not the DEX)
+
+Example:
+
+```bash
+# Get last 100 trades for AGENTX
+bun run src/stacks-faktory/get-token-trades.ts SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.agentx-faktory
+```
+
+The tool will display:
+
+- Most recent 100 trades
+- Latest trade details (timestamp, type, amounts, price)
+- Aggregate statistics for these trades:
+  - Buy count
+  - Sell count
+  - Total trading volume in STX
+  - Average price
+  - Total tokens traded
+
+Note: The token amounts displayed are automatically adjusted using the correct decimal places for the specific token. Statistics are calculated based on the last 100 trades only.
+
 ## Important Notes
 
 1. **Slippage**: All tools use percentage-based slippage:
