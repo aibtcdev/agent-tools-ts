@@ -5,12 +5,15 @@ import {
   getAddressFromPrivateKey,
   makeContractCall,
   SignedContractCallOptions,
+  TxBroadcastResult,
 } from "@stacks/transactions";
 import {
   CONFIG,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  sendToLLM,
+  ToolResponse,
 } from "../../../../utilities";
 
 // creates a new action proposal
@@ -66,14 +69,27 @@ async function main() {
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTransaction(transaction, networkObj);
 
-  console.log(`Proposal created successfully: 0x${broadcastResponse.txid}`);
-  console.log(`Full response: ${JSON.stringify(broadcastResponse, null, 2)}`);
+  const response: ToolResponse<TxBroadcastResult> = {
+    success: true,
+    message: `Action proposal to set account holder created successfully: 0x${broadcastResponse.txid}`,
+    data: broadcastResponse,
+  };
+  return response;
 }
 
-main().catch((error) => {
-  error instanceof Error
-    ? console.error(JSON.stringify({ success: false, message: error.message }))
-    : console.error(JSON.stringify({ success: false, message: String(error) }));
-
-  process.exit(1);
-});
+main()
+  .then((response) => {
+    sendToLLM(response);
+    process.exit(0);
+  })
+  .catch((error) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = error instanceof Error ? error : undefined;
+    const response: ToolResponse<Error | undefined> = {
+      success: false,
+      message: errorMessage,
+      data: errorData,
+    };
+    sendToLLM(response);
+    process.exit(1);
+  });
