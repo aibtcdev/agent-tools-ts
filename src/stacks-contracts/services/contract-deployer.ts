@@ -9,7 +9,7 @@ import {
   ContractActionType,
   ContractProposalType,
   ContractType,
-  DeploymentResponse,
+  DeploymentDetails,
   TraitType,
 } from "../types/dao-types";
 import {
@@ -17,7 +17,6 @@ import {
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
-  ToolResponse,
 } from "../../utilities";
 import { NetworkType } from "../../types";
 
@@ -30,11 +29,14 @@ export class ContractDeployer {
     this.networkObj = getNetwork(network);
   }
 
+  // TODO: migrate all over to this format
+  // after using this function return with ToolResponse
   async deployContractV2(
     sourceCode: string,
     contractName: string,
+    contractType: ContractType | ContractActionType | ContractProposalType,
     nonce?: number
-  ): Promise<ToolResponse<DeploymentResponse>> {
+  ): Promise<DeploymentDetails> {
     return new Promise(async (resolve, reject) => {
       try {
         const { address, key } = await deriveChildAccount(
@@ -56,26 +58,13 @@ export class ContractDeployer {
         };
 
         const transaction = await makeContractDeploy(deployOptions);
-
         const broadcastResponse = await broadcastTransaction(
           transaction,
           this.network
         );
-        // check that error property is not present
-        // (since we can't instanceof the union type)
-        if (!("error" in broadcastResponse)) {
-          const response: ToolResponse<DeploymentResponse> = {
-            success: true,
-            message: `Transaction broadcasted successfully: 0x${broadcastResponse.txid}`,
-            data: {
-              contractPrincipal: `${address}.${contractName}`,
-              txId: `0x${broadcastResponse.txid}`,
-              sender: address,
-            },
-          };
-          resolve(response);
-        } else {
-          // create error message from broadcast response
+
+        // throw error if broadcast response has error property
+        if ("error" in broadcastResponse) {
           let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
           if (broadcastResponse.reason_data) {
             if ("message" in broadcastResponse.reason_data) {
@@ -85,18 +74,18 @@ export class ContractDeployer {
               errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
             }
           }
-          // create response object
-          const response: ToolResponse<DeploymentResponse> = {
-            success: false,
-            message: errorMessage,
-            data: {
-              contractPrincipal: `${address}.${contractName}`,
-              txId: undefined,
-              sender: address,
-            },
-          };
-          resolve(response);
+          throw new Error(errorMessage);
         }
+
+        const deploymentDetails: DeploymentDetails = {
+          sender: address,
+          name: contractName,
+          address: address,
+          type: contractType,
+          success: true,
+          txId: broadcastResponse.txid,
+        };
+        resolve(deploymentDetails);
       } catch (error) {
         reject(createErrorResponse(error));
       }

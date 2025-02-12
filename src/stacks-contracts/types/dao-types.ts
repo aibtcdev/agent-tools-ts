@@ -1,8 +1,3 @@
-import {
-  FaktoryContractInfo,
-  FaktoryGeneratedContracts,
-} from "../../utilities";
-
 export enum ContractType {
   // deployed before dao
   DAO_TOKEN = "aibtc-token",
@@ -16,6 +11,7 @@ export enum ContractType {
   DAO_BANK_ACCOUNT = "aibtc-bank-account",
   DAO_CORE_PROPOSALS = "aibtc-core-proposals",
   DAO_CORE_PROPOSALS_V2 = "aibtc-core-proposals-v2",
+  DAO_CHARTER = "aibtc-dao-charter",
   DAO_MESSAGING = "aibtc-onchain-messaging",
   DAO_PAYMENTS = "aibtc-payments-invoices",
   DAO_TOKEN_OWNER = "aibtc-token-owner",
@@ -82,32 +78,16 @@ export type DeploymentResult = {
   };
 };
 
-// compiled based on successful deployment tx
-export type DeploymentResponse = {
-  contractPrincipal: string;
-  txId?: string;
-  sender: string;
-};
-
-type DeployedContractInfo = {
-  contract: FaktoryContractInfo;
-  txInfo: DeploymentResponse;
-};
-
-type DeployedContracts<T> = {
-  [K in keyof T]: DeployedContractInfo;
-};
-
-export type DeployedFaktoryContracts =
-  DeployedContracts<FaktoryGeneratedContracts>;
-export type DeployedDaoContracts = DeployedContracts<GeneratedDaoContracts>;
-
+// created per contract at generate step
 export type DaoContractInfo = {
   source: string;
   name: string;
   address: string;
   type: ContractType | ContractActionType | ContractProposalType;
 };
+
+// TODO: definitely could use some refactoring on these patterns
+// "make it work, then make it pretty"
 
 export type GeneratedDaoContracts = GeneratedDaoBaseContract &
   GeneratedDaoExtensionContracts &
@@ -141,4 +121,48 @@ type GeneratedDaoActionExtensionContracts = {
 
 type GeneratedDaoProposalContracts = {
   "base-bootstrap-initialization": DaoContractInfo;
+};
+
+// created per contract at deployment step
+export type DeploymentDetails = {
+  sender: string;
+  name: string;
+  address: string;
+  type: ContractType | ContractActionType | ContractProposalType;
+  success: boolean;
+  txId?: string;
+};
+
+export type DeployedDaoContracts = DeployedBaseDaoContract &
+  DeployedDaoExtensionContracts &
+  DeployedDaoActionExtensionContracts &
+  DeployedDaoProposalContracts;
+
+type DeployedBaseDaoContract = {
+  "base-dao": DeploymentDetails;
+};
+
+type DeployedDaoExtensionContracts = {
+  "action-proposals": DeploymentDetails;
+  "bank-account": DeploymentDetails;
+  "core-proposals": DeploymentDetails;
+  "dao-charter": DeploymentDetails;
+  "onchain-messaging": DeploymentDetails;
+  "payments-invoices": DeploymentDetails;
+  "token-owner": DeploymentDetails;
+  treasury: DeploymentDetails;
+};
+
+type DeployedDaoActionExtensionContracts = {
+  "action-add-resource": DeploymentDetails;
+  "action-allow-asset": DeploymentDetails;
+  "action-send-message": DeploymentDetails;
+  "action-set-account-holder": DeploymentDetails;
+  "action-set-withdrawal-amount": DeploymentDetails;
+  "action-set-withdrawal-period": DeploymentDetails;
+  "action-toggle-resource": DeploymentDetails;
+};
+
+type DeployedDaoProposalContracts = {
+  "base-bootstrap-initialization": DeploymentDetails;
 };

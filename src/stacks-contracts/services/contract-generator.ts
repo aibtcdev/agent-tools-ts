@@ -690,6 +690,12 @@ export class ContractGenerator {
         type: ContractType.DAO_CORE_PROPOSALS_V2,
         address: coreProposalsContractAddress,
       },
+      "dao-charter": {
+        source: "TBD",
+        name: contractNames[ContractType.DAO_CHARTER],
+        type: ContractType.DAO_CHARTER,
+        address: "TBD",
+      },
       "onchain-messaging": {
         source: messagingContract,
         name: contractNames[ContractType.DAO_MESSAGING],
