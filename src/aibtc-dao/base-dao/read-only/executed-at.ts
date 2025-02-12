@@ -1,6 +1,5 @@
 import {
   callReadOnlyFunction,
-  ClarityType,
   cvToValue,
   contractPrincipalCV,
 } from "@stacks/transactions";
@@ -11,11 +10,12 @@ import {
   getNetwork,
   sendToLLM,
   ToolResponse,
-} from "../../../../utilities";
+} from "../../../utilities";
 
-const usage = "Usage: bun run executed-at.ts <baseDaoContract> <proposalContract>";
+const usage =
+  "Usage: bun run executed-at.ts <baseDaoContract> <proposalContract>";
 const usageExample =
-  "Example: bun run executed-at.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.proposal-1";
+  "Example: bun run executed-at.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-base-dao ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-onchain-messaging-send";
 
 interface ExpectedArgs {
   baseDaoContract: string;
