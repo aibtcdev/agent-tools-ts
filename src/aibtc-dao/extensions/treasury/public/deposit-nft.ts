@@ -17,7 +17,7 @@ import {
 const usage =
   "Usage: bun run deposit-nft.ts <treasuryContract> <nftContract> <tokenId>";
 const usageExample =
-  "Example: bun run deposit-nft.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-treasury ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.token-nft 1";
+  "Example: bun run deposit-nft.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-treasury ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdev-airdrop-1 1";
 
 interface ExpectedArgs {
   treasuryContract: string;
@@ -78,10 +78,7 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   // prepare function arguments
-  const functionArgs = [
-    Cl.contractPrincipal(...args.nftContract.split(".")),
-    Cl.uint(args.tokenId),
-  ];
+  const functionArgs = [Cl.principal(args.nftContract), Cl.uint(args.tokenId)];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,

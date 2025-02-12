@@ -1,8 +1,4 @@
-import {
-  callReadOnlyFunction,
-  Cl,
-  cvToValue,
-} from "@stacks/transactions";
+import { callReadOnlyFunction, Cl, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -15,7 +11,7 @@ import {
 const usage =
   "Usage: bun run is-allowed-asset.ts <treasuryContract> <assetContract>";
 const usageExample =
-  "Example: bun run is-allowed-asset.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-treasury ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.token-ft";
+  "Example: bun run is-allowed-asset.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-treasury ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token";
 
 interface ExpectedArgs {
   treasuryContract: string;

@@ -14,10 +14,9 @@ import {
   sendToLLM,
 } from "../../../../utilities";
 
-const usage =
-  "Usage: bun run deposit-stx.ts <treasuryContract> <amount>";
+const usage = "Usage: bun run deposit-stx.ts <treasuryContract> <amount>";
 const usageExample =
-  "Example: bun run deposit-stx.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-treasury 1000000";
+  "Example: bun run deposit-stx.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-treasury 1000000";
 
 interface ExpectedArgs {
   treasuryContract: string;
@@ -75,9 +74,7 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   // prepare function arguments
-  const functionArgs = [
-    Cl.uint(args.amount),
-  ];
+  const functionArgs = [Cl.uint(args.amount)];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
