@@ -88,9 +88,7 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main(): Promise<
-  ToolResponse<FaktoryGeneratedContracts & GeneratedDaoContracts>
-> {
+async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
   // setup network and wallet info

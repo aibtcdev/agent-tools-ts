@@ -1,3 +1,8 @@
+import {
+  FaktoryContractInfo,
+  FaktoryGeneratedContracts,
+} from "../../utilities";
+
 export enum ContractType {
   // deployed before dao
   DAO_TOKEN = "aibtc-token",
@@ -77,6 +82,26 @@ export type DeploymentResult = {
   };
 };
 
+// compiled based on successful deployment tx
+export type DeploymentResponse = {
+  contractPrincipal: string;
+  txId?: string;
+  sender: string;
+};
+
+type DeployedContractInfo = {
+  contract: FaktoryContractInfo;
+  txInfo: DeploymentResponse;
+};
+
+type DeployedContracts<T> = {
+  [K in keyof T]: DeployedContractInfo;
+};
+
+export type DeployedFaktoryContracts =
+  DeployedContracts<FaktoryGeneratedContracts>;
+export type DeployedDaoContracts = DeployedContracts<GeneratedDaoContracts>;
+
 export type DaoContractInfo = {
   source: string;
   name: string;
@@ -97,6 +122,7 @@ type GeneratedDaoExtensionContracts = {
   "action-proposals": DaoContractInfo;
   "bank-account": DaoContractInfo;
   "core-proposals": DaoContractInfo;
+  "dao-charter": DaoContractInfo;
   "onchain-messaging": DaoContractInfo;
   "payments-invoices": DaoContractInfo;
   "token-owner": DaoContractInfo;

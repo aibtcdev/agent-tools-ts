@@ -427,7 +427,7 @@ type FaktoryPool = {
   pool: FaktoryContractInfo;
 };
 
-type FaktoryContractInfo = {
+export type FaktoryContractInfo = {
   name: string;
   code: string;
   hash?: string;
@@ -753,8 +753,9 @@ export function broadcastTx(
         let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
         if (broadcastResponse.reason_data) {
           if ("message" in broadcastResponse.reason_data) {
-            errorMessage += ` - ${broadcastResponse.reason_data.message}`;
-          } else if ("expected" in broadcastResponse.reason_data) {
+            errorMessage += ` - Reason: ${broadcastResponse.reason_data.message}`;
+          }
+          if ("expected" in broadcastResponse.reason_data) {
             errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
           }
         }
