@@ -69,7 +69,7 @@ async function etchRunesToken() {
       rune: runeName,
       supply: supply,
       symbol: runeSymbol,
-      divisibility: 8,
+      divisibility: 6,
       premine: supply, // 100% premine
       fee: 510,
       receiveAddress: RECEIVE_ADDRESS!,
