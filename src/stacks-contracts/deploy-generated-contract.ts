@@ -1,102 +1,77 @@
-import {
-  getAddressFromPrivateKey,
-  makeContractDeploy,
-  broadcastTransaction,
-  AnchorMode,
-  SignedContractDeployOptions,
-  PostConditionMode,
-} from "@stacks/transactions";
-import {
-  CONFIG,
-  deriveChildAccount,
-  getNetwork,
-  getNextNonce,
-} from "../utilities";
 import { join } from "path";
 import { readFileSync } from "fs";
+import { ContractDeployer } from "./services/contract-deployer";
+import { DeploymentDetails } from "./types/dao-types";
+import {
+  CONFIG,
+  createErrorResponse,
+  deriveChildAccount,
+  getNextNonce,
+  sendToLLM,
+  ToolResponse,
+} from "../utilities";
 
-const networkObj = getNetwork(CONFIG.NETWORK);
-const network = CONFIG.NETWORK;
+const usage = "Usage: npm run deploy <contractPath>";
+const usageExample =
+  "Example: npm run deploy generated/bite/bite-core-proposals-v2.clar";
 
-async function deployContract(contractPath: string) {
-  try {
-    // Read the contract file
-    const fullPath = join(process.cwd(), "generated", contractPath);
-    console.log(`Reading contract file: ${fullPath}`);
-    const sourceCode = readFileSync(fullPath, "utf-8");
+interface ExpectedArgs {
+  contractPath: string;
+}
 
-    // Extract contract name from file path
-    const contractName =
-      contractPath.split("/").pop()?.replace(".clar", "") || "";
-    if (!contractName) {
-      throw new Error("Could not extract contract name from file path");
-    }
-
-    // Derive child account from mnemonic
-    const { address, key } = await deriveChildAccount(
-      CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
-
-    const formattedContractName = contractName
-      .replace(/([a-z])([A-Z])/g, "$1-$2")
-      .toLowerCase();
-    const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-    const nextPossibleNonce = await getNextNonce(network, senderAddress);
-
-    const txOptions: SignedContractDeployOptions = {
-      contractName: formattedContractName,
-      codeBody: sourceCode,
-      clarityVersion: 2,
-      network: networkObj,
-      senderKey: key,
-      nonce: nextPossibleNonce,
-      anchorMode: AnchorMode.Any,
-      postConditionMode: PostConditionMode.Allow,
-      fee: BigInt(1_000_000), // 1 STX
-    };
-
-    const transaction = await makeContractDeploy(txOptions);
-    const broadcastResponse = await broadcastTransaction(
-      transaction,
-      networkObj
-    );
-
-    if ("error" in broadcastResponse) {
-      console.error("Transaction failed to broadcast");
-      console.error(`Error: ${broadcastResponse.error}`);
-      if (broadcastResponse.reason) {
-        console.error(`Reason: ${broadcastResponse.reason}`);
-      }
-      if (broadcastResponse.reason_data) {
-        console.error(
-          `Reason Data: ${JSON.stringify(
-            broadcastResponse.reason_data,
-            null,
-            2
-          )}`
-        );
-      }
-    } else {
-      console.log("Transaction broadcasted successfully!");
-      console.log(`FROM: ${address}`);
-      console.log(`TXID: 0x${broadcastResponse.txid}`);
-      console.log(`CONTRACT: ${address}.${formattedContractName}`);
-    }
-  } catch (error) {
-    console.error(`Error deploying contract: ${error}`);
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [contractPath] = process.argv.slice(2);
+  if (!contractPath) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
+  // return validated arguments
+  return {
+    contractPath,
+  };
 }
 
-// Get the contract path from command line arguments and call deployContract
-const contractPath = process.argv[2];
-
-if (contractPath) {
-  deployContract(contractPath);
-} else {
-  console.error(
-    "Please provide the path to the contract file (relative to the 'generated' directory)"
+async function main(): Promise<ToolResponse<DeploymentDetails>> {
+  // validate and store provided args
+  const args = validateArgs();
+  const contractName = args.contractPath.split("/").pop()?.replace(".clar", "");
+  if (!contractName) {
+    throw new Error("Could not extract contract name from file path");
+  }
+  const sourceCode = readFileSync(
+    join(process.cwd(), args.contractPath),
+    "utf-8"
   );
-  console.error("Example: npm run deploy bite/bite-core-proposals-v2.clar");
+  // setup network and wallet info
+  const { address } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+  // setup deployment details
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  const contractDeployer = new ContractDeployer(CONFIG.NETWORK);
+  const deploymentDetails = await contractDeployer.deployContractV2(
+    contractName,
+    sourceCode,
+    nextPossibleNonce
+  );
+  // return deployment details
+  return {
+    success: true,
+    message: `Contract deployed successfully: ${address}.${contractName}`,
+    data: deploymentDetails,
+  };
 }
+
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });

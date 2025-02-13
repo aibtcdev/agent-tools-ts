@@ -1,20 +1,11 @@
 import {
-  makeContractDeploy,
-  broadcastTransaction,
-  AnchorMode,
-  SignedContractDeployOptions,
-  PostConditionMode,
-} from "@stacks/transactions";
-import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getNetwork,
   getNextNonce,
   sendToLLM,
   ToolResponse,
 } from "../utilities";
-import { CONTRACT_DEPLOY_FEE } from "./utils/contract-utils";
 import { DeploymentDetails } from "./types/dao-types";
 import { ContractDeployer } from "./services/contract-deployer";
 
