@@ -19,6 +19,7 @@ import {
   getNetwork,
 } from "../../utilities";
 import { NetworkType } from "../../types";
+import { CONTRACT_DEPLOY_FEE } from "../utils/contract-utils";
 
 export class ContractDeployer {
   private network: NetworkType;
@@ -34,8 +35,8 @@ export class ContractDeployer {
   async deployContractV2(
     sourceCode: string,
     contractName: string,
-    contractType: ContractType | ContractActionType | ContractProposalType,
-    nonce?: number
+    nonce?: number,
+    contractType?: ContractType | ContractActionType | ContractProposalType
   ): Promise<DeploymentDetails> {
     return new Promise(async (resolve, reject) => {
       try {
@@ -54,7 +55,7 @@ export class ContractDeployer {
           anchorMode: AnchorMode.Any,
           postConditionMode: PostConditionMode.Allow,
           nonce: nonce,
-          fee: BigInt(500_000), // 0.5 STX
+          fee: BigInt(CONTRACT_DEPLOY_FEE),
         };
 
         const transaction = await makeContractDeploy(deployOptions);

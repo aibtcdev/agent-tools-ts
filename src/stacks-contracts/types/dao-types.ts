@@ -128,8 +128,8 @@ export type DeploymentDetails = {
   sender: string;
   name: string;
   address: string;
-  type: ContractType | ContractActionType | ContractProposalType;
   success: boolean;
+  type?: ContractType | ContractActionType | ContractProposalType;
   txId?: string;
 };
 

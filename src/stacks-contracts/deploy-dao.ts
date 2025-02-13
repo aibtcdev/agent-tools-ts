@@ -145,8 +145,8 @@ async function main(): Promise<ToolResponse<any>> {
   const tokenDeployment = await contractDeployer.deployContractV2(
     token.code,
     contractNames[ContractType.DAO_TOKEN],
-    ContractType.DAO_TOKEN,
-    currentNonce
+    currentNonce,
+    ContractType.DAO_TOKEN
   );
   deploymentRecords[ContractType.DAO_TOKEN] = tokenDeployment;
   currentNonce++;
@@ -155,8 +155,8 @@ async function main(): Promise<ToolResponse<any>> {
   const poolDeployment = await contractDeployer.deployContractV2(
     pool.code,
     contractNames[ContractType.DAO_BITFLOW_POOL],
-    ContractType.DAO_BITFLOW_POOL,
-    currentNonce
+    currentNonce,
+    ContractType.DAO_BITFLOW_POOL
   );
   deploymentRecords[ContractType.DAO_BITFLOW_POOL] = poolDeployment;
   currentNonce++;
@@ -165,8 +165,8 @@ async function main(): Promise<ToolResponse<any>> {
   const dexDeployment = await contractDeployer.deployContractV2(
     dex.code,
     contractNames[ContractType.DAO_TOKEN_DEX],
-    ContractType.DAO_TOKEN_DEX,
-    currentNonce
+    currentNonce,
+    ContractType.DAO_TOKEN_DEX
   );
   deploymentRecords[ContractType.DAO_TOKEN_DEX] = dexDeployment;
   currentNonce++;
@@ -176,8 +176,8 @@ async function main(): Promise<ToolResponse<any>> {
     const deployment = await contractDeployer.deployContractV2(
       contract.source,
       contract.name,
-      contract.type,
-      currentNonce
+      currentNonce,
+      contract.type
     );
     deploymentRecords[contract.type] = deployment;
     currentNonce++;

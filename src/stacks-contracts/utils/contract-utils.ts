@@ -5,6 +5,8 @@ import {
   ContractProposalType,
 } from "../types/dao-types";
 
+export const CONTRACT_DEPLOY_FEE = 500_000; // 0.5 STX
+
 export function generateContractNames(tokenSymbol: string): ContractNames {
   return {
     [ContractType.DAO_TOKEN]: `${tokenSymbol.toLowerCase()}-faktory`,
