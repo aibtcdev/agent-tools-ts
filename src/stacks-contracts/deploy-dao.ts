@@ -10,7 +10,10 @@ import {
 import {
   ContractProposalType,
   ContractType,
+  DeployedDaoContracts,
   DeploymentDetails,
+  GeneratedDaoContracts,
+  mapToDeployedDaoContracts,
 } from "./types/dao-types";
 import { ContractGenerator } from "./services/contract-generator";
 import { ContractDeployer } from "./services/contract-deployer";
@@ -82,7 +85,12 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<any>> {
+async function main(): Promise<
+  ToolResponse<{
+    generatedContracts: GeneratedDaoContracts;
+    deployedContracts: DeployedDaoContracts;
+  }>
+> {
   // validate and store provided args
   const args = validateArgs();
   // setup network and wallet info
@@ -188,13 +196,8 @@ async function main(): Promise<ToolResponse<any>> {
     success: true,
     message: "Contracts generated and deployed successfully",
     data: {
-      generatedContracts: {
-        token,
-        dex,
-        pool,
-        ...daoContracts,
-      },
-      deployedContracts: deploymentRecords,
+      generatedContracts: daoContracts,
+      deployedContracts: mapToDeployedDaoContracts(deploymentRecords),
     },
   };
 }

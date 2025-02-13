@@ -51,6 +51,36 @@ export type ContractNames = ContractExtensionNames &
   ContractActionNames &
   ContractProposalNames;
 
+// Create a mapping of contract types to their record keys
+export const CONTRACT_KEYS = {
+  [ContractType.DAO_BASE]: "base-dao",
+  [ContractType.DAO_ACTION_PROPOSALS]: "action-proposals",
+  [ContractType.DAO_BANK_ACCOUNT]: "bank-account",
+  [ContractType.DAO_CORE_PROPOSALS]: "core-proposals",
+  [ContractType.DAO_CHARTER]: "dao-charter",
+  [ContractType.DAO_MESSAGING]: "onchain-messaging",
+  [ContractType.DAO_PAYMENTS]: "payments-invoices",
+  [ContractType.DAO_TOKEN_OWNER]: "token-owner",
+  [ContractType.DAO_TREASURY]: "treasury",
+  // action types
+  [ContractActionType.DAO_ACTION_ADD_RESOURCE]: "action-add-resource",
+  [ContractActionType.DAO_ACTION_ALLOW_ASSET]: "action-allow-asset",
+  [ContractActionType.DAO_ACTION_SEND_MESSAGE]: "action-send-message",
+  [ContractActionType.DAO_ACTION_SET_ACCOUNT_HOLDER]:
+    "action-set-account-holder",
+  [ContractActionType.DAO_ACTION_SET_WITHDRAWAL_AMOUNT]:
+    "action-set-withdrawal-amount",
+  [ContractActionType.DAO_ACTION_SET_WITHDRAWAL_PERIOD]:
+    "action-set-withdrawal-period",
+  [ContractActionType.DAO_ACTION_TOGGLE_RESOURCE]: "action-toggle-resource",
+  // proposal types
+  [ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION]:
+    "base-bootstrap-initialization",
+} as const;
+
+// Create a type from the values
+type ContractKey = (typeof CONTRACT_KEYS)[keyof typeof CONTRACT_KEYS];
+
 export enum TraitType {
   POOL = "xyk-pool-trait-v-1-2",
   DAO_BASE = "aibtcdev-dao-v1",
@@ -86,41 +116,9 @@ export type DaoContractInfo = {
   type: ContractType | ContractActionType | ContractProposalType;
 };
 
-// TODO: definitely could use some refactoring on these patterns
-// "make it work, then make it pretty"
-
-export type GeneratedDaoContracts = GeneratedDaoBaseContract &
-  GeneratedDaoExtensionContracts &
-  GeneratedDaoActionExtensionContracts &
-  GeneratedDaoProposalContracts;
-
-type GeneratedDaoBaseContract = {
-  "base-dao": DaoContractInfo;
-};
-
-type GeneratedDaoExtensionContracts = {
-  "action-proposals": DaoContractInfo;
-  "bank-account": DaoContractInfo;
-  "core-proposals": DaoContractInfo;
-  "dao-charter": DaoContractInfo;
-  "onchain-messaging": DaoContractInfo;
-  "payments-invoices": DaoContractInfo;
-  "token-owner": DaoContractInfo;
-  treasury: DaoContractInfo;
-};
-
-type GeneratedDaoActionExtensionContracts = {
-  "action-add-resource": DaoContractInfo;
-  "action-allow-asset": DaoContractInfo;
-  "action-send-message": DaoContractInfo;
-  "action-set-account-holder": DaoContractInfo;
-  "action-set-withdrawal-amount": DaoContractInfo;
-  "action-set-withdrawal-period": DaoContractInfo;
-  "action-toggle-resource": DaoContractInfo;
-};
-
-type GeneratedDaoProposalContracts = {
-  "base-bootstrap-initialization": DaoContractInfo;
+// tracks all generated contracts
+export type GeneratedDaoContracts = {
+  [K in ContractKey]: DaoContractInfo;
 };
 
 // created per contract at deployment step
@@ -133,36 +131,26 @@ export type DeploymentDetails = {
   txId?: string;
 };
 
-export type DeployedDaoContracts = DeployedBaseDaoContract &
-  DeployedDaoExtensionContracts &
-  DeployedDaoActionExtensionContracts &
-  DeployedDaoProposalContracts;
-
-type DeployedBaseDaoContract = {
-  "base-dao": DeploymentDetails;
+// tracks all deployed contracts
+export type DeployedDaoContracts = {
+  [K in ContractKey]: DeploymentDetails;
 };
 
-type DeployedDaoExtensionContracts = {
-  "action-proposals": DeploymentDetails;
-  "bank-account": DeploymentDetails;
-  "core-proposals": DeploymentDetails;
-  "dao-charter": DeploymentDetails;
-  "onchain-messaging": DeploymentDetails;
-  "payments-invoices": DeploymentDetails;
-  "token-owner": DeploymentDetails;
-  treasury: DeploymentDetails;
-};
+// maps contract types to their respective contract keys
+export function mapToGeneratedDaoContracts(
+  contracts: Record<string, DaoContractInfo>
+): GeneratedDaoContracts {
+  return Object.entries(CONTRACT_KEYS).reduce((acc, [type, key]) => {
+    acc[key as ContractKey] = contracts[type];
+    return acc;
+  }, {} as GeneratedDaoContracts);
+}
 
-type DeployedDaoActionExtensionContracts = {
-  "action-add-resource": DeploymentDetails;
-  "action-allow-asset": DeploymentDetails;
-  "action-send-message": DeploymentDetails;
-  "action-set-account-holder": DeploymentDetails;
-  "action-set-withdrawal-amount": DeploymentDetails;
-  "action-set-withdrawal-period": DeploymentDetails;
-  "action-toggle-resource": DeploymentDetails;
-};
-
-type DeployedDaoProposalContracts = {
-  "base-bootstrap-initialization": DeploymentDetails;
-};
+export function mapToDeployedDaoContracts(
+  records: Record<string, DeploymentDetails>
+): DeployedDaoContracts {
+  return Object.entries(CONTRACT_KEYS).reduce((acc, [type, key]) => {
+    acc[key as ContractKey] = records[type];
+    return acc;
+  }, {} as DeployedDaoContracts);
+}
