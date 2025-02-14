@@ -3,17 +3,19 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Pay an invoice for a resource by name")
-(define-constant CFG_RESOURCE_NAME u"example-resource")
-(define-constant CFG_MEMO (some 0x)) ;; (some (buff 34)) or none
-;; was CFG_MESSAGE_CONTRACT .aibtc-onchain-messaging
-;; was CFG_PAYMENTS_CONTRACT .aibtc-payments-invoices
+(define-constant CFG_RESOURCE_NAME <%= it.resource_name %>)
+(define-constant CFG_MEMO (if (is-some <%= it.memo %>)
+                           (some <%= it.memo %>)
+                           none))
+(define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)
+(define-constant CFG_PAYMENTS_CONTRACT <%= it.payments_contract %>)
 
 (define-public (execute (sender principal))
   (begin 
     ;; send a message from the dao
-    (try! (contract-call? .aibtc-onchain-messaging send CFG_MESSAGE true))
+    (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; pays an invoice for a resource by name
-    (try! (contract-call? .aibtc-payments-invoices pay-invoice-by-resource-name CFG_RESOURCE_NAME CFG_MEMO))
+    (try! (contract-call? <%= it.payments_contract %> pay-invoice-by-resource-name CFG_RESOURCE_NAME CFG_MEMO))
     (ok true)
   )
 )
