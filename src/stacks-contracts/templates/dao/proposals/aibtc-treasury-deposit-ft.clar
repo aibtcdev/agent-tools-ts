@@ -3,16 +3,16 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Deposit fungible tokens to the treasury")
-(define-constant CFG_TOKEN_AMOUNT u1000) ;; in microFT
-;; was CFG_MESSAGE_CONTRACT .aibtc-onchain-messaging
-;; was CFG_TREASURY_CONTRACT .aibtc-treasury
-;; was CFG_TOKEN_CONTRACT .aibtc-token
+(define-constant CFG_TOKEN_AMOUNT <%= it.token_amount %>) ;; in microFT
+(define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)
+(define-constant CFG_TREASURY_CONTRACT <%= it.treasury_contract %>)
+(define-constant CFG_TOKEN_CONTRACT <%= it.token_contract %>)
 
 (define-public (execute (sender principal))
   (begin
     ;; send a message from the dao
-    (try! (contract-call? .aibtc-onchain-messaging send CFG_MESSAGE true))
+    (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; deposit fungible tokens to the treasury
-    (contract-call? .aibtc-treasury deposit-ft .aibtc-token CFG_TOKEN_AMOUNT)
+    (contract-call? <%= it.treasury_contract %> deposit-ft CFG_TOKEN_CONTRACT CFG_TOKEN_AMOUNT)
   )
 )
