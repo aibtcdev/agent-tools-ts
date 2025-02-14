@@ -3,15 +3,12 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Added new extension to DAO")
-;; was CFG_MESSAGE_CONTRACT .aibtc-onchain-messaging
-;; was CFG_BASE_DAO .aibtc-base-dao
-;; was CFG_NEW_EXTENSION .aibtc-bank-account
 
 (define-public (execute (sender principal))
   (begin
     ;; send a message from the dao
-    (try! (contract-call? .aibtc-onchain-messaging send CFG_MESSAGE true))
+    (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; adds and enables a new extension to the DAO
-    (contract-call? .aibtc-base-dao set-extension .aibtc-bank-account true)
+    (contract-call? <%= it.base_dao_contract %> set-extension <%= it.new_extension_contract %> true)
   )
 )
