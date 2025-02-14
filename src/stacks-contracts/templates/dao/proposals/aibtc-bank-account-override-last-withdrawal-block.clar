@@ -1,15 +1,15 @@
-(impl-trait .aibtc-dao-traits-v2.proposal)
+(impl-trait <%= it.proposals_trait_v2 %>)
 
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Override last withdrawal block")
-(define-constant CFG_LAST_WITHDRAWAL_BLOCK burn-block-height)
+(define-constant CFG_LAST_WITHDRAWAL_BLOCK <%= it.last_withdrawal_block %>)
 
 (define-public (execute (sender principal))
   (begin
     ;; send a message from the dao
-    (try! (contract-call? .aibtc-onchain-messaging send CFG_MESSAGE true)) ;; CFG_MESSAGE_CONTRACT
+    (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; override last withdrawal block in the bank account
-    (contract-call? .aibtc-bank-account override-last-withdrawal-block CFG_LAST_WITHDRAWAL_BLOCK) ;; CFG_BANK_ACCOUNT_CONTRACT
+    (contract-call? <%= it.bank_account_contract %> override-last-withdrawal-block CFG_LAST_WITHDRAWAL_BLOCK)
   )
 )
