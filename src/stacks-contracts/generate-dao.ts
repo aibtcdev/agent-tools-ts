@@ -41,7 +41,6 @@ function validateArgs(): ExpectedArgs {
     tweetOrigin,
     generateFiles,
   ] = process.argv.slice(2);
-  const shouldGenerateFiles = convertStringToBoolean(generateFiles);
   // verify all required arguments are provided
   if (
     !tokenSymbol ||
@@ -69,6 +68,8 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+  // convert generateFiles to boolean
+  const shouldGenerateFiles = convertStringToBoolean(generateFiles);
   // return validated arguments
   return {
     tokenSymbol,
