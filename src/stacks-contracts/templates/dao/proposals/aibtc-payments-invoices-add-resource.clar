@@ -6,7 +6,7 @@
 (define-constant CFG_RESOURCE_NAME <%= it.resource_name %>)
 (define-constant CFG_RESOURCE_DESCRIPTION <%= it.resource_description %>)
 (define-constant CFG_RESOURCE_AMOUNT <%= it.resource_amount %>)
-(define-constant CFG_RESOURCE_URL <%= it.resource_url %>) ;; (some u"url") or none
+(define-constant CFG_RESOURCE_URL <%= it.resource_url %>)
 (define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)
 (define-constant CFG_PAYMENTS_CONTRACT <%= it.payments_contract %>)
 
