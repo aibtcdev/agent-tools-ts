@@ -3,20 +3,20 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Add a new resource available for invoicing")
-(define-constant CFG_RESOURCE_NAME u"example-resource")
-(define-constant CFG_RESOURCE_DESCRIPTION u"An example resource")
-(define-constant CFG_RESOURCE_AMOUNT u1000000)
-(define-constant CFG_RESOURCE_URL (some u"https://example.com")) ;; or none
-;; was CFG_MESSAGE_CONTRACT .aibtc-onchain-messaging
-;; was CFG_PAYMENTS_CONTRACT .aibtc-payments-invoices
+(define-constant CFG_RESOURCE_NAME <%= it.resource_name %>)
+(define-constant CFG_RESOURCE_DESCRIPTION <%= it.resource_description %>)
+(define-constant CFG_RESOURCE_AMOUNT <%= it.resource_amount %>)
+(define-constant CFG_RESOURCE_URL <%= it.resource_url %>) ;; (some u"url") or none
+(define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)
+(define-constant CFG_PAYMENTS_CONTRACT <%= it.payments_contract %>)
 
 (define-public (execute (sender principal))
   ;; adds a resource that can be used to pay invoices
   (begin
     ;; send a message from the dao
-    (try! (contract-call? .aibtc-onchain-messaging send CFG_MESSAGE true))
+    (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; add a resource to the payments contract
-    (try! (contract-call? .aibtc-payments-invoices add-resource CFG_RESOURCE_NAME CFG_RESOURCE_DESCRIPTION CFG_RESOURCE_AMOUNT CFG_RESOURCE_URL))
+    (try! (contract-call? <%= it.payments_contract %> add-resource CFG_RESOURCE_NAME CFG_RESOURCE_DESCRIPTION CFG_RESOURCE_AMOUNT CFG_RESOURCE_URL))
     (ok true)
   )
 )
