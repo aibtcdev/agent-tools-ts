@@ -10,6 +10,7 @@
     ;; send a message from the dao
     (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; deposit STX in the bank account
-    (contract-call? <%= it.bank_account_contract %> deposit-stx CFG_DEPOSIT_AMOUNT)
+    (try! (contract-call? <%= it.bank_account_contract %> deposit-stx CFG_DEPOSIT_AMOUNT))
+    (ok true)
   )
 )
