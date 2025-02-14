@@ -10,8 +10,8 @@
 (define-public (execute (sender principal))
   (begin
     ;; send a message from the dao
-    (try! (contract-call? CFG_MESSAGE_CONTRACT send CFG_MESSAGE true))
+    (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; set token uri in the token owner contract
-    (contract-call? CFG_TOKEN_OWNER_CONTRACT set-token-uri CFG_TOKEN_URI)
+    (contract-call? <%= it.token_owner_contract %> set-token-uri <%= it.token_uri %>)
   )
 )

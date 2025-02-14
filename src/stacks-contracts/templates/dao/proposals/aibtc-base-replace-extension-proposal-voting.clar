@@ -17,16 +17,16 @@
   ;; replaces the core and action voting proposals in a dao
   (begin
     ;; send a message from the dao
-    (try! (contract-call? CFG_MESSAGE_CONTRACT send CFG_MESSAGE true))
+    (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; check that old extensions exist
-    (asserts! (contract-call? CFG_BASE_DAO_CONTRACT is-extension CFG_OLD_ACTION_PROPOSALS) ERR_EXTENSION_NOT_FOUND)
-    (asserts! (contract-call? CFG_BASE_DAO_CONTRACT is-extension CFG_OLD_CORE_PROPOSALS) ERR_EXTENSION_NOT_FOUND)
+    (asserts! (contract-call? <%= it.base_dao_contract %> is-extension CFG_OLD_ACTION_PROPOSALS) ERR_EXTENSION_NOT_FOUND)
+    (asserts! (contract-call? <%= it.base_dao_contract %> is-extension CFG_OLD_CORE_PROPOSALS) ERR_EXTENSION_NOT_FOUND)
     ;; disable old extensions
-    (try! (contract-call? CFG_BASE_DAO_CONTRACT set-extension CFG_OLD_ACTION_PROPOSALS false))
-    (try! (contract-call? CFG_BASE_DAO_CONTRACT set-extension CFG_OLD_CORE_PROPOSALS false))
+    (try! (contract-call? <%= it.base_dao_contract %> set-extension CFG_OLD_ACTION_PROPOSALS false))
+    (try! (contract-call? <%= it.base_dao_contract %> set-extension CFG_OLD_CORE_PROPOSALS false))
     ;; add new extensions
-    (try! (contract-call? CFG_BASE_DAO_CONTRACT set-extension CFG_NEW_ACTION_PROPOSALS true))
-    (try! (contract-call? CFG_BASE_DAO_CONTRACT set-extension CFG_NEW_CORE_PROPOSALS true))
+    (try! (contract-call? <%= it.base_dao_contract %> set-extension CFG_NEW_ACTION_PROPOSALS true))
+    (try! (contract-call? <%= it.base_dao_contract %> set-extension CFG_NEW_CORE_PROPOSALS true))
     (ok true)
   )
 )
