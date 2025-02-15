@@ -2,23 +2,6 @@
 
 (define-constant CFG_DAO_MANIFEST_TEXT "<%= it.dao_manifest %>")
 (define-constant CFG_DAO_MANIFEST_INSCRIPTION_ID "<%= it.dao_manifest_inscription_id %>")
-(define-constant CFG_MESSAGE_CONTRACT .aibtc-onchain-messaging)
-(define-constant CFG_DAO_CHARTER .aibtc-dao-charter)
-(define-constant CFG_ACTION_PROPOSALS .aibtc-action-proposals-v2)
-(define-constant CFG_BANK_ACCOUNT .aibtc-bank-account)
-(define-constant CFG_CORE_PROPOSALS .aibtc-core-proposals-v2)
-(define-constant CFG_MESSAGING .aibtc-onchain-messaging)
-(define-constant CFG_PAYMENTS .aibtc-payments-invoices)
-(define-constant CFG_TOKEN_OWNER .aibtc-token-owner)
-(define-constant CFG_TREASURY .aibtc-treasury)
-(define-constant CFG_ACTION_ADD_RESOURCE .aibtc-action-add-resource)
-(define-constant CFG_ACTION_ALLOW_ASSET .aibtc-action-allow-asset)
-(define-constant CFG_ACTION_SEND_MESSAGE .aibtc-action-send-message)
-(define-constant CFG_ACTION_SET_ACCOUNT_HOLDER .aibtc-action-set-account-holder)
-(define-constant CFG_ACTION_SET_WITHDRAWAL_AMOUNT .aibtc-action-set-withdrawal-amount)
-(define-constant CFG_ACTION_SET_WITHDRAWAL_PERIOD .aibtc-action-set-withdrawal-period)
-(define-constant CFG_ACTION_TOGGLE_RESOURCE .aibtc-action-toggle-resource-by-name)
-(define-constant CFG_TOKEN .aibtc-token)
 
 (define-public (execute (sender principal))
   (begin
