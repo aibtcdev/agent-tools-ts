@@ -13,6 +13,6 @@
     ;; send a message from the dao
     (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; deposit NFT to the treasury
-    (contract-call? <%= it.treasury_contract %> deposit-nft CFG_NFT_CONTRACT CFG_NFT_ID)
+    (contract-call? <%= it.treasury_contract %> deposit-nft <%= it.nft_contract %> CFG_NFT_ID)
   )
 )

@@ -14,6 +14,6 @@
     ;; send a message from the dao
     (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; withdraw an NFT from the treasury
-    (contract-call? <%= it.treasury_contract %> withdraw-nft CFG_NFT_CONTRACT CFG_NFT_ID CFG_RECIPIENT)
+    (contract-call? <%= it.treasury_contract %> withdraw-nft <%= it.nft_contract %> CFG_NFT_ID <%= it.recipient %>)
   )
 )

@@ -13,6 +13,6 @@
     ;; send a message from the dao
     (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; deposit fungible tokens to the treasury
-    (contract-call? <%= it.treasury_contract %> deposit-ft CFG_TOKEN_CONTRACT CFG_TOKEN_AMOUNT)
+    (contract-call? <%= it.treasury_contract %> deposit-ft <%= it.token_contract %> CFG_TOKEN_AMOUNT)
   )
 )

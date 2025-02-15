@@ -13,6 +13,6 @@
     ;; send a message from the dao
     (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; delegate STX for stacking
-    (contract-call? <%= it.treasury_contract %> delegate-stx CFG_AMOUNT CFG_DELEGATE_TO)
+    (contract-call? <%= it.treasury_contract %> delegate-stx CFG_AMOUNT <%= it.delegate_to %>)
   )
 )

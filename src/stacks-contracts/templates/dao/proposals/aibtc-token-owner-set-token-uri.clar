@@ -12,6 +12,6 @@
     ;; send a message from the dao
     (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; set token uri in the token owner contract
-    (contract-call? <%= it.token_owner_contract %> set-token-uri <%= it.token_uri %>)
+    (contract-call? <%= it.token_owner_contract %> set-token-uri CFG_TOKEN_URI)
   )
 )

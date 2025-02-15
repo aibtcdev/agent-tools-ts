@@ -12,6 +12,6 @@
     ;; send a message from the dao
     (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; disable an asset for deposit and withdrawal in the treasury
-    (contract-call? <%= it.treasury_contract %> allow-asset CFG_ASSET_CONTRACT false)
+    (contract-call? <%= it.treasury_contract %> allow-asset <%= it.asset_contract %> false)
   )
 )

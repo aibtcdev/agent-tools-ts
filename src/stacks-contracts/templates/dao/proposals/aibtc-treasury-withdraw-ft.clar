@@ -14,6 +14,6 @@
     ;; send a message from the dao
     (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; withdraw fungible tokens from the treasury
-    (contract-call? <%= it.treasury_contract %> withdraw-ft CFG_TOKEN_CONTRACT CFG_TOKEN_AMOUNT CFG_RECIPIENT)
+    (contract-call? <%= it.treasury_contract %> withdraw-ft <%= it.token_contract %> CFG_TOKEN_AMOUNT <%= it.recipient %>)
   )
 )

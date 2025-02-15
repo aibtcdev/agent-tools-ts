@@ -13,6 +13,6 @@
     ;; send a message from the dao
     (try! (contract-call? <%= it.message_contract %> send CFG_MESSAGE true))
     ;; withdraw STX from the treasury
-    (contract-call? <%= it.treasury_contract %> withdraw-stx CFG_STX_AMOUNT CFG_RECIPIENT)
+    (contract-call? <%= it.treasury_contract %> withdraw-stx CFG_STX_AMOUNT <%= it.recipient %>)
   )
 )
