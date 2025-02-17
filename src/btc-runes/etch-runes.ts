@@ -1,4 +1,4 @@
-import { Inscription } from "ordinalsbot";
+import { Ordinalsbot } from "ordinalsbot";
 import {
   CONFIG,
   createErrorResponse,
@@ -69,34 +69,53 @@ async function main(): Promise<ToolResponse<string>> {
   // Validate and get arguments
   const args = validateArgs();
 
-  // Initialize client
-  const inscription = new Inscription(API_KEY, args.network);
+  try {
+    // Initialize client
+    const ordinalsbotObj = new Ordinalsbot(API_KEY, args.network);
+    const inscription = ordinalsbotObj.Inscription();
 
-  // Create order
-  const runesEtchOrder = {
-    files: [standardFile],
-    turbo: true,
-    rune: args.runeName,
-    supply: SUPPLY, // 1 billion above
-    symbol: args.runeSymbol,
-    divisibility: 6,
-    premine: SUPPLY,
-    fee: 510,
-    receiveAddress: RECEIVE_ADDRESS,
-  };
-
-  const response = await inscription.createRunesEtchOrder(runesEtchOrder);
-
-  if (response && typeof response === "object" && "id" in response) {
-    const orderStatus = await inscription.getOrder(response.id);
-    return {
-      success: true,
-      message: "Rune etched successfully",
-      data: `Order ID: ${response.id}, Status: ${orderStatus.status}`,
+    // Create order with more explicit parameters
+    const runesEtchOrder = {
+      files: [
+        {
+          name: "rune.txt",
+          size: 1,
+          type: "plain/text",
+          dataURL: "data:plain/text;base64,YQ==",
+        },
+      ],
+      turbo: true,
+      rune: args.runeName,
+      supply: SUPPLY,
+      symbol: args.runeSymbol,
+      divisibility: 6,
+      premine: SUPPLY,
+      fee: 510,
+      receiveAddress: RECEIVE_ADDRESS,
     };
-  }
 
-  throw new Error("Failed to create rune order");
+    console.log("Attempting to create rune order with:", {
+      ...runesEtchOrder,
+      receiveAddress: "[HIDDEN]", // Hide sensitive data in logs
+    });
+
+    const response = await inscription.createRunesEtchOrder(runesEtchOrder);
+    console.log("API Response:", response);
+
+    if (response && typeof response === "object" && "id" in response) {
+      const orderStatus = await inscription.getOrder(response.id);
+      return {
+        success: true,
+        message: "Rune etched successfully",
+        data: `Order ID: ${response.id}, Status: ${orderStatus.status}`,
+      };
+    }
+
+    throw new Error("Failed to create rune order: No order ID returned");
+  } catch (error) {
+    console.error("Full error:", error);
+    throw error;
+  }
 }
 
 // Execute with LLM response handling
