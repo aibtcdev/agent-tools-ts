@@ -131,6 +131,8 @@ export interface AppConfig {
   HIRO_API_KEY: string;
   STXCITY_API_HOST: string;
   AIBTC_FAKTORY_API_KEY: string;
+  BTC_PRIVATE_KEY: string;
+  BTC_RECEIVE_ADDRESS: string;
 }
 
 // define default values for app config
@@ -141,6 +143,8 @@ const DEFAULT_CONFIG: AppConfig = {
   HIRO_API_KEY: "",
   STXCITY_API_HOST: "https://stx.city",
   AIBTC_FAKTORY_API_KEY: "",
+  BTC_PRIVATE_KEY: "",
+  BTC_RECEIVE_ADDRESS: "",
 };
 
 // load configuration from environment variables
@@ -155,6 +159,8 @@ function loadConfig(): AppConfig {
       process.env.STXCITY_API_HOST || DEFAULT_CONFIG.STXCITY_API_HOST,
     AIBTC_FAKTORY_API_KEY:
       process.env.AIBTC_FAKTORY_API_KEY || DEFAULT_CONFIG.AIBTC_FAKTORY_API_KEY,
+    BTC_PRIVATE_KEY: process.env.BTC_PRIVATE_KEY || "",
+    BTC_RECEIVE_ADDRESS: process.env.RECEIVE_ADDRESS || "",
   };
 }
 

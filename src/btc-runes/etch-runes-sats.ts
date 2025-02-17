@@ -4,21 +4,46 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../utilities";
+import { request, BitcoinNetworkType, RunesGetOrder } from "sats-connect"; // Import BitcoinNetworkType and RunesGetOrder
 
-// Import type definitions for the external SatsConnect API
-declare global {
-  interface SatsConnectResponse<T> {
-    status: "success" | "error";
-    result?: T;
-    error?: string;
-  }
+// Type definitions for the SatsConnect API
+interface SatsConnectResponse<T> {
+  status: "success" | "error";
+  result?: T;
+  error?: string;
+}
 
-  interface SatsConnect {
-    request: (method: string, params: any) => Promise<SatsConnectResponse<any>>;
-  }
+// Define the RunesEstimateEtchParams type (aligned with @sats-connect/core)
+interface RunesEstimateEtchParams {
+  runeName: string;
+  symbol?: string;
+  divisibility?: number;
+  premine?: string;
+  isMintable: boolean;
+  terms?: {
+    amount: string;
+    cap: string;
+    heightStart?: string; // Changed from number to string
+    heightEnd?: string; // Changed from number to string
+    offsetStart?: string; // Changed from number to string
+    offsetEnd?: string; // Changed from number to string
+  };
+  inscriptionDetails?: {
+    contentType: string;
+    contentBase64: string;
+  };
+  delegateInscriptionId?: string;
+  turbo?: boolean;
+  destinationAddress: string;
+  feeRate: number;
+  appServiceFee?: number;
+  appServiceFeeAddress?: string;
+  network?: BitcoinNetworkType;
+}
 
-  // Add the SatsConnect to the global object
-  var SatsConnect: SatsConnect;
+// Define the RunesEtchParams type (based on documentation)
+interface RunesEtchParams extends RunesEstimateEtchParams {
+  refundAddress: string;
 }
 
 // Constants
@@ -118,10 +143,10 @@ async function waitForOrderConfirmation(orderId: string): Promise<OrderStatus> {
 
   while (attempts < MAX_ORDER_CHECK_ATTEMPTS) {
     try {
-      // Using Sats Connect to check order status
-      const orderResponse = await global.SatsConnect.request("runes_getOrder", {
-        orderId,
-      });
+      // Using Sats Connect to check order status - fix type issues using the right parameters
+      const orderResponse = (await request("runes_getOrder", {
+        id: orderId, // Using id as expected by the RunesGetOrder params
+      })) as SatsConnectResponse<any>;
 
       console.log(`Order status check ${attempts + 1}:`, orderResponse.status);
 
@@ -178,6 +203,10 @@ async function main(): Promise<ToolResponse<string>> {
     throw new Error("RECEIVE_ADDRESS environment variable is required");
   }
 
+  if (!REFUND_ADDRESS) {
+    throw new Error("REFUND_ADDRESS is required for etching operations");
+  }
+
   // Validate and get arguments
   const args = validateArgs();
 
@@ -186,7 +215,14 @@ async function main(): Promise<ToolResponse<string>> {
     console.log(
       `Estimating cost for etching rune "${args.runeName}" (${args.runeSymbol}) on ${args.network}...`
     );
-    const estimateParams = {
+
+    // Convert network string to BitcoinNetworkType
+    const networkType =
+      args.network === "testnet"
+        ? BitcoinNetworkType.Testnet
+        : BitcoinNetworkType.Mainnet;
+
+    const estimateParams: RunesEstimateEtchParams = {
       runeName: args.runeName,
       symbol: args.runeSymbol,
       divisibility: DIVISIBILITY,
@@ -194,17 +230,17 @@ async function main(): Promise<ToolResponse<string>> {
       isMintable: false,
       destinationAddress: RECEIVE_ADDRESS,
       feeRate: 10, // sats/vbyte, consider making this configurable
-      network: args.network,
+      network: networkType,
       inscriptionDetails: {
         contentType: standardFile.type,
         contentBase64: standardFile.dataURL.split(",")[1],
       },
     };
 
-    const estimateResponse = await global.SatsConnect.request(
+    const estimateResponse = (await request(
       "runes_estimateEtch",
       estimateParams
-    );
+    )) as SatsConnectResponse<any>;
 
     if (estimateResponse.status !== "success" || !estimateResponse.result) {
       throw new Error(
@@ -229,15 +265,15 @@ async function main(): Promise<ToolResponse<string>> {
 
     // Second step: Actually etch the rune
     console.log("Initiating rune etch transaction...");
-    const etchParams = {
+    const etchParams: RunesEtchParams = {
       ...estimateParams,
       refundAddress: REFUND_ADDRESS,
     };
 
-    const etchResponse = await global.SatsConnect.request(
+    const etchResponse = (await request(
       "runes_etch",
       etchParams
-    );
+    )) as SatsConnectResponse<any>;
 
     if (etchResponse.status !== "success" || !etchResponse.result) {
       throw new Error(
@@ -280,9 +316,12 @@ async function main(): Promise<ToolResponse<string>> {
     throw new Error("Failed to create rune order: No order ID returned");
   } catch (error) {
     console.error("Full error:", error);
-    return createErrorResponse(
-      error instanceof Error ? error : new Error(String(error))
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      success: false,
+      message: errorMessage,
+      data: JSON.stringify({ error: errorMessage }),
+    };
   }
 }
 
@@ -290,10 +329,11 @@ async function main(): Promise<ToolResponse<string>> {
 main()
   .then(sendToLLM)
   .catch((error) => {
-    sendToLLM(
-      createErrorResponse(
-        error instanceof Error ? error : new Error(String(error))
-      )
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    sendToLLM({
+      success: false,
+      message: errorMessage,
+      data: JSON.stringify({ error: errorMessage }),
+    });
     process.exit(1);
   });
