@@ -70,8 +70,8 @@ async function makePayment(
   network: "testnet" | "mainnet"
 ): Promise<string> {
   const privateKey = process.env.BTC_PRIVATE_KEY;
-  console.log("privateKey rafa prefix:", privateKey?.slice(0, 6), "...");
-  console.log("privateKey length:", privateKey?.length);
+  console.log("BTC privateKey prefix:", privateKey?.slice(0, 6), "...");
+  console.log("BTC privateKey length:", privateKey?.length);
 
   const receiveAddress = process.env.RECEIVE_ADDRESS;
   console.log(
@@ -79,7 +79,7 @@ async function makePayment(
     receiveAddress?.slice(0, 10),
     "..."
   );
-  console.log("receiveAddress length:", receiveAddress?.length);
+  console.log("BTC receiveAddress length:", receiveAddress?.length);
 
   if (!privateKey) {
     throw new Error("BTC_PRIVATE_KEY environment variable is required");

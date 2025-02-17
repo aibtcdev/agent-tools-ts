@@ -28,6 +28,8 @@
     "@stacks/transactions": "^6.17.0",
     "@stacks/wallet-sdk": "^6.17.0",
     "axios": "^1.7.9",
+    "bip32": "^5.0.0-rc.0",
+    "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.7",
     "bitflow-sdk": "^1.6.1",
     "chalk": "^5.4.1",
