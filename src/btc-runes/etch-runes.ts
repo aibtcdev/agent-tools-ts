@@ -11,7 +11,7 @@ import * as ecc from "tiny-secp256k1";
 import * as ecpair from "ecpair";
 
 // Constants
-const SUPPLY = 1_000_000_000;
+const SUPPLY = 1000000000;
 const standardFile = {
   name: "rune.txt",
   size: 1,
@@ -222,6 +222,91 @@ async function makePayment(
   return tx.getId();
 }
 
+// async function main(): Promise<ToolResponse<string>> {
+//   // Validate environment variables
+//   const API_KEY = process.env.ORDINALSBOT_API_KEY;
+//   const RECEIVE_ADDRESS = process.env.RECEIVE_ADDRESS;
+
+//   if (!API_KEY) {
+//     throw new Error("ORDINALSBOT_API_KEY environment variable is required");
+//   }
+//   if (!RECEIVE_ADDRESS) {
+//     throw new Error("RECEIVE_ADDRESS environment variable is required");
+//   }
+
+//   // Validate and get arguments
+//   const args = validateArgs();
+
+//   try {
+//     // Skip the library and make a direct API call with the correct payload format
+//     const payload = {
+//       rune: args.runeName,
+//       supply: SUPPLY,
+//       symbol: args.runeSymbol,
+//       divisibility: 6,
+//       premine: SUPPLY,
+//       files: [
+//         {
+//           name: "rune.txt",
+//           size: 1,
+//           type: "plain/text",
+//           dataURL: "data:plain/text;base64,YQ==",
+//         },
+//       ],
+//       turbo: true,
+//       fee: 1000,
+//       receiveAddress: RECEIVE_ADDRESS,
+//     };
+
+//     console.log("Direct API payload:", {
+//       ...payload,
+//       receiveAddress: RECEIVE_ADDRESS,
+//     });
+
+//     // Use the correct endpoint from documentation
+//     const endpoint = `https://api.ordinalsbot.com/runes/etch`;
+
+//     try {
+//       const response = await axios.post(endpoint, payload, {
+//         headers: {
+//           Authorization: `Bearer ${API_KEY}`,
+//           "Content-Type": "application/json",
+//         },
+//       });
+
+//       console.log("Direct API response:", response.data);
+
+//       return {
+//         success: true,
+//         message: "Rune etch order created",
+//         data: JSON.stringify(response.data),
+//       };
+//     } catch (axiosError) {
+//       console.error("Direct API error details:");
+//       if (axiosError.response) {
+//         console.error("Status:", axiosError.response.status);
+//         console.error(
+//           "Data:",
+//           JSON.stringify(axiosError.response.data, null, 2)
+//         );
+//         console.error(
+//           "Headers:",
+//           JSON.stringify(axiosError.response.headers, null, 2)
+//         );
+//       }
+//       console.error("Request:", {
+//         url: axiosError.config?.url,
+//         method: axiosError.config?.method,
+//         data: JSON.stringify(axiosError.config?.data, null, 2),
+//       });
+//       throw axiosError;
+//     }
+//   } catch (error) {
+//     console.error("Full error:", error);
+//     throw error;
+//   }
+// }
+
 async function main(): Promise<ToolResponse<string>> {
   // Validate environment variables
   const API_KEY = process.env.ORDINALSBOT_API_KEY;
@@ -261,11 +346,6 @@ async function main(): Promise<ToolResponse<string>> {
       fee: 510,
       receiveAddress: RECEIVE_ADDRESS,
     };
-
-    console.log("Attempting to create rune order with:", {
-      ...runesEtchOrder,
-      receiveAddress: "[HIDDEN]", // Hide sensitive data in logs
-    });
 
     const response = await inscription.createRunesEtchOrder(runesEtchOrder);
     console.log("API Response:", response);
@@ -307,40 +387,40 @@ async function main(): Promise<ToolResponse<string>> {
     throw new Error("Failed to create rune order: No order ID returned");
   } catch (error) {
     console.error("Full error:", error);
-    // Enhanced error logging for axios errors
-    if (error.isAxiosError) {
-      console.error("API Error Details:");
-      console.error("Status:", error.response?.status);
-      console.error("Status Text:", error.response?.statusText);
-      console.error(
-        "Response Data:",
-        JSON.stringify(error.response?.data, null, 2)
-      );
-      console.error(
-        "Response Headers:",
-        JSON.stringify(error.response?.headers, null, 2)
-      );
-      console.error("Request URL:", error.config?.url);
-      console.error("Request Method:", error.config?.method);
-      console.error(
-        "Request Data:",
-        JSON.stringify(error.config?.data, null, 2)
-      );
-      console.error(
-        "Request Headers:",
-        JSON.stringify(error.config?.headers, null, 2)
-      );
-    }
 
     // You can also try to access the underlying error if it's wrapped
-    if (error.cause) {
-      console.error("Underlying error:", error.cause);
-    }
+
     throw error;
   }
 }
 
+// Helper function to extract axios error from nested error objects
+// function findAxiosError(error: any): any {
+//   if (!error) return null;
+//   if (axios.isAxiosError(error)) return error;
+
+//   // Check common properties where an error might be nested
+//   const nestedProps = [
+//     "cause",
+//     "original",
+//     "source",
+//     "error",
+//     "err",
+//     "inner",
+//     "reason",
+//   ];
+//   for (const prop of nestedProps) {
+//     if (error[prop] && typeof error[prop] === "object") {
+//       const found = findAxiosError(error[prop]);
+//       if (found) return found;
+//     }
+//   }
+
+//   return null;
+// }
+
 // Execute with LLM response handling
+
 main()
   .then(sendToLLM)
   .catch((error) => {
