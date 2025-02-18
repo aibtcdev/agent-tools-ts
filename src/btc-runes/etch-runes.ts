@@ -307,6 +307,35 @@ async function main(): Promise<ToolResponse<string>> {
     throw new Error("Failed to create rune order: No order ID returned");
   } catch (error) {
     console.error("Full error:", error);
+    // Enhanced error logging for axios errors
+    if (error.isAxiosError) {
+      console.error("API Error Details:");
+      console.error("Status:", error.response?.status);
+      console.error("Status Text:", error.response?.statusText);
+      console.error(
+        "Response Data:",
+        JSON.stringify(error.response?.data, null, 2)
+      );
+      console.error(
+        "Response Headers:",
+        JSON.stringify(error.response?.headers, null, 2)
+      );
+      console.error("Request URL:", error.config?.url);
+      console.error("Request Method:", error.config?.method);
+      console.error(
+        "Request Data:",
+        JSON.stringify(error.config?.data, null, 2)
+      );
+      console.error(
+        "Request Headers:",
+        JSON.stringify(error.config?.headers, null, 2)
+      );
+    }
+
+    // You can also try to access the underlying error if it's wrapped
+    if (error.cause) {
+      console.error("Underlying error:", error.cause);
+    }
     throw error;
   }
 }
