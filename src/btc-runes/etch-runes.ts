@@ -69,7 +69,7 @@ async function makePayment(
   amount: number,
   network: "testnet" | "mainnet"
 ): Promise<string> {
-  const privateKey = process.env.BTC_PRIVATE_KEY;
+  const privateKey = process.env.BTC_PRIVATE_KEY_WIF;
   console.log("BTC privateKey prefix:", privateKey?.slice(0, 6), "...");
   console.log("BTC privateKey length:", privateKey?.length);
 
@@ -82,7 +82,7 @@ async function makePayment(
   console.log("BTC receiveAddress length:", receiveAddress?.length);
 
   if (!privateKey) {
-    throw new Error("BTC_PRIVATE_KEY environment variable is required");
+    throw new Error("BTC_PRIVATE_KEY_WIF environment variable is required");
   }
   if (!receiveAddress) {
     throw new Error("RECEIVE_ADDRESS environment variable is required");
@@ -95,10 +95,7 @@ async function makePayment(
   // Initialize ECC factory
   const ECPair = ecpair.ECPairFactory(ecc);
 
-  // Create key pair from private key
-  const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, "hex"), {
-    network: btcNetwork,
-  });
+  const keyPair = ECPair.fromWIF(privateKey, btcNetwork);
 
   // Derive wallet address
   const { address } = bitcoin.payments.p2wpkh({
