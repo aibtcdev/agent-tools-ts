@@ -67,25 +67,15 @@ function validateArgs(): ExpectedArgs {
 
 async function makePayment(
   amount: number,
+  paymentAddress: string,
   network: "testnet" | "mainnet"
 ): Promise<string> {
   const privateKey = process.env.BTC_PRIVATE_KEY_WIF;
   console.log("BTC privateKey prefix:", privateKey?.slice(0, 6), "...");
   console.log("BTC privateKey length:", privateKey?.length);
 
-  const receiveAddress = process.env.RECEIVE_ADDRESS;
-  console.log(
-    "receiveAddress rafa prefix:",
-    receiveAddress?.slice(0, 10),
-    "..."
-  );
-  console.log("BTC receiveAddress length:", receiveAddress?.length);
-
   if (!privateKey) {
     throw new Error("BTC_PRIVATE_KEY_WIF environment variable is required");
-  }
-  if (!receiveAddress) {
-    throw new Error("RECEIVE_ADDRESS environment variable is required");
   }
 
   // Initialize bitcoin network
@@ -181,7 +171,7 @@ async function makePayment(
 
   // Add payment output
   psbt.addOutput({
-    address: receiveAddress,
+    address: paymentAddress,
     value: amount,
   });
 
@@ -356,8 +346,19 @@ async function main(): Promise<ToolResponse<string>> {
       if (orderDetails && orderDetails.fee) {
         console.log(`Order requires payment of ${orderDetails.fee} satoshis`);
 
+        // Get payment address from charge object
+        const paymentAddress = orderDetails.charge?.address;
+        if (!paymentAddress) {
+          throw new Error("No payment address found in order details");
+        }
+        console.log(`Payment will be sent to: ${paymentAddress}`);
         // Make the payment
-        const txId = await makePayment(orderDetails.fee, args.network);
+        const txId = await makePayment(
+          orderDetails.fee,
+          paymentAddress,
+          args.network
+        );
+
         console.log(`Payment made successfully with transaction ID: ${txId}`);
 
         // Wait for confirmation (you may want to implement a polling mechanism here)
