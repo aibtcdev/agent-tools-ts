@@ -331,7 +331,7 @@ async function main(): Promise<ToolResponse<string>> {
       symbol: args.runeSymbol,
       divisibility: 6,
       premine: SUPPLY,
-      fee: 546,
+      fee: 2,
       receiveAddress: RECEIVE_ADDRESS,
     };
 
@@ -354,8 +354,11 @@ async function main(): Promise<ToolResponse<string>> {
         }
         console.log(`Payment will be sent to: ${paymentAddress}`);
         // Make the payment
+        // Get the full payment amount from charge object
+        const paymentAmount = orderDetails.charge?.amount;
+        console.log(`Total payment amount: ${paymentAmount} satoshis`);
         const txId = await makePayment(
-          orderDetails.fee,
+          paymentAmount,
           paymentAddress,
           args.network
         );
