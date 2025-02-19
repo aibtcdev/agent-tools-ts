@@ -39,7 +39,6 @@
 ;; voting configuration - TESTNET VALUES
 (define-constant VOTING_DELAY u1)
 (define-constant VOTING_PERIOD u5)
-(asserts! (not (is-in-mainnet)) ERR_TESTNET_ONLY)
 ;; voting configuration
 (define-constant VOTING_QUORUM u15) ;; 15% of liquid supply must participate
 (define-constant VOTING_THRESHOLD u66) ;; 66% of votes must be in favor

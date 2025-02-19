@@ -39,6 +39,7 @@
 ;; voting configuration - TESTNET VALUES
 (define-constant VOTING_DELAY u2)
 (define-constant VOTING_PERIOD u7)
+;; voting configuration
 (define-constant VOTING_QUORUM u25) ;; 25% of liquid supply must participate
 (define-constant VOTING_THRESHOLD u90) ;; 90% of votes must be in favor
 
