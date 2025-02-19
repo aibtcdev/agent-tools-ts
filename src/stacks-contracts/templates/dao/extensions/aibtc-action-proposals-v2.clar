@@ -1,4 +1,4 @@
-;; title: aibtcdev-action-proposals
+;; title: aibtc-action-proposals-v2
 ;; version: 2.0.0
 ;; summary: An extension that manages voting on predefined actions using a SIP-010 Stacks token.
 ;; description: This contract allows voting on specific extension actions with a lower threshold than core proposals.
@@ -33,9 +33,13 @@
 (define-constant ERR_ALREADY_VOTED (err u1012))
 (define-constant ERR_INVALID_ACTION (err u1013))
 
+;; voting configuration - MAINNET VALUES
+;; (define-constant VOTING_DELAY u144) ;; 144 Bitcoin blocks, ~1 days
+;; (define-constant VOTING_PERIOD u288) ;; 2 x 144 Bitcoin blocks, ~2 days
+;; voting configuration - TESTNET VALUES
+(define-constant VOTING_DELAY u1)
+(define-constant VOTING_PERIOD u5)
 ;; voting configuration
-(define-constant VOTING_DELAY u144) ;; 144 Bitcoin blocks, ~1 days
-(define-constant VOTING_PERIOD u288) ;; 2 x 144 Bitcoin blocks, ~2 days
 (define-constant VOTING_QUORUM u15) ;; 15% of liquid supply must participate
 (define-constant VOTING_THRESHOLD u66) ;; 66% of votes must be in favor
 
