@@ -295,6 +295,31 @@ async function makePayment(
 //   }
 // }
 
+// Helper function to extract axios error from nested error objects
+// function findAxiosError(error: any): any {
+//   if (!error) return null;
+//   if (axios.isAxiosError(error)) return error;
+
+//   // Check common properties where an error might be nested
+//   const nestedProps = [
+//     "cause",
+//     "original",
+//     "source",
+//     "error",
+//     "err",
+//     "inner",
+//     "reason",
+//   ];
+//   for (const prop of nestedProps) {
+//     if (error[prop] && typeof error[prop] === "object") {
+//       const found = findAxiosError(error[prop]);
+//       if (found) return found;
+//     }
+//   }
+
+//   return null;
+// }
+
 async function main(): Promise<ToolResponse<string>> {
   // Validate environment variables
   const API_KEY = process.env.ORDINALSBOT_API_KEY;
@@ -395,31 +420,6 @@ async function main(): Promise<ToolResponse<string>> {
     throw error;
   }
 }
-
-// Helper function to extract axios error from nested error objects
-// function findAxiosError(error: any): any {
-//   if (!error) return null;
-//   if (axios.isAxiosError(error)) return error;
-
-//   // Check common properties where an error might be nested
-//   const nestedProps = [
-//     "cause",
-//     "original",
-//     "source",
-//     "error",
-//     "err",
-//     "inner",
-//     "reason",
-//   ];
-//   for (const prop of nestedProps) {
-//     if (error[prop] && typeof error[prop] === "object") {
-//       const found = findAxiosError(error[prop]);
-//       if (found) return found;
-//     }
-//   }
-
-//   return null;
-// }
 
 // Execute with LLM response handling
 
