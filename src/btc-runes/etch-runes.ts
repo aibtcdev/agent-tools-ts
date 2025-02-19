@@ -50,7 +50,8 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (runeSymbol.length !== 1) {
+  // Better emoji support: use the spread operator to count visual characters
+  if ([...runeSymbol].length !== 1) {
     throw new Error("Symbol must be a single character");
   }
 
@@ -71,8 +72,6 @@ async function makePayment(
   network: "testnet" | "mainnet"
 ): Promise<string> {
   const privateKey = process.env.BTC_PRIVATE_KEY_WIF;
-  console.log("BTC privateKey prefix:", privateKey?.slice(0, 6), "...");
-  console.log("BTC privateKey length:", privateKey?.length);
 
   if (!privateKey) {
     throw new Error("BTC_PRIVATE_KEY_WIF environment variable is required");
@@ -105,6 +104,8 @@ async function makePayment(
 
   const response = await axios.get(apiEndpoint);
   const utxos = response.data;
+
+  console.log(`Derived wallet address: ${address}`);
 
   if (!utxos.length) {
     throw new Error("No UTXOs found for the wallet address");
@@ -330,7 +331,7 @@ async function main(): Promise<ToolResponse<string>> {
       symbol: args.runeSymbol,
       divisibility: 6,
       premine: SUPPLY,
-      fee: 510,
+      fee: 546,
       receiveAddress: RECEIVE_ADDRESS,
     };
 

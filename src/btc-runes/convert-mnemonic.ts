@@ -44,7 +44,8 @@ function getMnemonicInfo(
   // Derive the BIP44 path
   // m/44'/0' for mainnet, m/44'/1' for testnet
   const coinType = network === "testnet" ? 1 : 0;
-  const path = `m/44'/${coinType}'/${account}'/0/${index}`;
+  // For Native SegWit (bc1...) addresses, use BIP84
+  const path = `m/84'/${coinType}'/${account}'/0/${index}`;
 
   // Derive the key
   const root = bip32.fromSeed(seed, bitcoinNetwork);
