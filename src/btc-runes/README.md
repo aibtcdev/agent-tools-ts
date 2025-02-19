@@ -15,13 +15,12 @@ npm install ordinalsbot dotenv
 Create a new runes token with 100% of supply premined and sent to a specified address.
 
 ```bash
-bun run src/bitcoin-runes/etch-runes.ts <rune_name> <supply> <symbol> [network]
+bun run src/bitcoin-runes/etch-runes.ts <rune_name> <symbol> [network]
 ```
 
 Parameters:
 
 - `rune_name`: Name of the rune (required)
-- `supply`: Total supply of tokens (required)
 - `symbol`: Single character symbol (required)
 - `network`: Network to use (optional, default: "testnet")
 
@@ -29,10 +28,11 @@ Example:
 
 ```bash
 # Basic usage (on testnet)
-bun run src/bitcoin-runes/etch-runes.ts "FAKTORY•TOKEN" 21000000 "K"
+bun run src/bitcoin-runes/etch-runes.ts "FAKTORY•TOKEN" "K"
 
 # Specify network
-bun run src/bitcoin-runes/etch-runes.ts "FAKTORY•TOKEN" 21000000 "K" mainnet
+bun run src/bitcoin-runes/etch-runes.ts "FAKTORY•TOKEN" "K" mainnet
+bun run src/btc-runes/etch-runes.ts "FOUNDARY•TOKEN" "🔥" mainnet
 ```
 
 ## Important Notes
@@ -55,11 +55,16 @@ bun run src/bitcoin-runes/etch-runes.ts "FAKTORY•TOKEN" 21000000 "K" mainnet
    - "testnet" (default)
    - "mainnet"
 
-4. **Technical Details**:
+4. **⚠️ Fee Parameters**: Be extremely careful with:
+
+   - `fee`: Default is 3 sats/vbyte. Higher values dramatically increase costs
+   - `turbo`: Set to `false` by default. Setting to `true` can increase fees by 30x+
+   - Misconfiguring these params can inflate a $12 transaction to $450+
+
+5. **Technical Details**:
+   - Fixed supply of 1 billion tokens
    - All runes are created with 100% premine
-   - Default divisibility is set to 8 decimal places
-   - Includes turbo mode for faster processing
-   - Default fee is set to 510 sats
+   - Default divisibility is set to 6 decimal places
    - File inscription is handled automatically
 
 ## Response Format
@@ -78,7 +83,7 @@ Rune Configuration:
 ------------------
 Network: testnet
 Rune Name: FAKTORY•TOKEN
-Supply: 21,000,000
+Supply: 1,000,000,000
 Symbol: K
 Receive Address: tb1...
 ------------------

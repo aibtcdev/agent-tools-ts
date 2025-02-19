@@ -210,159 +210,6 @@ async function makePayment(
   return tx.getId();
 }
 
-async function main(): Promise<ToolResponse<string>> {
-  // Validate environment variables
-  const API_KEY = process.env.ORDINALSBOT_API_KEY;
-  const RECEIVE_ADDRESS = process.env.RECEIVE_ADDRESS;
-
-  if (!API_KEY) {
-    throw new Error("ORDINALSBOT_API_KEY environment variable is required");
-  }
-  if (!RECEIVE_ADDRESS) {
-    throw new Error("RECEIVE_ADDRESS environment variable is required");
-  }
-
-  // Validate and get arguments
-  const args = validateArgs();
-
-  try {
-    // Skip the library and make a direct API call with the correct payload format
-    const payload = {
-      rune: args.runeName,
-      supply: SUPPLY,
-      symbol: args.runeSymbol,
-      divisibility: 6,
-      premine: SUPPLY,
-      files: [standardFile],
-      turbo: false,
-      fee: 3,
-      receiveAddress: RECEIVE_ADDRESS,
-    };
-
-    console.log("Direct API payload:", {
-      ...payload,
-      receiveAddress: RECEIVE_ADDRESS,
-    });
-
-    // Use the correct endpoint from documentation
-    const endpoint = `https://api.ordinalsbot.com/runes/etch`;
-
-    try {
-      const response = await axios.post(endpoint, payload, {
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      console.log("Direct API response:", response.data);
-
-      // Now handle payment if order was created successfully
-      if (
-        response.data &&
-        response.data.charge &&
-        response.data.charge.amount
-      ) {
-        const paymentAddress = response.data.charge.address;
-        const paymentAmount = response.data.charge.amount;
-
-        console.log(`Payment address: ${paymentAddress}`);
-        console.log(`Payment amount: ${paymentAmount} satoshis`);
-
-        try {
-          // Make payment with detailed error logging
-          const txId = await makePayment(
-            paymentAmount,
-            paymentAddress,
-            args.network
-          );
-          console.log(`Payment successful with TX ID: ${txId}`);
-
-          return {
-            success: true,
-            message: "Rune etch order created and payment sent",
-            data: JSON.stringify({
-              order: response.data,
-              payment: { txId, amount: paymentAmount },
-            }),
-          };
-        } catch (paymentError) {
-          console.error("Payment error details:");
-          console.error(JSON.stringify(paymentError, null, 2));
-
-          // If the error has a response property (axios error)
-          if (paymentError.response) {
-            console.error("Status:", paymentError.response.status);
-            console.error(
-              "Data:",
-              JSON.stringify(paymentError.response.data, null, 2)
-            );
-          }
-
-          throw new Error(
-            `Order created but payment failed: ${paymentError.message}`
-          );
-        }
-      }
-
-      return {
-        success: true,
-        message: "Rune etch order created",
-        data: JSON.stringify(response.data),
-      };
-    } catch (axiosError) {
-      console.error("Direct API error details:");
-      if (axiosError.response) {
-        console.error("Status:", axiosError.response.status);
-        console.error(
-          "Data:",
-          JSON.stringify(axiosError.response.data, null, 2)
-        );
-        console.error(
-          "Headers:",
-          JSON.stringify(axiosError.response.headers, null, 2)
-        );
-      }
-      console.error("Request:", {
-        url: axiosError.config?.url,
-        method: axiosError.config?.method,
-        data: JSON.stringify(axiosError.config?.data, null, 2),
-      });
-      throw axiosError;
-    }
-  } catch (error) {
-    console.error("Full error:", error);
-    // Try to find more details if it's a nested error
-    if (error.cause) console.error("Cause:", error.cause);
-    throw error;
-  }
-}
-
-// Helper function to extract axios error from nested error objects
-function findAxiosError(error: any): any {
-  if (!error) return null;
-  if (axios.isAxiosError(error)) return error;
-
-  // Check common properties where an error might be nested
-  const nestedProps = [
-    "cause",
-    "original",
-    "source",
-    "error",
-    "err",
-    "inner",
-    "reason",
-  ];
-  for (const prop of nestedProps) {
-    if (error[prop] && typeof error[prop] === "object") {
-      const found = findAxiosError(error[prop]);
-      if (found) return found;
-    }
-  }
-
-  return null;
-}
-
 // async function main(): Promise<ToolResponse<string>> {
 //   // Validate environment variables
 //   const API_KEY = process.env.ORDINALSBOT_API_KEY;
@@ -379,90 +226,243 @@ function findAxiosError(error: any): any {
 //   const args = validateArgs();
 
 //   try {
-//     // Initialize client
-//     const ordinalsbotObj = new Ordinalsbot(API_KEY, args.network);
-//     const inscription = ordinalsbotObj.Inscription();
-
-//     // Create order with more explicit parameters
-//     const runesEtchOrder = {
-//       files: [
-//         {
-//           name: "rune.txt",
-//           size: 1,
-//           type: "plain/text",
-//           dataURL: "data:plain/text;base64,YQ==",
-//         },
-//       ],
-//       turbo: true,
+//     // Skip the library and make a direct API call with the correct payload format
+//     const payload = {
 //       rune: args.runeName,
 //       supply: SUPPLY,
 //       symbol: args.runeSymbol,
 //       divisibility: 6,
 //       premine: SUPPLY,
-//       fee: 2,
+//       files: [standardFile],
+//       turbo: false,
+//       fee: 3,
 //       receiveAddress: RECEIVE_ADDRESS,
 //     };
 
-//     const response = await inscription.createRunesEtchOrder(runesEtchOrder);
-//     console.log("API Response:", response);
+//     console.log("Direct API payload:", {
+//       ...payload,
+//       receiveAddress: RECEIVE_ADDRESS,
+//     });
 
-//     if (response && typeof response === "object" && "id" in response) {
-//       console.log(`Order created with ID: ${response.id}`);
+//     // Use the correct endpoint from documentation
+//     const endpoint = `https://api.ordinalsbot.com/runes/etch`;
 
-//       // Get order details to find required payment amount
-//       const orderDetails = await inscription.getOrder(response.id);
+//     try {
+//       const response = await axios.post(endpoint, payload, {
+//         headers: {
+//           Authorization: `Bearer ${API_KEY}`,
+//           "Content-Type": "application/json",
+//         },
+//       });
 
-//       if (orderDetails && orderDetails.fee) {
-//         console.log(`Order requires payment of ${orderDetails.fee} satoshis`);
+//       console.log("Direct API response:", response.data);
 
-//         // Get payment address from charge object
-//         const paymentAddress = orderDetails.charge?.address;
-//         if (!paymentAddress) {
-//           throw new Error("No payment address found in order details");
+//       // Now handle payment if order was created successfully
+//       if (
+//         response.data &&
+//         response.data.charge &&
+//         response.data.charge.amount
+//       ) {
+//         const paymentAddress = response.data.charge.address;
+//         const paymentAmount = response.data.charge.amount;
+
+//         console.log(`Payment address: ${paymentAddress}`);
+//         console.log(`Payment amount: ${paymentAmount} satoshis`);
+
+//         try {
+//           // Make payment with detailed error logging
+//           const txId = await makePayment(
+//             paymentAmount,
+//             paymentAddress,
+//             args.network
+//           );
+//           console.log(`Payment successful with TX ID: ${txId}`);
+
+//           return {
+//             success: true,
+//             message: "Rune etch order created and payment sent",
+//             data: JSON.stringify({
+//               order: response.data,
+//               payment: { txId, amount: paymentAmount },
+//             }),
+//           };
+//         } catch (paymentError) {
+//           console.error("Payment error details:");
+//           console.error(JSON.stringify(paymentError, null, 2));
+
+//           // If the error has a response property (axios error)
+//           if (paymentError.response) {
+//             console.error("Status:", paymentError.response.status);
+//             console.error(
+//               "Data:",
+//               JSON.stringify(paymentError.response.data, null, 2)
+//             );
+//           }
+
+//           throw new Error(
+//             `Order created but payment failed: ${paymentError.message}`
+//           );
 //         }
-//         console.log(`Payment will be sent to: ${paymentAddress}`);
-//         // Make the payment
-//         // Get the full payment amount from charge object
-//         const paymentAmount = orderDetails.charge?.amount;
-//         console.log(`Total payment amount: ${paymentAmount} satoshis`);
-//         const txId = await makePayment(
-//           paymentAmount,
-//           paymentAddress,
-//           args.network
-//         );
-
-//         console.log(`Payment made successfully with transaction ID: ${txId}`);
-
-//         // Wait for confirmation (you may want to implement a polling mechanism here)
-//         console.log("Waiting for confirmation...");
-
-//         // Check order status again
-//         const finalOrderStatus = await inscription.getOrder(response.id);
-
-//         return {
-//           success: true,
-//           message: "Rune etched and payment processed successfully",
-//           data: `Order ID: ${response.id}, Status: ${finalOrderStatus.status}, Payment TX: ${txId}`,
-//         };
 //       }
 
-//       const orderStatus = await inscription.getOrder(response.id);
 //       return {
 //         success: true,
-//         message: "Rune etched successfully",
-//         data: `Order ID: ${response.id}, Status: ${orderStatus.status}`,
+//         message: "Rune etch order created",
+//         data: JSON.stringify(response.data),
 //       };
+//     } catch (axiosError) {
+//       console.error("Direct API error details:");
+//       if (axiosError.response) {
+//         console.error("Status:", axiosError.response.status);
+//         console.error(
+//           "Data:",
+//           JSON.stringify(axiosError.response.data, null, 2)
+//         );
+//         console.error(
+//           "Headers:",
+//           JSON.stringify(axiosError.response.headers, null, 2)
+//         );
+//       }
+//       console.error("Request:", {
+//         url: axiosError.config?.url,
+//         method: axiosError.config?.method,
+//         data: JSON.stringify(axiosError.config?.data, null, 2),
+//       });
+//       throw axiosError;
 //     }
-
-//     throw new Error("Failed to create rune order: No order ID returned");
 //   } catch (error) {
 //     console.error("Full error:", error);
-
-//     // You can also try to access the underlying error if it's wrapped
-
+//     // Try to find more details if it's a nested error
+//     if (error.cause) console.error("Cause:", error.cause);
 //     throw error;
 //   }
 // }
+
+// Helper function to extract axios error from nested error objects
+// function findAxiosError(error: any): any {
+//   if (!error) return null;
+//   if (axios.isAxiosError(error)) return error;
+
+//   // Check common properties where an error might be nested
+//   const nestedProps = [
+//     "cause",
+//     "original",
+//     "source",
+//     "error",
+//     "err",
+//     "inner",
+//     "reason",
+//   ];
+//   for (const prop of nestedProps) {
+//     if (error[prop] && typeof error[prop] === "object") {
+//       const found = findAxiosError(error[prop]);
+//       if (found) return found;
+//     }
+//   }
+
+//   return null;
+// }
+
+async function main(): Promise<ToolResponse<string>> {
+  // Validate environment variables
+  const API_KEY = process.env.ORDINALSBOT_API_KEY;
+  const RECEIVE_ADDRESS = process.env.RECEIVE_ADDRESS;
+
+  if (!API_KEY) {
+    throw new Error("ORDINALSBOT_API_KEY environment variable is required");
+  }
+  if (!RECEIVE_ADDRESS) {
+    throw new Error("RECEIVE_ADDRESS environment variable is required");
+  }
+
+  // Validate and get arguments
+  const args = validateArgs();
+
+  try {
+    // Initialize client
+    const ordinalsbotObj = new Ordinalsbot(API_KEY, args.network);
+    const inscription = ordinalsbotObj.Inscription();
+
+    // Create order with more explicit parameters
+    const runesEtchOrder = {
+      files: [
+        {
+          name: "rune.txt",
+          size: 1,
+          type: "plain/text",
+          dataURL: "data:plain/text;base64,YQ==",
+        },
+      ],
+      turbo: false,
+      rune: args.runeName,
+      supply: SUPPLY,
+      symbol: args.runeSymbol,
+      divisibility: 6,
+      premine: SUPPLY,
+      fee: 3,
+      receiveAddress: RECEIVE_ADDRESS,
+    };
+
+    const response = await inscription.createRunesEtchOrder(runesEtchOrder);
+    console.log("API Response:", response);
+
+    if (response && typeof response === "object" && "id" in response) {
+      console.log(`Order created with ID: ${response.id}`);
+
+      // Get order details to find required payment amount
+      const orderDetails = await inscription.getOrder(response.id);
+
+      if (orderDetails && orderDetails.fee) {
+        console.log(`Order requires payment of ${orderDetails.fee} satoshis`);
+
+        // Get payment address from charge object
+        const paymentAddress = orderDetails.charge?.address;
+        if (!paymentAddress) {
+          throw new Error("No payment address found in order details");
+        }
+        console.log(`Payment will be sent to: ${paymentAddress}`);
+        // Make the payment
+        // Get the full payment amount from charge object
+        const paymentAmount = orderDetails.charge?.amount;
+        console.log(`Total payment amount: ${paymentAmount} satoshis`);
+        const txId = await makePayment(
+          paymentAmount,
+          paymentAddress,
+          args.network
+        );
+
+        console.log(`Payment made successfully with transaction ID: ${txId}`);
+
+        // Wait for confirmation (you may want to implement a polling mechanism here)
+        console.log("Waiting for confirmation...");
+
+        // Check order status again
+        const finalOrderStatus = await inscription.getOrder(response.id);
+
+        return {
+          success: true,
+          message: "Rune etched and payment processed successfully",
+          data: `Order ID: ${response.id}, Status: ${finalOrderStatus.status}, Payment TX: ${txId}`,
+        };
+      }
+
+      const orderStatus = await inscription.getOrder(response.id);
+      return {
+        success: true,
+        message: "Rune etched successfully",
+        data: `Order ID: ${response.id}, Status: ${orderStatus.status}`,
+      };
+    }
+
+    throw new Error("Failed to create rune order: No order ID returned");
+  } catch (error) {
+    console.error("Full error:", error);
+
+    // You can also try to access the underlying error if it's wrapped
+
+    throw error;
+  }
+}
 
 // Execute with LLM response handling
 
