@@ -1,4 +1,4 @@
-;; title: aibtcdev-core-proposals
+;; title: aibtc-core-proposals-v2
 ;; version: 2.0.0
 ;; summary: An extension that manages voting on proposals to execute Clarity code using a SIP-010 Stacks token.
 ;; description: This contract can make changes to core DAO functionality with a high voting threshold by executing Clarity code in the context of the DAO.
@@ -33,9 +33,12 @@
 (define-constant ERR_ALREADY_VOTED (err u3012))
 (define-constant ERR_FIRST_VOTING_PERIOD (err u3013))
 
-;; voting configuration
-(define-constant VOTING_DELAY u432) ;; 3 x 144 Bitcoin blocks, ~3 days
-(define-constant VOTING_PERIOD u432) ;; 3 x 144 Bitcoin blocks, ~3 days
+;; voting configuration - MAINNET VALUES
+;; (define-constant VOTING_DELAY u432) ;; 3 x 144 Bitcoin blocks, ~3 days
+;; (define-constant VOTING_PERIOD u432) ;; 3 x 144 Bitcoin blocks, ~3 days
+;; voting configuration - TESTNET VALUES
+(define-constant VOTING_DELAY u2)
+(define-constant VOTING_PERIOD u7)
 (define-constant VOTING_QUORUM u25) ;; 25% of liquid supply must participate
 (define-constant VOTING_THRESHOLD u90) ;; 90% of votes must be in favor
 
