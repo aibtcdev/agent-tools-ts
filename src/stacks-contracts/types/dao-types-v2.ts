@@ -1,7 +1,7 @@
 import { StacksNetworkName } from "@stacks/network";
 
 // make uppercase version of StacksNetworkName
-type NetworkName = Uppercase<StacksNetworkName>;
+export type NetworkName = Uppercase<StacksNetworkName>;
 
 //////////////////////////////
 // UTILITY TYPES
@@ -64,116 +64,145 @@ export const ADDRESSES: Record<NetworkName, KnownAddresses> = {
 // CONTRACT TRAITS
 //////////////////////////////
 
-// define trait locations within contracts
+// Define trait categories and their associated traits
 export const TRAIT_CONTRACTS = {
-  SIP009: {
-    contractName: "nft-trait",
-    traits: ["nft-trait"],
+  STANDARDS: {
+    SIP009: {
+      contractName: "nft-trait",
+      traitName: "nft-trait",
+    },
+    SIP010: {
+      contractName: "sip-010-trait-ft-standard",
+      traitName: "sip-010-trait",
+    },
   },
-  SIP010: {
-    contractName: "sip-010-trait-ft-standard",
-    traits: ["sip-010-trait"],
+  BASE: {
+    DAO: {
+      contractName: "aibtc-dao-v2",
+      traitName: "aibtc-base-dao",
+    },
   },
-  SIP010_FAKTORY: {
-    contractName: "faktory-trait-v1",
-    traits: ["sip-010-trait"],
+  EXTENSIONS: {
+    EXTENSION: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "extension",
+    },
+    BITFLOW_POOL: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "bitflow-pool",
+    },
+    FAKTORY_DEX: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "faktory-dex",
+    },
+    TOKEN: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "token",
+    },
+    ACTION: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "action",
+    },
+    ACTION_PROPOSALS: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "action-proposals",
+    },
+    BANK_ACCOUNT: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "bank-account",
+    },
+    CHARTER: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "charter",
+    },
+    CORE_PROPOSALS: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "core-proposals",
+    },
+    MESSAGING: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "messaging",
+    },
+    INVOICES: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "invoices",
+    },
+    RESOURCES: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "resources",
+    },
+    TOKEN_OWNER: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "token-owner",
+    },
+    TREASURY: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "treasury",
+    },
   },
-  DAO_BASE: {
-    contractName: "aibtcdev-dao-v1",
-    traits: ["aibtcdev-base-dao"],
+  PROPOSALS: {
+    PROPOSAL: {
+      contractName: "aibtc-dao-traits-v2",
+      traitName: "proposal",
+    },
   },
-  DAO_BASE_V2: {
-    contractName: "aibtc-dao-v2",
-    traits: ["aibtc-base-dao"],
+  BITFLOW: {
+    POOL: {
+      contractName: "xyk-pool-trait-v-1-2",
+      traitName: "xyk-pool-trait",
+    },
+    SIP010: {
+      contractName: "sip-010-trait-ft-standard",
+      traitName: "sip-010-trait",
+    },
   },
-  DAO_TRAITS: {
-    contractName: "aibtcdev-dao-traits-v1",
-    traits: [
-      "proposal",
-      "extension",
-      "action",
-      "action-proposals",
-      "bank-account",
-      "bitflow-pool",
-      "core-proposals",
-      "messaging",
-      "invoices",
-      "resources",
-      "token-dex",
-      "token-owner",
-      "token",
-      "treasury",
-    ],
-  },
-  DAO_TRAITS_V1_1: {
-    contractName: "aibtcdev-dao-traits-v1-1",
-    traits: ["faktory-dex"],
-  },
-  DAO_TRAITS_V2: {
-    contractName: "aibtc-dao-traits-v2",
-    traits: [
-      "proposal",
-      "extension",
-      "bitflow-pool",
-      "faktory-dex",
-      "token",
-      "action",
-      "action-proposals",
-      "bank-account",
-      "charter",
-      "core-proposals",
-      "messaging",
-      "invoices",
-      "resources",
-      "token-owner",
-      "treasury",
-    ],
-  },
-  BITFLOW_POOL: {
-    contractName: "xyk-pool-trait-v-1-2",
-    traits: ["xyk-pool-trait"],
-  },
-  BITFLOW_SIP010: {
-    contractName: "sip-010-trait-ft-standard",
-    traits: ["sip-010-trait"],
+  FAKTORY: {
+    SIP010: {
+      contractName: "faktory-trait-v1",
+      traitName: "sip-010-trait",
+    },
   },
 } as const;
 
-// type for a complete trait reference
-export interface TraitReference {
+// Helper types
+export type TraitContractCategory = keyof typeof TRAIT_CONTRACTS;
+export type TraitContractType<T extends TraitContractCategory> =
+  keyof (typeof TRAIT_CONTRACTS)[T];
+
+interface TraitReference {
   contractAddress: string;
   contractName: string;
   traitName: string;
 }
 
-// keys of TRAIT_CONTRACTS
-type TraitContractKey = keyof typeof TRAIT_CONTRACTS;
-// values in TRAIT_CONTRACTS
-type TraitContractValue = (typeof TRAIT_CONTRACTS)[TraitContractKey];
-// entry tuple type for Object.entries
-type TraitContractEntry = [TraitContractKey, TraitContractValue];
-// the final return type
-type TraitReferenceMap = Record<TraitContractKey, TraitReference[]>;
+export type TraitReferenceMap = {
+  [Category in TraitContractCategory]: {
+    [Contract in TraitContractType<Category>]: TraitReference;
+  };
+};
 
-// helper to generate trait references for a given network
+// Helper to generate trait references for a given network
 export function getTraitReferences(network: NetworkName): TraitReferenceMap {
   const addresses = ADDRESSES[network];
-  const entries = Object.entries(TRAIT_CONTRACTS) as TraitContractEntry[];
 
-  return entries.reduce((acc, [contractKey, { contractName, traits }]) => {
-    acc[contractKey] = traits.map((traitName) => ({
-      contractAddress: addresses.DEPLOYER,
-      contractName,
-      traitName,
-    }));
-    return acc;
-  }, {} as TraitReferenceMap);
+  return Object.entries(TRAIT_CONTRACTS).reduce(
+    (categoryAcc, [category, contracts]) => {
+      categoryAcc[category] = Object.entries(contracts).reduce(
+        (contractAcc, [contractKey, { contractName, trait }]) => {
+          contractAcc[contractKey] = {
+            contractAddress: addresses.DEPLOYER,
+            contractName,
+            traitName: trait,
+          };
+          return contractAcc;
+        },
+        {} as Record<string, TraitReference>
+      );
+      return categoryAcc;
+    },
+    {} as TraitReferenceMap
+  );
 }
-
-// export all trait names as a union type
-export type TraitName = ValuesOf<{
-  [K in keyof typeof TRAIT_CONTRACTS]: (typeof TRAIT_CONTRACTS)[K]["traits"][number];
-}>;
 
 /////////////////////////
 // DAO CONTRACTS
@@ -214,9 +243,15 @@ export const DAO_CONTRACTS = {
 } as const;
 
 // type for contract categories
-type ContractCategory = keyof typeof DAO_CONTRACTS;
-type ContractSubCategory<T extends ContractCategory> =
+export type ContractCategory = keyof typeof DAO_CONTRACTS;
+export type ContractSubCategory<T extends ContractCategory> =
   keyof (typeof DAO_CONTRACTS)[T];
+
+// type to scope a contract request
+export type ContractRequest<T extends ContractCategory = ContractCategory> = {
+  category: T;
+  name: ContractSubCategory<T>;
+};
 
 // type for the generated DAO contract structure
 export type GeneratedDao = {
