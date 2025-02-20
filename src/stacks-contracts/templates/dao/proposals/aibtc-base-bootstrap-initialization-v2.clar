@@ -1,43 +1,44 @@
-(impl-trait '<%= it.proposals_trait %>)
+(impl-trait .aibtc-dao-traits-v2.proposal)
 
-(define-constant DAO_MANIFEST "<%= it.dao_manifest %>")
+(define-constant CFG_DAO_MANIFEST_TEXT "<%= it.dao_manifest %>")
+(define-constant CFG_DAO_MANIFEST_INSCRIPTION_ID "<%= it.dao_manifest_inscription_id %>")
 
 (define-public (execute (sender principal))
-  (begin  
+  (begin
     ;; set initial dao extensions list
-    (try! (contract-call? '<%= it.dao_contract_address %> set-extensions
+    (try! (contract-call? .aibtc-base-dao set-extensions
       (list
-        {extension: '<%= it.action_proposals_v2_contract_address %>, enabled: true}
-        {extension: '<%= it.bank_account_contract_address %>, enabled: true}
-        {extension: '<%= it.core_proposals_v2_contract_address %>, enabled: true}
-        {extension: '<%= it.messaging_contract_address %>, enabled: true}
-        {extension: '<%= it.payments_contract_address %>, enabled: true}
-        {extension: '<%= it.token_owner_contract_address %>, enabled: true}
-        {extension: '<%= it.treasury_contract_address %>, enabled: true}
+        {extension: .aibtc-dao-charter, enabled: true}
+        {extension: .aibtc-action-proposals-v2, enabled: true}
+        {extension: .aibtc-bank-account, enabled: true}
+        {extension: .aibtc-core-proposals-v2, enabled: true}
+        {extension: .aibtc-onchain-messaging, enabled: true}
+        {extension: .aibtc-payments-invoices, enabled: true}
+        {extension: .aibtc-token-owner, enabled: true}
+        {extension: .aibtc-treasury, enabled: true}
       )
     ))
     ;; set initial action proposals list
-    (try! (contract-call? '<%= it.dao_contract_address %> set-extensions
+    (try! (contract-call? .aibtc-base-dao set-extensions
       (list
-        {extension: '<%= it.action_add_resource_contract_address %>, enabled: true}
-        {extension: '<%= it.action_allow_asset_contract_address %>, enabled: true}
-        {extension: '<%= it.action_send_message_contract_address %>, enabled: true}
-        {extension: '<%= it.action_set_account_holder_contract_address %>, enabled: true}
-        {extension: '<%= it.action_set_withdrawal_amount_contract_address %>, enabled: true}
-        {extension: '<%= it.action_set_withdrawal_period_contract_address %>, enabled: true}
-        {extension: '<%= it.action_toggle_resource_by_name_contract_address %>, enabled: true}
+        {extension: .aibtc-action-add-resource, enabled: true}
+        {extension: .aibtc-action-allow-asset, enabled: true}
+        {extension: .aibtc-action-send-message, enabled: true}
+        {extension: .aibtc-action-set-account-holder, enabled: true}
+        {extension: .aibtc-action-set-withdrawal-amount, enabled: true}
+        {extension: .aibtc-action-set-withdrawal-period, enabled: true}
+        {extension: .aibtc-action-toggle-resource-by-name, enabled: true}
       )
     ))
+    ;; set DAO manifest in dao-charter extension
+    (try! (contract-call? .aibtc-dao-charter set-dao-charter CFG_DAO_MANIFEST_TEXT none))
     ;; send DAO manifest as onchain message
-    (try! (contract-call? '<%= it.messaging_contract_address %> send DAO_MANIFEST true))
+    (try! (contract-call? .aibtc-onchain-messaging send CFG_DAO_MANIFEST_TEXT true))
     ;; allow assets in treasury
-    (try! (contract-call? '<%= it.treasury_contract_address %> allow-asset '<%= it.token_contract_address %> true))
+    (try! (contract-call? .aibtc-treasury allow-asset .aibtc-token true))
     ;; print manifest
-    (print DAO_MANIFEST)
+    (print CFG_DAO_MANIFEST_TEXT)
     (ok true)
   )
 )
 
-(define-read-only (get-dao-manifest)
-  DAO_MANIFEST
-)
