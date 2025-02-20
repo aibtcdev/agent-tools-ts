@@ -193,9 +193,6 @@ interface ContractData {
   address: string;
 }
 
-type TraitContractType<T extends TraitContractCategory> =
-  keyof (typeof TRAIT_CONTRACTS)[T];
-
 export class DaoContractGenerator {
   private eta: Eta;
   private network: NetworkName;
@@ -272,8 +269,11 @@ export class DaoContractGenerator {
       EXTENSIONS: {
         ACTION_PROPOSALS: {
           extension_trait: this.getTraitRef("EXTENSIONS", "EXTENSION"),
-          action_proposals_trait: this.getTraitRef("EXTENSIONS", "ACTION_PROPOSALS"),
-          sip10_trait: this.getTraitRef("SIP010"),
+          action_proposals_trait: this.getTraitRef(
+            "EXTENSIONS",
+            "ACTION_PROPOSALS"
+          ),
+          sip10_trait: this.getTraitRef("STANDARDS", "SIP010"),
           treasury_trait: this.getTraitRef("EXTENSIONS", "TREASURY"),
           action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),
           dao_base_contract: "", // Set during contract generation
@@ -290,7 +290,7 @@ export class DaoContractGenerator {
         CORE_PROPOSALS: {
           extension_trait: this.getTraitRef("EXTENSIONS", "EXTENSION"),
           core_proposal_trait: this.getTraitRef("EXTENSIONS", "CORE_PROPOSALS"),
-          sip10_trait: this.getTraitRef("SIP010"),
+          sip10_trait: this.getTraitRef("STANDARDS", "SIP010"),
           proposal_trait: this.getTraitRef("PROPOSALS", "PROPOSAL"),
           treasury_trait: this.getTraitRef("EXTENSIONS", "TREASURY"),
           dao_base_contract: "", // Set during contract generation
@@ -324,9 +324,9 @@ export class DaoContractGenerator {
         },
         TREASURY: {
           extension_trait: this.getTraitRef("EXTENSIONS", "EXTENSION"),
-          treasury_trait: this.getTraitRef("EXTENSIONS", "TREASURY")
-          sip010_trait: this.getTraitRef("SIP010"),
-          sip009_trait: this.getTraitRef("SIP009"),
+          treasury_trait: this.getTraitRef("EXTENSIONS", "TREASURY"),
+          sip010_trait: this.getTraitRef("STANDARDS", "SIP010"),
+          sip009_trait: this.getTraitRef("STANDARDS", "SIP009"),
           dao_base_contract: "", // Set during contract generation
           stacks_pox_contract: this.getAddressRef("POX"),
         },
@@ -340,37 +340,37 @@ export class DaoContractGenerator {
         },
         ALLOW_ASSET: {
           extension_trait: this.getTraitRef("EXTENSIONS", "EXTENSION"),
-          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),,
+          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),
           dao_base_contract: "", // Set during contract generation
           dao_treasury_contract: "",
         },
         SEND_MESSAGE: {
           extension_trait: this.getTraitRef("EXTENSIONS", "EXTENSION"),
-          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),,
+          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),
           dao_base_contract: "", // Set during contract generation
           dao_messaging_contract: "",
         },
         SET_ACCOUNT_HOLDER: {
           extension_trait: this.getTraitRef("EXTENSIONS", "EXTENSION"),
-          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),,
+          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),
           dao_base_contract: "", // Set during contract generation
           dao_bank_account_contract: "",
         },
         SET_WITHDRAWAL_AMOUNT: {
           extension_trait: this.getTraitRef("EXTENSIONS", "EXTENSION"),
-          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),,
+          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),
           dao_base_contract: "", // Set during contract generation
           dao_bank_account_contract: "",
         },
         SET_WITHDRAWAL_PERIOD: {
           extension_trait: this.getTraitRef("EXTENSIONS", "EXTENSION"),
-          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),,
+          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),
           dao_base_contract: "", // Set during contract generation
           dao_bank_account_contract: "",
         },
         TOGGLE_RESOURCE: {
           extension_trait: this.getTraitRef("EXTENSIONS", "EXTENSION"),
-          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),,
+          action_trait: this.getTraitRef("EXTENSIONS", "ACTION"),
           dao_base_contract: "", // Set during contract generation
           dao_resources_contract: "",
         },
