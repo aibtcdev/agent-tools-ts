@@ -1,17 +1,17 @@
 import { StacksNetworkName } from "@stacks/network";
 
+//////////////////////////////
+// GENERAL HELPERS
+//////////////////////////////
+
 // make uppercase version of StacksNetworkName
 export type NetworkName = Uppercase<StacksNetworkName>;
 
 //////////////////////////////
-// UTILITY TYPES
-//////////////////////////////
-
-type ValuesOf<T> = T[keyof T];
-
-//////////////////////////////
 // KNOWN ADDRESSES
 //////////////////////////////
+
+// define all known addresses by key
 
 export interface KnownAddresses {
   DEPLOYER: string;
@@ -21,6 +21,8 @@ export interface KnownAddresses {
   BITFLOW_STX_TOKEN: string;
   BITFLOW_FEE: string;
 }
+
+// define known addresses for each network
 
 const mainnetAddresses: KnownAddresses = {
   DEPLOYER: "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46",
@@ -52,170 +54,199 @@ const devnetAddresses: KnownAddresses = {
   BITFLOW_FEE: "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
 };
 
-// TODO: replaces ADDRESSES in constants.ts
-export const ADDRESSES: Record<NetworkName, KnownAddresses> = {
+// combine the addresses for each network
+
+const ADDRESSES: Record<NetworkName, KnownAddresses> = {
   MAINNET: mainnetAddresses,
   TESTNET: testnetAddresses,
   DEVNET: devnetAddresses,
   MOCKNET: devnetAddresses,
 } as const;
 
+// helper to get known addresses for a network
+// TODO: replaces ADDRESSES in constants.ts
+export function getKnownAddresses(network: NetworkName): KnownAddresses {
+  return ADDRESSES[network];
+}
+
 //////////////////////////////
 // CONTRACT TRAITS
 //////////////////////////////
 
-// Define trait categories and their associated traits
-export const TRAIT_CONTRACTS = {
-  STANDARDS: {
-    SIP009: {
-      contractName: "nft-trait",
-      traitName: "nft-trait",
-    },
-    SIP010: {
-      contractName: "sip-010-trait-ft-standard",
-      traitName: "sip-010-trait",
-    },
-  },
-  BASE: {
-    DAO: {
-      contractName: "aibtc-dao-v2",
-      traitName: "aibtc-base-dao",
-    },
-  },
-  EXTENSIONS: {
-    EXTENSION: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "extension",
-    },
-    BITFLOW_POOL: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "bitflow-pool",
-    },
-    FAKTORY_DEX: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "faktory-dex",
-    },
-    TOKEN: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "token",
-    },
-    ACTION: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "action",
-    },
-    ACTION_PROPOSALS: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "action-proposals",
-    },
-    BANK_ACCOUNT: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "bank-account",
-    },
-    CHARTER: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "charter",
-    },
-    CORE_PROPOSALS: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "core-proposals",
-    },
-    MESSAGING: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "messaging",
-    },
-    INVOICES: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "invoices",
-    },
-    RESOURCES: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "resources",
-    },
-    TOKEN_OWNER: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "token-owner",
-    },
-    TREASURY: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "treasury",
-    },
-  },
-  PROPOSALS: {
-    PROPOSAL: {
-      contractName: "aibtc-dao-traits-v2",
-      traitName: "proposal",
-    },
-  },
-  BITFLOW: {
-    POOL: {
-      contractName: "xyk-pool-trait-v-1-2",
-      traitName: "xyk-pool-trait",
-    },
-    SIP010: {
-      contractName: "sip-010-trait-ft-standard",
-      traitName: "sip-010-trait",
-    },
-  },
-  FAKTORY: {
-    SIP010: {
-      contractName: "faktory-trait-v1",
-      traitName: "sip-010-trait",
-    },
-  },
-} as const;
+// define known traits by key and category
 
-// Define the categories and contract types:
-export type TraitContractCategory = keyof typeof TRAIT_CONTRACTS;
-export type TraitContractType<C extends TraitContractCategory> =
-  keyof (typeof TRAIT_CONTRACTS)[C];
-
-// Build the union:
-export type TraitReferenceUnion = {
-  [C in TraitContractCategory]: {
-    category: C;
-    contract: TraitContractType<C>;
-  };
-}[TraitContractCategory];
-
-// Helper types
-//export type TraitContractCategory = keyof typeof TRAIT_CONTRACTS;
-//export type TraitContractType<T extends TraitContractCategory> =
-//  keyof (typeof TRAIT_CONTRACTS)[T];
-
-interface TraitReference {
-  contractAddress: string;
-  contractName: string;
-  traitName: string;
-}
-
-export type TraitReferenceMap = {
-  [Category in TraitContractCategory]: {
-    [Contract in TraitContractType<Category>]: TraitReference;
-  };
+type ExternalTraits = {
+  STANDARD_SIP009: string;
+  STANDARD_SIP010: string;
+  FAKTORY_SIP010: string;
+  BITFLOW_POOL: string;
+  BITFLOW_SIP010: string;
 };
 
-// Helper to generate trait references for a given network
-export function getTraitReferences(network: NetworkName): TraitReferenceMap {
-  const addresses = ADDRESSES[network];
+type DaoTraits = {
+  DAO_BASE: string;
+  DAO_PROPOSAL: string;
+  DAO_EXTENSION: string;
+  DAO_ACTION: string;
+  DAO_ACTION_PROPOSALS: string;
+  DAO_BANK_ACCOUNT: string;
+  DAO_CHARTER: string;
+  DAO_CORE_PROPOSALS: string;
+  DAO_INVOICES: string;
+  DAO_MESSAGING: string;
+  DAO_RESOURCES: string;
+  DAO_TOKEN: string;
+  DAO_TOKEN_DEX: string;
+  DAO_TOKEN_FAKTORY_DEX: string;
+  DAO_TOKEN_OWNER: string;
+  DAO_TOKEN_POOL: string;
+  DAO_TREASURY: string;
+};
 
-  return Object.entries(TRAIT_CONTRACTS).reduce(
-    (categoryAcc, [category, contracts]) => {
-      categoryAcc[category] = Object.entries(contracts).reduce(
-        (contractAcc, [contractKey, { contractName, trait }]) => {
-          contractAcc[contractKey] = {
-            contractAddress: addresses.DEPLOYER,
-            contractName,
-            traitName: trait,
-          };
-          return contractAcc;
-        },
-        {} as Record<string, TraitReference>
-      );
-      return categoryAcc;
-    },
-    {} as TraitReferenceMap
-  );
+// combine to define known traits
+export type KnownTraits = ExternalTraits & DaoTraits;
+
+// define known traits for each network
+
+const mainnetTraits: KnownTraits = {
+  STANDARD_SIP009: "",
+  STANDARD_SIP010: "",
+  FAKTORY_SIP010: "",
+  BITFLOW_POOL: "",
+  BITFLOW_SIP010: "",
+  DAO_BASE: "",
+  DAO_PROPOSAL: "",
+  DAO_EXTENSION: "",
+  DAO_ACTION: "",
+  DAO_ACTION_PROPOSALS: "",
+  DAO_BANK_ACCOUNT: "",
+  DAO_CHARTER: "",
+  DAO_CORE_PROPOSALS: "",
+  DAO_INVOICES: "",
+  DAO_MESSAGING: "",
+  DAO_RESOURCES: "",
+  DAO_TOKEN: "",
+  DAO_TOKEN_DEX: "",
+  DAO_TOKEN_FAKTORY_DEX: "",
+  DAO_TOKEN_OWNER: "",
+  DAO_TOKEN_POOL: "",
+  DAO_TREASURY: "",
+};
+
+const testnetTraits: KnownTraits = {
+  STANDARD_SIP009: "",
+  STANDARD_SIP010: "",
+  FAKTORY_SIP010: "",
+  BITFLOW_POOL: "",
+  BITFLOW_SIP010: "",
+  DAO_BASE: "",
+  DAO_PROPOSAL: "",
+  DAO_EXTENSION: "",
+  DAO_ACTION: "",
+  DAO_ACTION_PROPOSALS: "",
+  DAO_BANK_ACCOUNT: "",
+  DAO_CHARTER: "",
+  DAO_CORE_PROPOSALS: "",
+  DAO_INVOICES: "",
+  DAO_MESSAGING: "",
+  DAO_RESOURCES: "",
+  DAO_TOKEN: "",
+  DAO_TOKEN_DEX: "",
+  DAO_TOKEN_FAKTORY_DEX: "",
+  DAO_TOKEN_OWNER: "",
+  DAO_TOKEN_POOL: "",
+  DAO_TREASURY: "",
+};
+
+const devnetTraits: KnownTraits = {
+  STANDARD_SIP009: "",
+  STANDARD_SIP010: "",
+  FAKTORY_SIP010: "",
+  BITFLOW_POOL: "",
+  BITFLOW_SIP010: "",
+  DAO_BASE: "",
+  DAO_PROPOSAL: "",
+  DAO_EXTENSION: "",
+  DAO_ACTION: "",
+  DAO_ACTION_PROPOSALS: "",
+  DAO_BANK_ACCOUNT: "",
+  DAO_CHARTER: "",
+  DAO_CORE_PROPOSALS: "",
+  DAO_INVOICES: "",
+  DAO_MESSAGING: "",
+  DAO_RESOURCES: "",
+  DAO_TOKEN: "",
+  DAO_TOKEN_DEX: "",
+  DAO_TOKEN_FAKTORY_DEX: "",
+  DAO_TOKEN_OWNER: "",
+  DAO_TOKEN_POOL: "",
+  DAO_TREASURY: "",
+};
+
+// combine the traits for each network
+const TRAITS: Record<NetworkName, KnownTraits> = {
+  MAINNET: mainnetTraits,
+  TESTNET: testnetTraits,
+  DEVNET: devnetTraits,
+  MOCKNET: devnetTraits,
+} as const;
+
+// helper to get known traits for a network
+export function getKnownTraits(network: NetworkName): KnownTraits {
+  return TRAITS[network];
 }
+
+// helper to get a specific trait reference
+export function getTraitReference(
+  network: NetworkName,
+  trait: keyof KnownTraits
+): string {
+  return TRAITS[network][trait];
+}
+
+//////////////////////////////
+// CONTRACT DEFINITIONS
+//////////////////////////////
+
+// define an array of categories
+export const CONTRACT_CATEGORIES = [
+  "BASE", // base-dao
+  "EXTENSIONS", // extensions, actions
+  "PROPOSALS", // core proposals
+  "EXTERNAL", // sips, bitflow, faktory
+  "TOKEN", // token, dex, pool
+] as const;
+
+// derive a type from the categories
+export type ContractCategory = (typeof CONTRACT_CATEGORIES)[number];
+
+// define the subcategories for each category
+const CONTRACT_SUBCATEGORIES = {
+  BASE: ["DAO"] as const,
+  EXTENSIONS: [
+    "ACTION_PROPOSALS",
+    "BANK_ACCOUNT",
+    "CORE_PROPOSALS",
+    "CHARTER",
+    "MESSAGING",
+    "PAYMENTS",
+    "TOKEN_OWNER",
+    "TREASURY",
+  ] as const,
+  PROPOSALS: ["BOOTSTRAP_INIT"] as const,
+  EXTERNAL: [
+    "STANDARD_SIP009",
+    "STANDARD_SIP010",
+    "FAKTORY_SIP010",
+    "BITFLOW_POOL",
+    "BITFOW_SIP010",
+  ] as const,
+  TOKEN: ["DAO", "DEX", "POOL"] as const,
+} as const;
+
+// helper type that infers subcategory keys per category
+export type ContractSubCategory<C extends ContractCategory> =
+  (typeof CONTRACT_SUBCATEGORIES)[C][number];
 
 /////////////////////////
 // DAO CONTRACTS
@@ -254,57 +285,3 @@ export const DAO_CONTRACTS = {
     BOOTSTRAP_INIT: "SYMBOL-base-bootstrap-initialization-v2" as const,
   },
 } as const;
-
-// type for contract categories
-export type ContractCategory = keyof typeof DAO_CONTRACTS;
-export type ContractSubCategory<T extends ContractCategory> =
-  keyof (typeof DAO_CONTRACTS)[T];
-
-// type to scope a contract request
-export type ContractRequest<T extends ContractCategory = ContractCategory> = {
-  category: T;
-  name: ContractSubCategory<T>;
-};
-
-// type for the generated DAO contract structure
-export type GeneratedDao = {
-  [K in ContractCategory]: Record<ContractSubCategory<K>, string>;
-};
-
-// helper to generate contract names for a category
-function generateCategoryContracts<T extends ContractCategory>(
-  category: T,
-  symbol: string
-): Record<ContractSubCategory<T>, string> {
-  return Object.entries(DAO_CONTRACTS[category]).reduce(
-    (acc, [key, template]) => ({
-      ...acc,
-      [key]: template.replace(/SYMBOL/g, symbol.toLowerCase()),
-    }),
-    {} as Record<ContractSubCategory<T>, string>
-  );
-}
-
-// helper to generate dao contracts
-export function generateDaoContracts(symbol: string): GeneratedDao {
-  return Object.keys(DAO_CONTRACTS).reduce(
-    (acc, category) => ({
-      ...acc,
-      [category]: generateCategoryContracts(
-        category as ContractCategory,
-        symbol
-      ),
-    }),
-    {} as GeneratedDao
-  );
-}
-
-/* USAGE EXAMPLE
-const btcDao = generateDaoContracts('BTC');
-// access generated contract names
-const baseDao = btcDao.BASE.DAO;                // 'btc-dao'
-const tokenMain = btcDao.TOKEN.DAO;            // 'btc-faktory'
-const charter = btcDao.EXTENSIONS.CHARTER;      // 'btc-dao-charter'
-const addResource = btcDao.ACTIONS.ADD_RESOURCE; // 'btc-action-add-resource'
-const bootstrap = btcDao.PROPOSALS.BOOTSTRAP;    // 'btc-bootstrap'
-*/
