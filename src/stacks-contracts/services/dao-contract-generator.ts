@@ -6,12 +6,12 @@ import {
   ContractRequest,
   ContractCategory,
   getTraitReferences,
-  TRAIT_CONTRACTS,
   ADDRESSES,
   TraitReferenceMap,
   TraitContractCategory,
   TraitContractType,
   KnownAddresses,
+  ContractSubCategory,
 } from "../types/dao-types-v2";
 
 // type for template data structure that mirrors DAO_CONTRACTS
@@ -400,14 +400,22 @@ export class DaoContractGenerator {
     };
   }
 
-  private getContractTemplateValues(
-    category: ContractCategory,
-    contractKey: keyof (typeof DAO_CONTRACTS)[typeof category]
-  ) {
+  private getContractTemplateValues<T extends ContractCategory>(
+    category: T,
+    contractKey: ContractSubCategory<T>
+  ): {
+    network: NetworkName;
+    sender: string;
+  } & TemplateValues[T][keyof TemplateValues[T]] {
+    const templateData =
+      this.templateValues[category][
+        contractKey as unknown as keyof TemplateValues[T]
+      ];
+
     return {
       network: this.network,
       sender: this.senderAddress,
-      ...this.templateValues[category][contractKey],
+      ...templateData,
     };
   }
 
@@ -415,7 +423,6 @@ export class DaoContractGenerator {
     symbol: string,
     inputContracts?: ContractRequest[]
   ): Record<string, ContractData> {
-    // If no input contracts specified, generate all contracts
     const contracts =
       inputContracts ??
       Object.entries(DAO_CONTRACTS).flatMap(([category, subcategories]) =>
@@ -426,13 +433,19 @@ export class DaoContractGenerator {
       );
 
     return contracts.reduce((acc, { category, name }) => {
-      const contractKey = name as keyof (typeof DAO_CONTRACTS)[typeof category];
-      const template = DAO_CONTRACTS[category][contractKey];
+      // narrow down the type of category first
+      if (!(category in DAO_CONTRACTS)) {
+        throw new Error(`Invalid category: ${category}`);
+      }
+      // get the subcategories type for the category
+      type SubCategories = (typeof DAO_CONTRACTS)[typeof category];
+      const subCategory = name as keyof SubCategories;
+      const template = DAO_CONTRACTS[typedCategory][subCategory];
       const contractName = template.replace(/SYMBOL/g, symbol.toLowerCase());
       const templatePath = `${category.toLowerCase()}/${contractName}.clar`;
 
       const templateVars = this.getContractTemplateValues(
-        category,
+        typedCategory,
         contractKey
       );
 

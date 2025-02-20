@@ -164,10 +164,23 @@ export const TRAIT_CONTRACTS = {
   },
 } as const;
 
-// Helper types
+// Define the categories and contract types:
 export type TraitContractCategory = keyof typeof TRAIT_CONTRACTS;
-export type TraitContractType<T extends TraitContractCategory> =
-  keyof (typeof TRAIT_CONTRACTS)[T];
+export type TraitContractType<C extends TraitContractCategory> =
+  keyof (typeof TRAIT_CONTRACTS)[C];
+
+// Build the union:
+export type TraitReferenceUnion = {
+  [C in TraitContractCategory]: {
+    category: C;
+    contract: TraitContractType<C>;
+  };
+}[TraitContractCategory];
+
+// Helper types
+//export type TraitContractCategory = keyof typeof TRAIT_CONTRACTS;
+//export type TraitContractType<T extends TraitContractCategory> =
+//  keyof (typeof TRAIT_CONTRACTS)[T];
 
 interface TraitReference {
   contractAddress: string;
