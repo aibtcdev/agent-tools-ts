@@ -219,7 +219,8 @@ export function getTraitReference(
 // define an array of categories
 export const CONTRACT_CATEGORIES = [
   "BASE", // base-dao
-  "EXTENSIONS", // extensions, actions
+  "ACTIONS", // action proposal extensions
+  "EXTENSIONS", // extensions
   "PROPOSALS", // core proposals
   "EXTERNAL", // sips, bitflow, faktory
   "TOKEN", // token, dex, pool
@@ -231,6 +232,15 @@ export type ContractCategory = (typeof CONTRACT_CATEGORIES)[number];
 // define the subcategories for each category
 const CONTRACT_SUBCATEGORIES = {
   BASE: ["DAO"] as const,
+  ACTIONS: [
+    "BANK_ACCOUNT_SET_ACCOUNT_HOLDER",
+    "BANK_ACCOUNT_SET_WITHDRAWAL_AMOUNT",
+    "BANK_ACCOUNT_SET_WITHDRAWAL_PERIOD",
+    "MESSAGING_SEND_MESSAGE",
+    "PAYMENTS_INVOICES_ADD_RESOURCE",
+    "PAYMENTS_INVOICES_TOGGLE_RESOURCE",
+    "TREASURY_ALLOW_ASSET",
+  ] as const,
   EXTENSIONS: [
     "ACTION_PROPOSALS",
     "BANK_ACCOUNT",
@@ -260,36 +270,8 @@ export type ContractSubCategory<C extends ContractCategory> =
 // DAO CONTRACTS
 /////////////////////////
 
-// dao contract names by category and type
-export const DAO_CONTRACTS = {
-  BASE: {
-    DAO: "SYMBOL-base-dao" as const,
-  },
-  TOKEN: {
-    DAO: "SYMBOL-faktory" as const,
-    DEX: "SYMBOL-faktory-dex" as const,
-    POOL: "xyk-pool-stx-SYMBOL-v-1-1" as const,
-  },
-  EXTENSIONS: {
-    ACTION_PROPOSALS: "SYMBOL-action-proposals" as const,
-    BANK_ACCOUNT: "SYMBOL-bank-account" as const,
-    CORE_PROPOSALS: "SYMBOL-core-proposals" as const,
-    CHARTER: "SYMBOL-dao-charter" as const,
-    MESSAGING: "SYMBOL-onchain-messaging" as const,
-    PAYMENTS: "SYMBOL-payments-invoices" as const,
-    TOKEN_OWNER: "SYMBOL-token-owner" as const,
-    TREASURY: "SYMBOL-treasury" as const,
-  },
-  ACTIONS: {
-    ADD_RESOURCE: "SYMBOL-action-add-resource" as const,
-    ALLOW_ASSET: "SYMBOL-action-allow-asset" as const,
-    SEND_MESSAGE: "SYMBOL-action-send-message" as const,
-    SET_ACCOUNT_HOLDER: "SYMBOL-action-set-account-holder" as const,
-    SET_WITHDRAWAL_AMOUNT: "SYMBOL-action-set-withdrawal-amount" as const,
-    SET_WITHDRAWAL_PERIOD: "SYMBOL-action-set-withdrawal-period" as const,
-    TOGGLE_RESOURCE: "SYMBOL-action-toggle-resource" as const,
-  },
-  PROPOSALS: {
-    BOOTSTRAP_INIT: "SYMBOL-base-bootstrap-initialization-v2" as const,
-  },
-} as const;
+// Define the generated contract output interface
+export interface GeneratedContract {
+  name: string; // The contract name with replaced symbol
+  source: string; // The rendered Clarity source code
+}
