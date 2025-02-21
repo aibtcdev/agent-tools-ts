@@ -69,6 +69,14 @@ export function getKnownAddresses(network: NetworkName): KnownAddresses {
   return ADDRESSES[network];
 }
 
+// helper to get a specific address
+export function getKnownAddress(
+  network: NetworkName,
+  address: keyof KnownAddresses
+): string {
+  return ADDRESSES[network][address];
+}
+
 //////////////////////////////
 // CONTRACT TRAITS
 //////////////////////////////
