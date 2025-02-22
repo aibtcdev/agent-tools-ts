@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
-import { ContractGenerator } from "./services/contract-generator";
+import { DaoContractGenerator } from "./services/dao-contract-generator";
 import { ContractProposalType, GeneratedDaoContracts } from "./types/dao-types";
 import {
   CONFIG,

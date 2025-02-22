@@ -5,33 +5,33 @@
 (define-public (execute (sender principal))
   (begin  
     ;; set initial dao extensions list
-    (try! (contract-call? '<%= it.dao_contract_address %> set-extensions
+    (try! (contract-call? <%= it.dao_contract_address %> set-extensions
       (list
-        {extension: '<%= it.action_proposals_contract_address %>, enabled: true}
-        {extension: '<%= it.bank_account_contract_address %>, enabled: true}
-        {extension: '<%= it.core_proposals_contract_address %>, enabled: true}
-        {extension: '<%= it.messaging_contract_address %>, enabled: true}
-        {extension: '<%= it.payments_contract_address %>, enabled: true}
-        {extension: '<%= it.token_owner_contract_address %>, enabled: true}
-        {extension: '<%= it.treasury_contract_address %>, enabled: true}
+        {extension: CFG_ACTION_PROPOSALS, enabled: true}
+        {extension: CFG_BANK_ACCOUNT, enabled: true}
+        {extension: CFG_CORE_PROPOSALS, enabled: true}
+        {extension: CFG_MESSAGING, enabled: true}
+        {extension: CFG_PAYMENTS, enabled: true}
+        {extension: CFG_TOKEN_OWNER, enabled: true}
+        {extension: CFG_TREASURY, enabled: true}
       )
     ))
     ;; set initial action proposals list
-    (try! (contract-call? '<%= it.dao_contract_address %> set-extensions
+    (try! (contract-call? <%= it.dao_contract_address %> set-extensions
       (list
-        {extension: '<%= it.action_add_resource_contract_address %>, enabled: true}
-        {extension: '<%= it.action_allow_asset_contract_address %>, enabled: true}
-        {extension: '<%= it.action_send_message_contract_address %>, enabled: true}
-        {extension: '<%= it.action_set_account_holder_contract_address %>, enabled: true}
-        {extension: '<%= it.action_set_withdrawal_amount_contract_address %>, enabled: true}
-        {extension: '<%= it.action_set_withdrawal_period_contract_address %>, enabled: true}
-        {extension: '<%= it.action_toggle_resource_by_name_contract_address %>, enabled: true}
+        {extension: CFG_ACTION_ADD_RESOURCE, enabled: true}
+        {extension: CFG_ACTION_ALLOW_ASSET, enabled: true}
+        {extension: CFG_ACTION_SEND_MESSAGE, enabled: true}
+        {extension: CFG_ACTION_SET_ACCOUNT_HOLDER, enabled: true}
+        {extension: CFG_ACTION_SET_WITHDRAWAL_AMOUNT, enabled: true}
+        {extension: CFG_ACTION_SET_WITHDRAWAL_PERIOD, enabled: true}
+        {extension: CFG_ACTION_TOGGLE_RESOURCE, enabled: true}
       )
     ))
     ;; send DAO manifest as onchain message
-    (try! (contract-call? '<%= it.messaging_contract_address %> send DAO_MANIFEST true))
+    (try! (contract-call? <%= it.messaging_contract_address %> send DAO_MANIFEST true))
     ;; allow assets in treasury
-    (try! (contract-call? '<%= it.treasury_contract_address %> allow-asset '<%= it.token_contract_address %> true))
+    (try! (contract-call? <%= it.treasury_contract_address %> allow-asset CFG_TOKEN true))
     ;; print manifest
     (print DAO_MANIFEST)
     (ok true)
