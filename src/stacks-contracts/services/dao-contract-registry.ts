@@ -359,16 +359,22 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait",
-      },
+        key: "action_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "payments_contract"
+      }
+    ]
   },
   {
-    name: "aibtc-action-allow-asset.clar",
+    name: "aibtc-action-allow-asset",
     type: "ACTIONS",
     subtype: "TREASURY_ALLOW_ASSET",
     deploymentOrder: 14,
@@ -376,13 +382,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait",
-      },
+        key: "action_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "treasury_contract"
+      }
+    ]
   },
   {
     name: "aibtc-action-send-message",
@@ -393,13 +405,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait",
-      },
+        key: "action_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "messaging_contract"
+      }
+    ]
   },
   {
     name: "aibtc-action-set-account-holder",
