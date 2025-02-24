@@ -64,11 +64,9 @@ export class DaoContractGenerator {
         })
       );
 
-      // combine them into a single object for the template
-      const templateVars = {
-        ...traitVars,
-        ...addressVars,
-      };
+      // combine them into a single object for the template where
+      // key is the object key and value is the object value
+      const templateVars = { ...traitVars, ...addressVars };
       console.log(`templateVars: ${JSON.stringify(templateVars)}`);
 
       // render the template
