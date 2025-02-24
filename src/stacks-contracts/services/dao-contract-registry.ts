@@ -27,11 +27,20 @@ type BaseTraits = {
   key: string; // key in template
 };
 
+// create mapping for generated contract addresses
+// the ref will be added at runtime as generated contract name
+// the key is the string in the template
+type ContractAddresses = {
+  ref?: string;
+  key: string;
+};
+
 // template requirements - only needed for generation
 type TemplateRequirements = {
   templatePath: string;
   requiredAddresses?: BaseAddresses[];
   requiredTraits?: BaseTraits[];
+  requiredContractAddresses?: ContractAddresses[];
 };
 
 // full registry entry combines base info and template requirements
@@ -59,37 +68,37 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
   // token contracts
   {
     name: "aibtc-faktory",
-    type: "TOKEN", 
+    type: "TOKEN",
     subtype: "DAO",
     deploymentOrder: 1,
     templatePath: `extensions/aibtc-token.clar`,
     requiredTraits: [
       {
         ref: "STANDARD_SIP010",
-        key: "sip10_trait"
-      }
+        key: "sip10_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "token_owner"
-      },
-      {
-        ref: "DEPLOYER", 
-        key: "dex_contract"
+        key: "token_owner",
       },
       {
         ref: "DEPLOYER",
-        key: "treasury_contract"
+        key: "dex_contract",
+      },
+      {
+        ref: "DEPLOYER",
+        key: "treasury_contract",
       },
       {
         ref: "BITFLOW_FEE",
-        key: "stxcity_token_deployment_fee_address"
-      }
-    ]
+        key: "stxcity_token_deployment_fee_address",
+      },
+    ],
   },
   {
-    name: "aibtc-faktory-dex", 
+    name: "aibtc-faktory-dex",
     type: "TOKEN",
     subtype: "DEX",
     deploymentOrder: 2,
@@ -97,74 +106,74 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "STANDARD_SIP010",
-        key: "sip10_trait"
-      }
+        key: "sip10_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "BITFLOW_CORE",
-        key: "bitflow_core_contract"
+        key: "bitflow_core_contract",
       },
       {
         ref: "BITFLOW_STX_TOKEN",
-        key: "bitflow_stx_token_address"
+        key: "bitflow_stx_token_address",
       },
       {
         ref: "BITFLOW_FEE",
-        key: "bitflow_fee_address"
+        key: "bitflow_fee_address",
       },
       {
         ref: "BURN",
-        key: "burn"
+        key: "burn",
       },
       {
         ref: "DEPLOYER",
-        key: "pool_contract"
+        key: "pool_contract",
       },
       {
         ref: "BITFLOW_FEE",
-        key: "stxcity_swap_fee"
+        key: "stxcity_swap_fee",
       },
       {
-        ref: "BITFLOW_FEE", 
-        key: "stxcity_complete_fee"
+        ref: "BITFLOW_FEE",
+        key: "stxcity_complete_fee",
       },
       {
         ref: "DEPLOYER",
-        key: "token_contract"
+        key: "token_contract",
       },
       {
         ref: "BITFLOW_FEE",
-        key: "stxcity_dex_deployment_fee_address"
-      }
-    ]
+        key: "stxcity_dex_deployment_fee_address",
+      },
+    ],
   },
   {
     name: "xyk-pool-stx-aibtc-v-1-1",
     type: "TOKEN",
-    subtype: "POOL", 
+    subtype: "POOL",
     deploymentOrder: 3,
     templatePath: `extensions/aibtc-bitflow-pool.clar`,
     requiredTraits: [
       {
         ref: "BITFLOW_POOL",
-        key: "bitflow_pool_trait"
+        key: "bitflow_pool_trait",
       },
       {
         ref: "STANDARD_SIP010",
-        key: "sip10_trait"
+        key: "sip10_trait",
       },
       {
         ref: "DAO_TOKEN_POOL",
-        key: "dao_bitflow_pool_trait"
-      }
+        key: "dao_bitflow_pool_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "BITFLOW_CORE",
-        key: "bitflow_xyk_core_address"
-      }
-    ]
+        key: "bitflow_xyk_core_address",
+      },
+    ],
   },
   // base dao
   {
@@ -180,61 +189,61 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       },
       {
         ref: "DAO_PROPOSAL",
-        key: "proposal_trait", 
+        key: "proposal_trait",
       },
       {
         ref: "DAO_EXTENSION",
         key: "extension_trait",
-      }
-    ]
+      },
+    ],
   },
   // dao extensions
   {
     name: "aibtc-action-proposals-v2",
-    type: "EXTENSIONS", 
+    type: "EXTENSIONS",
     subtype: "ACTION_PROPOSALS",
     deploymentOrder: 5,
     templatePath: `extensions/aibtc-action-proposals-v2.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
-        ref: "DAO_ACTION_PROPOSALS", 
-        key: "action_proposals_trait"
+        ref: "DAO_ACTION_PROPOSALS",
+        key: "action_proposals_trait",
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait"
+        key: "action_trait",
       },
       {
         ref: "DAO_TREASURY",
-        key: "treasury_trait"
-      }
+        key: "treasury_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "token_dex_contract"
-      },
-      {
-        ref: "DEPLOYER", 
-        key: "token_pool_contract"
+        key: "token_dex_contract",
       },
       {
         ref: "DEPLOYER",
-        key: "treasury_contract"
+        key: "token_pool_contract",
       },
       {
         ref: "DEPLOYER",
-        key: "token_contract"
+        key: "treasury_contract",
       },
       {
         ref: "DEPLOYER",
-        key: "dao_contract"
-      }
-    ]
+        key: "token_contract",
+      },
+      {
+        ref: "DEPLOYER",
+        key: "dao_contract",
+      },
+    ],
   },
   {
     name: "aibtc-bank-account",
@@ -245,58 +254,58 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_BANK_ACCOUNT",
-        key: "bank_account_trait"
-      }
+        key: "bank_account_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "dao_contract"
-      }
-    ]
+        key: "dao_contract",
+      },
+    ],
   },
   {
     name: "aibtc-core-proposals-v2",
     type: "EXTENSIONS",
-    subtype: "CORE_PROPOSALS", 
+    subtype: "CORE_PROPOSALS",
     deploymentOrder: 7,
     templatePath: `extensions/aibtc-core-proposals-v2.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_CORE_PROPOSALS",
-        key: "core_proposal_trait"
+        key: "core_proposal_trait",
       },
       {
         ref: "DAO_PROPOSAL",
-        key: "proposal_trait"
+        key: "proposal_trait",
       },
       {
         ref: "DAO_TREASURY",
-        key: "treasury_trait"
-      }
+        key: "treasury_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "token_dex_contract"
+        key: "token_dex_contract",
       },
       {
         ref: "DEPLOYER",
-        key: "token_pool_contract"  
+        key: "token_pool_contract",
       },
       {
         ref: "DEPLOYER",
-        key: "treasury_contract"
-      }
-    ]
+        key: "treasury_contract",
+      },
+    ],
   },
   {
     name: "aibtc-dao-charter",
@@ -307,13 +316,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_CHARTER",
-        key: "charter_trait"
-      }
-    ]
+        key: "charter_trait",
+      },
+    ],
   },
   {
     name: "aibtc-onchain-messaging",
@@ -324,13 +333,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_MESSAGING",
-        key: "messaging_trait"
-      }
-    ]
+        key: "messaging_trait",
+      },
+    ],
   },
   {
     name: "aibtc-payments-invoices",
@@ -341,17 +350,17 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_INVOICES",
-        key: "invoices_trait"
+        key: "invoices_trait",
       },
       {
         ref: "DAO_RESOURCES",
-        key: "resources_trait"
-      }
-    ]
+        key: "resources_trait",
+      },
+    ],
   },
   {
     name: "aibtc-token-owner",
@@ -362,19 +371,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_TOKEN_OWNER",
-        key: "token_owner_trait"
-      }
+        key: "token_owner_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "token_contract"
-      }
-    ]
+        key: "token_contract",
+      },
+    ],
   },
   {
     name: "aibtc-treasury",
@@ -385,27 +394,27 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
-        ref: "DAO_TREASURY", 
-        key: "treasury_trait"
+        ref: "DAO_TREASURY",
+        key: "treasury_trait",
       },
       {
         ref: "STANDARD_SIP010",
-        key: "sip10_trait"
+        key: "sip10_trait",
       },
       {
         ref: "STANDARD_SIP009",
-        key: "sip09_trait"
-      }
+        key: "sip09_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "POX",
-        key: "pox_contract"
-      }
-    ]
+        key: "pox_contract",
+      },
+    ],
   },
   // dao action extensions
   {
@@ -417,19 +426,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait"
-      }
+        key: "action_trait",
+      },
     ],
-    requiredAddresses: [
-      {
-        ref: "DEPLOYER",
-        key: "payments_contract"
-      }
-    ]
   },
   {
     name: "aibtc-action-allow-asset",
@@ -440,19 +443,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait"
-      }
+        key: "action_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "treasury_contract"
-      }
-    ]
+        key: "treasury_contract",
+      },
+    ],
   },
   {
     name: "aibtc-action-send-message",
@@ -463,19 +466,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait"
-      }
+        key: "action_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "messaging_contract"
-      }
-    ]
+        key: "messaging_contract",
+      },
+    ],
   },
   {
     name: "aibtc-action-set-account-holder",
@@ -486,19 +489,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait"
-      }
+        key: "action_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "bank_account_contract"
-      }
-    ]
+        key: "bank_account_contract",
+      },
+    ],
   },
   {
     name: "aibtc-action-set-withdrawal-amount",
@@ -509,19 +512,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait"
-      }
+        key: "action_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "bank_account_contract"
-      }
-    ]
+        key: "bank_account_contract",
+      },
+    ],
   },
   {
     name: "aibtc-action-set-withdrawal-period",
@@ -532,19 +535,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait"
-      }
+        key: "action_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "bank_account_contract"
-      }
-    ]
+        key: "bank_account_contract",
+      },
+    ],
   },
   {
     name: "aibtc-action-toggle-resource",
@@ -555,19 +558,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait"
+        key: "extension_trait",
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait"
-      }
+        key: "action_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "payments_contract"
-      }
-    ]
+        key: "payments_contract",
+      },
+    ],
   },
   // proposals
   {
@@ -579,23 +582,23 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_PROPOSAL",
-        key: "proposal_trait"
-      }
+        key: "proposal_trait",
+      },
     ],
     requiredAddresses: [
       {
         ref: "DEPLOYER",
-        key: "dao_contract"
+        key: "dao_contract",
       },
       {
         ref: "DEPLOYER",
-        key: "messaging_contract"
+        key: "messaging_contract",
       },
       {
         ref: "DEPLOYER",
-        key: "treasury_contract"
-      }
-    ]
+        key: "treasury_contract",
+      },
+    ],
   },
 ] as const;
 
