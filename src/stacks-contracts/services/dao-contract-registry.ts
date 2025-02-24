@@ -204,27 +204,41 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
   {
     name: "aibtc-core-proposals-v2",
     type: "EXTENSIONS",
-    subtype: "CORE_PROPOSALS",
+    subtype: "CORE_PROPOSALS", 
     deploymentOrder: 7,
     templatePath: `extensions/aibtc-core-proposals-v2.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_CORE_PROPOSALS",
-        key: "core_proposals_trait",
+        key: "core_proposal_trait"
       },
       {
         ref: "DAO_PROPOSAL",
-        key: "proposal_trait",
+        key: "proposal_trait"
       },
       {
         ref: "DAO_TREASURY",
-        key: "treasury_trait",
-      },
+        key: "treasury_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "token_dex_contract"
+      },
+      {
+        ref: "DEPLOYER",
+        key: "token_pool_contract"  
+      },
+      {
+        ref: "DEPLOYER",
+        key: "treasury_contract"
+      }
+    ]
   },
   {
     name: "aibtc-dao-charter",
@@ -307,21 +321,27 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
-        ref: "DAO_TREASURY",
-        key: "treasury_trait",
+        ref: "DAO_TREASURY", 
+        key: "treasury_trait"
       },
       {
         ref: "STANDARD_SIP010",
-        key: "sip10_trait",
+        key: "sip10_trait"
       },
       {
         ref: "STANDARD_SIP009",
-        key: "sip9_trait",
-      },
+        key: "sip09_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "POX",
+        key: "pox_contract"
+      }
+    ]
   },
   // dao action extensions
   {
