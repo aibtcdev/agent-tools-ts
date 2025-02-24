@@ -101,7 +101,7 @@
     ;; caller has the required balance
     (asserts! (> senderBalance u0) ERR_INSUFFICIENT_BALANCE)
     ;; proposal was not already executed
-    (asserts! (is-none (contract-call? '<%= it.dao_contract %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
+    (asserts! (is-none (contract-call? '<%= it.base_dao_contract %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; print proposal creation event
     (print {
       notification: "create-proposal",
@@ -196,7 +196,7 @@
         false))
       ;; proposal passed if quorum and threshold are met
       (votePassed (and hasVotes metQuorum metThreshold))
-      (proposalExecuted (is-some (contract-call? '<%= it.dao_contract %> executed-at proposal)))
+      (proposalExecuted (is-some (contract-call? '<%= it.base_dao_contract %> executed-at proposal)))
     )
     ;; proposal was not already concluded
     (asserts! (not (get concluded proposalRecord)) ERR_PROPOSAL_ALREADY_CONCLUDED)
@@ -232,7 +232,7 @@
     )
     ;; execute the proposal only if it passed, return false if err
     (ok (if (and (not proposalExecuted) votePassed)
-      (match (contract-call? '<%= it.dao_contract %> execute proposal tx-sender) ok_ true err_ (begin (print {err:err_}) false))
+      (match (contract-call? '<%= it.base_dao_contract %> execute proposal tx-sender) ok_ true err_ (begin (print {err:err_}) false))
       false
     ))
   )
@@ -298,8 +298,8 @@
 ;; private functions
 ;; 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract %>)
-    (contract-call? '<%= it.dao_contract %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
+  (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )
 

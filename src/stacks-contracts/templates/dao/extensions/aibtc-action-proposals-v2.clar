@@ -308,8 +308,8 @@
 ;; private functions
 ;;
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract %>)
-    (contract-call? '<%= it.dao_contract %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
+  (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )
 
@@ -317,7 +317,7 @@
   (let
     (
       (extensionActive (is-ok (as-contract (is-dao-or-extension))))
-      (actionActive (contract-call? '<%= it.dao_contract %> is-extension (contract-of action)))
+      (actionActive (contract-call? '<%= it.base_dao_contract %> is-extension (contract-of action)))
     )
     (and extensionActive actionActive)
   )
