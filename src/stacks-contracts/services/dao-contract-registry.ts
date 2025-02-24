@@ -83,6 +83,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-base-dao",
     type: "BASE",
     subtype: "DAO",
+    deploymentOrder: 4,
     templatePath: `aibtc-base-dao.clar`,
     requiredTraits: [
       {
@@ -104,6 +105,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-proposals-v2",
     type: "EXTENSIONS",
     subtype: "ACTION_PROPOSALS",
+    deploymentOrder: 5,
     templatePath: `extensions/aibtc-action-proposals-v2.clar`,
     requiredTraits: [
       {
@@ -128,6 +130,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-bank-account",
     type: "EXTENSIONS",
     subtype: "BANK_ACCOUNT",
+    deploymentOrder: 6,
     templatePath: `extensions/aibtc-bank-account.clar`,
     requiredTraits: [
       {
@@ -144,6 +147,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-core-proposals-v2",
     type: "EXTENSIONS",
     subtype: "CORE_PROPOSALS",
+    deploymentOrder: 7,
     templatePath: `extensions/aibtc-core-proposals-v2.clar`,
     requiredTraits: [
       {
@@ -168,6 +172,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-dao-charter",
     type: "EXTENSIONS",
     subtype: "CHARTER",
+    deploymentOrder: 8,
     templatePath: `extensions/aibtc-dao-charter.clar`,
     requiredTraits: [
       {
@@ -184,6 +189,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-onchain-messaging",
     type: "EXTENSIONS",
     subtype: "MESSAGING",
+    deploymentOrder: 9,
     templatePath: `extensions/aibtc-onchain-messaging.clar`,
     requiredTraits: [
       {
@@ -200,6 +206,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-payments-invoices",
     type: "EXTENSIONS",
     subtype: "PAYMENTS",
+    deploymentOrder: 10,
     templatePath: `extensions/aibtc-payments-invoices.clar`,
     requiredTraits: [
       {
@@ -220,6 +227,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-token-owner",
     type: "EXTENSIONS",
     subtype: "TOKEN_OWNER",
+    deploymentOrder: 11,
     templatePath: `extensions/aibtc-token-owner.clar`,
     requiredTraits: [
       {
@@ -236,6 +244,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-treasury",
     type: "EXTENSIONS",
     subtype: "TREASURY",
+    deploymentOrder: 12,
     templatePath: `extensions/aibtc-treasury.clar`,
     requiredTraits: [
       {
@@ -261,6 +270,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-add-resource",
     type: "ACTIONS",
     subtype: "PAYMENTS_INVOICES_ADD_RESOURCE",
+    deploymentOrder: 13,
     templatePath: `extensions/actions/aibtc-action-add-resource.clar`,
     requiredTraits: [
       {
@@ -277,6 +287,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-allow-asset.clar",
     type: "ACTIONS",
     subtype: "TREASURY_ALLOW_ASSET",
+    deploymentOrder: 14,
     templatePath: `extensions/actions/aibtc-action-allow-asset.clar`,
     requiredTraits: [
       {
@@ -293,6 +304,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-send-message",
     type: "ACTIONS",
     subtype: "MESSAGING_SEND_MESSAGE",
+    deploymentOrder: 15,
     templatePath: `extensions/actions/aibtc-action-send-message.clar`,
     requiredTraits: [
       {
@@ -309,6 +321,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-set-account-holder",
     type: "ACTIONS",
     subtype: "BANK_ACCOUNT_SET_ACCOUNT_HOLDER",
+    deploymentOrder: 16,
     templatePath: `extensions/actions/aibtc-action-set-account-holder.clar`,
     requiredTraits: [
       {
@@ -325,6 +338,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-set-withdrawal-amount",
     type: "ACTIONS",
     subtype: "BANK_ACCOUNT_SET_WITHDRAWAL_AMOUNT",
+    deploymentOrder: 17,
     templatePath: `extensions/actions/aibtc-action-set-withdrawal-amount.clar`,
     requiredTraits: [
       {
@@ -341,6 +355,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-set-withdrawal-period",
     type: "ACTIONS",
     subtype: "BANK_ACCOUNT_SET_WITHDRAWAL_PERIOD",
+    deploymentOrder: 18,
     templatePath: `extensions/actions/aibtc-action-set-withdrawal-period.clar`,
     requiredTraits: [
       {
@@ -357,6 +372,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-toggle-resource",
     type: "ACTIONS",
     subtype: "PAYMENTS_INVOICES_TOGGLE_RESOURCE",
+    deploymentOrder: 19,
     templatePath: `extensions/actions/aibtc-action-toggle-resource.clar`,
     requiredTraits: [
       {
@@ -374,6 +390,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-base-bootstrap-initialization-v2",
     type: "PROPOSALS",
     subtype: "BOOTSTRAP_INIT",
+    deploymentOrder: 20,
     templatePath: `proposals/aibtc-base-bootstrap-initialization-v2.clar`,
     requiredTraits: [
       {
