@@ -72,12 +72,14 @@ function validateArgs(): ExpectedArgs {
 async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   // Step 1 - validate arguments
   const args = validateArgs();
+  
   // setup network and wallet info
-  const { address } = await deriveChildAccount(
+  const { address, privateKey } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  
   // convert old network to new format
   const network = getNetworkNameFromType(CONFIG.NETWORK);
 
@@ -85,4 +87,43 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
 
   // create contract generator instance
   const contractGenerator = new DaoContractGenerator(network);
+  
+  // generate dao contracts
+  const daoContracts = contractGenerator.generateContracts(args.tokenSymbol);
+  
+  // get sorted contracts for deployment order
+  const sortedContracts = contractGenerator.sortContracts(daoContracts);
+  
+  // Step 3 - deploy contracts
+  
+  // create contract deployer instance
+  const contractDeployer = new DaoContractDeployer(
+    network,
+    address,
+    privateKey
+  );
+
+  // deploy contracts in order
+  const deployedContracts: DeployedContractRegistryEntry[] = [];
+  for (const [, contract] of sortedContracts) {
+    console.log(`Deploying ${contract.name}...`);
+    const deployedContract = await contractDeployer.deployContract(contract);
+    deployedContracts.push(deployedContract);
+
+    if (!deployedContract.success) {
+      console.error(`Failed to deploy ${contract.name}`);
+      // Continue deployment even if one fails
+    } else {
+      console.log(
+        `Successfully deployed ${contract.name}: ${deployedContract.address}`
+      );
+    }
+  }
+
+  // Step 4 - return results
+  return {
+    success: true,
+    message: "Contracts deployed successfully",
+    data: deployedContracts,
+  };
 }
