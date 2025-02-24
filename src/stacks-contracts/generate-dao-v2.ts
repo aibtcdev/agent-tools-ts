@@ -16,6 +16,7 @@ import {
   ContractSubCategory,
   getNetworkNameFromType,
 } from "./types/dao-types-v2";
+import { GeneratedContractRegistryEntry } from "./services/dao-contract-registry";
 
 const usage = `Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <generateFiles>`;
 const usageExample = `Example: bun run generate-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin" "true"`;
@@ -88,22 +89,22 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<GeneratedContractInfo[]>> {
+async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   // Step 0 - prep work
 
   // array to build the contract info
-  const contractOutput: GeneratedContractInfo[] = [];
+  const generatedContracts: GeneratedContractRegistryEntry[] = [];
   // helper function to save contract to object, opt to file
-  const saveContract = (
+  const saveContract = <C extends ContractCategory>(
     name: string,
+    type: C,
+    subtype: ContractSubCategory<C>,
     source: string,
-    address: string,
-    category: ContractCategory,
-    subcategory: ContractSubCategory<typeof category>,
     hash?: string
   ) => {
+    const contract = { name, type, subtype, source, hash };
     // add to contract output
-    contractOutput.push({ name, source, address, type: subcategory, hash });
+    generatedContracts.push({ name, type, subtype, source, hash });
     // save to file if generating files
     if (args.generateFiles) {
       const fileName = `${name}.clar`;

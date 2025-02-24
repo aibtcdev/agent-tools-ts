@@ -9,7 +9,7 @@ import { NetworkType } from "../../types";
 export type NetworkName = Uppercase<StacksNetworkName>;
 // (alias) type StacksNetworkName = "mainnet" | "testnet" | "devnet" | "mocknet"
 
-// helper to get the network name from legacy NetworkType
+// helper to get the network name from the network type
 export function getNetworkNameFromType(network: NetworkType): NetworkName {
   // create an array of valid network names (lowercase)
   const validNetworks: StacksNetworkName[] = [
@@ -28,6 +28,11 @@ export function getNetworkNameFromType(network: NetworkType): NetworkName {
   }
   // convert to uppercase and new type
   return network.toUpperCase() as NetworkName;
+}
+
+// helper to convert back to StacksNetworkName type
+export function getNetworkTypeFromName(network: NetworkName): NetworkType {
+  return network.toLowerCase() as NetworkType;
 }
 
 //////////////////////////////

@@ -5,59 +5,56 @@ import {
   KnownTraits,
 } from "../types/dao-types-v2";
 
-// setup fields for each contract
-
-type BaseFields = {
-  name: string;
-  templatePath: string;
-};
-
-type GeneratedFields = {
-  address?: string;
-  source?: string;
-  hash?: string;
-};
-
-type ContractFields = BaseFields & GeneratedFields;
-
-// set up template fields for each contract
-// maps to names values used with each contract
-
-type BaseAddresses = {
-  ref: keyof KnownAddresses; // key in ADDRESSES
-  key: string; // key in template
-};
-
-type BaseTraits = {
-  ref: keyof KnownTraits; // key in TRAITS
-  key: string; // key in template
-};
-
-type TemplateFields = BaseFields & {
-  requiredAddresses?: BaseAddresses[];
-  requiredTraits?: BaseTraits[];
-};
-
-// combine all the fields into whats required
-
-type RequiredFields = ContractFields & TemplateFields;
-
-// define a strongly-typed contract registry entry
-// this object is the main source of truth for all contracts in the DAO
-// and should be cloned to generate and deploy contracts
-
-export type ContractRegistryEntry = {
-  [C in ContractCategory]: RequiredFields & {
+// base contract info that persists through all stages
+type BaseContractInfo = {
+  [C in ContractCategory]: {
+    name: string;
     type: C;
     subtype: ContractSubCategory<C>;
   };
 }[ContractCategory];
 
+// create mapping of known addresses
+type BaseAddresses = {
+  ref: keyof KnownAddresses; // key in ADDRESSES
+  key: string; // key in template
+};
+
+// create mapping of known traits
+type BaseTraits = {
+  ref: keyof KnownTraits; // key in TRAITS
+  key: string; // key in template
+};
+
+// template requirements - only needed for generation
+type TemplateRequirements = {
+  templatePath: string;
+  requiredAddresses?: BaseAddresses[];
+  requiredTraits?: BaseTraits[];
+};
+
+// full registry entry combines base info and template requirements
+export type BaseContractRegistryEntry = BaseContractInfo & TemplateRequirements;
+
+// generated contract drops template requirements, adds source and hash
+export type GeneratedContractRegistryEntry = BaseContractInfo & {
+  source: string;
+  hash?: string;
+};
+
+// deployment result includes transaction and deployment status
+export type DeployedContractRegistryEntry = GeneratedContractRegistryEntry & {
+  sender: string; // address from config that deployed
+  success: boolean; // deployment success status
+  txId?: string; // transaction ID if successful
+  address: string; // contract address after deployment
+};
+
 /**
  * Central registry for each contract in the DAO.
  * Clone this object to generate and deploy contracts.
  */
-export const CONTRACT_REGISTRY: ContractRegistryEntry[] = [
+export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
   // token contracts
   {
     name: "aibtc-faktory",
@@ -403,11 +400,11 @@ export function getContractName(
  * Filter contracts by category
  *
  * @param category Contract category to filter by
- * @returns ContractRegistryEntry[] filtered list of contracts
+ * @returns BaseContractRegistryEntry[] filtered list of contracts
  */
 export function getContractsByCategory<C extends ContractCategory>(
   category: C
-): ContractRegistryEntry[] {
+): BaseContractRegistryEntry[] {
   return CONTRACT_REGISTRY.filter((contract) => contract.type === category);
 }
 
@@ -416,12 +413,12 @@ export function getContractsByCategory<C extends ContractCategory>(
  *
  * @param category Contract category
  * @param subcategory Contract subcategory
- * @returns ContractRegistryEntry[] filtered list of contracts
+ * @returns BaseContractRegistryEntry[] filtered list of contracts
  */
 export function getContractsBySubcategory<C extends ContractCategory>(
   category: C,
   subcategory: ContractSubCategory<C>
-): ContractRegistryEntry[] {
+): BaseContractRegistryEntry[] {
   return CONTRACT_REGISTRY.filter(
     (contract) => contract.type === category && contract.subtype === subcategory
   );
