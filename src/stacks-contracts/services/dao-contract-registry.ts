@@ -428,13 +428,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait",
-      },
+        key: "action_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "bank_account_contract"
+      }
+    ]
   },
   {
     name: "aibtc-action-set-withdrawal-amount",
@@ -445,13 +451,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait",
-      },
+        key: "action_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "bank_account_contract"
+      }
+    ]
   },
   {
     name: "aibtc-action-set-withdrawal-period",
@@ -462,13 +474,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait",
-      },
+        key: "action_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "bank_account_contract"
+      }
+    ]
   },
   {
     name: "aibtc-action-toggle-resource",
@@ -479,13 +497,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait",
-      },
+        key: "action_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "payments_contract"
+      }
+    ]
   },
   // proposals
   {
@@ -497,9 +521,23 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_PROPOSAL",
-        key: "proposal_trait",
-      },
+        key: "proposal_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "dao_contract"
+      },
+      {
+        ref: "DEPLOYER",
+        key: "messaging_contract"
+      },
+      {
+        ref: "DEPLOYER",
+        key: "treasury_contract"
+      }
+    ]
   },
 ] as const;
 
