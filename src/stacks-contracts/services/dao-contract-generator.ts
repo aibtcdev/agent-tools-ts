@@ -66,11 +66,10 @@ export class DaoContractGenerator {
 
       // combine them into a single object for the template
       const templateVars = {
-        network: this.network,
-        tokenSymbol,
         ...traitVars,
         ...addressVars,
       };
+      console.log(`templateVars: ${JSON.stringify(templateVars)}`);
 
       // render the template
       const source = this.eta.render(contract.templatePath, templateVars);
