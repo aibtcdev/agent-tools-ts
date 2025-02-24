@@ -102,9 +102,14 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
     source: string,
     hash?: string
   ) => {
-    const contract = { name, type, subtype, source, hash };
     // add to contract output
-    generatedContracts.push({ name, type, subtype, source, hash });
+    generatedContracts.push({
+      name,
+      type,
+      subtype,
+      source,
+      hash,
+    } as GeneratedContractRegistryEntry); // make TS happy
     // save to file if generating files
     if (args.generateFiles) {
       const fileName = `${name}.clar`;
@@ -154,38 +159,28 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   );
 
   // save token-related contract data
-  saveContract(token.name, token.code, address, "TOKEN", "DAO", token.hash);
-  saveContract(dex.name, dex.code, address, "TOKEN", "DEX", dex.hash);
-  saveContract(pool.name, pool.code, address, "TOKEN", "POOL", pool.hash);
+  saveContract(token.name, "TOKEN", "DAO", token.code, token.hash);
+  saveContract(dex.name, "TOKEN", "DEX", dex.code, dex.hash);
+  saveContract(pool.name, "TOKEN", "POOL", pool.code, pool.hash);
 
   // Step 2 - generate remaining dao contracts
 
-  const contracts = contractGenerator.generateContracts(args.tokenSymbol);
-
-  // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
-  const sortedContracts = Object.entries(contracts).sort(([, a], [, b]) => {
-    if (a.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
-      return 1;
-    if (b.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
-      return -1;
-    return 0;
-  });
-
-  // Save all contracts
-  for (const [_, contract] of sortedContracts) {
-    saveContract(contract.name, contract.source);
+  const daoContracts = contractGenerator.generateContracts(args.tokenSymbol);
+  for (const contract of Object.values(daoContracts)) {
+    saveContract(
+      contract.name,
+      contract.type,
+      contract.subtype,
+      contract.source,
+      contract.hash
+    );
   }
 
-  // return generated contracts
+  // Step 3 - return generated contracts
   return {
     success: true,
     message: "Contracts generated successfully",
-    data: {
-      token,
-      dex,
-      pool,
-      ...contracts,
-    },
+    data: generatedContracts,
   };
 }
 
