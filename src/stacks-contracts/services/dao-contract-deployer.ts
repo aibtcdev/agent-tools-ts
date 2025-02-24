@@ -105,9 +105,9 @@ export class DaoContractDeployer {
       const deployedContract = await this.deployContract(contract);
       deployedContracts.push(deployedContract);
 
-      // If deployment failed, log the error but continue with others
+      // If deployment failed, throw an error
       if (!deployedContract.success) {
-        console.error(`Failed to deploy ${contract.name}`);
+        throw new Error(`Failed to deploy ${contract.name}`);
       } else {
         console.log(
           `Successfully deployed ${contract.name}: ${deployedContract.address}`
