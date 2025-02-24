@@ -68,6 +68,24 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         ref: "STANDARD_SIP010",
         key: "sip10_trait"
       }
+    ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "token_owner"
+      },
+      {
+        ref: "DEPLOYER", 
+        key: "dex_contract"
+      },
+      {
+        ref: "DEPLOYER",
+        key: "treasury_contract"
+      },
+      {
+        ref: "BITFLOW_FEE",
+        key: "stxcity_token_deployment_fee_address"
+      }
     ]
   },
   {
@@ -76,6 +94,12 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     subtype: "DEX",
     deploymentOrder: 2,
     templatePath: `extensions/aibtc-token-dex.clar`,
+    requiredTraits: [
+      {
+        ref: "STANDARD_SIP010",
+        key: "sip10_trait"
+      }
+    ],
     requiredAddresses: [
       {
         ref: "BITFLOW_CORE",
@@ -92,6 +116,26 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "BURN",
         key: "burn"
+      },
+      {
+        ref: "DEPLOYER",
+        key: "pool_contract"
+      },
+      {
+        ref: "BITFLOW_FEE",
+        key: "stxcity_swap_fee"
+      },
+      {
+        ref: "BITFLOW_FEE", 
+        key: "stxcity_complete_fee"
+      },
+      {
+        ref: "DEPLOYER",
+        key: "token_contract"
+      },
+      {
+        ref: "BITFLOW_FEE",
+        key: "stxcity_dex_deployment_fee_address"
       }
     ]
   },
@@ -181,6 +225,14 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "DEPLOYER",
         key: "treasury_contract"
+      },
+      {
+        ref: "DEPLOYER",
+        key: "token_contract"
+      },
+      {
+        ref: "DEPLOYER",
+        key: "dao_contract"
       }
     ]
   },
@@ -198,6 +250,12 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "DAO_BANK_ACCOUNT",
         key: "bank_account_trait"
+      }
+    ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "dao_contract"
       }
     ]
   },
