@@ -136,39 +136,53 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       },
       {
         ref: "DAO_PROPOSAL",
-        key: "proposal_trait",
+        key: "proposal_trait", 
       },
       {
         ref: "DAO_EXTENSION",
         key: "extension_trait",
-      },
-    ],
+      }
+    ]
   },
   // dao extensions
   {
     name: "aibtc-action-proposals-v2",
-    type: "EXTENSIONS",
+    type: "EXTENSIONS", 
     subtype: "ACTION_PROPOSALS",
     deploymentOrder: 5,
     templatePath: `extensions/aibtc-action-proposals-v2.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
-        ref: "DAO_ACTION_PROPOSALS",
-        key: "action_proposals_trait",
+        ref: "DAO_ACTION_PROPOSALS", 
+        key: "action_proposals_trait"
       },
       {
         ref: "DAO_ACTION",
-        key: "action_trait",
+        key: "action_trait"
       },
       {
         ref: "DAO_TREASURY",
-        key: "treasury_trait",
-      },
+        key: "treasury_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "token_dex_contract"
+      },
+      {
+        ref: "DEPLOYER", 
+        key: "token_pool_contract"
+      },
+      {
+        ref: "DEPLOYER",
+        key: "treasury_contract"
+      }
+    ]
   },
   {
     name: "aibtc-bank-account",
