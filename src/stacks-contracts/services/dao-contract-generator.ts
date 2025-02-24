@@ -45,8 +45,12 @@ export class DaoContractGenerator {
     const generatedContracts: Record<string, GeneratedContractRegistryEntry> =
       {};
 
-    // Generate each contract
-    contractsToGenerate.forEach((contract) => {
+    // Sort contracts by deployment order and generate each one
+    const sortedContracts = [...contractsToGenerate].sort(
+      (a, b) => a.deploymentOrder - b.deploymentOrder
+    );
+    
+    sortedContracts.forEach((contract) => {
       // Build contract name by replacing aibtc symbol
       const contractName = getContractName(contract.name, tokenSymbol);
 

@@ -11,6 +11,7 @@ type BaseContractInfo = {
     name: string;
     type: C;
     subtype: ContractSubCategory<C>;
+    deploymentOrder: number; // Lower numbers deploy first
   };
 }[ContractCategory];
 
@@ -60,18 +61,21 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-faktory",
     type: "TOKEN",
     subtype: "DAO",
+    deploymentOrder: 1,
     templatePath: `extensions/aibtc-token.clar`,
   },
   {
     name: "aibtc-faktory-dex",
     type: "TOKEN",
     subtype: "DEX",
+    deploymentOrder: 2,
     templatePath: `extensions/aibtc-token-dex.clar`,
   },
   {
     name: "xyk-pool-stx-aibtc-v-1-1",
     type: "TOKEN",
     subtype: "POOL",
+    deploymentOrder: 3,
     templatePath: `extensions/aibtc-bitflow-pool.clar`,
   },
   // base dao
