@@ -100,7 +100,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-proposals-v2",
     type: "EXTENSIONS",
     subtype: "ACTION_PROPOSALS",
-    templatePath: `extensions/aibtcdev-action-proposals-v2.clar`,
+    templatePath: `extensions/aibtc-action-proposals-v2.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
@@ -140,7 +140,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-core-proposals-v2",
     type: "EXTENSIONS",
     subtype: "CORE_PROPOSALS",
-    templatePath: `extensions/aibtcdev-core-proposals-v2.clar`,
+    templatePath: `extensions/aibtc-core-proposals-v2.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
@@ -305,7 +305,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-set-account-holder",
     type: "ACTIONS",
     subtype: "BANK_ACCOUNT_SET_ACCOUNT_HOLDER",
-    templatePath: `extensions/actions/aibtc-set-account-holder.clar`,
+    templatePath: `extensions/actions/aibtc-action-set-account-holder.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
@@ -321,7 +321,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-set-withdrawal-amount",
     type: "ACTIONS",
     subtype: "BANK_ACCOUNT_SET_WITHDRAWAL_AMOUNT",
-    templatePath: `extensions/actions/aibtc-set-withdrawal-amount.clar`,
+    templatePath: `extensions/actions/aibtc-action-set-withdrawal-amount.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
@@ -337,7 +337,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-set-withdrawal-period",
     type: "ACTIONS",
     subtype: "BANK_ACCOUNT_SET_WITHDRAWAL_PERIOD",
-    templatePath: `extensions/actions/aibtc-set-withdrawal-period.clar`,
+    templatePath: `extensions/actions/aibtc-action-set-withdrawal-period.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
@@ -353,7 +353,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-action-toggle-resource",
     type: "ACTIONS",
     subtype: "PAYMENTS_INVOICES_TOGGLE_RESOURCE",
-    templatePath: `extensions/actions/aibtc-toggle-resource.clar`,
+    templatePath: `extensions/actions/aibtc-action-toggle-resource.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
