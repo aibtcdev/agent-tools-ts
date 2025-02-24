@@ -59,24 +59,68 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
   // token contracts
   {
     name: "aibtc-faktory",
-    type: "TOKEN",
+    type: "TOKEN", 
     subtype: "DAO",
     deploymentOrder: 1,
     templatePath: `extensions/aibtc-token.clar`,
+    requiredTraits: [
+      {
+        ref: "STANDARD_SIP010",
+        key: "sip10_trait"
+      }
+    ]
   },
   {
-    name: "aibtc-faktory-dex",
+    name: "aibtc-faktory-dex", 
     type: "TOKEN",
     subtype: "DEX",
     deploymentOrder: 2,
     templatePath: `extensions/aibtc-token-dex.clar`,
+    requiredAddresses: [
+      {
+        ref: "BITFLOW_CORE",
+        key: "bitflow_core_contract"
+      },
+      {
+        ref: "BITFLOW_STX_TOKEN",
+        key: "bitflow_stx_token_address"
+      },
+      {
+        ref: "BITFLOW_FEE",
+        key: "bitflow_fee_address"
+      },
+      {
+        ref: "BURN",
+        key: "burn"
+      }
+    ]
   },
   {
     name: "xyk-pool-stx-aibtc-v-1-1",
     type: "TOKEN",
-    subtype: "POOL",
+    subtype: "POOL", 
     deploymentOrder: 3,
     templatePath: `extensions/aibtc-bitflow-pool.clar`,
+    requiredTraits: [
+      {
+        ref: "BITFLOW_POOL",
+        key: "bitflow_pool_trait"
+      },
+      {
+        ref: "STANDARD_SIP010",
+        key: "sip10_trait"
+      },
+      {
+        ref: "DAO_TOKEN_POOL",
+        key: "dao_bitflow_pool_trait"
+      }
+    ],
+    requiredAddresses: [
+      {
+        ref: "BITFLOW_CORE",
+        key: "bitflow_xyk_core_address"
+      }
+    ]
   },
   // base dao
   {
