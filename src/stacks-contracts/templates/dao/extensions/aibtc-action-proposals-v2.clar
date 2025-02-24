@@ -1,4 +1,4 @@
-;; title: aibtcdev-action-proposals
+;; title: aibtc-action-proposals-v2
 ;; version: 2.0.0
 ;; summary: An extension that manages voting on predefined actions using a SIP-010 Stacks token.
 ;; description: This contract allows voting on specific extension actions with a lower threshold than core proposals.
@@ -15,7 +15,7 @@
 ;;
 (define-constant SELF (as-contract tx-sender))
 (define-constant DEPLOYED_BURN_BLOCK burn-block-height)
-(define-constant DEPLOYED_STACKS_BLOCK block-height)
+(define-constant DEPLOYED_STACKS_BLOCK stacks-block-height)
 
 ;; error messages
 (define-constant ERR_NOT_DAO_OR_EXTENSION (err u1000))
@@ -34,8 +34,8 @@
 (define-constant ERR_INVALID_ACTION (err u1013))
 
 ;; voting configuration
-(define-constant VOTING_DELAY u144) ;; 144 Bitcoin blocks, ~1 days
-(define-constant VOTING_PERIOD u288) ;; 2 x 144 Bitcoin blocks, ~2 days
+(define-constant VOTING_DELAY (if is-in-mainnet u144 u2)) ;; 144 Bitcoin blocks, ~1 days
+(define-constant VOTING_PERIOD (if is-in-mainnet u288 u7)) ;; 2 x 144 Bitcoin blocks, ~2 days
 (define-constant VOTING_QUORUM u15) ;; 15% of liquid supply must participate
 (define-constant VOTING_THRESHOLD u66) ;; 66% of votes must be in favor
 
@@ -91,7 +91,7 @@
     (
       (actionContract (contract-of action))
       (newId (+ (var-get proposalCount) u1))
-      (createdAt block-height)
+      (createdAt (- stacks-block-height u1))
       (liquidTokens (try! (get-liquid-supply createdAt)))
       (startBlock (+ burn-block-height VOTING_DELAY))
       (endBlock (+ startBlock VOTING_PERIOD))
@@ -221,10 +221,13 @@
         caller: contract-caller,
         concludedBy: tx-sender,
         proposalId: proposalId,
+        votesFor: votesFor,
+        votesAgainst: votesAgainst,
+        liquidTokens: liquidTokens,
         metQuorum: metQuorum,
         metThreshold: metThreshold,
         passed: votePassed,
-        executed: (and votePassed validAction)
+        executed: (and votePassed validAction),
       }
     })
     ;; update the proposal record
@@ -321,5 +324,5 @@
 )
 
 (define-private (get-block-hash (blockHeight uint))
-  (get-block-info? id-header-hash blockHeight)
+  (get-stacks-block-info? id-header-hash blockHeight)
 )

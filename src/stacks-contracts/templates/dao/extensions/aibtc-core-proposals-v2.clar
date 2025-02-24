@@ -1,4 +1,4 @@
-;; title: aibtcdev-core-proposals
+;; title: aibtc-core-proposals-v2
 ;; version: 2.0.0
 ;; summary: An extension that manages voting on proposals to execute Clarity code using a SIP-010 Stacks token.
 ;; description: This contract can make changes to core DAO functionality with a high voting threshold by executing Clarity code in the context of the DAO.
@@ -15,7 +15,7 @@
 ;;
 (define-constant SELF (as-contract tx-sender))
 (define-constant DEPLOYED_BURN_BLOCK burn-block-height)
-(define-constant DEPLOYED_STACKS_BLOCK block-height)
+(define-constant DEPLOYED_STACKS_BLOCK stacks-block-height)
 
 ;; error messages
 (define-constant ERR_NOT_DAO_OR_EXTENSION (err u3000))
@@ -34,8 +34,8 @@
 (define-constant ERR_FIRST_VOTING_PERIOD (err u3013))
 
 ;; voting configuration
-(define-constant VOTING_DELAY u432) ;; 3 x 144 Bitcoin blocks, ~3 days
-(define-constant VOTING_PERIOD u432) ;; 3 x 144 Bitcoin blocks, ~3 days
+(define-constant VOTING_DELAY (if is-in-mainnet u432 u2)) ;; 3 x 144 Bitcoin blocks, ~3 days
+(define-constant VOTING_PERIOD (if is-in-mainnet u432 u7)) ;; 3 x 144 Bitcoin blocks, ~3 days
 (define-constant VOTING_QUORUM u25) ;; 25% of liquid supply must participate
 (define-constant VOTING_THRESHOLD u90) ;; 90% of votes must be in favor
 
@@ -88,7 +88,7 @@
   (let
     (
       (proposalContract (contract-of proposal))
-      (createdAt block-height)
+      (createdAt (- stacks-block-height u1))
       (liquidTokens (try! (get-liquid-supply createdAt)))
       (startBlock (+ burn-block-height VOTING_DELAY))
       (endBlock (+ startBlock VOTING_PERIOD))
@@ -211,6 +211,9 @@
         caller: contract-caller,
         concludedBy: tx-sender,
         proposal: proposalContract,
+        votesFor: votesFor,
+        votesAgainst: votesAgainst,
+        liquidTokens: liquidTokens,
         metQuorum: metQuorum,
         metThreshold: metThreshold,
         passed: votePassed,
@@ -301,5 +304,5 @@
 )
 
 (define-private (get-block-hash (blockHeight uint))
-  (get-block-info? id-header-hash blockHeight)
+  (get-stacks-block-info? id-header-hash blockHeight)
 )

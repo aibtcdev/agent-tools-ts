@@ -1,4 +1,4 @@
-;; title: aibtcdev-messaging
+;; title: aibtc-onchain-messaging
 ;; version: 1.0.0
 ;; summary: An extension to send messages on-chain to anyone listening to this contract.
 
@@ -29,7 +29,7 @@
       notification: "send",
       payload: {
         caller: contract-caller,
-        height: block-height,
+        height: stacks-block-height,
         isFromDao: isFromDao,
         sender: tx-sender,
       }
