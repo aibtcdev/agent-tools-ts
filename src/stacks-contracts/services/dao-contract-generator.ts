@@ -95,18 +95,4 @@ export class DaoContractGenerator {
 
     return generatedContracts;
   }
-
-  public sortContracts(
-    contracts: Record<string, GeneratedContractRegistryEntry>
-  ): [string, GeneratedContractRegistryEntry][] {
-    return Object.entries(contracts).sort(([, a], [, b]) => {
-      if (a.type === "BASE") return 1;
-      if (b.type === "BASE") return -1;
-
-      if (a.type === "PROPOSALS" && a.subtype === "BOOTSTRAP_INIT") return 1;
-      if (b.type === "PROPOSALS" && b.subtype === "BOOTSTRAP_INIT") return -1;
-
-      return 0;
-    });
-  }
 }

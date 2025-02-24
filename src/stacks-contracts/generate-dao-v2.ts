@@ -141,9 +141,21 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   const manifest = args.daoManifest
     ? args.daoManifest
     : `Bitcoin DeFAI ${args.tokenSymbol} ${args.tokenName}`;
-  console.log(`- manifest: ${manifest}`);
 
-  // Step 1 - generate token-related contracts
+  // Step 1 - generate dao contracts
+
+  const daoContracts = contractGenerator.generateContracts(args.tokenSymbol);
+  for (const contract of Object.values(daoContracts)) {
+    saveContract(
+      contract.name,
+      contract.type,
+      contract.subtype,
+      contract.source,
+      contract.hash
+    );
+  }
+
+  // Step 2 - generate token-related contracts
 
   // query the faktory contracts
   const { token, dex, pool } = await getFaktoryContracts(
@@ -158,25 +170,26 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
     args.tweetOrigin
   );
 
-  // save token-related contract data
-  saveContract(token.name, "TOKEN", "DAO", token.code, token.hash);
-  saveContract(dex.name, "TOKEN", "DEX", dex.code, dex.hash);
-  saveContract(pool.name, "TOKEN", "POOL", pool.code, pool.hash);
-
-  // Step 2 - generate remaining dao contracts
-
-  const daoContracts = contractGenerator.generateContracts(args.tokenSymbol);
-  for (const contract of Object.values(daoContracts)) {
-    saveContract(
-      contract.name,
-      contract.type,
-      contract.subtype,
-      contract.source,
-      contract.hash
-    );
-  }
+  // update contracts already in generatedContracts with source and hash
+  generatedContracts.forEach((contract) => {
+    switch (contract.name) {
+      case token.name:
+        contract.source = token.code;
+        contract.hash = token.hash;
+        break;
+      case dex.name:
+        contract.source = dex.code;
+        contract.hash = dex.hash;
+        break;
+      case pool.name:
+        contract.source = pool.code;
+        contract.hash = pool.hash;
+        break;
+    }
+  });
 
   // Step 3 - return generated contracts
+
   return {
     success: true,
     message: "Contracts generated successfully",
