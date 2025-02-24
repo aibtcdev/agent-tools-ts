@@ -687,7 +687,7 @@ export function getAddressReference(
   return getAddressDefinition(network, addressType);
 }
 
-export function convertStringToBoolean(value: string): boolean {
+export function convertStringToBoolean(value = "false"): boolean {
   // Convert to lowercase and trim whitespace
   const normalized = value.toLowerCase().trim();
 

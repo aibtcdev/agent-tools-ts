@@ -53,6 +53,10 @@ export class DaoContractGenerator {
       // Collect all traits into template variables
       const traitVars = Object.fromEntries(
         (contract.requiredTraits || []).map(({ ref, key }) => {
+          // Ensure we have a valid trait reference
+          if (!traitRefs[ref]) {
+            console.warn(`Warning: Missing trait reference for ${ref}`);
+          }
           return [key, traitRefs[ref]];
         })
       );
@@ -60,6 +64,10 @@ export class DaoContractGenerator {
       // Collect any needed addresses
       const addressVars = Object.fromEntries(
         (contract.requiredAddresses || []).map(({ ref, key }) => {
+          // Ensure we have a valid address reference
+          if (!knownAddresses[ref]) {
+            console.warn(`Warning: Missing address reference for ${ref}`);
+          }
           return [key, knownAddresses[ref]];
         })
       );
