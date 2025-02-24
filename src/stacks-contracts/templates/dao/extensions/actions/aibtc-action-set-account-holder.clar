@@ -12,12 +12,12 @@
       (accountHolder (unwrap! (from-consensus-buff? principal parameters) ERR_INVALID_PARAMS))
     )
     (try! (is-dao-or-extension))
-    (contract-call? '<%= it.bank_account_contract_address %> set-account-holder accountHolder)
+    (contract-call? '<%= it.bank_account_contract %> set-account-holder accountHolder)
   )
 )
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
-    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract %>)
+    (contract-call? '<%= it.dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )

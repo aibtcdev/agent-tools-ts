@@ -5,7 +5,7 @@
 (define-public (execute (sender principal))
   (begin  
     ;; set initial dao extensions list
-    (try! (contract-call? <%= it.dao_contract_address %> set-extensions
+    (try! (contract-call? <%= it.dao_contract %> set-extensions
       (list
         {extension: CFG_ACTION_PROPOSALS, enabled: true}
         {extension: CFG_BANK_ACCOUNT, enabled: true}
@@ -17,7 +17,7 @@
       )
     ))
     ;; set initial action proposals list
-    (try! (contract-call? <%= it.dao_contract_address %> set-extensions
+    (try! (contract-call? <%= it.dao_contract %> set-extensions
       (list
         {extension: CFG_ACTION_ADD_RESOURCE, enabled: true}
         {extension: CFG_ACTION_ALLOW_ASSET, enabled: true}
@@ -29,9 +29,9 @@
       )
     ))
     ;; send DAO manifest as onchain message
-    (try! (contract-call? <%= it.messaging_contract_address %> send DAO_MANIFEST true))
+    (try! (contract-call? <%= it.messaging_contract %> send DAO_MANIFEST true))
     ;; allow assets in treasury
-    (try! (contract-call? <%= it.treasury_contract_address %> allow-asset CFG_TOKEN true))
+    (try! (contract-call? <%= it.treasury_contract %> allow-asset CFG_TOKEN true))
     ;; print manifest
     (print DAO_MANIFEST)
     (ok true)

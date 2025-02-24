@@ -12,12 +12,12 @@
       (message (unwrap! (from-consensus-buff? (string-ascii 2043) parameters) ERR_INVALID_PARAMS))
     )
     (try! (is-dao-or-extension))
-    (contract-call? '<%= it.messaging_contract_address %> send message true)
+    (contract-call? '<%= it.messaging_contract %> send message true)
   )
 )
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
-    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract %>)
+    (contract-call? '<%= it.dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
