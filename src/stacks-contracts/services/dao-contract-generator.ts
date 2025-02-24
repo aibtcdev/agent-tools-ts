@@ -1,7 +1,6 @@
 import { Eta } from "eta";
 import * as path from "path";
 import {
-  GeneratedContract,
   getKnownAddresses,
   getKnownTraits,
   NetworkName,
@@ -23,7 +22,7 @@ export class DaoContractGenerator {
   public generateContracts(
     symbol: string,
     contractIds?: ContractRegistryEntry[]
-  ): GeneratedContract[] {
+  ): GeneratedContractInfo[] {
     const traitRefs = getKnownTraits(this.network);
     const knownAddresses = getKnownAddresses(this.network);
 
