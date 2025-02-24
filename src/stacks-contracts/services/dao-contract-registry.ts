@@ -5,12 +5,23 @@ import {
   KnownTraits,
 } from "../types/dao-types-v2";
 
+// setup fields for each contract
+
 type BaseFields = {
   name: string;
   templatePath: string;
-  contractAddress?: string;
-  sourceCode?: string;
 };
+
+type GeneratedFields = {
+  address?: string;
+  source?: string;
+  hash?: string;
+};
+
+type ContractFields = BaseFields & GeneratedFields;
+
+// set up template fields for each contract
+// maps to names values used with each contract
 
 type BaseAddresses = {
   ref: keyof KnownAddresses; // key in ADDRESSES
@@ -22,10 +33,18 @@ type BaseTraits = {
   key: string; // key in template
 };
 
-type RequiredFields = BaseFields & {
+type TemplateFields = BaseFields & {
   requiredAddresses?: BaseAddresses[];
   requiredTraits?: BaseTraits[];
 };
+
+// combine all the fields into whats required
+
+type RequiredFields = ContractFields & TemplateFields;
+
+// define a strongly-typed contract registry entry
+// this object is the main source of truth for all contracts in the DAO
+// and should be cloned to generate and deploy contracts
 
 export type ContractRegistryEntry = {
   [C in ContractCategory]: RequiredFields & {
@@ -35,7 +54,8 @@ export type ContractRegistryEntry = {
 }[ContractCategory];
 
 /**
- * Central registry for each contract.
+ * Central registry for each contract in the DAO.
+ * Clone this object to generate and deploy contracts.
  */
 export const CONTRACT_REGISTRY: ContractRegistryEntry[] = [
   // token contracts
@@ -362,3 +382,47 @@ export const CONTRACT_REGISTRY: ContractRegistryEntry[] = [
     ],
   },
 ] as const;
+
+/**
+ * Generate a contract name by replacing the token symbol
+ *
+ * @param originalName Original contract name from the registry
+ * @param tokenSymbol Token symbol to use in the name
+ * @param replaceText Text to replace in the original name (default: "aibtc")
+ * @returns String with replaceText replaced by the lowercase token symbol
+ */
+export function getContractName(
+  originalName: string,
+  tokenSymbol: string,
+  replaceText = "aibtc"
+): string {
+  return originalName.replace(replaceText, tokenSymbol.toLowerCase());
+}
+
+/**
+ * Filter contracts by category
+ *
+ * @param category Contract category to filter by
+ * @returns ContractRegistryEntry[] filtered list of contracts
+ */
+export function getContractsByCategory<C extends ContractCategory>(
+  category: C
+): ContractRegistryEntry[] {
+  return CONTRACT_REGISTRY.filter((contract) => contract.type === category);
+}
+
+/**
+ * Filter contracts by subcategory
+ *
+ * @param category Contract category
+ * @param subcategory Contract subcategory
+ * @returns ContractRegistryEntry[] filtered list of contracts
+ */
+export function getContractsBySubcategory<C extends ContractCategory>(
+  category: C,
+  subcategory: ContractSubCategory<C>
+): ContractRegistryEntry[] {
+  return CONTRACT_REGISTRY.filter(
+    (contract) => contract.type === category && contract.subtype === subcategory
+  );
+}

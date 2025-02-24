@@ -1,4 +1,5 @@
 import { StacksNetworkName } from "@stacks/network";
+import { NetworkType } from "../../types";
 
 //////////////////////////////
 // GENERAL HELPERS
@@ -6,6 +7,28 @@ import { StacksNetworkName } from "@stacks/network";
 
 // make uppercase version of StacksNetworkName
 export type NetworkName = Uppercase<StacksNetworkName>;
+// (alias) type StacksNetworkName = "mainnet" | "testnet" | "devnet" | "mocknet"
+
+// helper to get the network name from legacy NetworkType
+export function getNetworkNameFromType(network: NetworkType): NetworkName {
+  // create an array of valid network names (lowercase)
+  const validNetworks: StacksNetworkName[] = [
+    "mainnet",
+    "testnet",
+    "devnet",
+    "mocknet",
+  ];
+  // check if the input is valid
+  if (!validNetworks.includes(network as StacksNetworkName)) {
+    throw new Error(
+      `Invalid network type: ${network}. Expected one of: ${validNetworks.join(
+        ", "
+      )}`
+    );
+  }
+  // convert to uppercase and new type
+  return network.toUpperCase() as NetworkName;
+}
 
 //////////////////////////////
 // KNOWN ADDRESSES
@@ -265,13 +288,3 @@ const CONTRACT_SUBCATEGORIES = {
 // helper type that infers subcategory keys per category
 export type ContractSubCategory<C extends ContractCategory> =
   (typeof CONTRACT_SUBCATEGORIES)[C][number];
-
-/////////////////////////
-// DAO CONTRACTS
-/////////////////////////
-
-// Define the generated contract output interface
-export interface GeneratedContract {
-  name: string; // The contract name with replaced symbol
-  source: string; // The rendered Clarity source code
-}
