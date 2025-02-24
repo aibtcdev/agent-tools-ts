@@ -193,13 +193,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_BANK_ACCOUNT",
-        key: "bank_account_trait",
-      },
-    ],
+        key: "bank_account_trait"
+      }
+    ]
   },
   {
     name: "aibtc-core-proposals-v2",
@@ -249,13 +249,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_CHARTER",
-        key: "charter_trait",
-      },
-    ],
+        key: "charter_trait"
+      }
+    ]
   },
   {
     name: "aibtc-onchain-messaging",
@@ -266,13 +266,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_MESSAGING",
-        key: "messaging_trait",
-      },
-    ],
+        key: "messaging_trait"
+      }
+    ]
   },
   {
     name: "aibtc-payments-invoices",
@@ -283,17 +283,17 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_INVOICES",
-        key: "payments_trait",
+        key: "invoices_trait"
       },
       {
         ref: "DAO_RESOURCES",
-        key: "resources_trait",
-      },
-    ],
+        key: "resources_trait"
+      }
+    ]
   },
   {
     name: "aibtc-token-owner",
@@ -304,13 +304,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
-        key: "extension_trait",
+        key: "extension_trait"
       },
       {
         ref: "DAO_TOKEN_OWNER",
-        key: "token_owner_trait",
-      },
+        key: "token_owner_trait"
+      }
     ],
+    requiredAddresses: [
+      {
+        ref: "DEPLOYER",
+        key: "token_contract"
+      }
+    ]
   },
   {
     name: "aibtc-treasury",
