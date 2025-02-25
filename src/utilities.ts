@@ -391,7 +391,7 @@ export type FaktoryGeneratedContracts = {
   pool: FaktoryContractInfo;
 };
 
-type FaktoryRequestBody = {
+export type FaktoryRequestBody = {
   symbol: string;
   name: string;
   supply: number;
@@ -480,42 +480,17 @@ type FaktoryDbRecord = {
 };
 
 export async function getFaktoryContracts(
-  symbol: string,
-  name: string,
-  supply: number,
-  creatorAddress: string,
-  originAddress: string,
-  uri: string,
-  logoUrl?: string,
-  mediaUrl?: string,
-  twitter?: string,
-  website?: string,
-  telegram?: string,
-  discord?: string,
-  description?: string,
-  tweetOrigin?: string
-) {
+  faktoryRequestBody: FaktoryRequestBody
+): Promise<FaktoryGeneratedContracts> {
   const faktoryUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate`;
   const faktoryPoolUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate-pool`;
   //console.log(`Faktory URL: ${faktoryUrl.toString()}`);
   //console.log(`Faktory Pool URL: ${faktoryPoolUrl.toString()}`);
+  //console.log(`Faktory request body:`);
+  //console.log(JSON.stringify(faktoryRequestBody, null, 2));
 
-  const faktoryRequestBody: FaktoryRequestBody = {
-    symbol,
-    name,
-    supply,
-    creatorAddress,
-    originAddress,
-    uri,
-    logoUrl,
-    mediaUrl,
-    twitter,
-    website,
-    telegram,
-    discord,
-    description,
-    tweetOrigin,
-  };
+  const symbol = faktoryRequestBody.symbol;
+  const creatorAddress = faktoryRequestBody.creatorAddress;
 
   const faktoryResponse = await fetch(faktoryUrl.toString(), {
     method: "POST",

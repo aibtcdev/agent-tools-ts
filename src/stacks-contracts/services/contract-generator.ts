@@ -6,6 +6,7 @@ import {
   getStxCityHash,
   FaktoryGeneratedContracts,
   getFaktoryContracts,
+  FaktoryRequestBody,
 } from "../../utilities";
 import { NetworkType } from "../../types";
 import {
@@ -246,17 +247,18 @@ export class ContractGenerator {
     description?: string,
     tweetOrigin?: string
   ): Promise<FaktoryGeneratedContracts> {
-    const { token, dex, pool } = await getFaktoryContracts(
-      tokenSymbol,
-      tokenName,
-      parseInt(tokenMaxSupply),
+    const requestBody: FaktoryRequestBody = {
+      symbol: tokenSymbol,
+      name: tokenName,
+      supply: parseInt(tokenMaxSupply),
+      uri: tokenUri,
       creatorAddress,
       originAddress,
-      tokenUri,
       logoUrl,
       description,
-      tweetOrigin
-    );
+      tweetOrigin,
+    };
+    const { token, dex, pool } = await getFaktoryContracts(requestBody);
     return { token, dex, pool };
   }
 

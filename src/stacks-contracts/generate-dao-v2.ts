@@ -7,6 +7,7 @@ import {
   convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
+  FaktoryRequestBody,
   getFaktoryContracts,
   sendToLLM,
   ToolResponse,
@@ -19,8 +20,8 @@ import {
 } from "./types/dao-types-v2";
 import { GeneratedContractRegistryEntry } from "./services/dao-contract-registry";
 
-const usage = `Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <generateFiles>`;
-const usageExample = `Example: bun run generate-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin" "true"`;
+const usage = `Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>`;
+const usageExample = `Example: bun run generate-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin" "DAO manifest inscription ID" "true"`;
 
 function validateArgs(): ExpectedContractGeneratorArgs {
   // capture all arguments
@@ -112,17 +113,19 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   // Step 2 - generate token-related contracts
 
   // query the faktory contracts
-  const { token, dex, pool } = await getFaktoryContracts(
-    args.tokenSymbol,
-    args.tokenName,
-    args.tokenMaxSupply,
-    args.tokenUri,
-    address, // creatorAddress
-    args.originAddress,
-    args.logoUrl,
-    manifest, // description
-    args.tweetOrigin
-  );
+  const requestBody: FaktoryRequestBody = {
+    symbol: args.tokenSymbol,
+    name: args.tokenName,
+    supply: args.tokenMaxSupply,
+    creatorAddress: address,
+    originAddress: args.originAddress,
+    uri: args.tokenUri,
+    logoUrl: args.logoUrl,
+    description: manifest,
+    tweetOrigin: args.tweetOrigin,
+  };
+  const { token, dex, pool } = await getFaktoryContracts(requestBody);
+
   // update contracts already in generatedContracts with source and hash
   generatedContracts.forEach((contract) => {
     switch (contract.name) {
