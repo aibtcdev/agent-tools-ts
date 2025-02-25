@@ -76,9 +76,28 @@ export class DaoContractGenerator {
         })
       );
 
+      // Collect any required contract addresses
+      const contractAddressVars = Object.fromEntries(
+        (contract.requiredContractAddresses || []).map(({ key, category, subcategory }) => {
+          // Find the matching contract in our generated contracts
+          const matchingContractName = Object.keys(generatedContracts).find(name => {
+            const generatedContract = generatedContracts[name];
+            return generatedContract.type === category && generatedContract.subtype === subcategory;
+          });
+
+          if (!matchingContractName) {
+            console.warn(`Warning: Missing contract reference for ${category}/${subcategory}`);
+            return [key, ""];
+          }
+
+          // Return the contract address in format: deployer.contract-name
+          return [key, generatedContracts[matchingContractName].name];
+        })
+      );
+
       // combine them into a single object for the template where
       // key is the object key and value is the object value
-      const templateVars = { ...traitVars, ...addressVars };
+      const templateVars = { ...traitVars, ...addressVars, ...contractAddressVars };
       console.log(`templateVars: ${JSON.stringify(templateVars)}`);
 
       // render the template
