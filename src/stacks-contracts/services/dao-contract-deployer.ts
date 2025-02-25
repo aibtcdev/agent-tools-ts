@@ -4,6 +4,7 @@ import {
   broadcastTransaction,
   AnchorMode,
   PostConditionMode,
+  ClarityVersion,
 } from "@stacks/transactions";
 import {
   GeneratedContractRegistryEntry,
@@ -50,6 +51,7 @@ export class DaoContractDeployer {
         network: this.network,
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow,
+        clarityVersion: ClarityVersion.Clarity3,
       });
 
       // Broadcast the transaction
