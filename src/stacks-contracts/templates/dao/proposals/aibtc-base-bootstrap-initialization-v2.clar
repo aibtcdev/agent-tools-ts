@@ -35,7 +35,7 @@
     ;; send DAO manifest as onchain message
     (try! (contract-call? '<%= it.messaging_contract %> send CFG_DAO_MANIFEST_TEXT true))
     ;; allow assets in treasury
-    (try! (contract-call? '<%= it.treasury_contract %> allow-asset .aibtc-token true))
+    (try! (contract-call? '<%= it.treasury_contract %> allow-asset '<%= it.token_contract %> true))
     ;; print manifest
     (print CFG_DAO_MANIFEST_TEXT)
     (ok true)

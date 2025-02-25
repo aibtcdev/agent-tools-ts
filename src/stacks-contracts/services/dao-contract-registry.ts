@@ -714,6 +714,12 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         category: "BASE",
         subcategory: "DAO",
       },
+      // token
+      {
+        key: "token_contract",
+        category: "TOKEN",
+        subcategory: "DAO",
+      },
       // extensions
       {
         key: "action_proposals_contract",
