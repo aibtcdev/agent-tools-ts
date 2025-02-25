@@ -97,7 +97,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "aibtc-faktory-dex",
     type: "TOKEN",
     subtype: "DEX",
-    deploymentOrder: 2,
+    deploymentOrder: 3,
     templatePath: `extensions/aibtc-token-dex.clar`,
     requiredTraits: [
       {
@@ -155,7 +155,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     name: "xyk-pool-stx-aibtc-v-1-1",
     type: "TOKEN",
     subtype: "POOL",
-    deploymentOrder: 3,
+    deploymentOrder: 2,
     templatePath: `extensions/aibtc-bitflow-pool.clar`,
     requiredTraits: [
       {
@@ -340,6 +340,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "EXTENSIONS",
     subtype: "CHARTER",
     deploymentOrder: 8,
+    clarityVersion: 3,
     templatePath: `extensions/aibtc-dao-charter.clar`,
     requiredTraits: [
       {
@@ -433,16 +434,15 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "token_owner_trait",
       },
     ],
-    requiredAddresses: [
-      {
-        ref: "DEPLOYER",
-        key: "token_contract",
-      },
-    ],
     requiredContractAddresses: [
       {
         key: "base_dao_contract",
         category: "BASE",
+        subcategory: "DAO",
+      },
+      {
+        key: "token_contract",
+        category: "TOKEN",
         subcategory: "DAO",
       },
     ],
@@ -531,17 +531,16 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "action_trait",
       },
     ],
-    requiredAddresses: [
-      {
-        ref: "DEPLOYER",
-        key: "treasury_contract",
-      },
-    ],
     requiredContractAddresses: [
       {
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
       },
     ],
   },
@@ -561,17 +560,16 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "action_trait",
       },
     ],
-    requiredAddresses: [
-      {
-        ref: "DEPLOYER",
-        key: "messaging_contract",
-      },
-    ],
     requiredContractAddresses: [
       {
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
       },
     ],
   },
@@ -591,17 +589,16 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "action_trait",
       },
     ],
-    requiredAddresses: [
-      {
-        ref: "DEPLOYER",
-        key: "bank_account_contract",
-      },
-    ],
     requiredContractAddresses: [
       {
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "bank_account_contract",
+        category: "EXTENSIONS",
+        subcategory: "BANK_ACCOUNT",
       },
     ],
   },
@@ -621,17 +618,16 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "action_trait",
       },
     ],
-    requiredAddresses: [
-      {
-        ref: "DEPLOYER",
-        key: "bank_account_contract",
-      },
-    ],
     requiredContractAddresses: [
       {
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "bank_account_contract",
+        category: "EXTENSIONS",
+        subcategory: "BANK_ACCOUNT",
       },
     ],
   },
@@ -651,17 +647,16 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "action_trait",
       },
     ],
-    requiredAddresses: [
-      {
-        ref: "DEPLOYER",
-        key: "bank_account_contract",
-      },
-    ],
     requiredContractAddresses: [
       {
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "bank_account_contract",
+        category: "EXTENSIONS",
+        subcategory: "BANK_ACCOUNT",
       },
     ],
   },
@@ -681,17 +676,21 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "action_trait",
       },
     ],
-    requiredAddresses: [
-      {
-        ref: "DEPLOYER",
-        key: "payments_contract",
-      },
-    ],
     requiredContractAddresses: [
       {
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "bank_account_contract",
+        category: "EXTENSIONS",
+        subcategory: "BANK_ACCOUNT",
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS",
       },
     ],
   },
@@ -709,15 +708,88 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       },
     ],
     requiredContractAddresses: [
+      // base dao
       {
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
       },
+      // extensions
+      {
+        key: "action_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "ACTION_PROPOSALS",
+      },
+      {
+        key: "bank_account_contract",
+        category: "EXTENSIONS",
+        subcategory: "BANK_ACCOUNT",
+      },
+      {
+        key: "core_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "CORE_PROPOSALS",
+      },
+      {
+        key: "dao_charter_contract",
+        category: "EXTENSIONS",
+        subcategory: "CHARTER",
+      },
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS",
+      },
+      {
+        key: "token_owner_contract",
+        category: "EXTENSIONS",
+        subcategory: "TOKEN_OWNER",
+      },
       {
         key: "treasury_contract",
         category: "EXTENSIONS",
         subcategory: "TREASURY",
+      },
+      // action extensions
+      {
+        key: "action_add_resource_contract",
+        category: "ACTIONS",
+        subcategory: "PAYMENTS_INVOICES_ADD_RESOURCE",
+      },
+      {
+        key: "action_allow_asset_contract",
+        category: "ACTIONS",
+        subcategory: "TREASURY_ALLOW_ASSET",
+      },
+      {
+        key: "action_send_message_contract",
+        category: "ACTIONS",
+        subcategory: "MESSAGING_SEND_MESSAGE",
+      },
+      {
+        key: "action_set_account_holder_contract",
+        category: "ACTIONS",
+        subcategory: "BANK_ACCOUNT_SET_ACCOUNT_HOLDER",
+      },
+      {
+        key: "action_set_withdrawal_amount_contract",
+        category: "ACTIONS",
+        subcategory: "BANK_ACCOUNT_SET_WITHDRAWAL_AMOUNT",
+      },
+      {
+        key: "action_set_withdrawal_period_contract",
+        category: "ACTIONS",
+        subcategory: "BANK_ACCOUNT_SET_WITHDRAWAL_PERIOD",
+      },
+      {
+        key: "action_toggle_resource_contract",
+        category: "ACTIONS",
+        subcategory: "PAYMENTS_INVOICES_TOGGLE_RESOURCE",
       },
     ],
     requiredRuntimeValues: [

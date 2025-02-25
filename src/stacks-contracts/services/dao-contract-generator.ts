@@ -12,6 +12,7 @@ import {
   BaseContractRegistryEntry,
   GeneratedContractRegistryEntry,
   getContractName,
+  getContractsBySubcategory,
 } from "./dao-contract-registry";
 
 export class DaoContractGenerator {
@@ -58,6 +59,8 @@ export class DaoContractGenerator {
     );
 
     sortedContracts.forEach((contract) => {
+      //console.log("===================================");
+      //console.log(`Generating contract: ${contract.name}`);
       // Build contract name by replacing aibtc symbol
       const contractName = getContractName(contract.name, args.tokenSymbol);
 
@@ -71,6 +74,7 @@ export class DaoContractGenerator {
           return [key, traitRefs[ref]];
         })
       );
+      //console.log(`- required traits: ${Object.keys(traitVars)}`);
 
       // Collect any needed addresses
       const addressVars = Object.fromEntries(
@@ -82,37 +86,19 @@ export class DaoContractGenerator {
           return [key, knownAddresses[ref]];
         })
       );
-
+      //console.log(`- required addresses: ${Object.keys(addressVars)}`);
+      //console.log(`- generated contracts: ${Object.keys(generatedContracts)}`);
       // Collect any required contract addresses
       const contractAddressVars = Object.fromEntries(
         (contract.requiredContractAddresses || []).map(
           ({ key, category, subcategory }) => {
-            // Find the matching contract in our generated contracts
-            const matchingContractName = Object.keys(generatedContracts).find(
-              (name) => {
-                const generatedContract = generatedContracts[name];
-                return (
-                  generatedContract.type === category &&
-                  generatedContract.subtype === subcategory
-                );
-              }
+            // Find the matching contract in the CONTRACT_REGISTRY
+            const [contract] = getContractsBySubcategory(category, subcategory);
+            const contractAddress = getContractName(
+              contract.name,
+              args.tokenSymbol
             );
-            if (!matchingContractName) {
-              console.log(`contractName: ${contractName}`);
-              console.warn(
-                `warning: Missing contract reference for ${category}/${subcategory}`
-              );
-              console.log(`key: ${key}`);
-              console.log(`category: ${category}`);
-              console.log(`subcategory: ${subcategory}`);
-              return [key, ""];
-            }
-
-            // Return the contract address in format: deployer.contract-name
-            const contractAddress = this.generateContractPrincipal(
-              generatedContracts[matchingContractName].name
-            );
-            return [key, contractAddress];
+            return [key, this.generateContractPrincipal(contractAddress)];
           }
         )
       );

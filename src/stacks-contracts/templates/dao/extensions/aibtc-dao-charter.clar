@@ -57,7 +57,7 @@
     ;; insert new charter version
     (asserts! (map-insert CharterVersions newVersion {
       burnHeight: burn-block-height,
-      createdAt: block-height,
+      createdAt: stacks-block-height,
       caller: contract-caller,
       sender: tx-sender,
       charter: charter,
@@ -68,7 +68,7 @@
       notification: "set-dao-charter",
       payload: {
         burnHeight: burn-block-height,
-        createdAt: block-height,
+        createdAt: stacks-block-height,
         caller: contract-caller,
         sender: tx-sender,
         dao: SELF,
@@ -110,6 +110,6 @@
 ;;
 (define-private (is-dao-or-extension)
   (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
-    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )

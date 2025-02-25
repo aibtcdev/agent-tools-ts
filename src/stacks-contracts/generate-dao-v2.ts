@@ -153,7 +153,7 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
       const fileName = `${contract.name}.clar`;
       const filePath = path.join(outputDir, fileName);
       fs.writeFileSync(filePath, contract.source);
-      console.log(`Generated: ${filePath}`);
+      //console.log(`Generated: ${filePath}`);
     });
   }
 
