@@ -99,7 +99,7 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   // convert old network to new format
   const network = getNetworkNameFromType(CONFIG.NETWORK);
   // create contract generator instance
-  const contractGenerator = new DaoContractGenerator(network);
+  const contractGenerator = new DaoContractGenerator(network, address);
   // set dao manifest, passed to proposal for dao construction
   // or default to dao name + token name
   const manifest = args.daoManifest
@@ -163,8 +163,7 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   console.log(`Deploying ${generatedContracts.length} contracts...`);
   console.log(`- network: ${network}`);
   console.log(`- address: ${address}`);
-  console.log(`- contracts: (${generatedContracts.length})`);
-  console.log(JSON.stringify(generatedContracts, null, 2));
+  //console.log(JSON.stringify(generatedContracts, null, 2));
 
   // create contract deployer instance
   const contractDeployer = new DaoContractDeployer(network, address, key);
@@ -201,7 +200,10 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   return {
     success: true,
     message: "Contracts generated and deployed successfully",
-    data: deployedContracts,
+    data: deployedContracts.map((contract) => ({
+      ...contract,
+      source: contract.source.substring(0, 250),
+    })),
   };
 }
 

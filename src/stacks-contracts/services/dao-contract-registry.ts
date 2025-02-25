@@ -1,3 +1,4 @@
+import { ClarityVersion } from "@stacks/transactions";
 import {
   ContractCategory,
   ContractSubCategory,
@@ -11,7 +12,8 @@ type BaseContractInfo = {
     name: string;
     type: C;
     subtype: ContractSubCategory<C>;
-    deploymentOrder: number; // Lower numbers deploy first
+    deploymentOrder: number; // lower numbers deploy first
+    clarityVersion?: ClarityVersion; // optional for deployment
   };
 }[ContractCategory];
 
@@ -185,6 +187,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "BASE",
     subtype: "DAO",
     deploymentOrder: 4,
+    clarityVersion: 3,
     templatePath: `aibtc-base-dao.clar`,
     requiredTraits: [
       {
@@ -207,6 +210,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "EXTENSIONS",
     subtype: "ACTION_PROPOSALS",
     deploymentOrder: 5,
+    clarityVersion: 3,
     templatePath: `extensions/aibtc-action-proposals-v2.clar`,
     requiredTraits: [
       {
@@ -283,6 +287,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "EXTENSIONS",
     subtype: "CORE_PROPOSALS",
     deploymentOrder: 7,
+    clarityVersion: 3,
     templatePath: `extensions/aibtc-core-proposals-v2.clar`,
     requiredTraits: [
       {
@@ -359,6 +364,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "EXTENSIONS",
     subtype: "MESSAGING",
     deploymentOrder: 9,
+    clarityVersion: 3,
     templatePath: `extensions/aibtc-onchain-messaging.clar`,
     requiredTraits: [
       {

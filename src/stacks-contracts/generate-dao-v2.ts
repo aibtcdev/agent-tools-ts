@@ -97,7 +97,7 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   // convert old network to new format
   const network = getNetworkNameFromType(CONFIG.NETWORK);
   // create contract generator instance
-  const contractGenerator = new DaoContractGenerator(network);
+  const contractGenerator = new DaoContractGenerator(network, address);
   // set dao manifest, passed to proposal for dao construction
   // or default to dao name + token name
   const manifest = args.daoManifest

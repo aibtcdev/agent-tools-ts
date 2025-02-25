@@ -17,10 +17,16 @@ import {
 export class DaoContractGenerator {
   private eta: Eta;
   private network: NetworkName;
+  private senderAddress: string;
 
-  constructor(network: NetworkName) {
+  constructor(network: NetworkName, senderAddress: string) {
     this.eta = new Eta({ views: path.join(__dirname, "../templates/dao") });
     this.network = network;
+    this.senderAddress = senderAddress;
+  }
+
+  private generateContractPrincipal(contractName: string): string {
+    return `${this.senderAddress}.${contractName}`;
   }
 
   /**
@@ -92,18 +98,21 @@ export class DaoContractGenerator {
               }
             );
             if (!matchingContractName) {
+              console.log(`contractName: ${contractName}`);
+              console.warn(
+                `warning: Missing contract reference for ${category}/${subcategory}`
+              );
               console.log(`key: ${key}`);
               console.log(`category: ${category}`);
               console.log(`subcategory: ${subcategory}`);
-              console.log(`contractName: ${contractName}`);
-              console.warn(
-                `Warning: Missing contract reference for ${category}/${subcategory}`
-              );
               return [key, ""];
             }
 
             // Return the contract address in format: deployer.contract-name
-            return [key, generatedContracts[matchingContractName].name];
+            const contractAddress = this.generateContractPrincipal(
+              generatedContracts[matchingContractName].name
+            );
+            return [key, contractAddress];
           }
         )
       );
@@ -167,7 +176,7 @@ export class DaoContractGenerator {
         ...contractAddressVars,
         ...runtimeVars,
       };
-      console.log(`templateVars: ${JSON.stringify(templateVars)}`);
+      //console.log(`templateVars: ${JSON.stringify(templateVars)}`);
 
       // render the template
       const source = this.eta.render(contract.templatePath, templateVars);
