@@ -120,26 +120,33 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         ref: "BURN",
         key: "burn",
       },
+    ],
+    requiredContractAddresses: [
       {
-        ref: "DEPLOYER",
-        key: "pool_contract",
+        key: "token_owner_contract",
+        category: "EXTENSIONS",
+        subcategory: "TOKEN_OWNER",
       },
       {
-        ref: "BITFLOW_FEE",
-        key: "stxcity_swap_fee",
+        key: "dex_contract",
+        category: "TOKEN",
+        subcategory: "DEX",
       },
       {
-        ref: "BITFLOW_FEE",
-        key: "stxcity_complete_fee",
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
       },
-      {
-        ref: "DEPLOYER",
-        key: "token_contract",
-      },
-      {
-        ref: "BITFLOW_FEE",
-        key: "stxcity_dex_deployment_fee_address",
-      },
+    ],
+    requiredRuntimeValues: [
+      { key: "hash" },
+      { key: "target_stx" },
+      { key: "token_max_supply" },
+      { key: "token_name" },
+      { key: "token_symbol" },
+      { key: "token_decimals" },
+      { key: "token_uri" },
+      { key: "token_deployment_fee_address" },
     ],
   },
   {
