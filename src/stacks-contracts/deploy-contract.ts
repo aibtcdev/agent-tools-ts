@@ -1,86 +1,69 @@
 import {
-  getAddressFromPrivateKey,
-  makeContractDeploy,
-  broadcastTransaction,
-  AnchorMode,
-  SignedContractDeployOptions,
-  PostConditionMode,
-} from "@stacks/transactions";
-import {
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
-  getNetwork,
   getNextNonce,
+  sendToLLM,
+  ToolResponse,
 } from "../utilities";
+import { DeploymentDetails } from "./types/dao-types";
+import { ContractDeployer } from "./services/contract-deployer";
 
-const networkObj = getNetwork(CONFIG.NETWORK);
-const network = CONFIG.NETWORK;
+const usage = "Usage: bun run deploy-contract.ts <contractName> <sourceCode>";
+const usageExample =
+  'Example: bun run deploy-contract.ts aibtcdao-charter "(define-public (hello-world) (ok u1))"';
 
-async function deployContract(sourceCode: string, contractName: string) {
-  try {
-    // Derive child account from mnemonic
-    const { address, key } = await deriveChildAccount(
-      CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
+interface ExpectedArgs {
+  contractName: string;
+  sourceCode: string;
+}
 
-    const formattedContractName = contractName
-      .replace(/([a-z])([A-Z])/g, "$1-$2")
-      .toLowerCase();
-    const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
-    const nextPossibleNonce = await getNextNonce(network, senderAddress);
-
-    const txOptions: SignedContractDeployOptions = {
-      contractName: formattedContractName,
-      codeBody: sourceCode,
-      clarityVersion: 2,
-      network: networkObj,
-      senderKey: key,
-      nonce: nextPossibleNonce,
-      anchorMode: AnchorMode.Any,
-      postConditionMode: PostConditionMode.Allow,
-      fee: BigInt(1_000_000), // 1 STX
-    };
-
-    const transaction = await makeContractDeploy(txOptions);
-    const broadcastResponse = await broadcastTransaction(
-      transaction,
-      networkObj
-    );
-
-    if ("error" in broadcastResponse) {
-      console.error("Transaction failed to broadcast");
-      console.error(`Error: ${broadcastResponse.error}`);
-      if (broadcastResponse.reason) {
-        console.error(`Reason: ${broadcastResponse.reason}`);
-      }
-      if (broadcastResponse.reason_data) {
-        console.error(
-          `Reason Data: ${JSON.stringify(
-            broadcastResponse.reason_data,
-            null,
-            2
-          )}`
-        );
-      }
-    } else {
-      console.log("Transaction broadcasted successfully!");
-      console.log(`FROM: ${address}`);
-      console.log(`TXID: 0x${broadcastResponse.txid}`);
-      console.log(`CONTRACT: ${address}.${formattedContractName}`);
-    }
-  } catch (error) {
-    console.error(`Error deploying contract: ${error}`);
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [contractName, sourceCode] = process.argv.slice(2);
+  if (!contractName || !sourceCode) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
+  // return validated arguments
+  return {
+    contractName,
+    sourceCode,
+  };
 }
 
-// Get the source code and contract name from command line arguments and call deployContract
-const contractName = process.argv[2];
-const sourceCode = process.argv[3];
-
-if (sourceCode) {
-  deployContract(sourceCode, contractName);
-} else {
-  console.error("Please provide the contract source code as an argument.");
+async function main(): Promise<ToolResponse<DeploymentDetails>> {
+  // validate and store provided args
+  const args = validateArgs();
+  // setup network and wallet info
+  const { address } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+  // setup deployment details
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  const contractDeployer = new ContractDeployer(CONFIG.NETWORK);
+  const deploymentDetails = await contractDeployer.deployContractV2(
+    args.contractName,
+    args.sourceCode,
+    nextPossibleNonce
+  );
+  // return deployment details
+  return {
+    success: true,
+    message: `Contract deployed successfully: ${address}.${args.contractName}`,
+    data: deploymentDetails,
+  };
 }
+
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });

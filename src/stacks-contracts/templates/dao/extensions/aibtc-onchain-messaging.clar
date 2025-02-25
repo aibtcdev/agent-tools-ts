@@ -1,4 +1,4 @@
-;; title: aibtcdev-messaging
+;; title: aibtc-onchain-messaging
 ;; version: 1.0.0
 ;; summary: An extension to send messages on-chain to anyone listening to this contract.
 
@@ -29,7 +29,7 @@
       notification: "send",
       payload: {
         caller: contract-caller,
-        height: block-height,
+        height: stacks-block-height,
         isFromDao: isFromDao,
         sender: tx-sender,
       }
@@ -42,7 +42,7 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
-    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )

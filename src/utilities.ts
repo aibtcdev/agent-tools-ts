@@ -391,7 +391,7 @@ export type FaktoryGeneratedContracts = {
   pool: FaktoryContractInfo;
 };
 
-type FaktoryRequestBody = {
+export type FaktoryRequestBody = {
   symbol: string;
   name: string;
   supply: number;
@@ -427,7 +427,7 @@ type FaktoryPool = {
   pool: FaktoryContractInfo;
 };
 
-type FaktoryContractInfo = {
+export type FaktoryContractInfo = {
   name: string;
   code: string;
   hash?: string;
@@ -480,42 +480,17 @@ type FaktoryDbRecord = {
 };
 
 export async function getFaktoryContracts(
-  symbol: string,
-  name: string,
-  supply: number,
-  creatorAddress: string,
-  originAddress: string,
-  uri: string,
-  logoUrl?: string,
-  mediaUrl?: string,
-  twitter?: string,
-  website?: string,
-  telegram?: string,
-  discord?: string,
-  description?: string,
-  tweetOrigin?: string
-) {
+  faktoryRequestBody: FaktoryRequestBody
+): Promise<FaktoryGeneratedContracts> {
   const faktoryUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate`;
   const faktoryPoolUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate-pool`;
   //console.log(`Faktory URL: ${faktoryUrl.toString()}`);
   //console.log(`Faktory Pool URL: ${faktoryPoolUrl.toString()}`);
+  //console.log(`Faktory request body:`);
+  //console.log(JSON.stringify(faktoryRequestBody, null, 2));
 
-  const faktoryRequestBody: FaktoryRequestBody = {
-    symbol,
-    name,
-    supply,
-    creatorAddress,
-    originAddress,
-    uri,
-    logoUrl,
-    mediaUrl,
-    twitter,
-    website,
-    telegram,
-    discord,
-    description,
-    tweetOrigin,
-  };
+  const symbol = faktoryRequestBody.symbol;
+  const creatorAddress = faktoryRequestBody.creatorAddress;
 
   const faktoryResponse = await fetch(faktoryUrl.toString(), {
     method: "POST",
@@ -687,7 +662,7 @@ export function getAddressReference(
   return getAddressDefinition(network, addressType);
 }
 
-export function convertStringToBoolean(value: string): boolean {
+export function convertStringToBoolean(value = "false"): boolean {
   // Convert to lowercase and trim whitespace
   const normalized = value.toLowerCase().trim();
 
@@ -753,8 +728,9 @@ export function broadcastTx(
         let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
         if (broadcastResponse.reason_data) {
           if ("message" in broadcastResponse.reason_data) {
-            errorMessage += ` - ${broadcastResponse.reason_data.message}`;
-          } else if ("expected" in broadcastResponse.reason_data) {
+            errorMessage += ` - Reason: ${broadcastResponse.reason_data.message}`;
+          }
+          if ("expected" in broadcastResponse.reason_data) {
             errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
           }
         }

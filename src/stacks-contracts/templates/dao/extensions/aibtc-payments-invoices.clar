@@ -1,6 +1,6 @@
-;; title: aibtcdev-payments
+;; title: aibtc-payments
 ;; version: 1.0.0
-;; summary: An extension that provides payment processing for aibtcdev services.
+;; summary: An extension that provides payment processing for DAO services.
 
 ;; traits
 ;;
@@ -42,7 +42,7 @@
 (define-data-var totalRevenue uint u0)
 
 ;; dao can update payment address
-(define-data-var paymentAddress principal '<%= it.bank_account_address %>)
+(define-data-var paymentAddress principal '<%= it.treasury_contract %>)
 
 ;; data maps
 ;;
@@ -400,8 +400,8 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
-    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
 

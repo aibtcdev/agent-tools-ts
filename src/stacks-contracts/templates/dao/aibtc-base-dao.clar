@@ -1,4 +1,4 @@
-;; title: aibtcdev-dao
+;; title: aibtc-dao
 ;; version: 1.0.0
 ;; summary: An ExecutorDAO implementation for aibtcdev
 
@@ -48,7 +48,7 @@
 (define-public (execute (proposal <proposal-trait>) (sender principal))
   (begin
     (try! (is-self-or-extension))
-    (asserts! (map-insert ExecutedProposals (contract-of proposal) block-height) ERR_ALREADY_EXECUTED)
+    (asserts! (map-insert ExecutedProposals (contract-of proposal) stacks-block-height) ERR_ALREADY_EXECUTED)
     (print {
       notification: "execute",
       payload: {

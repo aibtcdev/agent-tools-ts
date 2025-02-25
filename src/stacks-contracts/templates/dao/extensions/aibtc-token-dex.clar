@@ -32,7 +32,7 @@
 (define-constant STX_CITY_COMPLETE_FEE_WALLET '<%= it.stxcity_complete_fee %>)
 (define-constant BURN_ADDRESS '<%= it.burn %>) ;; burn mainnet
 
-(define-constant allow-token '<%= it.token_contract_address %>)
+(define-constant allow-token '<%= it.token_contract %>)
 
 ;; data vars
 (define-data-var tradable bool false)

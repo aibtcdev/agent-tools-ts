@@ -17,7 +17,7 @@
 
 ;; Variables
 (define-fungible-token <%= it.token_symbol %> MAXSUPPLY)
-(define-data-var contract-owner principal '<%= it.token_owner %>) 
+(define-data-var contract-owner principal '<%= it.token_owner_contract %>) 
 
 ;; SIP-10 Functions
 (define-public (transfer (amount uint) (from principal) (to principal) (memo (optional (buff 34))))
@@ -106,7 +106,7 @@
 )
 
 (begin
-  (try! (send-stx '<%= it.stxcity_token_deployment_fee_address %> u500000))
+  (try! (send-stx '<%= it.token_deployment_fee_address %> u500000))
   (try! (ft-mint? <%= it.token_symbol %> u<%= it.dex_contract_mint_amount %> '<%= it.dex_contract %>))
   (try! (ft-mint? <%= it.token_symbol %> u<%= it.treasury_contract_mint_amount %> '<%= it.treasury_contract %>))
 )

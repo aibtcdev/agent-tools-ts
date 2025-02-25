@@ -14,13 +14,13 @@
         parameters) ERR_INVALID_PARAMS))
     )
     (try! (is-dao-or-extension))
-    (try! (contract-call? '<%= it.payments_contract_address %> add-resource (get name paramsTuple) (get description paramsTuple) (get price paramsTuple) (get url paramsTuple)))
+    (try! (contract-call? '<%= it.payments_contract %> add-resource (get name paramsTuple) (get description paramsTuple) (get price paramsTuple) (get url paramsTuple)))
     (ok true)
   )
 )
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
-    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )

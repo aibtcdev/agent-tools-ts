@@ -15,7 +15,7 @@
 ;;
 (define-constant SELF (as-contract tx-sender))
 (define-constant DEPLOYED_BURN_BLOCK burn-block-height)
-(define-constant DEPLOYED_STACKS_BLOCK block-height)
+(define-constant DEPLOYED_STACKS_BLOCK stacks-block-height)
 
 ;; error messages
 (define-constant ERR_NOT_DAO_OR_EXTENSION (err u1000))
@@ -36,17 +36,16 @@
 ;; voting configuration - MAINNET VALUES
 ;; (define-constant VOTING_DELAY u144) ;; 144 Bitcoin blocks, ~1 days
 ;; (define-constant VOTING_PERIOD u288) ;; 2 x 144 Bitcoin blocks, ~2 days
-;; voting configuration - TESTNET VALUES
-(define-constant VOTING_DELAY u1)
-(define-constant VOTING_PERIOD u5)
-;; voting configuration
+;; voting configuration - TEST VALUES
+(define-constant VOTING_DELAY (if is-in-mainnet u144 u1)) ;; 144 Bitcoin blocks, ~1 days
+(define-constant VOTING_PERIOD (if is-in-mainnet u288 u5)) ;; 2 x 144 Bitcoin blocks, ~2 days
 (define-constant VOTING_QUORUM u15) ;; 15% of liquid supply must participate
 (define-constant VOTING_THRESHOLD u66) ;; 66% of votes must be in favor
 
 ;; contracts used for voting calculations
-(define-constant VOTING_TOKEN_DEX '<%= it.token_dex_contract_address %>)
-(define-constant VOTING_TOKEN_POOL '<%= it.token_pool_contract_address %>)
-(define-constant VOTING_TREASURY '<%= it.treasury_contract_address %>)
+(define-constant VOTING_TOKEN_DEX '<%= it.token_dex_contract %>)
+(define-constant VOTING_TOKEN_POOL '<%= it.token_pool_contract %>)
+(define-constant VOTING_TREASURY '<%= it.treasury_contract %>)
 
 ;; data vars
 ;;
@@ -95,11 +94,11 @@
     (
       (actionContract (contract-of action))
       (newId (+ (var-get proposalCount) u1))
-      (createdAt block-height)
+      (createdAt (- stacks-block-height u1))
       (liquidTokens (try! (get-liquid-supply createdAt)))
       (startBlock (+ burn-block-height VOTING_DELAY))
       (endBlock (+ startBlock VOTING_PERIOD))
-      (senderBalance (unwrap! (contract-call? '<%= it.token_contract_address %> get-balance tx-sender) ERR_FETCHING_TOKEN_DATA))
+      (senderBalance (unwrap! (contract-call? '<%= it.token_contract %> get-balance tx-sender) ERR_FETCHING_TOKEN_DATA))
       (validAction (is-action-valid action))
     )
     ;; liquidTokens is greater than zero
@@ -156,7 +155,7 @@
       (proposalRecord (unwrap! (map-get? Proposals proposalId) ERR_PROPOSAL_NOT_FOUND))
       (proposalBlock (get createdAt proposalRecord))
       (proposalBlockHash (unwrap! (get-block-hash proposalBlock) ERR_RETRIEVING_START_BLOCK_HASH))
-      (senderBalance (unwrap! (at-block proposalBlockHash (contract-call? '<%= it.token_contract_address %> get-balance tx-sender)) ERR_FETCHING_TOKEN_DATA))
+      (senderBalance (unwrap! (at-block proposalBlockHash (contract-call? '<%= it.token_contract %> get-balance tx-sender)) ERR_FETCHING_TOKEN_DATA))
     )
     ;; caller has the required balance
     (asserts! (> senderBalance u0) ERR_INSUFFICIENT_BALANCE)
@@ -225,10 +224,13 @@
         caller: contract-caller,
         concludedBy: tx-sender,
         proposalId: proposalId,
+        votesFor: votesFor,
+        votesAgainst: votesAgainst,
+        liquidTokens: liquidTokens,
         metQuorum: metQuorum,
         metThreshold: metThreshold,
         passed: votePassed,
-        executed: (and votePassed validAction)
+        executed: (and votePassed validAction),
       }
     })
     ;; update the proposal record
@@ -257,7 +259,7 @@
       (proposalRecord (unwrap! (map-get? Proposals proposalId) ERR_PROPOSAL_NOT_FOUND))
       (proposalBlockHash (unwrap! (get-block-hash (get createdAt proposalRecord)) ERR_RETRIEVING_START_BLOCK_HASH))
     )
-    (at-block proposalBlockHash (contract-call? '<%= it.token_contract_address %> get-balance who))
+    (at-block proposalBlockHash (contract-call? '<%= it.token_contract %> get-balance who))
   )
 )
 
@@ -297,10 +299,10 @@
   (let
     (
       (blockHash (unwrap! (get-block-hash blockHeight) ERR_RETRIEVING_START_BLOCK_HASH))
-      (totalSupply (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract_address %> get-total-supply)) ERR_FETCHING_TOKEN_DATA))
-      (dexBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract_address %> get-balance VOTING_TOKEN_DEX)) ERR_FETCHING_TOKEN_DATA))
-      (poolBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract_address %> get-balance VOTING_TOKEN_POOL)) ERR_FETCHING_TOKEN_DATA))
-      (treasuryBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract_address %> get-balance VOTING_TREASURY)) ERR_FETCHING_TOKEN_DATA))
+      (totalSupply (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-total-supply)) ERR_FETCHING_TOKEN_DATA))
+      (dexBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TOKEN_DEX)) ERR_FETCHING_TOKEN_DATA))
+      (poolBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TOKEN_POOL)) ERR_FETCHING_TOKEN_DATA))
+      (treasuryBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TREASURY)) ERR_FETCHING_TOKEN_DATA))
     )
     (ok (- totalSupply (+ dexBalance poolBalance treasuryBalance)))
   )
@@ -309,8 +311,8 @@
 ;; private functions
 ;;
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
-    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
+  (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )
 
@@ -318,12 +320,12 @@
   (let
     (
       (extensionActive (is-ok (as-contract (is-dao-or-extension))))
-      (actionActive (contract-call? '<%= it.dao_contract_address %> is-extension (contract-of action)))
+      (actionActive (contract-call? '<%= it.base_dao_contract %> is-extension (contract-of action)))
     )
     (and extensionActive actionActive)
   )
 )
 
 (define-private (get-block-hash (blockHeight uint))
-  (get-block-info? id-header-hash blockHeight)
+  (get-stacks-block-info? id-header-hash blockHeight)
 )

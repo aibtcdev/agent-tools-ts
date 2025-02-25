@@ -16,12 +16,12 @@
     ;; verify within limits for low quorum
     ;; more than 0, less than 100 STX (100_000_000)
     (asserts! (and (> amount u0) (< amount u100000000)) ERR_INVALID_PARAMS)
-    (contract-call? '<%= it.bank_account_contract_address %> set-withdrawal-amount amount)
+    (contract-call? '<%= it.bank_account_contract %> set-withdrawal-amount amount)
   )
 )
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
-    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )

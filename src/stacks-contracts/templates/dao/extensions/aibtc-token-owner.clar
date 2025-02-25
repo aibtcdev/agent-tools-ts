@@ -1,4 +1,4 @@
-;; title: aibtcdev-token-owner
+;; title: aibtc-token-owner
 ;; version: 1.0.0
 ;; summary: An extension that provides management functions for the dao token
 
@@ -24,7 +24,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; update token uri
-    (try! (as-contract (contract-call? '<%= it.token_contract_address %> set-token-uri value)))
+    (try! (as-contract (contract-call? '<%= it.token_contract %> set-token-uri value)))
     (ok true)
   )
 )
@@ -35,7 +35,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; transfer ownership
-    (try! (as-contract (contract-call? '<%= it.token_contract_address %> set-contract-owner new-owner)))
+    (try! (as-contract (contract-call? '<%= it.token_contract %> set-contract-owner new-owner)))
     (ok true)
   )
 )
@@ -44,7 +44,7 @@
 ;;
 
 (define-private (is-dao-or-extension)
-  (ok (asserts! (or (is-eq tx-sender '<%= it.dao_contract_address %>)
-    (contract-call? '<%= it.dao_contract_address %> is-extension contract-caller)) ERR_UNAUTHORIZED
+  (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
   ))
 )
