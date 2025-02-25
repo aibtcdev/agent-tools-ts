@@ -33,9 +33,12 @@
 (define-constant ERR_ALREADY_VOTED (err u3012))
 (define-constant ERR_FIRST_VOTING_PERIOD (err u3013))
 
-;; voting configuration
-(define-constant VOTING_DELAY (if is-in-mainnet u432 u2)) ;; 3 x 144 Bitcoin blocks, ~3 days
-(define-constant VOTING_PERIOD (if is-in-mainnet u432 u7)) ;; 3 x 144 Bitcoin blocks, ~3 days
+;; voting configuration - MAINNET VALUES
+;; (define-constant VOTING_DELAY u432) ;; 3 x 144 Bitcoin blocks, ~3 days
+;; (define-constant VOTING_PERIOD u432) ;; 3 x 144 Bitcoin blocks, ~3 days
+;; voting configuration - TEST VALUES
+(define-constant VOTING_DELAY (if is-in-mainnet u432 u1)) ;; 3 x 144 Bitcoin blocks, ~3 days
+(define-constant VOTING_PERIOD (if is-in-mainnet u432 u5)) ;; 3 x 144 Bitcoin blocks, ~3 days
 (define-constant VOTING_QUORUM u25) ;; 25% of liquid supply must participate
 (define-constant VOTING_THRESHOLD u90) ;; 90% of votes must be in favor
 
