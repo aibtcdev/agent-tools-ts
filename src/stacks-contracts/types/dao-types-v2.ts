@@ -35,6 +35,18 @@ export function getNetworkTypeFromName(network: NetworkName): NetworkType {
   return network.toLowerCase() as NetworkType;
 }
 
+export type ExpectedContractGeneratorArgs = {
+  tokenSymbol: string;
+  tokenName: string;
+  tokenMaxSupply: number;
+  tokenUri: string;
+  logoUrl: string;
+  originAddress: string;
+  daoManifest: string;
+  tweetOrigin: string;
+  generateFiles?: boolean;
+};
+
 //////////////////////////////
 // KNOWN ADDRESSES
 //////////////////////////////

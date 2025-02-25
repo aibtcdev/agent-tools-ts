@@ -3,7 +3,6 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  FaktoryGeneratedContracts,
   getFaktoryContracts,
   sendToLLM,
   ToolResponse,
@@ -13,24 +12,16 @@ import {
   GeneratedContractRegistryEntry,
 } from "./services/dao-contract-registry";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
-import { getNetworkNameFromType } from "./types/dao-types-v2";
+import {
+  ExpectedContractGeneratorArgs,
+  getNetworkNameFromType,
+} from "./types/dao-types-v2";
 import { DaoContractDeployer } from "./services/dao-contract-deployer";
 
 const usage = `Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin>`;
 const usageExample = `Example: bun run deploy-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin"`;
 
-interface ExpectedArgs {
-  tokenSymbol: string;
-  tokenName: string;
-  tokenMaxSupply: string;
-  tokenUri: string;
-  logoUrl: string;
-  originAddress: string;
-  daoManifest: string;
-  tweetOrigin: string;
-}
-
-function validateArgs(): ExpectedArgs {
+function validateArgs(): ExpectedContractGeneratorArgs {
   // capture all arguments
   const [
     tokenSymbol,
@@ -73,7 +64,7 @@ function validateArgs(): ExpectedArgs {
   return {
     tokenSymbol,
     tokenName,
-    tokenMaxSupply,
+    tokenMaxSupply: parseInt(tokenMaxSupply),
     tokenUri,
     logoUrl,
     originAddress,
@@ -109,7 +100,7 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   // Step 1 - generate dao-related contracts
 
   // generate dao contracts
-  const daoContracts = contractGenerator.generateContracts(args.tokenSymbol);
+  const daoContracts = contractGenerator.generateContracts(args);
 
   // add to generated contracts
   generatedContracts.push(...Object.values(daoContracts));
@@ -120,7 +111,7 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   const { token, dex, pool } = await getFaktoryContracts(
     args.tokenSymbol,
     args.tokenName,
-    parseInt(args.tokenMaxSupply),
+    args.tokenMaxSupply,
     args.tokenUri,
     address, // creatorAddress
     args.originAddress,

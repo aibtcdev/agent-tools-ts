@@ -2,6 +2,7 @@ import * as path from "path";
 import { SHA256 } from "bun";
 import { Eta } from "eta";
 import {
+  ExpectedContractGeneratorArgs,
   getKnownAddresses,
   getKnownTraits,
   NetworkName,
@@ -30,7 +31,7 @@ export class DaoContractGenerator {
    * @returns Record<string, GeneratedContractRegistryEntry> Dictionary of generated contracts
    */
   public generateContracts(
-    tokenSymbol: string,
+    args: ExpectedContractGeneratorArgs,
     contractIds?: BaseContractRegistryEntry[]
   ): Record<string, GeneratedContractRegistryEntry> {
     const traitRefs = getKnownTraits(this.network);
@@ -49,10 +50,10 @@ export class DaoContractGenerator {
     const sortedContracts = [...contractsToGenerate].sort(
       (a, b) => a.deploymentOrder - b.deploymentOrder
     );
-    
+
     sortedContracts.forEach((contract) => {
       // Build contract name by replacing aibtc symbol
-      const contractName = getContractName(contract.name, tokenSymbol);
+      const contractName = getContractName(contract.name, args.tokenSymbol);
 
       // Collect all traits into template variables
       const traitVars = Object.fromEntries(
@@ -78,26 +79,49 @@ export class DaoContractGenerator {
 
       // Collect any required contract addresses
       const contractAddressVars = Object.fromEntries(
-        (contract.requiredContractAddresses || []).map(({ key, category, subcategory }) => {
-          // Find the matching contract in our generated contracts
-          const matchingContractName = Object.keys(generatedContracts).find(name => {
-            const generatedContract = generatedContracts[name];
-            return generatedContract.type === category && generatedContract.subtype === subcategory;
-          });
+        (contract.requiredContractAddresses || []).map(
+          ({ key, category, subcategory }) => {
+            // Find the matching contract in our generated contracts
+            const matchingContractName = Object.keys(generatedContracts).find(
+              (name) => {
+                const generatedContract = generatedContracts[name];
+                return (
+                  generatedContract.type === category &&
+                  generatedContract.subtype === subcategory
+                );
+              }
+            );
 
-          if (!matchingContractName) {
-            console.warn(`Warning: Missing contract reference for ${category}/${subcategory}`);
-            return [key, ""];
+            if (!matchingContractName) {
+              console.warn(
+                `Warning: Missing contract reference for ${category}/${subcategory}`
+              );
+              return [key, ""];
+            }
+
+            // Return the contract address in format: deployer.contract-name
+            return [key, generatedContracts[matchingContractName].name];
           }
+        )
+      );
 
-          // Return the contract address in format: deployer.contract-name
-          return [key, generatedContracts[matchingContractName].name];
+      // Collect all required runtime template variables
+      const runtimeVars = Object.fromEntries(
+        (contract.requiredRuntimeValues || []).map(({ key }) => {
+          if (!args[key]) {
+            console.warn(`Warning: Missing runtime value for ${key}`);
+          }
+          return [key, args[key]];
         })
       );
 
       // combine them into a single object for the template where
       // key is the object key and value is the object value
-      const templateVars = { ...traitVars, ...addressVars, ...contractAddressVars };
+      const templateVars = {
+        ...traitVars,
+        ...addressVars,
+        ...contractAddressVars,
+      };
       console.log(`templateVars: ${JSON.stringify(templateVars)}`);
 
       // render the template
