@@ -36,12 +36,17 @@ type ContractAddresses = {
   subcategory: ContractSubCategory<ContractCategory>;
 };
 
+type RuntimeValues = {
+  key: string;
+};
+
 // template requirements - only needed for generation
 type TemplateRequirements = {
   templatePath: string;
   requiredAddresses?: BaseAddresses[];
   requiredTraits?: BaseTraits[];
   requiredContractAddresses?: ContractAddresses[];
+  requiredRuntimeValues?: RuntimeValues[];
 };
 
 // full registry entry combines base info and template requirements
@@ -162,6 +167,9 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         ref: "BITFLOW_CORE",
         key: "bitflow_xyk_core_address",
       },
+    ],
+    requiredContractAddresses: [
+      { key: "dex_contract", category: "TOKEN", subcategory: "DEX" },
     ],
   },
   // base dao
@@ -476,6 +484,18 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "action_trait",
       },
     ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS",
+      },
+    ],
   },
   {
     name: "aibtc-action-allow-asset",
@@ -670,19 +690,21 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "proposal_trait",
       },
     ],
-    requiredAddresses: [
+    requiredContractAddresses: [
       {
-        ref: "DEPLOYER",
-        key: "dao_contract",
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
       {
-        ref: "DEPLOYER",
-        key: "messaging_contract",
-      },
-      {
-        ref: "DEPLOYER",
         key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
       },
+    ],
+    requiredRuntimeValues: [
+      { key: "dao_manifest" },
+      { key: "dao_manifest_inscription_id" },
     ],
   },
 ] as const;

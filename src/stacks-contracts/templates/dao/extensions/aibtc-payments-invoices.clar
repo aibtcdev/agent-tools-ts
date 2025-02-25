@@ -42,7 +42,7 @@
 (define-data-var totalRevenue uint u0)
 
 ;; dao can update payment address
-(define-data-var paymentAddress principal '<%= it.bank_account_address %>)
+(define-data-var paymentAddress principal '<%= it.treasury_contract %>)
 
 ;; data maps
 ;;
