@@ -106,7 +106,8 @@ export class DaoContractGenerator {
       );
 
       // Collect all required runtime template variables
-      const runtimeVars: Record<string, string | number | boolean | undefined> = {};
+      const runtimeVars: Record<string, string | number | boolean | undefined> =
+        {};
       (contract.requiredRuntimeValues || []).forEach(({ key }) => {
         // Handle specific runtime values based on the key
         switch (key) {
@@ -143,13 +144,13 @@ export class DaoContractGenerator {
           case "dao_manifest_inscription_id":
             // This would typically come from an external source
             // For now, use a placeholder or derive from other values
-            runtimeVars[key] = `${args.tokenSymbol.toLowerCase()}-dao-manifest`;
+            runtimeVars[key] = `${args.daoManifestInscriptionId}`;
             break;
           default:
             console.warn(`Warning: Unknown runtime value key: ${key}`);
             runtimeVars[key] = undefined;
         }
-        
+
         if (runtimeVars[key] === undefined) {
           console.warn(`Warning: Missing runtime value for ${key}`);
         }

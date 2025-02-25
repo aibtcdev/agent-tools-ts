@@ -1,6 +1,7 @@
 import { validateStacksAddress } from "@stacks/transactions";
 import {
   CONFIG,
+  convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
   getFaktoryContracts,
@@ -32,6 +33,8 @@ function validateArgs(): ExpectedContractGeneratorArgs {
     originAddress,
     daoManifest,
     tweetOrigin,
+    daoManifestInscriptionId,
+    generateFiles,
   ] = process.argv.slice(2);
   // verify all required arguments are provided
   if (
@@ -60,6 +63,8 @@ function validateArgs(): ExpectedContractGeneratorArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+  // convert generateFiles to boolean
+  const shouldGenerateFiles = convertStringToBoolean(generateFiles);
   // return validated arguments
   return {
     tokenSymbol,
@@ -70,6 +75,8 @@ function validateArgs(): ExpectedContractGeneratorArgs {
     originAddress,
     daoManifest,
     tweetOrigin,
+    daoManifestInscriptionId,
+    generateFiles: shouldGenerateFiles,
   };
 }
 

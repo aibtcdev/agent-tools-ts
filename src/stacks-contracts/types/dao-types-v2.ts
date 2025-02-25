@@ -44,6 +44,7 @@ export type ExpectedContractGeneratorArgs = {
   originAddress: string;
   daoManifest: string;
   tweetOrigin: string;
+  daoManifestInscriptionId?: string;
   generateFiles?: boolean;
 };
 

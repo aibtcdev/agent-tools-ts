@@ -33,6 +33,7 @@ function validateArgs(): ExpectedContractGeneratorArgs {
     originAddress,
     daoManifest,
     tweetOrigin,
+    daoManifestInscriptionId,
     generateFiles,
   ] = process.argv.slice(2);
   // verify all required arguments are provided
@@ -74,6 +75,7 @@ function validateArgs(): ExpectedContractGeneratorArgs {
     originAddress,
     daoManifest,
     tweetOrigin,
+    daoManifestInscriptionId,
     generateFiles: shouldGenerateFiles,
   };
 }
