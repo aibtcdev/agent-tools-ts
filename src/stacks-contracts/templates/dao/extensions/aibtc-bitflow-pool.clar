@@ -2,7 +2,7 @@
 (impl-trait '<%= it.bitflow_pool_trait %>)
 (use-trait sip-010-trait '<%= it.sip10_trait %>)
 
-;; implement aibtcdev trait
+;; implement aibtc trait
 (impl-trait '<%= it.dao_bitflow_pool_trait %>)
 
 ;; Define fungible pool token

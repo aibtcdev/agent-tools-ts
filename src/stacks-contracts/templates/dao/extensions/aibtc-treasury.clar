@@ -1,4 +1,4 @@
-;; title: aibtcdev-treasury
+;; title: aibtc-treasury
 ;; version: 1.0.0
 ;; summary: An extension that manages STX, SIP-009 NFTs, and SIP-010 FTs.
 

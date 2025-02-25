@@ -1,4 +1,4 @@
-;; title: aibtcdev-token-owner
+;; title: aibtc-token-owner
 ;; version: 1.0.0
 ;; summary: An extension that provides management functions for the dao token
 

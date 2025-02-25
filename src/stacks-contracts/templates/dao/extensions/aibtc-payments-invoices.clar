@@ -1,6 +1,6 @@
-;; title: aibtcdev-payments
+;; title: aibtc-payments
 ;; version: 1.0.0
-;; summary: An extension that provides payment processing for aibtcdev services.
+;; summary: An extension that provides payment processing for DAO services.
 
 ;; traits
 ;;
