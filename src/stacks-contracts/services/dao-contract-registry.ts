@@ -404,6 +404,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         category: "BASE",
         subcategory: "DAO",
       },
+      {
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
+      },
     ],
   },
   {

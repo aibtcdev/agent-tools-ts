@@ -91,8 +91,11 @@ export class DaoContractGenerator {
                 );
               }
             );
-
             if (!matchingContractName) {
+              console.log(`key: ${key}`);
+              console.log(`category: ${category}`);
+              console.log(`subcategory: ${subcategory}`);
+              console.log(`contractName: ${contractName}`);
               console.warn(
                 `Warning: Missing contract reference for ${category}/${subcategory}`
               );
@@ -112,7 +115,7 @@ export class DaoContractGenerator {
         // Handle specific runtime values based on the key
         switch (key) {
           case "hash":
-            runtimeVars[key] = hash;
+            runtimeVars[key] = ""; // temporary override
             break;
           case "target_stx":
             // Default to 0 if not provided

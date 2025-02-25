@@ -85,30 +85,7 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
 
   // array to build the contract info
   const generatedContracts: GeneratedContractRegistryEntry[] = [];
-  // helper function to save contract to object, opt to file
-  const saveContract = <C extends ContractCategory>(
-    name: string,
-    type: C,
-    subtype: ContractSubCategory<C>,
-    source: string,
-    hash?: string
-  ) => {
-    // add to contract output
-    generatedContracts.push({
-      name,
-      type,
-      subtype,
-      source,
-      hash,
-    } as GeneratedContractRegistryEntry); // make TS happy
-    // save to file if generating files
-    if (args.generateFiles) {
-      const fileName = `${name}.clar`;
-      const filePath = path.join(outputDir, fileName);
-      fs.writeFileSync(filePath, source);
-      console.log(`Generated: ${filePath}`);
-    }
-  };
+
   // validate and store provided args
   const args = validateArgs();
   // setup network and wallet info
@@ -119,12 +96,6 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   );
   // convert old network to new format
   const network = getNetworkNameFromType(CONFIG.NETWORK);
-  // prepare output directory if generating files
-  let outputDir = "";
-  if (args.generateFiles) {
-    outputDir = path.join("generated", args.tokenSymbol.toLowerCase());
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
   // create contract generator instance
   const contractGenerator = new DaoContractGenerator(network);
   // set dao manifest, passed to proposal for dao construction
@@ -136,15 +107,7 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   // Step 1 - generate dao contracts
 
   const daoContracts = contractGenerator.generateContracts(args);
-  for (const contract of Object.values(daoContracts)) {
-    saveContract(
-      contract.name,
-      contract.type,
-      contract.subtype,
-      contract.source,
-      contract.hash
-    );
-  }
+  generatedContracts.push(...Object.values(daoContracts));
 
   // Step 2 - generate token-related contracts
 
@@ -160,13 +123,12 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
     manifest, // description
     args.tweetOrigin
   );
-
   // update contracts already in generatedContracts with source and hash
   generatedContracts.forEach((contract) => {
     switch (contract.name) {
       case token.name:
-        contract.source = token.code;
         contract.hash = token.hash;
+        contract.source = token.code;
         break;
       case dex.name:
         contract.source = dex.code;
@@ -179,12 +141,29 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
     }
   });
 
-  // Step 3 - return generated contracts
+  // Step 3 - save contracts (optional)
+
+  if (args.generateFiles) {
+    const outputDir = path.join("generated", args.tokenSymbol.toLowerCase());
+    fs.mkdirSync(outputDir, { recursive: true });
+    generatedContracts.forEach((contract) => {
+      const fileName = `${contract.name}.clar`;
+      const filePath = path.join(outputDir, fileName);
+      fs.writeFileSync(filePath, contract.source);
+      console.log(`Generated: ${filePath}`);
+    });
+  }
+
+  // Step 4 - return generated contracts
 
   return {
     success: true,
     message: "Contracts generated successfully",
-    data: generatedContracts,
+    // limit .code per contract to set chars for display / context size
+    data: generatedContracts.map((contract) => ({
+      ...contract,
+      source: contract.source.substring(0, 250),
+    })),
   };
 }
 

@@ -1,3 +1,5 @@
+import * as fs from "fs";
+import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
 import {
   CONFIG,
@@ -108,8 +110,6 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
 
   // generate dao contracts
   const daoContracts = contractGenerator.generateContracts(args);
-
-  // add to generated contracts
   generatedContracts.push(...Object.values(daoContracts));
 
   // Step 2 - generate token-related contracts
@@ -131,8 +131,8 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   generatedContracts.forEach((contract) => {
     switch (contract.name) {
       case token.name:
-        contract.source = token.code;
         contract.hash = token.hash;
+        contract.source = token.code;
         break;
       case dex.name:
         contract.source = dex.code;
@@ -145,12 +145,25 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     }
   });
 
-  // Step 3 - deploy contracts
+  // Step 3 - save contracts (optional)
+
+  if (args.generateFiles) {
+    const outputDir = path.join("generated", args.tokenSymbol.toLowerCase());
+    fs.mkdirSync(outputDir, { recursive: true });
+    generatedContracts.forEach((contract) => {
+      const fileName = `${contract.name}.clar`;
+      const filePath = path.join(outputDir, fileName);
+      fs.writeFileSync(filePath, contract.source);
+      console.log(`Generated: ${filePath}`);
+    });
+  }
+
+  // Step 4 - deploy contracts
 
   console.log(`Deploying ${generatedContracts.length} contracts...`);
   console.log(`- network: ${network}`);
   console.log(`- address: ${address}`);
-  console.log(`generatedContracts: (${generatedContracts.length})`);
+  console.log(`- contracts: (${generatedContracts.length})`);
   console.log(JSON.stringify(generatedContracts, null, 2));
 
   // create contract deployer instance
