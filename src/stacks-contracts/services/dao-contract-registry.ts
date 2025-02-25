@@ -787,7 +787,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "BANK_ACCOUNT_SET_WITHDRAWAL_PERIOD",
       },
       {
-        key: "action_toggle_resource_contract",
+        key: "action_toggle_resource_by_name_contract",
         category: "ACTIONS",
         subcategory: "PAYMENTS_INVOICES_TOGGLE_RESOURCE",
       },
