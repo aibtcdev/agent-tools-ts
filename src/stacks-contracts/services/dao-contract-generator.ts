@@ -106,14 +106,54 @@ export class DaoContractGenerator {
       );
 
       // Collect all required runtime template variables
-      const runtimeVars = Object.fromEntries(
-        (contract.requiredRuntimeValues || []).map(({ key }) => {
-          if (!args[key]) {
-            console.warn(`Warning: Missing runtime value for ${key}`);
-          }
-          return [key, args[key]];
-        })
-      );
+      const runtimeVars: Record<string, string | number | boolean | undefined> = {};
+      (contract.requiredRuntimeValues || []).forEach(({ key }) => {
+        // Handle specific runtime values based on the key
+        switch (key) {
+          case "hash":
+            runtimeVars[key] = hash;
+            break;
+          case "target_stx":
+            // Default to 0 if not provided
+            runtimeVars[key] = 0;
+            break;
+          case "token_max_supply":
+            runtimeVars[key] = args.tokenMaxSupply;
+            break;
+          case "token_name":
+            runtimeVars[key] = args.tokenName;
+            break;
+          case "token_symbol":
+            runtimeVars[key] = args.tokenSymbol;
+            break;
+          case "token_decimals":
+            // Default to 6 if not provided
+            runtimeVars[key] = 6;
+            break;
+          case "token_uri":
+            runtimeVars[key] = args.tokenUri;
+            break;
+          case "token_deployment_fee_address":
+            // Use the BITFLOW_FEE address from knownAddresses
+            runtimeVars[key] = knownAddresses.BITFLOW_FEE;
+            break;
+          case "dao_manifest":
+            runtimeVars[key] = args.daoManifest;
+            break;
+          case "dao_manifest_inscription_id":
+            // This would typically come from an external source
+            // For now, use a placeholder or derive from other values
+            runtimeVars[key] = `${args.tokenSymbol.toLowerCase()}-dao-manifest`;
+            break;
+          default:
+            console.warn(`Warning: Unknown runtime value key: ${key}`);
+            runtimeVars[key] = undefined;
+        }
+        
+        if (runtimeVars[key] === undefined) {
+          console.warn(`Warning: Missing runtime value for ${key}`);
+        }
+      });
 
       // combine them into a single object for the template where
       // key is the object key and value is the object value
@@ -121,6 +161,7 @@ export class DaoContractGenerator {
         ...traitVars,
         ...addressVars,
         ...contractAddressVars,
+        ...runtimeVars,
       };
       console.log(`templateVars: ${JSON.stringify(templateVars)}`);
 
