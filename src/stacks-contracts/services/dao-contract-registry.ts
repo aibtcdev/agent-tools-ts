@@ -31,8 +31,9 @@ type BaseTraits = {
 // the ref will be added at runtime as generated contract name
 // the key is the string in the template
 type ContractAddresses = {
-  ref?: string;
   key: string;
+  category: ContractCategory;
+  subcategory: ContractSubCategory<ContractCategory>;
 };
 
 // template requirements - only needed for generation
@@ -79,18 +80,6 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       },
     ],
     requiredAddresses: [
-      {
-        ref: "DEPLOYER",
-        key: "token_owner",
-      },
-      {
-        ref: "DEPLOYER",
-        key: "dex_contract",
-      },
-      {
-        ref: "DEPLOYER",
-        key: "treasury_contract",
-      },
       {
         ref: "BITFLOW_FEE",
         key: "stxcity_token_deployment_fee_address",
@@ -222,26 +211,31 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "treasury_trait",
       },
     ],
-    requiredAddresses: [
+    requiredContractAddresses: [
       {
-        ref: "DEPLOYER",
-        key: "token_dex_contract",
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
       {
-        ref: "DEPLOYER",
-        key: "token_pool_contract",
-      },
-      {
-        ref: "DEPLOYER",
-        key: "treasury_contract",
-      },
-      {
-        ref: "DEPLOYER",
         key: "token_contract",
+        category: "TOKEN",
+        subcategory: "DAO",
       },
       {
-        ref: "DEPLOYER",
-        key: "dao_contract",
+        key: "token_dex_contract",
+        category: "TOKEN",
+        subcategory: "DEX",
+      },
+      {
+        key: "token_pool_contract",
+        category: "TOKEN",
+        subcategory: "POOL",
+      },
+      {
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
       },
     ],
   },
@@ -261,10 +255,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "bank_account_trait",
       },
     ],
-    requiredAddresses: [
+    requiredContractAddresses: [
       {
-        ref: "DEPLOYER",
-        key: "dao_contract",
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
     ],
   },
@@ -292,18 +287,31 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "treasury_trait",
       },
     ],
-    requiredAddresses: [
+    requiredContractAddresses: [
       {
-        ref: "DEPLOYER",
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+      {
+        key: "token_contract",
+        category: "TOKEN",
+        subcategory: "DAO",
+      },
+      {
         key: "token_dex_contract",
+        category: "TOKEN",
+        subcategory: "DEX",
       },
       {
-        ref: "DEPLOYER",
         key: "token_pool_contract",
+        category: "TOKEN",
+        subcategory: "POOL",
       },
       {
-        ref: "DEPLOYER",
         key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
       },
     ],
   },
@@ -323,6 +331,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "charter_trait",
       },
     ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+    ],
   },
   {
     name: "aibtc-onchain-messaging",
@@ -338,6 +353,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "DAO_MESSAGING",
         key: "messaging_trait",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
     ],
   },
@@ -361,6 +383,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "resources_trait",
       },
     ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+    ],
   },
   {
     name: "aibtc-token-owner",
@@ -382,6 +411,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "DEPLOYER",
         key: "token_contract",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
     ],
   },
@@ -413,6 +449,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "POX",
         key: "pox_contract",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
     ],
   },
@@ -456,6 +499,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "treasury_contract",
       },
     ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+    ],
   },
   {
     name: "aibtc-action-send-message",
@@ -477,6 +527,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "DEPLOYER",
         key: "messaging_contract",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
     ],
   },
@@ -502,6 +559,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "bank_account_contract",
       },
     ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+    ],
   },
   {
     name: "aibtc-action-set-withdrawal-amount",
@@ -523,6 +587,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "DEPLOYER",
         key: "bank_account_contract",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
     ],
   },
@@ -548,6 +619,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "bank_account_contract",
       },
     ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+    ],
   },
   {
     name: "aibtc-action-toggle-resource",
@@ -569,6 +647,13 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "DEPLOYER",
         key: "payments_contract",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
     ],
   },
