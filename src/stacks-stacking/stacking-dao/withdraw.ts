@@ -10,11 +10,13 @@ import {
   CONFIG,
   deriveChildAccount,
   getNetwork,
-  getStakingDaoContractID,
   logBroadCastResult,
+} from "../../utilities";
+import {
+  getStakingDaoContractID,
   stakingDaoContractAddress,
   stakingDaoContractNames,
-} from "../../utilities";
+} from "./stacking-dao-utilities";
 
 // CONFIGURATION
 const networkObj = getNetwork(CONFIG.NETWORK);
