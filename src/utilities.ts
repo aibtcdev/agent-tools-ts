@@ -5,123 +5,85 @@ import {
   generateWallet,
   getStxAddress,
 } from "@stacks/wallet-sdk";
-import type {
-  AddressNonces,
-  Transaction,
-} from "@stacks/stacks-blockchain-api-types";
+import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
 import {
   broadcastTransaction,
-  ClarityType,
-  ClarityValue,
   StacksTransaction,
   TxBroadcastResult,
   validateStacksAddress,
 } from "@stacks/transactions";
-import {
-  NetworkType,
-  NetworkTraits,
-  NetworkTraitType,
-  NetworkAddressType,
-} from "./types";
+import { NetworkType, NetworkTraitType, NetworkAddressType } from "./types";
 import { ADDRESSES, TRAITS } from "./constants";
-import { generateContractNames } from "./stacks-contracts/utils/contract-utils";
-import { ContractType } from "./stacks-contracts/types/dao-types";
+import { DaoContractGenerator } from "./stacks-contracts/services/dao-contract-generator";
+import {
+  getContractName,
+  getContractsBySubcategory,
+} from "./stacks-contracts/services/dao-contract-registry";
+import { getNetworkNameFromType } from "./stacks-contracts/types/dao-types";
 
-type Metrics = {
-  price_usd: number;
-  holder_count: number;
-  swap_count: number;
-  transfer_count: number;
-  liquidity_usd: number;
+//////////////////////////////
+// GENERAL HELPERS
+//////////////////////////////
+
+export type ToolResponse<T> = {
+  success: boolean;
+  message: string;
+  data?: T;
 };
 
-type TokenDetails = {
-  contract_id: string;
-  symbol: string;
-  name: string;
-  decimals: number;
-  total_supply: number | string;
-  circulating_supply: number | string;
-  image_url: string;
-  header_image_url?: string | null;
-  metrics: Metrics;
-  amms: string[];
-  description: string;
-  homepage?: string;
-  telegram?: string;
-  xlink?: string;
-  discord?: string;
-  verified?: boolean;
-  socials?: any[];
-};
-
-type TokenDetailsArray = TokenDetails[];
-
-// get network from principal
-// limited to just testnet/mainnet for now
-export function getNetworkByPrincipal(principal: string): NetworkType {
-  // test if principal is valid
-  if (validateStacksAddress(principal)) {
-    // detect network from address
-    const prefix = principal.substring(0, 2);
-    if (prefix === "SP" || prefix === "SM") {
-      return "mainnet";
-    } else if (prefix === "ST" || prefix === "SN") {
-      return "testnet";
-    }
-  }
-  console.log("Invalid principal, using testnet");
-  return "testnet";
+export function createErrorResponse(
+  error: any
+): ToolResponse<Error | undefined> {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorData = error instanceof Error ? error : undefined;
+  const response: ToolResponse<Error | undefined> = {
+    success: false,
+    message: errorMessage,
+    data: errorData,
+  };
+  return response;
 }
 
-// validate network value
-export function validateNetwork(network: string | undefined): NetworkType {
-  if (
-    network &&
-    ["mainnet", "testnet", "devnet", "mocknet"].includes(network)
-  ) {
-    return network as NetworkType;
-  }
-  return DEFAULT_CONFIG.NETWORK;
+export function sendToLLM(toolResponse: ToolResponse<any>) {
+  console.log(JSON.stringify(toolResponse, null, 2));
 }
 
-export async function logBroadCastResult(
-  broadcastResponse: TxBroadcastResult,
-  from?: string
-) {
-  if ("error" in broadcastResponse) {
-    console.error("Transaction failed to broadcast");
-    console.error(`Error: ${broadcastResponse.error}`);
-    if (broadcastResponse.reason) {
-      console.error(`Reason: ${broadcastResponse.reason}`);
-    }
-    if (broadcastResponse.reason_data) {
-      console.error(
-        `Reason Data: ${JSON.stringify(broadcastResponse.reason_data, null, 2)}`
-      );
-    }
-  } else {
-    console.log("Transaction broadcasted successfully!");
-    if (from) console.log(`FROM: ${from}`);
-    console.log(`TXID: 0x${broadcastResponse.txid}`);
+export function convertStringToBoolean(value = "false"): boolean {
+  // Convert to lowercase and trim whitespace
+  const normalized = value.toLowerCase().trim();
+  // Check for true values
+  if (normalized === "true" || normalized === "1") {
+    return true;
   }
+  // Check for false values
+  if (normalized === "false" || normalized === "0") {
+    return false;
+  }
+  // Return null or throw error for invalid inputs
+  throw new Error(`Invalid boolean value: ${value}`);
 }
 
-export const stakingDaoContractAddress =
-  "SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG";
-export const stakingDaoContractNames = {
-  baseContract: `stacking-dao-core-v2`,
-  reserveContract: `reserve-v1`,
-  commissionContract: `commission-v1`,
-  stakingContract: `staking-v0`,
-  directHelpers: `direct-helpers-v1`,
-};
+export const MICROSTX_IN_STX = 1_000_000;
+
 /**
- * returns joining address and name
+ * Convert μSTX (micro-STX) to STX denomination.
+ * `1 STX = 1,000,000 μSTX`
  */
-export function getStakingDaoContractID(name: string) {
-  return `${stakingDaoContractAddress}.${name}`;
+export function microStxToStx(amountInMicroStx: number): number {
+  return amountInMicroStx / MICROSTX_IN_STX;
 }
+
+/**
+ * Convert STX to μSTX (micro-STX) denomination.
+ * `1 STX = 1,000,000 μSTX`
+ */
+export function stxToMicroStx(amountInStx: number): number {
+  return amountInStx * MICROSTX_IN_STX;
+}
+
+//////////////////////////////
+// APPLICATION CONFIG
+//////////////////////////////
 
 // define structure of app config
 export interface AppConfig {
@@ -158,11 +120,29 @@ function loadConfig(): AppConfig {
   };
 }
 
-// export the configuration object
+// export the configuration object to load for env vars
 export const CONFIG = loadConfig();
 
-// getNetworkByPrincipal() ?
-// roll into getConfig() for each below ?
+//////////////////////////////
+// NETWORK HELPERS
+//////////////////////////////
+
+// get network from principal
+// limited to just testnet/mainnet for now
+export function getNetworkByPrincipal(principal: string): NetworkType {
+  // test if principal is valid
+  if (validateStacksAddress(principal)) {
+    // detect network from address
+    const prefix = principal.substring(0, 2);
+    if (prefix === "SP" || prefix === "SM") {
+      return "mainnet";
+    } else if (prefix === "ST" || prefix === "SN") {
+      return "testnet";
+    }
+  }
+  console.log("Invalid principal, using testnet");
+  return "testnet";
+}
 
 export function getNetwork(network: string) {
   switch (network) {
@@ -184,6 +164,17 @@ export function getTxVersion(network: string) {
     default:
       return TransactionVersion.Testnet;
   }
+}
+
+// validate network value
+export function validateNetwork(network: string | undefined): NetworkType {
+  if (
+    network &&
+    ["mainnet", "testnet", "devnet", "mocknet"].includes(network)
+  ) {
+    return network as NetworkType;
+  }
+  return DEFAULT_CONFIG.NETWORK;
 }
 
 export function getApiUrl(network: string) {
@@ -208,33 +199,80 @@ export function getFaktoryApiUrl(network: string) {
   }
 }
 
-export const MICROSTX_IN_STX = 1_000_000;
+//////////////////////////////
+// BROADCAST HELPERS
+//////////////////////////////
 
-/**
- * Convert μSTX (micro-STX) to STX denomination.
- * `1 STX = 1,000,000 μSTX`
- *
- * @example
- * ```ts
- * microStxToStx(1000000n); // 1n
- * ```
- */
-export function microStxToStx(amountInMicroStx: number): number {
-  return amountInMicroStx / MICROSTX_IN_STX;
+export async function logBroadCastResult(
+  broadcastResponse: TxBroadcastResult,
+  from?: string
+) {
+  if ("error" in broadcastResponse) {
+    console.error("Transaction failed to broadcast");
+    console.error(`Error: ${broadcastResponse.error}`);
+    if (broadcastResponse.reason) {
+      console.error(`Reason: ${broadcastResponse.reason}`);
+    }
+    if (broadcastResponse.reason_data) {
+      console.error(
+        `Reason Data: ${JSON.stringify(broadcastResponse.reason_data, null, 2)}`
+      );
+    }
+  } else {
+    console.log("Transaction broadcasted successfully!");
+    if (from) console.log(`FROM: ${from}`);
+    console.log(`TXID: 0x${broadcastResponse.txid}`);
+  }
 }
 
-/**
- * Convert STX to μSTX (micro-STX) denomination.
- * `1 STX = 1,000,000 μSTX`
- *
- * @example
- * ```ts
- * stxToMicroStx(1); // 1000000
- * ```
- */
-export function stxToMicroStx(amountInStx: number): number {
-  return amountInStx * MICROSTX_IN_STX;
+// helper that wraps broadcastTransaction from stacks/transactions
+export function broadcastTx(
+  transaction: StacksTransaction,
+  network: StacksNetwork
+): Promise<ToolResponse<TxBroadcastResult>> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const broadcastResponse = await broadcastTransaction(
+        transaction,
+        network
+      );
+      // check that error property is not present
+      // (since we can't instanceof the union type)
+      if (!("error" in broadcastResponse)) {
+        const response: ToolResponse<TxBroadcastResult> = {
+          success: true,
+          message: `Transaction broadcasted successfully: 0x${broadcastResponse.txid}`,
+          data: broadcastResponse,
+        };
+        resolve(response);
+      } else {
+        // create error message from broadcast response
+        let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
+        if (broadcastResponse.reason_data) {
+          if ("message" in broadcastResponse.reason_data) {
+            errorMessage += ` - Reason: ${broadcastResponse.reason_data.message}`;
+          }
+          if ("expected" in broadcastResponse.reason_data) {
+            errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
+          }
+        }
+        // create response object
+        const response: ToolResponse<TxBroadcastResult> = {
+          success: false,
+          message: errorMessage,
+          data: broadcastResponse,
+        };
+        resolve(response);
+      }
+    } catch (error) {
+      reject(createErrorResponse(error));
+    }
+  });
 }
+
+//////////////////////////////
+// STACKS WALLET / ACCOUNTS
+//////////////////////////////
 
 export async function deriveChildAccount(
   network: string,
@@ -305,22 +343,15 @@ export async function getNonces(network: string, address: string) {
   return data as AddressNonces;
 }
 
-export async function getTradableDetails() {
-  const response = await fetch(
-    `${CONFIG.STXCITY_API_HOST}/api/tokens/tradable-full-details-tokens`
-  );
-  if (!response.ok) {
-    throw new Error(`Failed to get nonce: ${response.statusText}`);
-  }
-  const data = await response.json();
-  return data as TokenDetailsArray;
-}
-
 export async function getNextNonce(network: string, address: string) {
   const nonces = await getNonces(network, address);
   const nextNonce = nonces.possible_next_nonce;
   return nextNonce;
 }
+
+//////////////////////////////
+// HIRO
+//////////////////////////////
 
 // Type definition for Hiro token metadata response
 export type HiroTokenMetadata = {
@@ -372,6 +403,49 @@ export function getAssetNameFromIdentifier(assetIdentifier: string): string {
   return parts.length === 2 ? parts[1] : "";
 }
 
+//////////////////////////////
+// STXCITY
+//////////////////////////////
+
+type StxCityMetrics = {
+  price_usd: number;
+  holder_count: number;
+  swap_count: number;
+  transfer_count: number;
+  liquidity_usd: number;
+};
+
+type StxCityTokenDetails = {
+  contract_id: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  total_supply: number | string;
+  circulating_supply: number | string;
+  image_url: string;
+  header_image_url?: string | null;
+  metrics: StxCityMetrics;
+  amms: string[];
+  description: string;
+  homepage?: string;
+  telegram?: string;
+  xlink?: string;
+  discord?: string;
+  verified?: boolean;
+  socials?: any[];
+};
+
+export async function getTradableDetails() {
+  const response = await fetch(
+    `${CONFIG.STXCITY_API_HOST}/api/tokens/tradable-full-details-tokens`
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to get nonce: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data as StxCityTokenDetails[];
+}
+
 /**
  * Get hash from STX City API for the given data
  * @param data - The data to be hashed
@@ -384,6 +458,10 @@ export async function getStxCityHash(data: string): Promise<string> {
   // Remove quotes from the response
   return hashText.replace(/^"|"$/g, "");
 }
+
+//////////////////////////////
+// FAKTORY
+//////////////////////////////
 
 export type FaktoryGeneratedContracts = {
   token: FaktoryContractInfo;
@@ -564,12 +642,36 @@ function verifyFaktoryContracts(
     console.log("Missing request body to verify");
     return false;
   }
-  // check contract names match expected
-  const contractNames = generateContractNames(requestBody.symbol);
+  // get contract info from registry for each
+  const tokenContract = getContractsBySubcategory("TOKEN", "DAO")[0];
+  const dexContract = getContractsBySubcategory("TOKEN", "DEX")[0];
+  const poolContract = getContractsBySubcategory("TOKEN", "POOL")[0];
+  const tokenOwnerContract = getContractsBySubcategory(
+    "EXTENSIONS",
+    "TOKEN_OWNER"
+  )[0];
+
+  // get contract names using token symbol
+  const tokenContractName = getContractName(
+    tokenContract.name,
+    requestBody.symbol
+  );
+  const dexContractName = getContractName(dexContract.name, requestBody.symbol);
+  const poolContractName = getContractName(
+    poolContract.name,
+    requestBody.symbol
+  );
+  const tokenOwnerContractName = getContractName(
+    tokenOwnerContract.name,
+    requestBody.symbol
+  );
+
+  // get contract names from generator
+
   if (
-    contracts.token.name !== contractNames[ContractType.DAO_TOKEN] ||
-    contracts.dex.name !== contractNames[ContractType.DAO_TOKEN_DEX] ||
-    contracts.pool.name !== contractNames[ContractType.DAO_BITFLOW_POOL]
+    contracts.token.name !== tokenContractName ||
+    contracts.dex.name !== dexContractName ||
+    contracts.pool.name !== poolContractName
   ) {
     console.log("Contract names do not match");
     return false;
@@ -580,21 +682,17 @@ function verifyFaktoryContracts(
     return false;
   }
   // check that token owner is used in the token contract
-  if (
-    !contracts.token.code.includes(contractNames[ContractType.DAO_TOKEN_OWNER])
-  ) {
+  if (!contracts.token.code.includes(tokenOwnerContractName)) {
     console.log("Token owner contract name not found in token contract code");
     return false;
   }
   // check that token contract name is used in the dex
-  if (!contracts.dex.code.includes(contractNames[ContractType.DAO_TOKEN])) {
+  if (!contracts.dex.code.includes(tokenContractName)) {
     console.log("Token contract name not found in dex contract code");
     return false;
   }
   // check that dex contract name is used in the pool
-  if (
-    !contracts.pool.code.includes(contractNames[ContractType.DAO_TOKEN_DEX])
-  ) {
+  if (!contracts.pool.code.includes(dexContractName)) {
     console.log("Dex contract name not found in pool contract code");
     return false;
   }
@@ -609,141 +707,4 @@ function verifyFaktoryContracts(
   }
   // passes all verification checks
   return true;
-}
-
-export function getTraitDefinition(
-  network: NetworkType,
-  traitType: NetworkTraitType
-): string {
-  const networkTraits = TRAITS[network];
-  if (!networkTraits) {
-    throw new Error(`No traits defined for network: ${network}`);
-  }
-
-  const trait = networkTraits[traitType];
-  if (!trait) {
-    throw new Error(`Trait type ${traitType} not found for network ${network}`);
-  }
-
-  return trait;
-}
-
-export function getTraitReference(
-  network: NetworkType,
-  traitType: NetworkTraitType
-): string {
-  const trait = getTraitDefinition(network, traitType);
-  return trait;
-}
-
-export function getAddressDefinition(
-  network: NetworkType,
-  addressType: NetworkAddressType
-): string {
-  const networkAddresses = ADDRESSES[network];
-  if (!networkAddresses) {
-    throw new Error(`No addresses defined for network: ${network}`);
-  }
-
-  const address = networkAddresses[addressType];
-  if (!address) {
-    throw new Error(
-      `Address type ${addressType} not found for network ${network}`
-    );
-  }
-
-  return address;
-}
-
-export function getAddressReference(
-  network: NetworkType,
-  addressType: NetworkAddressType
-): string {
-  return getAddressDefinition(network, addressType);
-}
-
-export function convertStringToBoolean(value = "false"): boolean {
-  // Convert to lowercase and trim whitespace
-  const normalized = value.toLowerCase().trim();
-
-  // Check for true values
-  if (normalized === "true" || normalized === "1") {
-    return true;
-  }
-
-  // Check for false values
-  if (normalized === "false" || normalized === "0") {
-    return false;
-  }
-
-  // Return null or throw error for invalid inputs
-  throw new Error(`Invalid boolean value: ${value}`);
-}
-
-export type ToolResponse<T> = {
-  success: boolean;
-  message: string;
-  data?: T;
-};
-
-export function createErrorResponse(
-  error: any
-): ToolResponse<Error | undefined> {
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorData = error instanceof Error ? error : undefined;
-  const response: ToolResponse<Error | undefined> = {
-    success: false,
-    message: errorMessage,
-    data: errorData,
-  };
-  return response;
-}
-
-export function sendToLLM(toolResponse: ToolResponse<any>) {
-  console.log(JSON.stringify(toolResponse, null, 2));
-}
-
-// helper that wraps broadcastTransaction from stacks/transactions
-export function broadcastTx(
-  transaction: StacksTransaction,
-  network: StacksNetwork
-): Promise<ToolResponse<TxBroadcastResult>> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const broadcastResponse = await broadcastTransaction(
-        transaction,
-        network
-      );
-      // check that error property is not present
-      // (since we can't instanceof the union type)
-      if (!("error" in broadcastResponse)) {
-        const response: ToolResponse<TxBroadcastResult> = {
-          success: true,
-          message: `Transaction broadcasted successfully: 0x${broadcastResponse.txid}`,
-          data: broadcastResponse,
-        };
-        resolve(response);
-      } else {
-        // create error message from broadcast response
-        let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
-        if (broadcastResponse.reason_data) {
-          if ("message" in broadcastResponse.reason_data) {
-            errorMessage += ` - Reason: ${broadcastResponse.reason_data.message}`;
-          }
-          if ("expected" in broadcastResponse.reason_data) {
-            errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
-          }
-        }
-        // create response object
-        const response: ToolResponse<TxBroadcastResult> = {
-          success: false,
-          message: errorMessage,
-          data: broadcastResponse,
-        };
-        resolve(response);
-      }
-    } catch (error) {
-      reject(createErrorResponse(error));
-    }
-  });
 }
