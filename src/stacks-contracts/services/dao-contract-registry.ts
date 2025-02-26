@@ -6,6 +6,13 @@ import {
   KnownTraits,
 } from "../types/dao-types-v2";
 
+// used for one-off contract deployments
+export type SingleContract = {
+  name: string;
+  source: string;
+  hash?: string;
+};
+
 // base contract info that persists through all stages
 type BaseContractInfo = {
   [C in ContractCategory]: {

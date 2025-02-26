@@ -2,12 +2,13 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
+  getNetwork,
   getNextNonce,
   sendToLLM,
   ToolResponse,
 } from "../utilities";
-import { DeploymentDetails } from "./types/dao-types";
-import { ContractDeployer } from "./services/contract-deployer";
+import { DaoContractDeployer } from "./services/dao-contract-deployer";
+import { getNetworkNameFromType } from "./types/dao-types-v2";
 
 const usage = "Usage: bun run deploy-contract.ts <contractName> <sourceCode>";
 const usageExample =
@@ -40,15 +41,19 @@ async function main(): Promise<ToolResponse<DeploymentDetails>> {
   // validate and store provided args
   const args = validateArgs();
   // setup network and wallet info
-  const { address } = await deriveChildAccount(
+  const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
   // setup deployment details
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-  const contractDeployer = new ContractDeployer(CONFIG.NETWORK);
-  const deploymentDetails = await contractDeployer.deployContractV2(
+  const contractDeployer = new DaoContractDeployer(
+    getNetworkNameFromType(CONFIG.NETWORK),
+    address,
+    key
+  );
+  const deploymentDetails = await contractDeployer.deployContract(
     args.contractName,
     args.sourceCode,
     nextPossibleNonce

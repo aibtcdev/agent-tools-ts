@@ -13,8 +13,6 @@ import {
   ToolResponse,
 } from "../utilities";
 import {
-  ContractCategory,
-  ContractSubCategory,
   ExpectedContractGeneratorArgs,
   getNetworkNameFromType,
 } from "./types/dao-types-v2";
