@@ -69,6 +69,50 @@ export type DeployedContractRegistryEntry = GeneratedContractRegistryEntry & {
 };
 
 /**
+ * Generate a contract name by replacing the token symbol
+ *
+ * @param originalName Original contract name from the registry
+ * @param tokenSymbol Token symbol to use in the name
+ * @param replaceText Text to replace in the original name (default: "aibtc")
+ * @returns String with replaceText replaced by the lowercase token symbol
+ */
+export function getContractName(
+  originalName: string,
+  tokenSymbol: string,
+  replaceText = "aibtc"
+): string {
+  return originalName.replace(replaceText, tokenSymbol.toLowerCase());
+}
+
+/**
+ * Filter contracts by category
+ *
+ * @param category Contract category to filter by
+ * @returns BaseContractRegistryEntry[] filtered list of contracts
+ */
+export function getContractsByCategory<C extends ContractCategory>(
+  category: C
+): BaseContractRegistryEntry[] {
+  return CONTRACT_REGISTRY.filter((contract) => contract.type === category);
+}
+
+/**
+ * Filter contracts by subcategory
+ *
+ * @param category Contract category
+ * @param subcategory Contract subcategory
+ * @returns BaseContractRegistryEntry[] filtered list of contracts
+ */
+export function getContractsBySubcategory<C extends ContractCategory>(
+  category: C,
+  subcategory: ContractSubCategory<C>
+): BaseContractRegistryEntry[] {
+  return CONTRACT_REGISTRY.filter(
+    (contract) => contract.type === category && contract.subtype === subcategory
+  );
+}
+
+/**
  * Central registry for each contract in the DAO.
  * Clone this object to generate and deploy contracts.
  */
@@ -804,47 +848,3 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     ],
   },
 ] as const;
-
-/**
- * Generate a contract name by replacing the token symbol
- *
- * @param originalName Original contract name from the registry
- * @param tokenSymbol Token symbol to use in the name
- * @param replaceText Text to replace in the original name (default: "aibtc")
- * @returns String with replaceText replaced by the lowercase token symbol
- */
-export function getContractName(
-  originalName: string,
-  tokenSymbol: string,
-  replaceText = "aibtc"
-): string {
-  return originalName.replace(replaceText, tokenSymbol.toLowerCase());
-}
-
-/**
- * Filter contracts by category
- *
- * @param category Contract category to filter by
- * @returns BaseContractRegistryEntry[] filtered list of contracts
- */
-export function getContractsByCategory<C extends ContractCategory>(
-  category: C
-): BaseContractRegistryEntry[] {
-  return CONTRACT_REGISTRY.filter((contract) => contract.type === category);
-}
-
-/**
- * Filter contracts by subcategory
- *
- * @param category Contract category
- * @param subcategory Contract subcategory
- * @returns BaseContractRegistryEntry[] filtered list of contracts
- */
-export function getContractsBySubcategory<C extends ContractCategory>(
-  category: C,
-  subcategory: ContractSubCategory<C>
-): BaseContractRegistryEntry[] {
-  return CONTRACT_REGISTRY.filter(
-    (contract) => contract.type === category && contract.subtype === subcategory
-  );
-}
