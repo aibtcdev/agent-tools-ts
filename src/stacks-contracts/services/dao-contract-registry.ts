@@ -4,7 +4,7 @@ import {
   ContractSubCategory,
   KnownAddresses,
   KnownTraits,
-} from "../types/dao-types-v2";
+} from "../types/dao-types";
 
 // base contract info that persists through all stages
 type BaseContractInfo = {

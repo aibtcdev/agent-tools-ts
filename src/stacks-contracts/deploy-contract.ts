@@ -12,7 +12,7 @@ import {
   DeployedSingleContract,
   getNetworkNameFromType,
   SingleContract,
-} from "./types/dao-types-v2";
+} from "./types/dao-types";
 
 const usage =
   "Usage: bun run deploy-contract.ts <contractName> <sourceCode> [clarityVersion]";

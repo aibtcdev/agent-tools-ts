@@ -6,7 +6,7 @@ import {
   getKnownAddresses,
   getKnownTraits,
   NetworkName,
-} from "../types/dao-types-v2";
+} from "../types/dao-types";
 import {
   CONTRACT_REGISTRY,
   BaseContractRegistryEntry,

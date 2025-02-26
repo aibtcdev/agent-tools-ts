@@ -4,7 +4,7 @@ import {
   getNetworkTypeFromName,
   NetworkName,
   SingleContract,
-} from "../types/dao-types-v2";
+} from "../types/dao-types";
 import {
   AnchorMode,
   broadcastTransaction,

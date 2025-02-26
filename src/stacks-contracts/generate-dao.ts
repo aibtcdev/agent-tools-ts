@@ -15,7 +15,7 @@ import {
 import {
   ExpectedContractGeneratorArgs,
   getNetworkNameFromType,
-} from "./types/dao-types-v2";
+} from "./types/dao-types";
 import { GeneratedContractRegistryEntry } from "./services/dao-contract-registry";
 
 const usage = `Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>`;

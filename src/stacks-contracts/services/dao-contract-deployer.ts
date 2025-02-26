@@ -9,7 +9,7 @@ import {
   GeneratedContractRegistryEntry,
   DeployedContractRegistryEntry,
 } from "./dao-contract-registry";
-import { getNetworkTypeFromName, NetworkName } from "../types/dao-types-v2";
+import { getNetworkTypeFromName, NetworkName } from "../types/dao-types";
 import { getNextNonce } from "../../utilities";
 
 /**
