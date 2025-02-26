@@ -1,27 +1,34 @@
+import { ClarityVersion } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getNetwork,
   getNextNonce,
   sendToLLM,
   ToolResponse,
 } from "../utilities";
-import { DaoContractDeployer } from "./services/dao-contract-deployer";
-import { getNetworkNameFromType } from "./types/dao-types-v2";
+import { ContractDeployer } from "./services/contract-deployer";
+import {
+  DeployedSingleContract,
+  getNetworkNameFromType,
+  SingleContract,
+} from "./types/dao-types-v2";
 
-const usage = "Usage: bun run deploy-contract.ts <contractName> <sourceCode>";
+const usage =
+  "Usage: bun run deploy-contract.ts <contractName> <sourceCode> [clarityVersion]";
 const usageExample =
-  'Example: bun run deploy-contract.ts aibtcdao-charter "(define-public (hello-world) (ok u1))"';
+  'Example: bun run deploy-contract.ts aibtcdao-charter "(define-public (hello-world) (ok u1))" 3';
 
 interface ExpectedArgs {
   contractName: string;
   sourceCode: string;
+  clarityVersion?: ClarityVersion;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [contractName, sourceCode] = process.argv.slice(2);
+  const [contractName, sourceCode, clarityVersion] = process.argv.slice(2);
+  // check for req params
   if (!contractName || !sourceCode) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
@@ -30,14 +37,36 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+  // if clarity version provided, convert to valid
+  let clarityVer = ClarityVersion.Clarity3;
+  if (clarityVersion) {
+    const parsedVersion = parseInt(clarityVersion);
+    if (isNaN(parsedVersion) || parsedVersion < 1 || parsedVersion > 3) {
+      const errorMessage = [
+        `Invalid clarity version: ${clarityVersion}`,
+        usage,
+        usageExample,
+      ].join("\n");
+      throw new Error(errorMessage);
+    }
+    // set clarity version based on the parsed value
+    if (parsedVersion === 1) {
+      clarityVer = ClarityVersion.Clarity1;
+    } else if (parsedVersion === 2) {
+      clarityVer = ClarityVersion.Clarity2;
+    } else if (parsedVersion === 3) {
+      clarityVer = ClarityVersion.Clarity3;
+    }
+  }
   // return validated arguments
   return {
     contractName,
     sourceCode,
+    clarityVersion: clarityVer,
   };
 }
 
-async function main(): Promise<ToolResponse<DeploymentDetails>> {
+async function main(): Promise<ToolResponse<DeployedSingleContract>> {
   // validate and store provided args
   const args = validateArgs();
   // setup network and wallet info
@@ -48,14 +77,17 @@ async function main(): Promise<ToolResponse<DeploymentDetails>> {
   );
   // setup deployment details
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-  const contractDeployer = new DaoContractDeployer(
+  const contractDeployer = new ContractDeployer(
     getNetworkNameFromType(CONFIG.NETWORK),
     address,
     key
   );
+  const contract: SingleContract = {
+    name: args.contractName,
+    source: args.sourceCode,
+  };
   const deploymentDetails = await contractDeployer.deployContract(
-    args.contractName,
-    args.sourceCode,
+    contract,
     nextPossibleNonce
   );
   // return deployment details
