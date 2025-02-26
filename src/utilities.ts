@@ -1,5 +1,10 @@
 import { TransactionVersion } from "@stacks/common";
-import { StacksMainnet, StacksNetwork, StacksTestnet } from "@stacks/network";
+import {
+  StacksMainnet,
+  StacksNetwork,
+  StacksNetworkName,
+  StacksTestnet,
+} from "@stacks/network";
 import {
   generateNewAccount,
   generateWallet,
@@ -12,7 +17,6 @@ import {
   TxBroadcastResult,
   validateStacksAddress,
 } from "@stacks/transactions";
-import { NetworkType } from "./types";
 import {
   getContractName,
   getContractsBySubcategory,
@@ -84,7 +88,7 @@ export function stxToMicroStx(amountInStx: number): number {
 
 // define structure of app config
 export interface AppConfig {
-  NETWORK: NetworkType;
+  NETWORK: StacksNetworkName;
   MNEMONIC: string;
   ACCOUNT_INDEX: number;
   HIRO_API_KEY: string;
@@ -126,7 +130,7 @@ export const CONFIG = loadConfig();
 
 // get network from principal
 // limited to just testnet/mainnet for now
-export function getNetworkByPrincipal(principal: string): NetworkType {
+export function getNetworkByPrincipal(principal: string): StacksNetworkName {
   // test if principal is valid
   if (validateStacksAddress(principal)) {
     // detect network from address
@@ -163,13 +167,20 @@ export function getTxVersion(network: string) {
   }
 }
 
+//
+const VALID_NETWORKS: StacksNetworkName[] = [
+  "mainnet",
+  "testnet",
+  "devnet",
+  "mocknet",
+] as const;
+
 // validate network value
-export function validateNetwork(network: string | undefined): NetworkType {
-  if (
-    network &&
-    ["mainnet", "testnet", "devnet", "mocknet"].includes(network)
-  ) {
-    return network as NetworkType;
+export function validateNetwork(
+  network: string | undefined
+): StacksNetworkName {
+  if (network && VALID_NETWORKS.includes(network as StacksNetworkName)) {
+    return network as StacksNetworkName;
   }
   return DEFAULT_CONFIG.NETWORK;
 }

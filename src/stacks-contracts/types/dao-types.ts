@@ -1,40 +1,9 @@
 import { StacksNetworkName } from "@stacks/network";
-import { NetworkType } from "../../types";
 import { ClarityVersion } from "@stacks/transactions";
 
 //////////////////////////////
 // GENERAL HELPERS
 //////////////////////////////
-
-// make uppercase version of StacksNetworkName
-export type NetworkName = Uppercase<StacksNetworkName>;
-// (alias) type StacksNetworkName = "mainnet" | "testnet" | "devnet" | "mocknet"
-
-// helper to get the network name from the network type
-export function getNetworkNameFromType(network: NetworkType): NetworkName {
-  // create an array of valid network names (lowercase)
-  const validNetworks: StacksNetworkName[] = [
-    "mainnet",
-    "testnet",
-    "devnet",
-    "mocknet",
-  ];
-  // check if the input is valid
-  if (!validNetworks.includes(network as StacksNetworkName)) {
-    throw new Error(
-      `Invalid network type: ${network}. Expected one of: ${validNetworks.join(
-        ", "
-      )}`
-    );
-  }
-  // convert to uppercase and new type
-  return network.toUpperCase() as NetworkName;
-}
-
-// helper to convert back to StacksNetworkName type
-export function getNetworkTypeFromName(network: NetworkName): NetworkType {
-  return network.toLowerCase() as NetworkType;
-}
 
 export type ExpectedContractGeneratorArgs = {
   tokenSymbol: string;
@@ -112,22 +81,22 @@ const devnetAddresses: KnownAddresses = {
 
 // combine the addresses for each network
 
-const ADDRESSES: Record<NetworkName, KnownAddresses> = {
-  MAINNET: mainnetAddresses,
-  TESTNET: testnetAddresses,
-  DEVNET: devnetAddresses,
-  MOCKNET: devnetAddresses,
+const ADDRESSES: Record<StacksNetworkName, KnownAddresses> = {
+  mainnet: mainnetAddresses,
+  testnet: testnetAddresses,
+  devnet: devnetAddresses,
+  mocknet: devnetAddresses,
 } as const;
 
 // helper to get known addresses for a network
 // TODO: replaces ADDRESSES in constants.ts
-export function getKnownAddresses(network: NetworkName): KnownAddresses {
+export function getKnownAddresses(network: StacksNetworkName): KnownAddresses {
   return ADDRESSES[network];
 }
 
 // helper to get a specific address
 export function getKnownAddress(
-  network: NetworkName,
+  network: StacksNetworkName,
   address: keyof KnownAddresses
 ): string {
   return ADDRESSES[network][address];
@@ -307,21 +276,21 @@ const devnetTraits: KnownTraits = {
 };
 
 // combine the traits for each network
-const TRAITS: Record<NetworkName, KnownTraits> = {
-  MAINNET: mainnetTraits,
-  TESTNET: testnetTraits,
-  DEVNET: devnetTraits,
-  MOCKNET: devnetTraits,
+const TRAITS: Record<StacksNetworkName, KnownTraits> = {
+  mainnet: mainnetTraits,
+  testnet: testnetTraits,
+  devnet: devnetTraits,
+  mocknet: devnetTraits,
 } as const;
 
 // helper to get known traits for a network
-export function getKnownTraits(network: NetworkName): KnownTraits {
+export function getKnownTraits(network: StacksNetworkName): KnownTraits {
   return TRAITS[network];
 }
 
 // helper to get a specific trait reference
 export function getTraitReference(
-  network: NetworkName,
+  network: StacksNetworkName,
   trait: keyof KnownTraits
 ): string {
   return TRAITS[network][trait];

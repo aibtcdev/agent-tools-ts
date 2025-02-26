@@ -1,11 +1,11 @@
 import * as path from "path";
 import { SHA256 } from "bun";
 import { Eta } from "eta";
+import { StacksNetworkName } from "@stacks/network";
 import {
   ExpectedContractGeneratorArgs,
   getKnownAddresses,
   getKnownTraits,
-  NetworkName,
 } from "../types/dao-types";
 import {
   CONTRACT_REGISTRY,
@@ -17,10 +17,10 @@ import {
 
 export class DaoContractGenerator {
   private eta: Eta;
-  private network: NetworkName;
+  private network: StacksNetworkName;
   private senderAddress: string;
 
-  constructor(network: NetworkName, senderAddress: string) {
+  constructor(network: StacksNetworkName, senderAddress: string) {
     this.eta = new Eta({ views: path.join(__dirname, "../templates/dao") });
     this.network = network;
     this.senderAddress = senderAddress;

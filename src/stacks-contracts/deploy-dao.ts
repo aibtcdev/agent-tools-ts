@@ -16,10 +16,7 @@ import {
   GeneratedContractRegistryEntry,
 } from "./services/dao-contract-registry";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
-import {
-  ExpectedContractGeneratorArgs,
-  getNetworkNameFromType,
-} from "./types/dao-types";
+import { ExpectedContractGeneratorArgs } from "./types/dao-types";
 import { DaoContractDeployer } from "./services/dao-contract-deployer";
 
 const usage = `Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>`;
@@ -97,10 +94,8 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // convert old network to new format
-  const network = getNetworkNameFromType(CONFIG.NETWORK);
   // create contract generator instance
-  const contractGenerator = new DaoContractGenerator(network, address);
+  const contractGenerator = new DaoContractGenerator(CONFIG.NETWORK, address);
   // set dao manifest, passed to proposal for dao construction
   // or default to dao name + token name
   const manifest = args.daoManifest
@@ -163,12 +158,15 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   // Step 4 - deploy contracts
 
   console.log(`Deploying ${generatedContracts.length} contracts...`);
-  console.log(`- network: ${network}`);
   console.log(`- address: ${address}`);
   //console.log(JSON.stringify(generatedContracts, null, 2));
 
   // create contract deployer instance
-  const contractDeployer = new DaoContractDeployer(network, address, key);
+  const contractDeployer = new DaoContractDeployer(
+    CONFIG.NETWORK,
+    address,
+    key
+  );
   // deploy each contract
   const deployedContracts = await contractDeployer.deployContracts(
     generatedContracts

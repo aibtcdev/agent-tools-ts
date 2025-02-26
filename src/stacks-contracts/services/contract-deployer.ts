@@ -1,10 +1,5 @@
 import { StacksNetworkName } from "@stacks/network";
-import {
-  DeployedSingleContract,
-  getNetworkTypeFromName,
-  NetworkName,
-  SingleContract,
-} from "../types/dao-types";
+import { DeployedSingleContract, SingleContract } from "../types/dao-types";
 import {
   AnchorMode,
   broadcastTransaction,
@@ -27,8 +22,12 @@ export class ContractDeployer {
    * @param senderAddress Address that will deploy the contracts
    * @param senderKey Private key for the sender address
    */
-  constructor(network: NetworkName, senderAddress: string, senderKey: string) {
-    this.network = getNetworkTypeFromName(network);
+  constructor(
+    network: StacksNetworkName,
+    senderAddress: string,
+    senderKey: string
+  ) {
+    this.network = network;
     this.senderAddress = senderAddress;
     this.senderKey = senderKey;
   }

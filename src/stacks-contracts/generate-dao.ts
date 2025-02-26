@@ -12,10 +12,7 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../utilities";
-import {
-  ExpectedContractGeneratorArgs,
-  getNetworkNameFromType,
-} from "./types/dao-types";
+import { ExpectedContractGeneratorArgs } from "./types/dao-types";
 import { GeneratedContractRegistryEntry } from "./services/dao-contract-registry";
 
 const usage = `Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>`;
@@ -93,10 +90,8 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // convert old network to new format
-  const network = getNetworkNameFromType(CONFIG.NETWORK);
   // create contract generator instance
-  const contractGenerator = new DaoContractGenerator(network, address);
+  const contractGenerator = new DaoContractGenerator(CONFIG.NETWORK, address);
   // set dao manifest, passed to proposal for dao construction
   // or default to dao name + token name
   const manifest = args.daoManifest

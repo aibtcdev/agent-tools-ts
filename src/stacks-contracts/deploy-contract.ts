@@ -8,11 +8,7 @@ import {
   ToolResponse,
 } from "../utilities";
 import { ContractDeployer } from "./services/contract-deployer";
-import {
-  DeployedSingleContract,
-  getNetworkNameFromType,
-  SingleContract,
-} from "./types/dao-types";
+import { DeployedSingleContract, SingleContract } from "./types/dao-types";
 
 const usage =
   "Usage: bun run deploy-contract.ts <contractName> <sourceCode> [clarityVersion]";
@@ -77,11 +73,7 @@ async function main(): Promise<ToolResponse<DeployedSingleContract>> {
   );
   // setup deployment details
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-  const contractDeployer = new ContractDeployer(
-    getNetworkNameFromType(CONFIG.NETWORK),
-    address,
-    key
-  );
+  const contractDeployer = new ContractDeployer(CONFIG.NETWORK, address, key);
   const contract: SingleContract = {
     name: args.contractName,
     source: args.sourceCode,
