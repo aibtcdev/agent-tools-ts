@@ -69,7 +69,7 @@ export class DaoContractGenerator {
         (contract.requiredTraits || []).map(({ ref, key }) => {
           // Ensure we have a valid trait reference
           if (!traitRefs[ref]) {
-            console.warn(`Warning: Missing trait reference for ${ref}`);
+            //console.warn(`Warning: Missing trait reference for ${ref}`);
           }
           return [key, traitRefs[ref]];
         })
@@ -81,7 +81,7 @@ export class DaoContractGenerator {
         (contract.requiredAddresses || []).map(({ ref, key }) => {
           // Ensure we have a valid address reference
           if (!knownAddresses[ref]) {
-            console.warn(`Warning: Missing address reference for ${ref}`);
+            //console.warn(`Warning: Missing address reference for ${ref}`);
           }
           return [key, knownAddresses[ref]];
         })
@@ -145,12 +145,12 @@ export class DaoContractGenerator {
             runtimeVars[key] = `${args.daoManifestInscriptionId}`;
             break;
           default:
-            console.warn(`Warning: Unknown runtime value key: ${key}`);
+            //console.warn(`Warning: Unknown runtime value key: ${key}`);
             runtimeVars[key] = undefined;
         }
 
         if (runtimeVars[key] === undefined) {
-          console.warn(`Warning: Missing runtime value for ${key}`);
+          //console.warn(`Warning: Missing runtime value for ${key}`);
         }
       });
 

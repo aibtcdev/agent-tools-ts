@@ -67,9 +67,9 @@ export class DaoContractDeployer {
 
       if (!broadcastResponse.error) {
         // If successful, return the deployed contract info
-        console.log(
-          `https://explorer.hiro.so/txid/0x${broadcastResponse.txid}?chain=testnet`
-        );
+        //console.log(
+        //  `https://explorer.hiro.so/txid/0x${broadcastResponse.txid}?chain=testnet`
+        //);
         return {
           ...contract,
           sender: this.senderAddress,
@@ -89,7 +89,7 @@ export class DaoContractDeployer {
             errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
           }
         }
-        console.error(errorMessage);
+        //console.error(errorMessage);
         return {
           ...contract,
           sender: this.senderAddress,
@@ -98,7 +98,7 @@ export class DaoContractDeployer {
         };
       }
     } catch (error) {
-      console.error(`Failed to deploy contract ${contract.name}:`, error);
+      //console.error(`Failed to deploy contract ${contract.name}:`, error);
 
       // Return failure status
       return {
@@ -123,7 +123,7 @@ export class DaoContractDeployer {
     let nonce = await getNextNonce(this.network, this.senderAddress);
 
     for (const contract of contracts) {
-      console.log(`Deploying ${contract.name}...`);
+      //console.log(`Deploying ${contract.name}...`);
       const deployedContract = await this.deployContract(contract, nonce);
       deployedContracts.push(deployedContract);
 
@@ -135,9 +135,9 @@ export class DaoContractDeployer {
           )}`
         );
       } else {
-        console.log(
-          `Successfully deployed ${contract.name}: ${deployedContract.address}`
-        );
+        //console.log(
+        //  `Successfully deployed ${contract.name}: ${deployedContract.address}`
+        //);
         nonce++;
       }
     }

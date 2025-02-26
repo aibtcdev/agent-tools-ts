@@ -151,14 +151,14 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
       const fileName = `${contract.name}.clar`;
       const filePath = path.join(outputDir, fileName);
       fs.writeFileSync(filePath, contract.source);
-      console.log(`Generated: ${filePath}`);
+      //console.log(`Generated: ${filePath}`);
     });
   }
 
   // Step 4 - deploy contracts
 
-  console.log(`Deploying ${generatedContracts.length} contracts...`);
-  console.log(`- address: ${address}`);
+  //console.log(`Deploying ${generatedContracts.length} contracts...`);
+  //console.log(`- address: ${address}`);
   //console.log(JSON.stringify(generatedContracts, null, 2));
 
   // create contract deployer instance
@@ -183,6 +183,7 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     .filter((contract) => contract.success)
     .map((contract) => contract.name);
 
+  /*
   console.log(
     `Successfully deployed ${
       successfulContracts.length
@@ -196,6 +197,7 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
       } contracts: ${failedContracts.join(", ")}`
     );
   }
+  */
 
   return {
     success: true,
