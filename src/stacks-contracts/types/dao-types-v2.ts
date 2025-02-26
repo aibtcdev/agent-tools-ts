@@ -1,5 +1,6 @@
 import { StacksNetworkName } from "@stacks/network";
 import { NetworkType } from "../../types";
+import { ClarityVersion } from "@stacks/transactions";
 
 //////////////////////////////
 // GENERAL HELPERS
@@ -46,6 +47,20 @@ export type ExpectedContractGeneratorArgs = {
   tweetOrigin: string;
   daoManifestInscriptionId?: string;
   generateFiles?: boolean;
+};
+
+// used for one-off contract deployments
+export type SingleContract = {
+  name: string;
+  source: string;
+  hash?: string;
+  clarityVersion?: ClarityVersion;
+};
+
+export type DeployedSingleContract = SingleContract & {
+  txId: string;
+  contractAddress: string;
+  sender: string;
 };
 
 //////////////////////////////
