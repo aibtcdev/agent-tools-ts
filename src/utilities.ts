@@ -12,14 +12,11 @@ import {
   TxBroadcastResult,
   validateStacksAddress,
 } from "@stacks/transactions";
-import { NetworkType, NetworkTraitType, NetworkAddressType } from "./types";
-import { ADDRESSES, TRAITS } from "./constants";
-import { DaoContractGenerator } from "./stacks-contracts/services/dao-contract-generator";
+import { NetworkType } from "./types";
 import {
   getContractName,
   getContractsBySubcategory,
 } from "./stacks-contracts/services/dao-contract-registry";
-import { getNetworkNameFromType } from "./stacks-contracts/types/dao-types";
 
 //////////////////////////////
 // GENERAL HELPERS
