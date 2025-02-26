@@ -1,34 +1,24 @@
 import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
-import { ContractGenerator } from "./services/contract-generator";
-import { ContractProposalType, GeneratedDaoContracts } from "./types/dao-types";
+import { DaoContractGenerator } from "./services/dao-contract-generator";
 import {
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
-  FaktoryGeneratedContracts,
+  FaktoryRequestBody,
+  getFaktoryContracts,
   sendToLLM,
   ToolResponse,
 } from "../utilities";
+import { ExpectedContractGeneratorArgs } from "./types/dao-types";
+import { GeneratedContractRegistryEntry } from "./services/dao-contract-registry";
 
-const usage = `Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <generateFiles>`;
-const usageExample = `Example: bun run generate-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin" "true"`;
+const usage = `Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>`;
+const usageExample = `Example: bun run generate-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin" "DAO manifest inscription ID" "true"`;
 
-interface ExpectedArgs {
-  tokenSymbol: string;
-  tokenName: string;
-  tokenMaxSupply: string;
-  tokenUri: string;
-  logoUrl: string;
-  originAddress: string;
-  daoManifest: string;
-  tweetOrigin: string;
-  generateFiles: boolean;
-}
-
-function validateArgs(): ExpectedArgs {
+function validateArgs(): ExpectedContractGeneratorArgs {
   // capture all arguments
   const [
     tokenSymbol,
@@ -39,6 +29,7 @@ function validateArgs(): ExpectedArgs {
     originAddress,
     daoManifest,
     tweetOrigin,
+    daoManifestInscriptionId,
     generateFiles,
   ] = process.argv.slice(2);
   // verify all required arguments are provided
@@ -74,110 +65,101 @@ function validateArgs(): ExpectedArgs {
   return {
     tokenSymbol,
     tokenName,
-    tokenMaxSupply,
+    tokenMaxSupply: parseInt(tokenMaxSupply),
     tokenUri,
     logoUrl,
     originAddress,
     daoManifest,
     tweetOrigin,
+    daoManifestInscriptionId,
     generateFiles: shouldGenerateFiles,
   };
 }
 
-async function main(): Promise<
-  ToolResponse<FaktoryGeneratedContracts & GeneratedDaoContracts>
-> {
+async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
+  // Step 0 - prep work
+
+  // array to build the contract info
+  const generatedContracts: GeneratedContractRegistryEntry[] = [];
+
   // validate and store provided args
   const args = validateArgs();
-  // helper function to save contract to file or log to console
-  const saveContract = (name: string, source: string) => {
-    if (args.generateFiles) {
-      const fileName = `${name}.clar`;
-      const filePath = path.join(outputDir, fileName);
-      fs.writeFileSync(filePath, source);
-      console.log(`Generated: ${filePath}`);
-    } else {
-      console.log(`===== ${name}`);
-      console.log(source);
-    }
-  };
   // setup network and wallet info
   const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // prepare output directory if generating files
-  let outputDir = "";
-  if (args.generateFiles) {
-    // Create output directory
-    outputDir = path.join("generated", args.tokenSymbol.toLowerCase());
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
   // create contract generator instance
-  const contractGenerator = new ContractGenerator(CONFIG.NETWORK, address);
-
+  const contractGenerator = new DaoContractGenerator(CONFIG.NETWORK, address);
   // set dao manifest, passed to proposal for dao construction
   // or default to dao name + token name
   const manifest = args.daoManifest
     ? args.daoManifest
     : `Bitcoin DeFAI ${args.tokenSymbol} ${args.tokenName}`;
-  console.log(`- manifest: ${manifest}`);
 
-  // Step 1 - generate token-related contracts
+  // Step 1 - generate dao contracts
+
+  const daoContracts = contractGenerator.generateContracts(args);
+  generatedContracts.push(...Object.values(daoContracts));
+
+  // Step 2 - generate token-related contracts
 
   // query the faktory contracts
+  const requestBody: FaktoryRequestBody = {
+    symbol: args.tokenSymbol,
+    name: args.tokenName,
+    supply: args.tokenMaxSupply,
+    creatorAddress: address,
+    originAddress: args.originAddress,
+    uri: args.tokenUri,
+    logoUrl: args.logoUrl,
+    description: manifest,
+    tweetOrigin: args.tweetOrigin,
+  };
+  const { token, dex, pool } = await getFaktoryContracts(requestBody);
 
-  const { token, dex, pool } = await contractGenerator.generateFaktoryContracts(
-    args.tokenSymbol,
-    args.tokenName,
-    args.tokenMaxSupply,
-    args.tokenUri,
-    address, // creatorAddress
-    args.originAddress,
-    args.logoUrl,
-    manifest, // description
-    args.tweetOrigin
-  );
-
-  // save token-related contracts (if generating files)
-
-  saveContract(token.name, token.code);
-  saveContract(dex.name, dex.code);
-  saveContract(pool.name, pool.code);
-
-  // Step 2 - generate remaining dao contracts
-
-  const contracts = contractGenerator.generateDaoContracts(
-    address,
-    args.tokenSymbol,
-    manifest
-  );
-
-  // Sort contracts to ensure DAO_PROPOSAL_BOOTSTRAP is last
-  const sortedContracts = Object.entries(contracts).sort(([, a], [, b]) => {
-    if (a.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
-      return 1;
-    if (b.type === ContractProposalType.DAO_BASE_BOOTSTRAP_INITIALIZATION_V2)
-      return -1;
-    return 0;
+  // update contracts already in generatedContracts with source and hash
+  generatedContracts.forEach((contract) => {
+    switch (contract.name) {
+      case token.name:
+        contract.hash = token.hash;
+        contract.source = token.code;
+        break;
+      case dex.name:
+        contract.source = dex.code;
+        contract.hash = dex.hash;
+        break;
+      case pool.name:
+        contract.source = pool.code;
+        contract.hash = pool.hash;
+        break;
+    }
   });
 
-  // Save all contracts
-  for (const [_, contract] of sortedContracts) {
-    saveContract(contract.name, contract.source);
+  // Step 3 - save contracts (optional)
+
+  if (args.generateFiles) {
+    const outputDir = path.join("generated", args.tokenSymbol.toLowerCase());
+    fs.mkdirSync(outputDir, { recursive: true });
+    generatedContracts.forEach((contract) => {
+      const fileName = `${contract.name}.clar`;
+      const filePath = path.join(outputDir, fileName);
+      fs.writeFileSync(filePath, contract.source);
+      //console.log(`Generated: ${filePath}`);
+    });
   }
 
-  // return generated contracts
+  // Step 4 - return generated contracts
+
   return {
     success: true,
     message: "Contracts generated successfully",
-    data: {
-      token,
-      dex,
-      pool,
-      ...contracts,
-    },
+    // limit .code per contract to set chars for display / context size
+    data: generatedContracts.map((contract) => ({
+      ...contract,
+      source: contract.source.substring(0, 250),
+    })),
   };
 }
 

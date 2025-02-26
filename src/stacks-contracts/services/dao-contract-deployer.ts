@@ -4,13 +4,11 @@ import {
   broadcastTransaction,
   AnchorMode,
   PostConditionMode,
-  ClarityVersion,
 } from "@stacks/transactions";
 import {
   GeneratedContractRegistryEntry,
   DeployedContractRegistryEntry,
 } from "./dao-contract-registry";
-import { getNetworkTypeFromName, NetworkName } from "../types/dao-types-v2";
 import { getNextNonce } from "../../utilities";
 
 /**
@@ -28,8 +26,12 @@ export class DaoContractDeployer {
    * @param senderAddress Address that will deploy the contracts
    * @param senderKey Private key for the sender address
    */
-  constructor(network: NetworkName, senderAddress: string, senderKey: string) {
-    this.network = getNetworkTypeFromName(network);
+  constructor(
+    network: StacksNetworkName,
+    senderAddress: string,
+    senderKey: string
+  ) {
+    this.network = network;
     this.senderAddress = senderAddress;
     this.senderKey = senderKey;
   }

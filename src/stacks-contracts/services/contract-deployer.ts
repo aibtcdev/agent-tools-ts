@@ -1,150 +1,73 @@
+import { StacksNetworkName } from "@stacks/network";
+import { DeployedSingleContract, SingleContract } from "../types/dao-types";
 import {
-  makeContractDeploy,
-  broadcastTransaction,
   AnchorMode,
-  SignedContractDeployOptions,
+  broadcastTransaction,
+  makeContractDeploy,
   PostConditionMode,
 } from "@stacks/transactions";
-import {
-  ContractActionType,
-  ContractProposalType,
-  ContractType,
-  DeploymentDetails,
-  TraitType,
-} from "../types/dao-types";
-import {
-  CONFIG,
-  createErrorResponse,
-  deriveChildAccount,
-  getNetwork,
-} from "../../utilities";
-import { NetworkType } from "../../types";
-import { CONTRACT_DEPLOY_FEE } from "../utils/contract-utils";
 
+/**
+ * Contract deployment service for single contracts
+ */
 export class ContractDeployer {
-  private network: NetworkType;
-  private networkObj: any;
+  private network: StacksNetworkName;
+  private senderAddress: string;
+  private senderKey: string;
 
-  constructor(network: NetworkType) {
+  /**
+   * Create a new ContractDeployer instance
+   *
+   * @param network Network instance to use for deployments
+   * @param senderAddress Address that will deploy the contracts
+   * @param senderKey Private key for the sender address
+   */
+  constructor(
+    network: StacksNetworkName,
+    senderAddress: string,
+    senderKey: string
+  ) {
     this.network = network;
-    this.networkObj = getNetwork(network);
+    this.senderAddress = senderAddress;
+    this.senderKey = senderKey;
   }
 
-  // TODO: migrate all over to this format
-  // after using this function return with ToolResponse
-  async deployContractV2(
-    sourceCode: string,
-    contractName: string,
-    nonce?: number,
-    contractType?: ContractType | ContractActionType | ContractProposalType
-  ): Promise<DeploymentDetails> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const { address, key } = await deriveChildAccount(
-          this.network,
-          CONFIG.MNEMONIC,
-          CONFIG.ACCOUNT_INDEX
-        );
-
-        const deployOptions: SignedContractDeployOptions = {
-          senderKey: key,
-          contractName,
-          codeBody: sourceCode,
-          clarityVersion: 2,
-          network: this.networkObj,
-          anchorMode: AnchorMode.Any,
-          postConditionMode: PostConditionMode.Allow,
-          nonce: nonce,
-          fee: BigInt(CONTRACT_DEPLOY_FEE),
-        };
-
-        const transaction = await makeContractDeploy(deployOptions);
-        const broadcastResponse = await broadcastTransaction(
-          transaction,
-          this.network
-        );
-
-        // throw error if broadcast response has error property
-        if ("error" in broadcastResponse) {
-          let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
-          if (broadcastResponse.reason_data) {
-            if ("message" in broadcastResponse.reason_data) {
-              errorMessage += ` - Reason: ${broadcastResponse.reason_data.message}`;
-            }
-            if ("expected" in broadcastResponse.reason_data) {
-              errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
-            }
-          }
-          throw new Error(errorMessage);
-        }
-
-        const deploymentDetails: DeploymentDetails = {
-          sender: address,
-          name: contractName,
-          address: address,
-          type: contractType,
-          success: true,
-          txId: broadcastResponse.txid,
-        };
-        resolve(deploymentDetails);
-      } catch (error) {
-        reject(createErrorResponse(error));
-      }
-    });
-  }
-
+  /**
+   * Deploy a contract to the blockchain
+   *
+   * @param contract The generated contract to deploy
+   * @param nonce Optional nonce for the transaction
+   */
   async deployContract(
-    sourceCode: string,
-    contractType:
-      | ContractType
-      | ContractActionType
-      | ContractProposalType
-      | TraitType,
-    contractName: string,
+    contract: SingleContract,
     nonce?: number
-  ): Promise<{ success: boolean; data?: any; error?: any }> {
-    try {
-      const { address, key } = await deriveChildAccount(
-        this.network,
-        CONFIG.MNEMONIC,
-        CONFIG.ACCOUNT_INDEX
-      );
+  ): Promise<DeployedSingleContract> {
+    // Create the contract deployment transaction
+    const transaction = await makeContractDeploy({
+      contractName: contract.name,
+      codeBody: contract.source,
+      senderKey: this.senderKey,
+      nonce: nonce ? nonce : undefined,
+      network: this.network,
+      anchorMode: AnchorMode.Any,
+      postConditionMode: PostConditionMode.Allow,
+    });
 
-      const deployOptions: SignedContractDeployOptions = {
-        senderKey: key,
-        contractName,
-        codeBody: sourceCode,
-        clarityVersion: 2,
-        network: this.networkObj,
-        anchorMode: AnchorMode.Any,
-        postConditionMode: PostConditionMode.Allow,
-        nonce: nonce !== undefined ? nonce : undefined,
-        fee: BigInt(500_000), // 0.5 STX
-      };
+    // Broadcast the transaction
+    const broadcastResponse = await broadcastTransaction(
+      transaction,
+      this.network
+    );
 
-      const transaction = await makeContractDeploy(deployOptions);
-      const broadcastResponse = await broadcastTransaction(
-        transaction,
-        this.networkObj
-      );
-
-      return {
-        success: true,
-        data: {
-          contractPrincipal: `${address}.${contractName}`,
-          transactionId: `0x${broadcastResponse.txid}`,
-          sender: address,
-        },
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: {
-          message: error.message,
-          reason: error.reason,
-          details: error,
-        },
-      };
+    if (broadcastResponse.error) {
+      throw new Error(`Failed to deploy contract: ${broadcastResponse.reason}`);
     }
+    // Return the deployed contract details
+    return {
+      ...contract,
+      txId: broadcastResponse.txid,
+      contractAddress: `${this.senderAddress}.${contract.name}`,
+      sender: this.senderAddress,
+    };
   }
 }
