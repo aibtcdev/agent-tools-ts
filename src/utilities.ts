@@ -167,19 +167,14 @@ export function getTxVersion(network: string) {
   }
 }
 
-//
-const VALID_NETWORKS: StacksNetworkName[] = [
-  "mainnet",
-  "testnet",
-  "devnet",
-  "mocknet",
-] as const;
+export function getValidNetworks(): StacksNetworkName[] {
+  return ["mainnet", "testnet", "devnet", "mocknet"] as const;
+}
 
-// validate network value
 export function validateNetwork(
   network: string | undefined
 ): StacksNetworkName {
-  if (network && VALID_NETWORKS.includes(network as StacksNetworkName)) {
+  if (network && getValidNetworks().includes(network as StacksNetworkName)) {
     return network as StacksNetworkName;
   }
   return DEFAULT_CONFIG.NETWORK;
