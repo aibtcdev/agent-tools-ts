@@ -20,7 +20,7 @@ import {
 import {
   getContractName,
   getContractsBySubcategory,
-} from "./stacks-contracts/services/dao-contract-registry";
+} from "./aibtc-dao/services/dao-contract-registry";
 
 //////////////////////////////
 // GENERAL HELPERS
