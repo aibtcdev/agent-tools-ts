@@ -60,10 +60,12 @@ export class DaoContractGenerator {
 
     sortedContracts.forEach((contract) => {
       //console.log("===================================");
+      //console.log(JSON.stringify(contract, null, 2));
+      //console.log("===================================");
       //console.log(`Generating contract: ${contract.name}`);
       // Build contract name by replacing aibtc symbol
       const contractName = getContractName(contract.name, args.tokenSymbol);
-
+      //console.log(`- contract name: ${contractName}`);
       // Collect all traits into template variables
       const traitVars = Object.fromEntries(
         (contract.requiredTraits || []).map(({ ref, key }) => {

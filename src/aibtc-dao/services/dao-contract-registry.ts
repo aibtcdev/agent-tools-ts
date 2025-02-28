@@ -113,9 +113,10 @@ export function getContractsBySubcategory<C extends ContractCategory>(
 }
 
 /**
- * Central registry for each token contract in the DAO.
+ * Central registry for each contract in the DAO.
+ * Clone this object to generate and deploy contracts.
  */
-export const TOKEN_CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
+export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
   // token contracts
   {
     name: "aibtc-pre-faktory",
@@ -231,13 +232,6 @@ export const TOKEN_CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       { key: "dex_contract", category: "TOKEN", subcategory: "DEX" },
     ],
   },
-];
-
-/**
- * Central registry for each contract in the DAO.
- * Clone this object to generate and deploy contracts.
- */
-export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
   // base dao
   {
     name: "aibtc-base-dao",
