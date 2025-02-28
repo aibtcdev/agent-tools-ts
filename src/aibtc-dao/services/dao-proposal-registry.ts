@@ -84,4 +84,9 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Bank Account: Deposit STX",
     templatePath: "",
   },
+  {
+    name: "aibtc-bank-account-initialize-new-account",
+    friendlyName: "Bank Account: Initialize New Account",
+    templatePath: "",
+  },
 ];
