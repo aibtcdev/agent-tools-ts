@@ -467,6 +467,7 @@ export async function getStxCityHash(data: string): Promise<string> {
 //////////////////////////////
 
 export type FaktoryGeneratedContracts = {
+  prelaunch: FaktoryContractInfo;
   token: FaktoryContractInfo;
   dex: FaktoryContractInfo;
   pool: FaktoryContractInfo;
@@ -478,6 +479,8 @@ export type FaktoryRequestBody = {
   supply: number;
   creatorAddress: string;
   originAddress: string;
+  description: string;
+  tweetOrigin: string;
   uri: string;
   logoUrl?: string;
   mediaUrl?: string;
@@ -485,8 +488,6 @@ export type FaktoryRequestBody = {
   website?: string;
   telegram?: string;
   discord?: string;
-  description?: string;
-  tweetOrigin?: string;
 };
 
 type FaktoryResponse<T> = {
@@ -563,12 +564,12 @@ type FaktoryDbRecord = {
 export async function getFaktoryContracts(
   faktoryRequestBody: FaktoryRequestBody
 ): Promise<FaktoryGeneratedContracts> {
+  // setup URLs for Faktory API
+  const faktoryPrelaunchUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/prelaunch`;
   const faktoryUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate`;
   const faktoryPoolUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate-pool`;
-  //console.log(`Faktory URL: ${faktoryUrl.toString()}`);
-  //console.log(`Faktory Pool URL: ${faktoryPoolUrl.toString()}`);
-  //console.log(`Faktory request body:`);
-  //console.log(JSON.stringify(faktoryRequestBody, null, 2));
+
+  // get prelaunch contract
 
   const symbol = faktoryRequestBody.symbol;
   const creatorAddress = faktoryRequestBody.creatorAddress;
