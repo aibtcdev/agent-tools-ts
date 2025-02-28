@@ -70,8 +70,8 @@ type DeployedContractInfo = {
 };
 
 // deployed registry entry for a core proposal
-export type DeployedCoreProposalRegistryEntry = GeneratedCoreProposalRegistryEntry &
-  DeployedContractInfo;
+export type DeployedCoreProposalRegistryEntry =
+  GeneratedCoreProposalRegistryEntry & DeployedContractInfo;
 
 /**
  * Central registry for each core proposal in the DAO.
@@ -93,7 +93,8 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-bank-account-override-last-withdrawal-block",
     friendlyName: "Bank Account: Override Last Withdrawal Block",
-    templatePath: "proposals/aibtc-bank-account-override-last-withdrawal-block.clar",
+    templatePath:
+      "proposals/aibtc-bank-account-override-last-withdrawal-block.clar",
   },
   {
     name: "aibtc-bank-account-set-account-holder",
@@ -115,13 +116,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Bank Account: Withdraw STX",
     templatePath: "proposals/aibtc-bank-account-withdraw-stx.clar",
   },
-  
+
   // Base DAO Proposals
   {
     name: "aibtc-base-add-new-extension",
     friendlyName: "Base DAO: Add New Extension",
     templatePath: "proposals/aibtc-base-add-new-extension.clar",
   },
+  /* REMOVING as these are just used for construction
   {
     name: "aibtc-base-bootstrap-initialization",
     friendlyName: "Base DAO: Bootstrap Initialization",
@@ -132,6 +134,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Base DAO: Bootstrap Initialization v2",
     templatePath: "proposals/aibtc-base-bootstrap-initialization-v2.clar",
   },
+  */
   {
     name: "aibtc-base-disable-extension",
     friendlyName: "Base DAO: Disable Extension",
@@ -152,21 +155,21 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Base DAO: Replace Extension Proposal Voting",
     templatePath: "proposals/aibtc-base-replace-extension-proposal-voting.clar",
   },
-  
+
   // DAO Charter Proposals
   {
     name: "aibtc-dao-charter-set-dao-charter",
     friendlyName: "DAO Charter: Set DAO Charter",
     templatePath: "proposals/aibtc-dao-charter-set-dao-charter.clar",
   },
-  
+
   // Messaging Proposals
   {
     name: "aibtc-onchain-messaging-send",
     friendlyName: "Onchain Messaging: Send Message",
     templatePath: "proposals/aibtc-onchain-messaging-send.clar",
   },
-  
+
   // Payments & Invoices Proposals
   {
     name: "aibtc-payments-invoices-add-resource",
@@ -176,7 +179,8 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-payments-invoices-pay-invoice-by-resource-name",
     friendlyName: "Payments & Invoices: Pay Invoice By Resource Name",
-    templatePath: "proposals/aibtc-payments-invoices-pay-invoice-by-resource-name.clar",
+    templatePath:
+      "proposals/aibtc-payments-invoices-pay-invoice-by-resource-name.clar",
   },
   {
     name: "aibtc-payments-invoices-pay-invoice",
@@ -191,14 +195,15 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-payments-invoices-toggle-resource-by-name",
     friendlyName: "Payments & Invoices: Toggle Resource By Name",
-    templatePath: "proposals/aibtc-payments-invoices-toggle-resource-by-name.clar",
+    templatePath:
+      "proposals/aibtc-payments-invoices-toggle-resource-by-name.clar",
   },
   {
     name: "aibtc-payments-invoices-toggle-resource",
     friendlyName: "Payments & Invoices: Toggle Resource",
     templatePath: "proposals/aibtc-payments-invoices-toggle-resource.clar",
   },
-  
+
   // Token Owner Proposals
   {
     name: "aibtc-token-owner-set-token-uri",
@@ -210,7 +215,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Token Owner: Transfer Ownership",
     templatePath: "proposals/aibtc-token-owner-transfer-ownership.clar",
   },
-  
+
   // Treasury Proposals
   {
     name: "aibtc-treasury-allow-asset",
