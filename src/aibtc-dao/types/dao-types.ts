@@ -329,7 +329,7 @@ const CONTRACT_SUBCATEGORIES = {
     "BITFLOW_POOL",
     "BITFOW_SIP010",
   ] as const,
-  TOKEN: ["DAO", "DEX", "POOL"] as const,
+  TOKEN: ["DAO", "DEX", "POOL", "PRELAUNCH"] as const,
 } as const;
 
 // helper type that infers subcategory keys per category

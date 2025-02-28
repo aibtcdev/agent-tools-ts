@@ -112,8 +112,18 @@ export function getContractsBySubcategory<C extends ContractCategory>(
   );
 }
 
-export const TOKEN_REGISTRY: BaseContractRegistryEntry[] = [
+/**
+ * Central registry for each token contract in the DAO.
+ */
+export const TOKEN_CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
   // token contracts
+  {
+    name: "aibtc-pre-faktory",
+    type: "TOKEN",
+    subtype: "PRELAUNCH",
+    deploymentOrder: 0,
+    templatePath: `extensions/aibtc-token.clar`, // TODO: add actual path here?
+  },
   {
     name: "aibtc-faktory",
     type: "TOKEN",
