@@ -18,20 +18,6 @@ export type ExpectedContractGeneratorArgs = {
   generateFiles?: boolean;
 };
 
-// used for one-off contract deployments
-export type SingleContract = {
-  name: string;
-  source: string;
-  hash?: string;
-  clarityVersion?: ClarityVersion;
-};
-
-export type DeployedSingleContract = SingleContract & {
-  txId: string;
-  contractAddress: string;
-  sender: string;
-};
-
 //////////////////////////////
 // KNOWN ADDRESSES
 //////////////////////////////

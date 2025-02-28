@@ -7,8 +7,11 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../utilities";
-import { ContractDeployer } from "./services/contract-deployer";
-import { DeployedSingleContract, SingleContract } from "./types/dao-types";
+import {
+  ContractDeployer,
+  DeployedSingleContract,
+  SingleContract,
+} from "./services/contract-deployer";
 
 const usage =
   "Usage: bun run deploy-contract.ts <contractName> <sourceCode> [clarityVersion]";
