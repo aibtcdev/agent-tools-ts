@@ -267,4 +267,4 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Treasury: Withdraw STX",
     templatePath: "proposals/aibtc-treasury-withdraw-stx.clar",
   },
-];
+] as const;
