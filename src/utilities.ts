@@ -589,11 +589,11 @@ export async function getFaktoryContracts(
       `Failed to get prelaunch contract from Faktory, url: ${faktoryPrelaunchUrl}, response: ${prelaunchResponse.status} ${prelaunchResponse.statusText}`
     );
   }
-  console.log(`Faktory prelaunch response status: ${prelaunchResponse.status}`);
+  //console.log(`Faktory prelaunch response status: ${prelaunchResponse.status}`);
   const prelaunchResult =
     (await prelaunchResponse.json()) as FaktoryResponse<FaktoryPrelaunch>;
-  console.log("Faktory prelaunch result:");
-  console.log(JSON.stringify(prelaunchResult, null, 2));
+  //console.log("Faktory prelaunch result:");
+  //console.log(JSON.stringify(prelaunchResult, null, 2));
   if (!prelaunchResult.success) {
     throw new Error(
       `Failed to get prelaunch contract from Faktory, url: ${faktoryPrelaunchUrl}, error: ${
@@ -601,11 +601,9 @@ export async function getFaktoryContracts(
       }`
     );
   }
-
-  const symbol = faktoryRequestBody.symbol;
-  const creatorAddress = faktoryRequestBody.creatorAddress;
-
-  const faktoryResponse = await fetch(faktoryUrl.toString(), {
+  const prelaunchContract = prelaunchResult.data.contracts.prelaunch.contract;
+  // get token and dex contract
+  const tokenDexResponse = await fetch(faktoryUrl.toString(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -614,20 +612,28 @@ export async function getFaktoryContracts(
     body: JSON.stringify(faktoryRequestBody),
   });
   //console.log(`Faktory response status: ${faktoryResponse.status}`);
-  if (!faktoryResponse.ok) {
-    throw new Error(`Failed to get token and dex from Faktory`);
+  if (!tokenDexResponse.ok) {
+    throw new Error(
+      `Failed to get token and dex from Faktory, url: ${faktoryUrl}, response: ${tokenDexResponse.status} ${tokenDexResponse.statusText}`
+    );
   }
   const result =
-    (await faktoryResponse.json()) as FaktoryResponse<FaktoryTokenAndDex>;
+    (await tokenDexResponse.json()) as FaktoryResponse<FaktoryTokenAndDex>;
   //console.log("Faktory result:");
   //console.log(JSON.stringify(result, null, 2));
   if (!result.success) {
-    throw new Error(`Failed to get token and dex contract from Faktory`);
+    throw new Error(
+      `Failed to get token and dex contract from Faktory, error: ${
+        result.error ? result.error : "unknown error"
+      }`
+    );
   }
-
   const tokenContract = result.data.contracts.token.contract;
   const dexContract = result.data.contracts.dex.contract;
-
+  // build info for pool request
+  const symbol = faktoryRequestBody.symbol;
+  const creatorAddress = faktoryRequestBody.creatorAddress;
+  // get pool contract
   const poolResponse = await fetch(faktoryPoolUrl.toString(), {
     method: "POST",
     headers: {
@@ -652,9 +658,10 @@ export async function getFaktoryContracts(
   //console.log(JSON.stringify(poolResult, null, 2));
 
   const faktoryContracts: FaktoryGeneratedContracts = {
+    prelaunch: prelaunchResult.data.contracts.prelaunch,
     token: result.data.contracts.token,
     dex: result.data.contracts.dex,
-    pool: poolResult.data.pool,
+    pool: poolResult.data.contracts.pool,
   };
 
   const verified = verifyFaktoryContracts(faktoryContracts, faktoryRequestBody);
@@ -669,7 +676,12 @@ function verifyFaktoryContracts(
   contracts: FaktoryGeneratedContracts,
   requestBody: FaktoryRequestBody
 ) {
-  if (!contracts.token || !contracts.dex || !contracts.pool) {
+  if (
+    !contracts.prelaunch ||
+    !contracts.token ||
+    !contracts.dex ||
+    !contracts.pool
+  ) {
     console.log("Missing contracts to verify");
     return false;
   }
@@ -678,6 +690,7 @@ function verifyFaktoryContracts(
     return false;
   }
   // get contract info from registry for each
+  const prelaunchContract = getContractsBySubcategory("TOKEN", "PRELAUNCH")[0];
   const tokenContract = getContractsBySubcategory("TOKEN", "DAO")[0];
   const dexContract = getContractsBySubcategory("TOKEN", "DEX")[0];
   const poolContract = getContractsBySubcategory("TOKEN", "POOL")[0];
@@ -687,6 +700,10 @@ function verifyFaktoryContracts(
   )[0];
 
   // get contract names using token symbol
+  const prelaunchContractName = getContractName(
+    prelaunchContract.name,
+    requestBody.symbol
+  );
   const tokenContractName = getContractName(
     tokenContract.name,
     requestBody.symbol
@@ -704,6 +721,7 @@ function verifyFaktoryContracts(
   // get contract names from generator
 
   if (
+    contracts.prelaunch.name !== prelaunchContractName ||
     contracts.token.name !== tokenContractName ||
     contracts.dex.name !== dexContractName ||
     contracts.pool.name !== poolContractName
@@ -733,6 +751,7 @@ function verifyFaktoryContracts(
   }
   // check creator address is used in each of the contracts
   if (
+    !contracts.prelaunch.code.includes(requestBody.creatorAddress) ||
     !contracts.token.code.includes(requestBody.creatorAddress) ||
     !contracts.dex.code.includes(requestBody.creatorAddress) ||
     !contracts.pool.code.includes(requestBody.creatorAddress)
