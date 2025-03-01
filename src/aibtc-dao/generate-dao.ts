@@ -117,11 +117,31 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
     description: manifest,
     tweetOrigin: args.tweetOrigin,
   };
-  const { token, dex, pool } = await getFaktoryContracts(requestBody);
+  const { prelaunch, token, dex, pool } = await getFaktoryContracts(
+    requestBody
+  );
 
   // update contracts already in generatedContracts with source and hash
-
-  // TODO: build object and add here instead of update
+  generatedContracts.forEach((contract) => {
+    switch (contract.name) {
+      case prelaunch.name:
+        contract.source = prelaunch.code;
+        contract.hash = prelaunch.hash;
+        break;
+      case token.name:
+        contract.hash = token.hash;
+        contract.source = token.code;
+        break;
+      case dex.name:
+        contract.source = dex.code;
+        contract.hash = dex.hash;
+        break;
+      case pool.name:
+        contract.source = pool.code;
+        contract.hash = pool.hash;
+        break;
+    }
+  });
 
   // Step 3 - save contracts (optional)
 
