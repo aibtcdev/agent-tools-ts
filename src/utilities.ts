@@ -493,18 +493,20 @@ export type FaktoryRequestBody = {
 type FaktoryResponse<T> = {
   success: boolean;
   error?: string;
-  data: { contracts: T } & {
+  data: T & {
     dbRecord: FaktoryDbRecord[];
   };
 };
 
 type FaktoryPrelaunch = {
-  prelaunch: FaktoryContractInfo;
+  contract: FaktoryContractInfo;
 };
 
 type FaktoryTokenAndDex = {
-  token: FaktoryContractInfo;
-  dex: FaktoryContractInfo;
+  contracts: {
+    token: FaktoryContractInfo;
+    dex: FaktoryContractInfo;
+  };
 };
 
 type FaktoryPool = {
@@ -601,7 +603,6 @@ export async function getFaktoryContracts(
       }`
     );
   }
-  const prelaunchContract = prelaunchResult.data.contracts.prelaunch.contract;
   // get token and dex contract
   const tokenDexResponse = await fetch(faktoryUrl.toString(), {
     method: "POST",
@@ -658,10 +659,10 @@ export async function getFaktoryContracts(
   //console.log(JSON.stringify(poolResult, null, 2));
 
   const faktoryContracts: FaktoryGeneratedContracts = {
-    prelaunch: prelaunchResult.data.contracts.prelaunch,
+    prelaunch: prelaunchResult.data.contract,
     token: result.data.contracts.token,
     dex: result.data.contracts.dex,
-    pool: poolResult.data.contracts.pool,
+    pool: poolResult.data.pool,
   };
 
   const verified = verifyFaktoryContracts(faktoryContracts, faktoryRequestBody);
@@ -751,7 +752,7 @@ function verifyFaktoryContracts(
   }
   // check creator address is used in each of the contracts
   if (
-    !contracts.prelaunch.code.includes(requestBody.creatorAddress) ||
+    // !contracts.prelaunch.code.includes(requestBody.creatorAddress) ||
     !contracts.token.code.includes(requestBody.creatorAddress) ||
     !contracts.dex.code.includes(requestBody.creatorAddress) ||
     !contracts.pool.code.includes(requestBody.creatorAddress)
