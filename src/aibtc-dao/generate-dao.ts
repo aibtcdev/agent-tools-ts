@@ -120,22 +120,8 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   const { token, dex, pool } = await getFaktoryContracts(requestBody);
 
   // update contracts already in generatedContracts with source and hash
-  generatedContracts.forEach((contract) => {
-    switch (contract.name) {
-      case token.name:
-        contract.hash = token.hash;
-        contract.source = token.code;
-        break;
-      case dex.name:
-        contract.source = dex.code;
-        contract.hash = dex.hash;
-        break;
-      case pool.name:
-        contract.source = pool.code;
-        contract.hash = pool.hash;
-        break;
-    }
-  });
+
+  // TODO: build object and add here instead of update
 
   // Step 3 - save contracts (optional)
 

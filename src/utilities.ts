@@ -493,16 +493,18 @@ export type FaktoryRequestBody = {
 type FaktoryResponse<T> = {
   success: boolean;
   error?: string;
-  data: T & {
+  data: { contracts: T } & {
     dbRecord: FaktoryDbRecord[];
   };
 };
 
+type FaktoryPrelaunch = {
+  prelaunch: FaktoryContractInfo;
+};
+
 type FaktoryTokenAndDex = {
-  contracts: {
-    token: FaktoryContractInfo;
-    dex: FaktoryContractInfo;
-  };
+  token: FaktoryContractInfo;
+  dex: FaktoryContractInfo;
 };
 
 type FaktoryPool = {
@@ -521,6 +523,7 @@ type FaktoryDbRecord = {
   name: string;
   symbol: string;
   description: string;
+  preContract: string;
   tokenContract: string;
   dexContract: string;
   txId: string | null;
@@ -549,6 +552,7 @@ type FaktoryDbRecord = {
   creatorAddress: string;
   deployedAt: string;
   tokenHash: string;
+  preVerified: number;
   tokenVerified: number;
   dexHash: string;
   dexVerified: number;
@@ -559,6 +563,8 @@ type FaktoryDbRecord = {
   tradingHookUuid: string | null;
   lastBuyHash: string | null;
   daoToken: boolean;
+  tweetOrigin: string;
+  denomination: string;
 };
 
 export async function getFaktoryContracts(
@@ -570,6 +576,31 @@ export async function getFaktoryContracts(
   const faktoryPoolUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate-pool`;
 
   // get prelaunch contract
+  const prelaunchResponse = await fetch(faktoryPrelaunchUrl.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": CONFIG.AIBTC_FAKTORY_API_KEY,
+    },
+    body: JSON.stringify(faktoryRequestBody),
+  });
+  if (!prelaunchResponse.ok) {
+    throw new Error(
+      `Failed to get prelaunch contract from Faktory, url: ${faktoryPrelaunchUrl}, response: ${prelaunchResponse.status} ${prelaunchResponse.statusText}`
+    );
+  }
+  console.log(`Faktory prelaunch response status: ${prelaunchResponse.status}`);
+  const prelaunchResult =
+    (await prelaunchResponse.json()) as FaktoryResponse<FaktoryPrelaunch>;
+  console.log("Faktory prelaunch result:");
+  console.log(JSON.stringify(prelaunchResult, null, 2));
+  if (!prelaunchResult.success) {
+    throw new Error(
+      `Failed to get prelaunch contract from Faktory, url: ${faktoryPrelaunchUrl}, error: ${
+        prelaunchResult.error ? prelaunchResult.error : "unknown error"
+      }`
+    );
+  }
 
   const symbol = faktoryRequestBody.symbol;
   const creatorAddress = faktoryRequestBody.creatorAddress;
