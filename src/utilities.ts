@@ -794,7 +794,7 @@ export type aibtcCoreRequestBody = {
     symbol: string;
     decimals: number;
     description: string;
-    max_supply: number;
+    max_supply: string;
     uri: string;
     tx_id: string;
     contract_principal: string;

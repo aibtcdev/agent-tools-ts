@@ -188,11 +188,13 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     (contract) => contract.name === token.name
   );
   const tokenTxid = tokenContract ? tokenContract.txId : undefined;
-  // ensure token contract was deployed
+
+  // ensure token contract info is available
   if (!tokenContract || !tokenTxid) {
     throw new Error(`Token contract / txid not found: ${token.name}`);
   }
 
+  // setup request body for aibtc core
   const aibtcCoreRequest: aibtcCoreRequestBody = {
     name: args.tokenSymbol,
     mission: args.daoManifest,
@@ -202,15 +204,17 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     token: {
       name: args.tokenName,
       symbol: args.tokenSymbol,
-      decimals: 8,
+      decimals: 6,
       description: args.tokenName,
-      max_supply: args.tokenMaxSupply,
+      max_supply: args.tokenMaxSupply.toString(),
       uri: args.tokenUri,
       tx_id: tokenTxid,
-      contract_principal: getContractName(token.name, args.tokenSymbol),
+      contract_principal: `${address}.${token.name}`,
       image_url: args.logoUrl,
     },
   };
+
+  console.log(JSON.stringify(aibtcCoreRequest, null, 2));
 
   await postToAibtcCore(CONFIG.NETWORK, aibtcCoreRequest);
 
