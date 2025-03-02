@@ -816,7 +816,7 @@ export async function postToAibtcCore(
       "Content-Type": "application/json",
       Authorization: `Bearer ${CONFIG.AIBTC_CORE_API_KEY}`,
     },
-    body: JSON.stringify(deployedContracts),
+    body: JSON.stringify(infoToPost),
   });
   if (!response.ok) {
     throw new Error(
