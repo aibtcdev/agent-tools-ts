@@ -207,14 +207,14 @@ export function getFaktoryApiUrl(network: string) {
   }
 }
 
-export function getAibtcCoreApiUrl(network: StacksNetworkName) {
+export function getAibtcCoreApiUrl(network: string) {
   switch (network) {
     case "mainnet":
-      return "https://core.aibtc.dev/webhooks/daos";
+      return "https://core.aibtc.dev/webhooks/dao";
     case "testnet":
-      return "https://core-staging.aibtc.dev/webhooks/daos";
+      return "https://core-staging.aibtc.dev/webhooks/dao";
     default:
-      return "https://core-staging.aibtc.dev/webhooks/daos";
+      return "https://core-staging.aibtc.dev/webhooks/dao";
   }
 }
 
