@@ -194,9 +194,10 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   }
 
   const aibtcCoreRequest: aibtcCoreRequestBody = {
-    name: args.daoManifest,
+    name: args.tokenSymbol,
     mission: args.daoManifest,
-    descripton: args.daoManifest,
+    descripton:
+      "TBD - need to pass to deploy-dao script, could be the same for NAME",
     extensions: deployedContracts,
     token: {
       name: args.tokenName,
