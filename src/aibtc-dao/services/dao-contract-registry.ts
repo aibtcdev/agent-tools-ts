@@ -119,6 +119,13 @@ export function getContractsBySubcategory<C extends ContractCategory>(
 export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
   // token contracts
   {
+    name: "aibtc-pre-faktory",
+    type: "TOKEN",
+    subtype: "PRELAUNCH",
+    deploymentOrder: 0,
+    templatePath: `extensions/aibtc-token.clar`, // TODO: add actual path here?
+  },
+  {
     name: "aibtc-faktory",
     type: "TOKEN",
     subtype: "DAO",

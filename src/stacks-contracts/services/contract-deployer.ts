@@ -1,11 +1,25 @@
 import { StacksNetworkName } from "@stacks/network";
-import { DeployedSingleContract, SingleContract } from "../types/dao-types";
 import {
   AnchorMode,
   broadcastTransaction,
+  ClarityVersion,
   makeContractDeploy,
   PostConditionMode,
 } from "@stacks/transactions";
+
+// used for one-off contract deployments
+export type SingleContract = {
+  name: string;
+  source: string;
+  hash?: string;
+  clarityVersion?: ClarityVersion;
+};
+
+export type DeployedSingleContract = SingleContract & {
+  txId: string;
+  contractAddress: string;
+  sender: string;
+};
 
 /**
  * Contract deployment service for single contracts

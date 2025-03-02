@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
+import { DaoContractGenerator } from "./services/dao-contract-generator";
 import {
   CONFIG,
   convertStringToBoolean,
@@ -11,16 +12,11 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../utilities";
-import {
-  DeployedContractRegistryEntry,
-  GeneratedContractRegistryEntry,
-} from "./services/dao-contract-registry";
-import { DaoContractGenerator } from "./services/dao-contract-generator";
 import { ExpectedContractGeneratorArgs } from "./types/dao-types";
-import { DaoContractDeployer } from "./services/dao-contract-deployer";
+import { GeneratedContractRegistryEntry } from "./services/dao-contract-registry";
 
-const usage = `Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>`;
-const usageExample = `Example: bun run deploy-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin" "DAO manifest inscription ID" "true"`;
+const usage = `Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>`;
+const usageExample = `Example: bun run generate-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin" "DAO manifest inscription ID" "true"`;
 
 function validateArgs(): ExpectedContractGeneratorArgs {
   // capture all arguments
@@ -80,16 +76,16 @@ function validateArgs(): ExpectedContractGeneratorArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
+async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   // Step 0 - prep work
 
-  // array to hold deployed contract info
+  // array to build the contract info
   const generatedContracts: GeneratedContractRegistryEntry[] = [];
 
   // validate and store provided args
   const args = validateArgs();
   // setup network and wallet info
-  const { address, key } = await deriveChildAccount(
+  const { address } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
@@ -102,9 +98,8 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     ? args.daoManifest
     : `Bitcoin DeFAI ${args.tokenSymbol} ${args.tokenName}`;
 
-  // Step 1 - generate dao-related contracts
+  // Step 1 - generate dao contracts
 
-  // generate dao contracts
   const daoContracts = contractGenerator.generateContracts(args);
   generatedContracts.push(...Object.values(daoContracts));
 
@@ -122,11 +117,17 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     description: manifest,
     tweetOrigin: args.tweetOrigin,
   };
-  const { token, dex, pool } = await getFaktoryContracts(requestBody);
+  const { prelaunch, token, dex, pool } = await getFaktoryContracts(
+    requestBody
+  );
 
   // update contracts already in generatedContracts with source and hash
   generatedContracts.forEach((contract) => {
     switch (contract.name) {
+      case prelaunch.name:
+        contract.source = prelaunch.code;
+        contract.hash = prelaunch.hash;
+        break;
       case token.name:
         contract.hash = token.hash;
         contract.source = token.code;
@@ -155,54 +156,13 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     });
   }
 
-  // Step 4 - deploy contracts
-
-  //console.log(`Deploying ${generatedContracts.length} contracts...`);
-  //console.log(`- address: ${address}`);
-  //console.log(JSON.stringify(generatedContracts, null, 2));
-
-  // create contract deployer instance
-  const contractDeployer = new DaoContractDeployer(
-    CONFIG.NETWORK,
-    address,
-    key
-  );
-  // deploy each contract
-  const deployedContracts = await contractDeployer.deployContracts(
-    generatedContracts
-  );
-
-  // Step 4 - return results
-
-  // for each deployed contract, collect name where success = false
-  const failedContracts = deployedContracts
-    .filter((contract) => !contract.success)
-    .map((contract) => contract.name);
-  // for each deployed contract, collect name where success = true
-  const successfulContracts = deployedContracts
-    .filter((contract) => contract.success)
-    .map((contract) => contract.name);
-
-  /*
-  console.log(
-    `Successfully deployed ${
-      successfulContracts.length
-    } contracts: ${successfulContracts.join(", ")}`
-  );
-
-  if (failedContracts.length) {
-    console.error(
-      `Failed to deploy ${
-        failedContracts.length
-      } contracts: ${failedContracts.join(", ")}`
-    );
-  }
-  */
+  // Step 4 - return generated contracts
 
   return {
     success: true,
-    message: "Contracts generated and deployed successfully",
-    data: deployedContracts.map((contract) => ({
+    message: "Contracts generated successfully",
+    // limit .code per contract to set chars for display / context size
+    data: generatedContracts.map((contract) => ({
       ...contract,
       source: contract.source.substring(0, 250),
     })),

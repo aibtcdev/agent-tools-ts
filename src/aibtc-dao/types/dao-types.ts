@@ -18,20 +18,6 @@ export type ExpectedContractGeneratorArgs = {
   generateFiles?: boolean;
 };
 
-// used for one-off contract deployments
-export type SingleContract = {
-  name: string;
-  source: string;
-  hash?: string;
-  clarityVersion?: ClarityVersion;
-};
-
-export type DeployedSingleContract = SingleContract & {
-  txId: string;
-  contractAddress: string;
-  sender: string;
-};
-
 //////////////////////////////
 // KNOWN ADDRESSES
 //////////////////////////////
@@ -343,7 +329,7 @@ const CONTRACT_SUBCATEGORIES = {
     "BITFLOW_POOL",
     "BITFOW_SIP010",
   ] as const,
-  TOKEN: ["DAO", "DEX", "POOL"] as const,
+  TOKEN: ["DAO", "DEX", "POOL", "PRELAUNCH"] as const,
 } as const;
 
 // helper type that infers subcategory keys per category
