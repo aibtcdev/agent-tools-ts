@@ -784,9 +784,30 @@ function verifyFaktoryContracts(
 // AIBTC CORE
 //////////////////////////////
 
+export type aibtcCoreRequestBody = {
+  name: string;
+  mission: string;
+  descripton: string;
+  extensions: DeployedContractRegistryEntry[];
+  token: {
+    name: string;
+    symbol: string;
+    decimals: number;
+    description: string;
+    max_supply: number;
+    uri: string;
+    tx_id: string;
+    contract_principal: string;
+    image_url: string;
+    x_url?: string;
+    telegram_url?: string;
+    website_url?: string;
+  };
+};
+
 export async function postToAibtcCore(
   network: StacksNetworkName,
-  deployedContracts: DeployedContractRegistryEntry[]
+  infoToPost: aibtcCoreRequestBody
 ) {
   const url = getAibtcCoreApiUrl(network);
   const response = await fetch(url, {

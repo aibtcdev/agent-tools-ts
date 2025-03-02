@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
 import {
+  aibtcCoreRequestBody,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
@@ -15,6 +16,7 @@ import {
 import {
   DeployedContractRegistryEntry,
   GeneratedContractRegistryEntry,
+  getContractName,
 } from "./services/dao-contract-registry";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
 import { ExpectedContractGeneratorArgs } from "./types/dao-types";
@@ -181,7 +183,35 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
 
   // Step 5 - report dao details to aibtc backend
 
-  await postToAibtcCore(CONFIG.NETWORK, deployedContracts);
+  // find the token contract entry
+  const tokenContract = deployedContracts.find(
+    (contract) => contract.name === token.name
+  );
+  const tokenTxid = tokenContract ? tokenContract.txId : undefined;
+  // ensure token contract was deployed
+  if (!tokenContract || !tokenTxid) {
+    throw new Error(`Token contract / txid not found: ${token.name}`);
+  }
+
+  const aibtcCoreRequest: aibtcCoreRequestBody = {
+    name: args.daoManifest,
+    mission: args.daoManifest,
+    descripton: args.daoManifest,
+    extensions: deployedContracts,
+    token: {
+      name: args.tokenName,
+      symbol: args.tokenSymbol,
+      decimals: 8,
+      description: args.tokenName,
+      max_supply: args.tokenMaxSupply,
+      uri: args.tokenUri,
+      tx_id: tokenTxid,
+      contract_principal: getContractName(token.name, args.tokenSymbol),
+      image_url: args.logoUrl,
+    },
+  };
+
+  await postToAibtcCore(CONFIG.NETWORK, aibtcCoreRequest);
 
   // Step 6 - return results
 
