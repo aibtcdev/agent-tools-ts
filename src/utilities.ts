@@ -18,6 +18,7 @@ import {
   validateStacksAddress,
 } from "@stacks/transactions";
 import {
+  DeployedContractRegistryEntry,
   getContractName,
   getContractsBySubcategory,
 } from "./aibtc-dao/services/dao-contract-registry";
@@ -94,6 +95,7 @@ export interface AppConfig {
   HIRO_API_KEY: string;
   STXCITY_API_HOST: string;
   AIBTC_FAKTORY_API_KEY: string;
+  AIBTC_CORE_API_KEY: string;
 }
 
 // define default values for app config
@@ -104,6 +106,7 @@ const DEFAULT_CONFIG: AppConfig = {
   HIRO_API_KEY: "",
   STXCITY_API_HOST: "https://stx.city",
   AIBTC_FAKTORY_API_KEY: "",
+  AIBTC_CORE_API_KEY: "",
 };
 
 // load configuration from environment variables
@@ -118,6 +121,8 @@ function loadConfig(): AppConfig {
       process.env.STXCITY_API_HOST || DEFAULT_CONFIG.STXCITY_API_HOST,
     AIBTC_FAKTORY_API_KEY:
       process.env.AIBTC_FAKTORY_API_KEY || DEFAULT_CONFIG.AIBTC_FAKTORY_API_KEY,
+    AIBTC_CORE_API_KEY:
+      process.env.AIBTC_CORE_API_KEY || DEFAULT_CONFIG.AIBTC_CORE_API_KEY,
   };
 }
 
@@ -199,6 +204,17 @@ export function getFaktoryApiUrl(network: string) {
       return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
     default:
       return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
+  }
+}
+
+export function getAibtcCoreApiUrl(network: StacksNetworkName) {
+  switch (network) {
+    case "mainnet":
+      return "https://core.aibtc.dev/webhooks/daos";
+    case "testnet":
+      return "https://core-staging.aibtc.dev/webhooks/daos";
+    default:
+      return "https://core-staging.aibtc.dev/webhooks/daos";
   }
 }
 
@@ -762,4 +778,30 @@ function verifyFaktoryContracts(
   }
   // passes all verification checks
   return true;
+}
+
+//////////////////////////////
+// AIBTC CORE
+//////////////////////////////
+
+export async function postToAibtcCore(
+  network: StacksNetworkName,
+  deployedContracts: DeployedContractRegistryEntry[]
+) {
+  const url = getAibtcCoreApiUrl(network);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${CONFIG.AIBTC_CORE_API_KEY}`,
+    },
+    body: JSON.stringify(deployedContracts),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `Failed to post to AIBTC Core: ${response.status} ${response.statusText}`
+    );
+  }
+  const data = await response.json();
+  return data;
 }

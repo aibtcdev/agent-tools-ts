@@ -8,6 +8,7 @@ import {
   deriveChildAccount,
   FaktoryRequestBody,
   getFaktoryContracts,
+  postToAibtcCore,
   sendToLLM,
   ToolResponse,
 } from "../utilities";
@@ -178,7 +179,11 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     generatedContracts
   );
 
-  // Step 4 - return results
+  // Step 5 - report dao details to aibtc backend
+
+  await postToAibtcCore(CONFIG.NETWORK, deployedContracts);
+
+  // Step 6 - return results
 
   // for each deployed contract, collect name where success = false
   const failedContracts = deployedContracts
