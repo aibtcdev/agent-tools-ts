@@ -11,9 +11,9 @@ This package provides utilities for wallet management, smart contract interactio
 ### Installation
 
 ```
-npm install @aibtcdev/agent-tools
+npm install @aibtc/agent-tools
 or
-yarn install @aibtcdev/agent-tools
+yarn install @aibtc/agent-tools
 ```
 
 ### Configuration
