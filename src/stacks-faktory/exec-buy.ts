@@ -1,101 +1,106 @@
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 import {
   makeContractCall,
-  broadcastTransaction,
   SignedContractCallOptions,
-  ClarityValue,
 } from "@stacks/transactions";
 import {
+  broadcastTx,
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  sendToLLM,
 } from "../utilities";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const stxAmount = Number(process.argv[2]); // STX amount in normal units
-const dexContract = process.argv[3];
-const slippage = Number(process.argv[4]) || 15; // default 15%
-
-//console.log("STX Amount:", stxAmount);
-//console.log("DEX Contract:", dexContract);
-//console.log("Slippage (%):", slippage);
-
-if (!stxAmount || !dexContract) {
-  console.error("Please provide all required parameters:");
-  console.error(
-    "ts-node src/faktory/exec-buy.ts <stx_amount> <dex_contract> [slippage]"
-  );
-  process.exit(1);
-}
 
 const faktoryConfig = {
   network: CONFIG.NETWORK as "mainnet" | "testnet",
   hiroApiKey: CONFIG.HIRO_API_KEY,
 };
 
-(async () => {
-  try {
-    const { address, key } = await deriveChildAccount(
-      CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
+const usage =
+  "Usage: bun run exec-buy.ts <stx_amount> <dex_contract> [slippage]";
+const usageExample =
+  "Example: bun run exec-buy.ts 100 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-dex 15";
 
-    const sdk = new FaktorySDK(faktoryConfig);
-    const networkObj = getNetwork(CONFIG.NETWORK);
-    const nonce = await getNextNonce(CONFIG.NETWORK, address);
+interface ExpectedArgs {
+  stxAmount: number; // STX amount in normal units
+  dexContract: string; // DEX contract address
+  slippage: number; // integer, e.g. 15 = 15% (default)
+}
 
-    // Get quote first for preview
-    //console.log("\nGetting quote...");
-    const inQuote = await sdk.getIn(dexContract, address, stxAmount); // No need to multiply by 1000000
-    //console.log("Quote:", JSON.stringify(inQuote, null, 2));
-
-    // Get buy parameters
-    //console.log("\nGetting buy parameters...");
-    const buyParams = await sdk.getBuyParams({
-      dexContract,
-      stx: stxAmount, // Changed from ustx, no need to multiply
-      senderAddress: address,
-      slippage,
-    });
-
-    // Add required properties for signing
-    const txOptions: SignedContractCallOptions = {
-      ...buyParams,
-      senderKey: key,
-      validateWithAbi: true,
-      fee: 30000,
-      nonce,
-      functionArgs: buyParams.functionArgs as ClarityValue[],
-    };
-
-    // Create and broadcast transaction
-    //console.log("\nCreating and broadcasting transaction...");
-    const tx = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTransaction(tx, networkObj);
-
-    const result = {
-      success: broadcastResponse.txid ? true : false,
-      message: "Transaction broadcast successfully!",
-      txid: broadcastResponse.txid,
-    };
-
-    console.log(JSON.stringify(result, null, 2));
-    /*
-    console.log("\nTransaction broadcast successfully!");
-    console.log("Transaction ID:", broadcastResponse.txid);
-    console.log(
-      "View transaction: https://explorer.hiro.so/txid/" +
-        broadcastResponse.txid +
-        "?chain=" +
-        CONFIG.NETWORK
-    );
-    */
-  } catch (error) {
-    console.error("Error executing buy transaction:", error);
-    process.exit(1);
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [stxAmountStr, dexContract, slippageStr] = process.argv.slice(2);
+  const stxAmount = parseInt(stxAmountStr);
+  const slippage = parseInt(slippageStr) || 15;
+  if (!stxAmount || !dexContract) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
-})();
+  // verify contract addresses extracted from arguments
+  const [dexContractAddress, dexContractName] = dexContract.split(".");
+  if (!dexContractAddress || !dexContractName) {
+    const errorMessage = [
+      `Invalid contract address: ${dexContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // return validated arguments
+  return {
+    stxAmount,
+    dexContract,
+    slippage,
+  };
+}
+
+async function main() {
+  // validate and store provided args
+  const args = validateArgs();
+  const [dexContractAddress, dexContractName] = args.dexContract.split(".");
+  // setup network and wallet info
+  const networkObj = getNetwork(CONFIG.NETWORK);
+  const { address, key } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  const sdk = new FaktorySDK(faktoryConfig);
+  // get quote first for preview
+  // console.log("Getting quote...");
+  // const inQuote = await sdk.getIn(args.dexContract, address, args.stxAmount);
+  // console.log(JSON.stringify(inQuote, null, 2));
+  // get buy parameters
+  // console.log("Getting buy parameters...");
+  const buyParams = await sdk.getBuyParams({
+    dexContract: args.dexContract,
+    stx: args.stxAmount,
+    senderAddress: address,
+    slippage: args.slippage,
+  });
+  // add required properties for signing
+  const txOptions: SignedContractCallOptions = {
+    ...buyParams,
+    network: networkObj,
+    nonce: nextPossibleNonce,
+    senderKey: key,
+  };
+  // broadcast transaction and return response
+  const transaction = await makeContractCall(txOptions);
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
+}
+
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });
