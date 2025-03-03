@@ -1,5 +1,5 @@
+import * as crypto from "crypto";
 import * as path from "path";
-import { SHA256 } from "bun";
 import { Eta } from "eta";
 import { StacksNetworkName } from "@stacks/network";
 import {
@@ -103,9 +103,7 @@ export class DaoCoreProposalGenerator {
     const source = this.eta.render(coreProposal.templatePath, templateVars);
 
     // hash the contract
-    const sha256 = new SHA256();
-    sha256.update(source);
-    const hash = sha256.digest("hex");
+    const hash = crypto.createHash("sha256").update(source).digest("hex");
 
     // create the generated contract entry
     const generatedCoreProposal: GeneratedCoreProposalRegistryEntry = {
