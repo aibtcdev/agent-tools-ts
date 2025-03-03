@@ -2,18 +2,21 @@ import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
 import {
+  aibtcCoreRequestBody,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
   FaktoryRequestBody,
   getFaktoryContracts,
+  postToAibtcCore,
   sendToLLM,
   ToolResponse,
 } from "../utilities";
 import {
   DeployedContractRegistryEntry,
   GeneratedContractRegistryEntry,
+  getContractName,
 } from "./services/dao-contract-registry";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
 import { ExpectedContractGeneratorArgs } from "./types/dao-types";
@@ -122,11 +125,17 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     description: manifest,
     tweetOrigin: args.tweetOrigin,
   };
-  const { token, dex, pool } = await getFaktoryContracts(requestBody);
+  const { prelaunch, token, dex, pool } = await getFaktoryContracts(
+    requestBody
+  );
 
   // update contracts already in generatedContracts with source and hash
   generatedContracts.forEach((contract) => {
     switch (contract.name) {
+      case prelaunch.name:
+        contract.source = prelaunch.code;
+        contract.hash = prelaunch.hash;
+        break;
       case token.name:
         contract.hash = token.hash;
         contract.source = token.code;
@@ -172,7 +181,44 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     generatedContracts
   );
 
-  // Step 4 - return results
+  // Step 5 - report dao details to aibtc backend
+
+  // find the token contract entry
+  const tokenContract = deployedContracts.find(
+    (contract) => contract.name === token.name
+  );
+  const tokenTxid = tokenContract ? tokenContract.txId : undefined;
+
+  // ensure token contract info is available
+  if (!tokenContract || !tokenTxid) {
+    throw new Error(`Token contract / txid not found: ${token.name}`);
+  }
+
+  // setup request body for aibtc core
+  const aibtcCoreRequest: aibtcCoreRequestBody = {
+    name: args.tokenSymbol,
+    mission: args.daoManifest,
+    descripton:
+      "TBD - need to pass to deploy-dao script, could be the same for NAME",
+    extensions: deployedContracts,
+    token: {
+      name: args.tokenName,
+      symbol: args.tokenSymbol,
+      decimals: 6,
+      description: args.tokenName,
+      max_supply: args.tokenMaxSupply.toString(),
+      uri: args.tokenUri,
+      tx_id: tokenTxid,
+      contract_principal: `${address}.${token.name}`,
+      image_url: args.logoUrl,
+    },
+  };
+
+  console.log(JSON.stringify(aibtcCoreRequest, null, 2));
+
+  await postToAibtcCore(CONFIG.NETWORK, aibtcCoreRequest);
+
+  // Step 6 - return results
 
   // for each deployed contract, collect name where success = false
   const failedContracts = deployedContracts

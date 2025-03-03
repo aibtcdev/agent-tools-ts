@@ -1,7 +1,10 @@
 {
-  "name": "@aibtcdev/tools",
-  "version": "0.0.11",
-  "private": true,
+  "name": "@aibtc/agent-tools",
+  "version": "0.0.1",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,7 +23,7 @@
     "@bitflowlabs/core-sdk": "^1.1.0",
     "@faktoryfun/core-sdk": "^0.2.18",
     "@jingcash/core-sdk": "^0.1.10",
-    "@stacks/blockchain-api-client": "^8.6.0",
+    "@stacks/blockchain-api-client": "^8.7.0",
     "@stacks/bns": "^6.17.0",
     "@stacks/connect": "^7.10.1",
     "@stacks/stacking": "^6.17.0",
@@ -28,7 +31,7 @@
     "@stacks/transactions": "^6.17.0",
     "@stacks/wallet-sdk": "^6.17.0",
     "bitflow-sdk": "^1.6.1",
-    "dexterity-sdk": "0.8.15",
+    "dexterity-sdk": "0.8.17",
     "dotenv": "^16.4.7",
     "chalk": "^5.4.1",
     "commander": "^11.1.0",
@@ -38,16 +41,17 @@
     "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.2",
-    "@types/node": "^22.13.1",
-    "bun-types": "^1.2.2",
-    "tsup": "^8.3.6",
-    "typescript": "^5.7.3"
+    "@types/bun": "^1.2.4",
+    "@types/node": "^22.13.8",
+    "bun-types": "^1.2.4",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
   },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
+    "test": "echo \"No tests specified - skipping tests\" && exit 0",
     "version:patch": "npm version patch -m \"chore: release v%s\"",
     "version:minor": "npm version minor -m \"chore: release v%s\"",
     "version:major": "npm version major -m \"chore: release v%s\"",

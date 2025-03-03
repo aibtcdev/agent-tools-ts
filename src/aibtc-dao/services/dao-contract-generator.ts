@@ -1,5 +1,5 @@
+import * as crypto from "crypto";
 import * as path from "path";
-import { SHA256 } from "bun";
 import { Eta } from "eta";
 import { StacksNetworkName } from "@stacks/network";
 import {
@@ -59,12 +59,19 @@ export class DaoContractGenerator {
     );
 
     sortedContracts.forEach((contract) => {
-      //console.log("===================================");
-      //console.log(`Generating contract: ${contract.name}`);
-      // Build contract name by replacing aibtc symbol
+      // build contract name by replacing aibtc symbol
       const contractName = getContractName(contract.name, args.tokenSymbol);
-
-      // Collect all traits into template variables
+      // these are generated through Faktory API URLs instead of templates
+      if (contract.type === "TOKEN") {
+        const faktoryContract: GeneratedContractRegistryEntry = {
+          name: contractName,
+          type: contract.type,
+          subtype: contract.subtype,
+          source: "",
+        } as GeneratedContractRegistryEntry; // make TS happy
+        generatedContracts[contractName] = faktoryContract;
+      }
+      // collect all traits into template variables
       const traitVars = Object.fromEntries(
         (contract.requiredTraits || []).map(({ ref, key }) => {
           // Ensure we have a valid trait reference
@@ -168,9 +175,7 @@ export class DaoContractGenerator {
       const source = this.eta.render(contract.templatePath, templateVars);
 
       // hash the contract
-      const sha256 = new SHA256();
-      sha256.update(source);
-      const hash = sha256.digest("hex");
+      const hash = crypto.createHash("sha256").update(source).digest("hex");
 
       // create the generated contract entry
       const generatedContract: GeneratedContractRegistryEntry = {

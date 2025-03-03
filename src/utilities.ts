@@ -18,9 +18,10 @@ import {
   validateStacksAddress,
 } from "@stacks/transactions";
 import {
+  DeployedContractRegistryEntry,
   getContractName,
   getContractsBySubcategory,
-} from "./stacks-contracts/services/dao-contract-registry";
+} from "./aibtc-dao/services/dao-contract-registry";
 
 //////////////////////////////
 // GENERAL HELPERS
@@ -93,6 +94,8 @@ export interface AppConfig {
   ACCOUNT_INDEX: number;
   HIRO_API_KEY: string;
   STXCITY_API_HOST: string;
+  AIBTC_DEFAULT_FEE: number;
+  AIBTC_CORE_API_KEY: string;
   AIBTC_FAKTORY_API_KEY: string;
 }
 
@@ -103,6 +106,8 @@ const DEFAULT_CONFIG: AppConfig = {
   ACCOUNT_INDEX: 0,
   HIRO_API_KEY: "",
   STXCITY_API_HOST: "https://stx.city",
+  AIBTC_DEFAULT_FEE: 100_000, // 0.1 STX
+  AIBTC_CORE_API_KEY: "",
   AIBTC_FAKTORY_API_KEY: "",
 };
 
@@ -116,6 +121,10 @@ function loadConfig(): AppConfig {
     HIRO_API_KEY: process.env.HIRO_API_KEY || DEFAULT_CONFIG.HIRO_API_KEY,
     STXCITY_API_HOST:
       process.env.STXCITY_API_HOST || DEFAULT_CONFIG.STXCITY_API_HOST,
+    AIBTC_DEFAULT_FEE:
+      Number(process.env.AIBTC_DEFAULT_FEE) || DEFAULT_CONFIG.AIBTC_DEFAULT_FEE,
+    AIBTC_CORE_API_KEY:
+      process.env.AIBTC_CORE_API_KEY || DEFAULT_CONFIG.AIBTC_CORE_API_KEY,
     AIBTC_FAKTORY_API_KEY:
       process.env.AIBTC_FAKTORY_API_KEY || DEFAULT_CONFIG.AIBTC_FAKTORY_API_KEY,
   };
@@ -199,6 +208,27 @@ export function getFaktoryApiUrl(network: string) {
       return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
     default:
       return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
+  }
+}
+
+// https://explorer.hiro.so/txid/STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token?chain=testnet
+const faktorySbtcContract =
+  "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token";
+export function getFaktorySbtcContract(network: string) {
+  if (network !== "testnet") {
+    throw new Error("Faktory sBTC contract is only supported on testnet.");
+  }
+  return faktorySbtcContract.split(".");
+}
+
+export function getAibtcCoreApiUrl(network: string) {
+  switch (network) {
+    case "mainnet":
+      return "https://core.aibtc.dev/webhooks/dao";
+    case "testnet":
+      return "https://core-staging.aibtc.dev/webhooks/dao";
+    default:
+      return "https://core-staging.aibtc.dev/webhooks/dao";
   }
 }
 
@@ -467,6 +497,7 @@ export async function getStxCityHash(data: string): Promise<string> {
 //////////////////////////////
 
 export type FaktoryGeneratedContracts = {
+  prelaunch: FaktoryContractInfo;
   token: FaktoryContractInfo;
   dex: FaktoryContractInfo;
   pool: FaktoryContractInfo;
@@ -478,6 +509,8 @@ export type FaktoryRequestBody = {
   supply: number;
   creatorAddress: string;
   originAddress: string;
+  description: string;
+  tweetOrigin: string;
   uri: string;
   logoUrl?: string;
   mediaUrl?: string;
@@ -485,8 +518,6 @@ export type FaktoryRequestBody = {
   website?: string;
   telegram?: string;
   discord?: string;
-  description?: string;
-  tweetOrigin?: string;
 };
 
 type FaktoryResponse<T> = {
@@ -495,6 +526,10 @@ type FaktoryResponse<T> = {
   data: T & {
     dbRecord: FaktoryDbRecord[];
   };
+};
+
+type FaktoryPrelaunch = {
+  contract: FaktoryContractInfo;
 };
 
 type FaktoryTokenAndDex = {
@@ -520,6 +555,7 @@ type FaktoryDbRecord = {
   name: string;
   symbol: string;
   description: string;
+  preContract: string;
   tokenContract: string;
   dexContract: string;
   txId: string | null;
@@ -548,6 +584,7 @@ type FaktoryDbRecord = {
   creatorAddress: string;
   deployedAt: string;
   tokenHash: string;
+  preVerified: number;
   tokenVerified: number;
   dexHash: string;
   dexVerified: number;
@@ -558,22 +595,46 @@ type FaktoryDbRecord = {
   tradingHookUuid: string | null;
   lastBuyHash: string | null;
   daoToken: boolean;
+  tweetOrigin: string;
+  denomination: string;
 };
 
 export async function getFaktoryContracts(
   faktoryRequestBody: FaktoryRequestBody
 ): Promise<FaktoryGeneratedContracts> {
+  // setup URLs for Faktory API
+  const faktoryPrelaunchUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/prelaunch`;
   const faktoryUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate`;
   const faktoryPoolUrl = `${getFaktoryApiUrl(CONFIG.NETWORK)}/generate-pool`;
-  //console.log(`Faktory URL: ${faktoryUrl.toString()}`);
-  //console.log(`Faktory Pool URL: ${faktoryPoolUrl.toString()}`);
-  //console.log(`Faktory request body:`);
-  //console.log(JSON.stringify(faktoryRequestBody, null, 2));
 
-  const symbol = faktoryRequestBody.symbol;
-  const creatorAddress = faktoryRequestBody.creatorAddress;
-
-  const faktoryResponse = await fetch(faktoryUrl.toString(), {
+  // get prelaunch contract
+  const prelaunchResponse = await fetch(faktoryPrelaunchUrl.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": CONFIG.AIBTC_FAKTORY_API_KEY,
+    },
+    body: JSON.stringify(faktoryRequestBody),
+  });
+  if (!prelaunchResponse.ok) {
+    throw new Error(
+      `Failed to get prelaunch contract from Faktory, url: ${faktoryPrelaunchUrl}, response: ${prelaunchResponse.status} ${prelaunchResponse.statusText}`
+    );
+  }
+  //console.log(`Faktory prelaunch response status: ${prelaunchResponse.status}`);
+  const prelaunchResult =
+    (await prelaunchResponse.json()) as FaktoryResponse<FaktoryPrelaunch>;
+  //console.log("Faktory prelaunch result:");
+  //console.log(JSON.stringify(prelaunchResult, null, 2));
+  if (!prelaunchResult.success) {
+    throw new Error(
+      `Failed to get prelaunch contract from Faktory, url: ${faktoryPrelaunchUrl}, error: ${
+        prelaunchResult.error ? prelaunchResult.error : "unknown error"
+      }`
+    );
+  }
+  // get token and dex contract
+  const tokenDexResponse = await fetch(faktoryUrl.toString(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -582,20 +643,28 @@ export async function getFaktoryContracts(
     body: JSON.stringify(faktoryRequestBody),
   });
   //console.log(`Faktory response status: ${faktoryResponse.status}`);
-  if (!faktoryResponse.ok) {
-    throw new Error(`Failed to get token and dex from Faktory`);
+  if (!tokenDexResponse.ok) {
+    throw new Error(
+      `Failed to get token and dex from Faktory, url: ${faktoryUrl}, response: ${tokenDexResponse.status} ${tokenDexResponse.statusText}`
+    );
   }
   const result =
-    (await faktoryResponse.json()) as FaktoryResponse<FaktoryTokenAndDex>;
+    (await tokenDexResponse.json()) as FaktoryResponse<FaktoryTokenAndDex>;
   //console.log("Faktory result:");
   //console.log(JSON.stringify(result, null, 2));
   if (!result.success) {
-    throw new Error(`Failed to get token and dex contract from Faktory`);
+    throw new Error(
+      `Failed to get token and dex contract from Faktory, error: ${
+        result.error ? result.error : "unknown error"
+      }`
+    );
   }
-
   const tokenContract = result.data.contracts.token.contract;
   const dexContract = result.data.contracts.dex.contract;
-
+  // build info for pool request
+  const symbol = faktoryRequestBody.symbol;
+  const creatorAddress = faktoryRequestBody.creatorAddress;
+  // get pool contract
   const poolResponse = await fetch(faktoryPoolUrl.toString(), {
     method: "POST",
     headers: {
@@ -620,6 +689,7 @@ export async function getFaktoryContracts(
   //console.log(JSON.stringify(poolResult, null, 2));
 
   const faktoryContracts: FaktoryGeneratedContracts = {
+    prelaunch: prelaunchResult.data.contract,
     token: result.data.contracts.token,
     dex: result.data.contracts.dex,
     pool: poolResult.data.pool,
@@ -637,7 +707,12 @@ function verifyFaktoryContracts(
   contracts: FaktoryGeneratedContracts,
   requestBody: FaktoryRequestBody
 ) {
-  if (!contracts.token || !contracts.dex || !contracts.pool) {
+  if (
+    !contracts.prelaunch ||
+    !contracts.token ||
+    !contracts.dex ||
+    !contracts.pool
+  ) {
     console.log("Missing contracts to verify");
     return false;
   }
@@ -646,6 +721,7 @@ function verifyFaktoryContracts(
     return false;
   }
   // get contract info from registry for each
+  const prelaunchContract = getContractsBySubcategory("TOKEN", "PRELAUNCH")[0];
   const tokenContract = getContractsBySubcategory("TOKEN", "DAO")[0];
   const dexContract = getContractsBySubcategory("TOKEN", "DEX")[0];
   const poolContract = getContractsBySubcategory("TOKEN", "POOL")[0];
@@ -655,6 +731,10 @@ function verifyFaktoryContracts(
   )[0];
 
   // get contract names using token symbol
+  const prelaunchContractName = getContractName(
+    prelaunchContract.name,
+    requestBody.symbol
+  );
   const tokenContractName = getContractName(
     tokenContract.name,
     requestBody.symbol
@@ -672,6 +752,7 @@ function verifyFaktoryContracts(
   // get contract names from generator
 
   if (
+    contracts.prelaunch.name !== prelaunchContractName ||
     contracts.token.name !== tokenContractName ||
     contracts.dex.name !== dexContractName ||
     contracts.pool.name !== poolContractName
@@ -701,6 +782,7 @@ function verifyFaktoryContracts(
   }
   // check creator address is used in each of the contracts
   if (
+    // !contracts.prelaunch.code.includes(requestBody.creatorAddress) ||
     !contracts.token.code.includes(requestBody.creatorAddress) ||
     !contracts.dex.code.includes(requestBody.creatorAddress) ||
     !contracts.pool.code.includes(requestBody.creatorAddress)
@@ -710,4 +792,51 @@ function verifyFaktoryContracts(
   }
   // passes all verification checks
   return true;
+}
+
+//////////////////////////////
+// AIBTC CORE
+//////////////////////////////
+
+export type aibtcCoreRequestBody = {
+  name: string;
+  mission: string;
+  descripton: string;
+  extensions: DeployedContractRegistryEntry[];
+  token: {
+    name: string;
+    symbol: string;
+    decimals: number;
+    description: string;
+    max_supply: string;
+    uri: string;
+    tx_id: string;
+    contract_principal: string;
+    image_url: string;
+    x_url?: string;
+    telegram_url?: string;
+    website_url?: string;
+  };
+};
+
+export async function postToAibtcCore(
+  network: StacksNetworkName,
+  infoToPost: aibtcCoreRequestBody
+) {
+  const url = getAibtcCoreApiUrl(network);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${CONFIG.AIBTC_CORE_API_KEY}`,
+    },
+    body: JSON.stringify(infoToPost),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `Failed to post to AIBTC Core: ${response.status} ${response.statusText}`
+    );
+  }
+  const data = await response.json();
+  return data;
 }

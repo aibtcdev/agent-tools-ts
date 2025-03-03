@@ -1,5 +1,6 @@
 # Source
 src/
+generated/
 tests/
 
 # Config files
