@@ -1,6 +1,6 @@
 # Faktory Agent Tools
 
-A collection of command-line tools for interacting with Faktory tokens and DEX contracts. These tools provide functionality for viewing DAO tokens, getting price quotes, and executing trades.
+A collection of command-line tools for interacting with Faktory tokens and DEX contracts. These tools provide functionality for viewing DAO tokens, getting price quotes, and executing trades for both STX and BTC denominated tokens.
 
 ## Installation
 
@@ -40,31 +40,31 @@ bun run src/stacks-faktory/get-dao-tokens.ts 1 20 "bitcoin"
 
 ### 2. Get Buy Quote
 
-Get a price quote and transaction parameters for buying tokens.
+Get a price quote and transaction parameters for buying tokens. Works with both STX and BTC denominated tokens.
 
 ```bash
-bun run src/stacks-faktory/get-buy-quote.ts <stx_amount> <dex_contract> [slippage]
+bun run src/stacks-faktory/get-buy-quote.ts <amount> <dex_contract> [slippage]
 ```
 
 Parameters:
 
-- `stx_amount`: Amount of STX to spend (in STX, not microSTX)
+- `amount`: Amount to spend (in STX or BTC units depending on token denomination)
 - `dex_contract`: DEX contract identifier
 - `slippage`: Maximum allowed slippage in percentage (optional, default: 15%)
 
 Example:
 
 ```bash
-# Buy quote for external DEX (TCORN)
+# Buy quote for STX-denominated token (TCORN)
 bun run src/stacks-faktory/get-buy-quote.ts 100 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
 
-# Buy quote for internal DEX (BAI)
-bun run src/stacks-faktory/get-buy-quote.ts 100 "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex" 15
+# Buy quote for BTC-denominated token
+bun run src/stacks-faktory/get-buy-quote.ts 0.002 "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.okbtc4-faktory-dex" 15
 ```
 
 ### 3. Get Sell Quote
 
-Get a price quote and transaction parameters for selling tokens.
+Get a price quote and transaction parameters for selling tokens. Works with both STX and BTC denominated tokens.
 
 ```bash
 bun run src/stacks-faktory/get-sell-quote.ts <token_amount> <dex_contract> [slippage]
@@ -79,40 +79,40 @@ Parameters:
 Example:
 
 ```bash
-# Sell quote for external DEX (TCORN)
+# Sell quote for STX-denominated token (TCORN)
 bun run src/stacks-faktory/get-sell-quote.ts 100000 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
 
-# Sell quote for internal DEX (BAI)
-bun run src/stacks-faktory/get-sell-quote.ts 100000 "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex" 15
+# Sell quote for BTC-denominated token
+bun run src/stacks-faktory/get-sell-quote.ts 100000 "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.okbtc4-faktory-dex" 15
 ```
 
 ### 4. Execute Buy
 
-Execute a buy transaction for tokens.
+Execute a buy transaction for tokens. Works with both STX and BTC denominated tokens.
 
 ```bash
-bun run src/stacks-faktory/exec-buy.ts <stx_amount> <dex_contract> [slippage]
+bun run src/stacks-faktory/exec-buy.ts <amount> <dex_contract> [slippage]
 ```
 
 Parameters:
 
-- `stx_amount`: Amount of STX to spend (in STX, not microSTX)
+- `amount`: Amount to spend (in STX or BTC units depending on token denomination)
 - `dex_contract`: DEX contract identifier
 - `slippage`: Maximum allowed slippage in percentage (optional, default: 15%)
 
 Example:
 
 ```bash
-# Buy from external DEX (TCORN)
+# Buy STX-denominated token (TCORN)
 bun run src/stacks-faktory/exec-buy.ts 1 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
 
-# Buy from internal DEX (BAI)
-bun run src/stacks-faktory/exec-buy.ts 1 "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex" 15
+# Buy BTC-denominated token
+bun run src/stacks-faktory/exec-buy.ts 0.002 "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.okbtc4-faktory-dex" 15
 ```
 
 ### 5. Execute Sell
 
-Execute a sell transaction for tokens.
+Execute a sell transaction for tokens. Works with both STX and BTC denominated tokens.
 
 ```bash
 bun run src/stacks-faktory/exec-sell.ts <token_amount> <dex_contract> [slippage]
@@ -127,11 +127,11 @@ Parameters:
 Example:
 
 ```bash
-# Sell to external DEX (TCORN)
+# Sell STX-denominated token (TCORN)
 bun run src/stacks-faktory/exec-sell.ts 1000 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex" 15
 
-# Sell to internal DEX (BAI)
-bun run src/stacks-faktory/exec-sell.ts 1000 "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex" 15
+# Sell BTC-denominated token
+bun run src/stacks-faktory/exec-sell.ts 1000 "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.okbtc4-faktory-dex" 15
 ```
 
 ### 6. Get a single Token
@@ -152,8 +152,8 @@ Example:
 # Get token info (TCORN)
 bun run src/stacks-faktory/get-token.ts "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex"
 
-# Get token info (BAI)
-bun run src/stacks-faktory/get-token.ts "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex"
+# Get BTC-denominated token info
+bun run src/stacks-faktory/get-token.ts "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.okbtc4-faktory-dex"
 ```
 
 ### 7. Get Token Trades
@@ -182,7 +182,7 @@ The tool will display:
 - Aggregate statistics for these trades:
   - Buy count
   - Sell count
-  - Total trading volume in STX
+  - Total trading volume in STX/BTC
   - Average price
   - Total tokens traded
 
@@ -196,17 +196,23 @@ Note: The token amounts displayed are automatically adjusted using the correct d
    - 5 means 5% slippage
    - 0.5 means 0.5% slippage
 
-2. **STX Amounts**: Use whole STX units (not microSTX):
+2. **Currency Amounts**: Use base units (not micro units):
 
-   - Use 100 for 100 STX
-   - Tools automatically convert to microSTX (100 \* 1,000,000)
+   - For STX-denominated tokens: Use 100 for 100 STX (tools convert to 100 × 10^6 microSTX)
+   - For BTC-denominated tokens: Use 0.002 for 0.002 BTC (tools convert to 0.002 × 10^8 satoshis)
 
-3. **DEX Contracts**: Always use the full DEX contract identifier:
+3. **Token Denomination**: The SDK automatically detects whether a token is STX or BTC denominated:
 
-   - External DEX example: "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex"
-   - Internal DEX example: "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.bai-faktory-dex"
+   - The input amount is interpreted based on the token's denomination
+   - For BTC-denominated tokens, use smaller amounts (e.g., 0.002 BTC = 200,000 satoshis)
+   - For STX-denominated tokens, use standard STX amounts (e.g., 100 STX = 100,000,000 microSTX)
 
-4. **Environment**: Required .env file settings:
+4. **DEX Contracts**: Always use the full DEX contract identifier:
+
+   - STX DEX example: "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMVA46.tcorn-stxcity-dex"
+   - BTC DEX example: "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.okbtc4-faktory-dex"
+
+5. **Environment**: Required .env file settings:
    ```
    NETWORK=mainnet
    MNEMONIC=your_mnemonic_here

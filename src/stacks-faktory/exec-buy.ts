@@ -24,7 +24,7 @@ const usageExample =
   "Example: bun run exec-buy.ts 100 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-dex 15";
 
 interface ExpectedArgs {
-  stxAmount: number; // STX amount in normal units
+  stxAmount: number; // STX or BTC amount in normal units
   dexContract: string; // DEX contract address
   slippage: number; // integer, e.g. 15 = 15% (default)
 }
