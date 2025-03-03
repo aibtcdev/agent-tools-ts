@@ -1,7 +1,7 @@
 {
-  "name": "@aibtcdev/tools",
-  "version": "0.0.11",
-  "private": true,
+  "name": "@aibtcdev/agent-tools",
+  "version": "0.0.1",
+  "private": false,
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
