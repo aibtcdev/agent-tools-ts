@@ -211,6 +211,16 @@ export function getFaktoryApiUrl(network: string) {
   }
 }
 
+// https://explorer.hiro.so/txid/STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token?chain=testnet
+const faktorySbtcContract =
+  "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token";
+export function getFaktorySbtcContract(network: string) {
+  if (network !== "testnet") {
+    throw new Error("Faktory sBTC contract is only supported on testnet.");
+  }
+  return faktorySbtcContract.split(".");
+}
+
 export function getAibtcCoreApiUrl(network: string) {
   switch (network) {
     case "mainnet":
