@@ -32,7 +32,7 @@ interface ExpectedArgs {
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
   const [stxAmountStr, dexContract, slippageStr] = process.argv.slice(2);
-  const stxAmount = parseInt(stxAmountStr);
+  const stxAmount = parseFloat(stxAmountStr);
   const slippage = parseInt(slippageStr) || 15;
   if (!stxAmount || !dexContract) {
     const errorMessage = [
@@ -63,7 +63,6 @@ function validateArgs(): ExpectedArgs {
 async function main() {
   // validate and store provided args
   const args = validateArgs();
-  const [dexContractAddress, dexContractName] = args.dexContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -74,7 +73,7 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   const sdk = new FaktorySDK(faktoryConfig);
   // get quote first for preview
-  // console.log("Getting quote...");
+  // console.log("Getting quote for buying tokens...");
   // const inQuote = await sdk.getIn(args.dexContract, address, args.stxAmount);
   // console.log(JSON.stringify(inQuote, null, 2));
   // get buy parameters
