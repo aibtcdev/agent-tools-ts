@@ -94,8 +94,9 @@ export interface AppConfig {
   ACCOUNT_INDEX: number;
   HIRO_API_KEY: string;
   STXCITY_API_HOST: string;
-  AIBTC_FAKTORY_API_KEY: string;
+  AIBTC_DEFAULT_FEE: number;
   AIBTC_CORE_API_KEY: string;
+  AIBTC_FAKTORY_API_KEY: string;
 }
 
 // define default values for app config
@@ -105,8 +106,9 @@ const DEFAULT_CONFIG: AppConfig = {
   ACCOUNT_INDEX: 0,
   HIRO_API_KEY: "",
   STXCITY_API_HOST: "https://stx.city",
-  AIBTC_FAKTORY_API_KEY: "",
+  AIBTC_DEFAULT_FEE: 100_000, // 0.1 STX
   AIBTC_CORE_API_KEY: "",
+  AIBTC_FAKTORY_API_KEY: "",
 };
 
 // load configuration from environment variables
@@ -119,10 +121,12 @@ function loadConfig(): AppConfig {
     HIRO_API_KEY: process.env.HIRO_API_KEY || DEFAULT_CONFIG.HIRO_API_KEY,
     STXCITY_API_HOST:
       process.env.STXCITY_API_HOST || DEFAULT_CONFIG.STXCITY_API_HOST,
-    AIBTC_FAKTORY_API_KEY:
-      process.env.AIBTC_FAKTORY_API_KEY || DEFAULT_CONFIG.AIBTC_FAKTORY_API_KEY,
+    AIBTC_DEFAULT_FEE:
+      Number(process.env.AIBTC_DEFAULT_FEE) || DEFAULT_CONFIG.AIBTC_DEFAULT_FEE,
     AIBTC_CORE_API_KEY:
       process.env.AIBTC_CORE_API_KEY || DEFAULT_CONFIG.AIBTC_CORE_API_KEY,
+    AIBTC_FAKTORY_API_KEY:
+      process.env.AIBTC_FAKTORY_API_KEY || DEFAULT_CONFIG.AIBTC_FAKTORY_API_KEY,
   };
 }
 
