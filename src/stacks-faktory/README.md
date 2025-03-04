@@ -110,6 +110,60 @@ bun run src/stacks-faktory/exec-buy.ts 1 "SP2XCME6ED8RERGR9R7YDZW7CA6G3F113Y8JMV
 bun run src/stacks-faktory/exec-buy.ts 0.002 "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.okbtc4-faktory-dex" 15
 ```
 
+### Buy Token Amount Limits
+
+The SDK incorporates a built-in safety mechanism to prevent users from accidentally deploying excess funds during token purchases.
+
+When buying tokens, the SDK automatically:
+
+1. Checks the contract's recommended remaining purchase amount (which already includes a 3% buffer for fees)
+2. Caps your purchase at 15% above this recommended amount if exceeded
+3. Proceeds with the transaction using the adjusted amount
+4. Logs a notification about the adjustment
+
+**STX Example:**
+
+```typescript
+// If a token needs only 100 STX more to graduate, but you try to buy with 1000 STX:
+const buyParams = await sdk.getBuyParams({
+  dexContract: "SP000.token-dex",
+  inAmount: 1000, // Will be automatically capped at ~118.45 STX (100 * 1.03 * 1.15)
+  senderAddress: "SP000...",
+  slippage: 15,
+});
+// The transaction will use the capped amount without error
+```
+
+**BTC Example:**
+
+```typescript
+// If a token needs only 0.01 BTC more to graduate, but you try to buy with 0.1 BTC:
+const buyParams = await sdk.getBuyParams({
+  dexContract: "SP000.btc-token-dex",
+  inAmount: 0.1, // Will be automatically capped at ~0.01185 BTC (0.01 * 1.03 * 1.15)
+  senderAddress: "SP000...",
+  slippage: 15,
+});
+// The transaction will use the capped amount without error
+```
+
+**How it works:**
+
+- For internal DEX contracts: Uses the `stx-to-grad` value (which includes a 3% buffer)
+- For external DEX contracts: Uses the `recommend-stx-amount` value (which includes a 3% buffer)
+- For both types, the SDK adds an additional 15% leeway
+- Total maximum allowed is approximately original amount _ 1.03 _ 1.15
+
+This protection helps prevent:
+
+- Overpaying during token purchases
+- Deploying excess capital for nearly-graduated tokens
+- Unnecessary transaction costs
+
+The combined buffer (approximately 18.45% total) provides flexibility while maintaining protection against significant overspending.
+
+**Note:** The capping is silent and allows the transaction to continue, making it more user-friendly than a hard error.
+
 ### 5. Execute Sell
 
 Execute a sell transaction for tokens. Works with both STX and BTC denominated tokens.
