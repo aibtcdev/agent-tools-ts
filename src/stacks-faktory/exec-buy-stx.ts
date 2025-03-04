@@ -19,22 +19,22 @@ const faktoryConfig = {
 };
 
 const usage =
-  "Usage: bun run exec-buy.ts <btc_amount> <dex_contract> [slippage]";
+  "Usage: bun run exec-buy-stx.ts <stx_amount> <dex_contract> [slippage]";
 const usageExample =
-  "Example: bun run exec-buy.ts 0.002 STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.okbtc4-faktory-dex 15";
+  "Example: bun run exec-buy-stx.ts 100 SP35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-dex 15";
 
 interface ExpectedArgs {
-  btcAmount: number; // BTC amount in normal units
+  stxAmount: number; // STX amount in normal units
   dexContract: string; // DEX contract address
   slippage: number; // integer, e.g. 15 = 15% (default)
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [btcAmountStr, dexContract, slippageStr] = process.argv.slice(2);
-  const btcAmount = parseFloat(btcAmountStr);
+  const [stxAmountStr, dexContract, slippageStr] = process.argv.slice(2);
+  const stxAmount = parseFloat(stxAmountStr);
   const slippage = parseInt(slippageStr) || 15;
-  if (!btcAmount || !dexContract) {
+  if (!stxAmount || !dexContract) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -54,7 +54,7 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    btcAmount,
+    stxAmount,
     dexContract,
     slippage,
   };
@@ -78,31 +78,25 @@ async function main() {
   const tokenInfo = await sdk.getToken(args.dexContract);
   const isBtcDenominated = tokenInfo.data.denomination === "btc";
 
-  // Verify the token is BTC denominated
-  if (!isBtcDenominated) {
+  // Verify the token is STX denominated
+  if (isBtcDenominated) {
     throw new Error(
-      `Token ${args.dexContract} is not BTC denominated. Use exec-buy-stx.ts for STX denominated tokens.`
+      `Token ${args.dexContract} is BTC denominated. Use exec-buy.ts for BTC denominated tokens.`
     );
   }
 
-  // console.log(
-  //   `Token is BTC denominated. Using ${args.btcAmount} BTC (${
-  //     args.btcAmount * 100000000
-  //   } satoshis)`
-  // );
+  //   console.log(`Token is STX denominated. Using ${args.stxAmount} STX (${args.stxAmount * 1000000} microSTX)`);
 
-  // // Validate amount range for BTC - warn if unusually large
-  // if (args.btcAmount > 0.1) {
-  //   console.log(
-  //     `WARNING: Amount ${args.btcAmount} BTC is unusually large. Please confirm.`
-  //   );
-  // }
+  //   // Validate amount range for STX - warn if unusually small
+  //   if (args.stxAmount < 0.1) {
+  //     console.log(`WARNING: Amount ${args.stxAmount} STX is unusually small. Please confirm.`);
+  //   }
 
   // get buy parameters
   console.log("Getting buy parameters...");
   const buyParams = await sdk.getBuyParams({
     dexContract: args.dexContract,
-    inAmount: args.btcAmount, // accepts BTC amount for BTC-denominated tokens
+    inAmount: args.stxAmount,
     senderAddress: address,
     slippage: args.slippage,
   });
