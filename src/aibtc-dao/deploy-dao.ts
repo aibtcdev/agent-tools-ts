@@ -16,7 +16,6 @@ import {
 import {
   DeployedContractRegistryEntry,
   GeneratedContractRegistryEntry,
-  getContractName,
 } from "./services/dao-contract-registry";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
 import { ExpectedContractGeneratorArgs } from "./types/dao-types";
@@ -83,7 +82,9 @@ function validateArgs(): ExpectedContractGeneratorArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
+async function deployDao(): Promise<
+  ToolResponse<DeployedContractRegistryEntry[]>
+> {
   // Step 0 - prep work
 
   // array to hold deployed contract info
@@ -255,9 +256,13 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   };
 }
 
-main()
-  .then(sendToLLM)
-  .catch((error) => {
-    sendToLLM(createErrorResponse(error));
-    process.exit(1);
-  });
+if (require.main === module) {
+  deployDao()
+    .then(sendToLLM)
+    .catch((error) => {
+      sendToLLM(createErrorResponse(error));
+      process.exit(1);
+    });
+}
+
+export { deployDao };

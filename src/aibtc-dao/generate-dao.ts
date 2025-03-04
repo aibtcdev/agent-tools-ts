@@ -76,7 +76,9 @@ function validateArgs(): ExpectedContractGeneratorArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
+async function generateDao(): Promise<
+  ToolResponse<GeneratedContractRegistryEntry[]>
+> {
   // Step 0 - prep work
 
   // array to build the contract info
@@ -169,9 +171,13 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   };
 }
 
-main()
-  .then(sendToLLM)
-  .catch((error) => {
-    sendToLLM(createErrorResponse(error));
-    process.exit(1);
-  });
+if (require.main === module) {
+  generateDao()
+    .then(sendToLLM)
+    .catch((error) => {
+      sendToLLM(createErrorResponse(error));
+      process.exit(1);
+    });
+}
+
+export { generateDao };

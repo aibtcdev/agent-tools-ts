@@ -55,7 +55,7 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<TxBroadcastResult>> {
+async function constructDao(): Promise<ToolResponse<TxBroadcastResult>> {
   // validate and store provided args
   const args = validateArgs();
   const [baseDaoAddress, baseDaoName] = args.baseDaoContract.split(".");
@@ -85,9 +85,13 @@ async function main(): Promise<ToolResponse<TxBroadcastResult>> {
   return broadcastResponse;
 }
 
-main()
-  .then(sendToLLM)
-  .catch((error) => {
-    sendToLLM(createErrorResponse(error));
-    process.exit(1);
-  });
+if (require.main === module) {
+  constructDao()
+    .then(sendToLLM)
+    .catch((error) => {
+      sendToLLM(createErrorResponse(error));
+      process.exit(1);
+    });
+}
+
+export { constructDao };
