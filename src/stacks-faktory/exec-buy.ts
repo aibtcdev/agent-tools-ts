@@ -74,7 +74,7 @@ async function main() {
   const sdk = new FaktorySDK(faktoryConfig);
 
   // Check token denomination
-  console.log("Checking token denomination...");
+  // console.log("Checking token denomination...");
   const tokenInfo = await sdk.getToken(args.dexContract);
   const isBtcDenominated = tokenInfo.data.denomination === "btc";
 
@@ -99,7 +99,7 @@ async function main() {
   // }
 
   // get buy parameters
-  console.log("Getting buy parameters...");
+  // console.log("Getting buy parameters...");
   const buyParams = await sdk.getBuyParams({
     dexContract: args.dexContract,
     inAmount: args.btcAmount, // accepts BTC amount for BTC-denominated tokens
