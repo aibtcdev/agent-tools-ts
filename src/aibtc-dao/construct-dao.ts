@@ -6,6 +6,7 @@ import {
   TxBroadcastResult,
 } from "@stacks/transactions";
 import {
+  AppConfig,
   broadcastTx,
   CONFIG,
   createErrorResponse,
@@ -55,7 +56,12 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function constructDao(): Promise<ToolResponse<TxBroadcastResult>> {
+async function constructDao(
+  customConfig?: Partial<AppConfig>
+): Promise<ToolResponse<TxBroadcastResult>> {
+  // allow for custom configuration to be provided
+  const appConfig = { ...CONFIG, ...customConfig };
+
   // validate and store provided args
   const args = validateArgs();
   const [baseDaoAddress, baseDaoName] = args.baseDaoContract.split(".");
@@ -63,9 +69,9 @@ async function constructDao(): Promise<ToolResponse<TxBroadcastResult>> {
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
-    CONFIG.NETWORK,
-    CONFIG.MNEMONIC,
-    CONFIG.ACCOUNT_INDEX
+    appConfig.NETWORK,
+    appConfig.MNEMONIC,
+    appConfig.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   // configure contract call options
