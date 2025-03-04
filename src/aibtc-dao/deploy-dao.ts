@@ -3,6 +3,7 @@ import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
 import {
   aibtcCoreRequestBody,
+  AppConfig,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
@@ -16,7 +17,6 @@ import {
 import {
   DeployedContractRegistryEntry,
   GeneratedContractRegistryEntry,
-  getContractName,
 } from "./services/dao-contract-registry";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
 import { ExpectedContractGeneratorArgs } from "./types/dao-types";
@@ -83,8 +83,13 @@ function validateArgs(): ExpectedContractGeneratorArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
+async function deployDao(
+  customConfig?: Partial<AppConfig>
+): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   // Step 0 - prep work
+
+  // allow for custom configuration to be provided
+  const appConfig = { ...CONFIG, ...customConfig };
 
   // array to hold deployed contract info
   const generatedContracts: GeneratedContractRegistryEntry[] = [];
@@ -93,9 +98,9 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   const args = validateArgs();
   // setup network and wallet info
   const { address, key } = await deriveChildAccount(
-    CONFIG.NETWORK,
-    CONFIG.MNEMONIC,
-    CONFIG.ACCOUNT_INDEX
+    appConfig.NETWORK,
+    appConfig.MNEMONIC,
+    appConfig.ACCOUNT_INDEX
   );
   // create contract generator instance
   const contractGenerator = new DaoContractGenerator(CONFIG.NETWORK, address);
@@ -103,7 +108,7 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   // or default to dao name + token name
   const manifest = args.daoManifest
     ? args.daoManifest
-    : `Bitcoin DeFAI ${args.tokenSymbol} ${args.tokenName}`;
+    : ` ${args.tokenSymbol} ${args.tokenName}. AI-powered agents. Bitcoin-backed DAOs. Fully autonomous governance.`;
 
   // Step 1 - generate dao-related contracts
 
@@ -255,9 +260,13 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   };
 }
 
-main()
-  .then(sendToLLM)
-  .catch((error) => {
-    sendToLLM(createErrorResponse(error));
-    process.exit(1);
-  });
+if (require.main === module) {
+  deployDao()
+    .then(sendToLLM)
+    .catch((error) => {
+      sendToLLM(createErrorResponse(error));
+      process.exit(1);
+    });
+}
+
+export { deployDao };

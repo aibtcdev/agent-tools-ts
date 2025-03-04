@@ -3,6 +3,7 @@ import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
 import {
+  AppConfig,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
@@ -76,8 +77,13 @@ function validateArgs(): ExpectedContractGeneratorArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
+async function generateDao(
+  customConfig?: Partial<AppConfig>
+): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   // Step 0 - prep work
+
+  // allow for custom configuration to be provided
+  const appConfig = { ...CONFIG, ...customConfig };
 
   // array to build the contract info
   const generatedContracts: GeneratedContractRegistryEntry[] = [];
@@ -86,9 +92,9 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   const args = validateArgs();
   // setup network and wallet info
   const { address } = await deriveChildAccount(
-    CONFIG.NETWORK,
-    CONFIG.MNEMONIC,
-    CONFIG.ACCOUNT_INDEX
+    appConfig.NETWORK,
+    appConfig.MNEMONIC,
+    appConfig.ACCOUNT_INDEX
   );
   // create contract generator instance
   const contractGenerator = new DaoContractGenerator(CONFIG.NETWORK, address);
@@ -169,9 +175,13 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   };
 }
 
-main()
-  .then(sendToLLM)
-  .catch((error) => {
-    sendToLLM(createErrorResponse(error));
-    process.exit(1);
-  });
+if (require.main === module) {
+  generateDao()
+    .then(sendToLLM)
+    .catch((error) => {
+      sendToLLM(createErrorResponse(error));
+      process.exit(1);
+    });
+}
+
+export { generateDao };
