@@ -203,9 +203,39 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     ],
   },
   {
-    name: "xyk-pool-stx-aibtc-v-1-1",
+    name: "xyk-pool-sbtc-aibtc-v-1-1",
     type: "TOKEN",
     subtype: "POOL",
+    deploymentOrder: 2,
+    templatePath: `extensions/aibtc-bitflow-pool.clar`,
+    requiredTraits: [
+      {
+        ref: "BITFLOW_POOL",
+        key: "bitflow_pool_trait",
+      },
+      {
+        ref: "STANDARD_SIP010",
+        key: "sip10_trait",
+      },
+      {
+        ref: "DAO_TOKEN_POOL",
+        key: "dao_bitflow_pool_trait",
+      },
+    ],
+    requiredAddresses: [
+      {
+        ref: "BITFLOW_CORE",
+        key: "bitflow_xyk_core_address",
+      },
+    ],
+    requiredContractAddresses: [
+      { key: "dex_contract", category: "TOKEN", subcategory: "DEX" },
+    ],
+  },
+  {
+    name: "xyk-pool-stx-aibtc-v-1-1",
+    type: "TOKEN",
+    subtype: "POOL_STX",
     deploymentOrder: 2,
     templatePath: `extensions/aibtc-bitflow-pool.clar`,
     requiredTraits: [

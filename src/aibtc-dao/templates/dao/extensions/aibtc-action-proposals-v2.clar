@@ -33,12 +33,9 @@
 (define-constant ERR_ALREADY_VOTED (err u1012))
 (define-constant ERR_INVALID_ACTION (err u1013))
 
-;; voting configuration - MAINNET VALUES
-;; (define-constant VOTING_DELAY u144) ;; 144 Bitcoin blocks, ~1 days
-;; (define-constant VOTING_PERIOD u288) ;; 2 x 144 Bitcoin blocks, ~2 days
-;; voting configuration - TEST VALUES
+;; voting configuration
 (define-constant VOTING_DELAY (if is-in-mainnet u144 u1)) ;; 144 Bitcoin blocks, ~1 days
-(define-constant VOTING_PERIOD (if is-in-mainnet u288 u5)) ;; 2 x 144 Bitcoin blocks, ~2 days
+(define-constant VOTING_PERIOD (if is-in-mainnet u288 u3)) ;; 2 x 144 Bitcoin blocks, ~2 days
 (define-constant VOTING_QUORUM u15) ;; 15% of liquid supply must participate
 (define-constant VOTING_THRESHOLD u66) ;; 66% of votes must be in favor
 
@@ -97,7 +94,7 @@
       (createdAt (- stacks-block-height u1))
       (liquidTokens (try! (get-liquid-supply createdAt)))
       (startBlock (+ burn-block-height VOTING_DELAY))
-      (endBlock (+ startBlock VOTING_PERIOD))
+      (endBlock (+ startBlock VOTING_PERIOD VOTING_DELAY))
       (senderBalance (unwrap! (contract-call? '<%= it.token_contract %> get-balance tx-sender) ERR_FETCHING_TOKEN_DATA))
       (validAction (is-action-valid action))
     )
@@ -163,7 +160,7 @@
     (asserts! (not (get concluded proposalRecord)) ERR_PROPOSAL_ALREADY_CONCLUDED)
     ;; proposal vote is still active
     (asserts! (>= burn-block-height (get startBlock proposalRecord)) ERR_VOTE_TOO_SOON)
-    (asserts! (< burn-block-height (get endBlock proposalRecord)) ERR_VOTE_TOO_LATE)
+    (asserts! (< burn-block-height (- (get endBlock proposalRecord) VOTING_DELAY)) ERR_VOTE_TOO_LATE)
     ;; vote not already cast
     (asserts! (is-none (map-get? VoteRecords {proposalId: proposalId, voter: tx-sender})) ERR_ALREADY_VOTED)
     ;; print vote event
@@ -198,23 +195,25 @@
       (liquidTokens (get liquidTokens proposalRecord))
       (hasVotes (> (+ votesFor votesAgainst) u0))
       ;; quorum: check if enough total votes vs liquid supply
-      (metQuorum (if hasVotes
+      (metQuorum (and hasVotes
         (>= (/ (* (+ votesFor votesAgainst) u100) liquidTokens) VOTING_QUORUM)
-        false))
+      ))
       ;; threshold: check if enough yes votes vs total votes
-      (metThreshold (if hasVotes
+      (metThreshold (and hasVotes
         (>= (/ (* votesFor u100) (+ votesFor votesAgainst)) VOTING_THRESHOLD)
-        false))
+      ))
       ;; proposal passed if quorum and threshold are met
       (votePassed (and hasVotes metQuorum metThreshold))
+      ;; check info for running action
       (validAction (is-action-valid action))
+      (notExpired (< burn-block-height (+ (get endBlock proposalRecord) VOTING_PERIOD)))
     )
     ;; proposal not already concluded
     (asserts! (not (get concluded proposalRecord)) ERR_PROPOSAL_ALREADY_CONCLUDED)
     ;; proposal is past voting period
-    (asserts! (>= burn-block-height (get endBlock proposalRecord)) ERR_PROPOSAL_VOTING_ACTIVE)
+    (asserts! (>= burn-block-height (- (get endBlock proposalRecord) VOTING_DELAY)) ERR_PROPOSAL_VOTING_ACTIVE)
     ;; proposal is past execution delay
-    (asserts! (>= burn-block-height (+ (get endBlock proposalRecord) VOTING_DELAY)) ERR_PROPOSAL_EXECUTION_DELAY)
+    (asserts! (>= burn-block-height (get endBlock proposalRecord)) ERR_PROPOSAL_EXECUTION_DELAY)
     ;; action must be the same as the one in proposal
     (asserts! (is-eq (get action proposalRecord) actionContract) ERR_INVALID_ACTION)
     ;; print conclusion event
@@ -230,7 +229,7 @@
         metQuorum: metQuorum,
         metThreshold: metThreshold,
         passed: votePassed,
-        executed: (and votePassed validAction),
+        executed: (and votePassed validAction notExpired),
       }
     })
     ;; update the proposal record
@@ -240,11 +239,11 @@
         metQuorum: metQuorum,
         metThreshold: metThreshold,
         passed: votePassed,
-        executed: (and votePassed validAction)
+        executed: (and votePassed validAction notExpired)
       })
     )
     ;; execute the action only if it passed, return false if err
-    (ok (if (and votePassed validAction)
+    (ok (if (and votePassed validAction notExpired)
       (match (contract-call? action run (get parameters proposalRecord)) ok_ true err_ (begin (print {err:err_}) false))
       false
     ))
