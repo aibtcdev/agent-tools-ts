@@ -695,10 +695,7 @@ export async function getFaktoryContracts(
     pool: poolResult.data.pool,
   };
 
-  const verified = verifyFaktoryContracts(faktoryContracts, faktoryRequestBody);
-  if (!verified) {
-    throw new Error(`Failed to verify Faktory contracts`);
-  }
+  verifyFaktoryContracts(faktoryContracts, faktoryRequestBody);
 
   return faktoryContracts;
 }
@@ -707,18 +704,19 @@ function verifyFaktoryContracts(
   contracts: FaktoryGeneratedContracts,
   requestBody: FaktoryRequestBody
 ) {
+  function throwVerifyError(message: string) {
+    throw new Error(`Faktory contract verification failed: ${message}`);
+  }
   if (
     !contracts.prelaunch ||
     !contracts.token ||
     !contracts.dex ||
     !contracts.pool
   ) {
-    console.log("Missing contracts to verify");
-    return false;
+    throwVerifyError("Missing contracts to verify");
   }
   if (!requestBody) {
-    console.log("Missing request body to verify");
-    return false;
+    throwVerifyError("Missing request body to verify");
   }
   // get contract info from registry for each
   const prelaunchContract = getContractsBySubcategory("TOKEN", "PRELAUNCH")[0];
@@ -757,28 +755,30 @@ function verifyFaktoryContracts(
     contracts.dex.name !== dexContractName ||
     contracts.pool.name !== poolContractName
   ) {
-    console.log("Contract names do not match");
-    return false;
+    let errorMsg = "Contract names do not match";
+    errorMsg += `\nprelaunch: ${contracts.prelaunch.name} !== ${prelaunchContractName}`;
+    errorMsg += `\ntoken: ${contracts.token.name} !== ${tokenContractName}`;
+    errorMsg += `\ndex: ${contracts.dex.name} !== ${dexContractName}`;
+    errorMsg += `\npool: ${contracts.pool.name} !== ${poolContractName}`;
+    throwVerifyError(errorMsg);
   }
   // check that token symbol is used in token contract
   if (!contracts.token.code.includes(requestBody.symbol)) {
-    console.log("Token symbol not found in token contract code");
-    return false;
+    throwVerifyError("Token symbol not found in token contract code");
   }
   // check that token owner is used in the token contract
   if (!contracts.token.code.includes(tokenOwnerContractName)) {
-    console.log("Token owner contract name not found in token contract code");
-    return false;
+    throwVerifyError(
+      "Token owner contract name not found in token contract code"
+    );
   }
   // check that token contract name is used in the dex
   if (!contracts.dex.code.includes(tokenContractName)) {
-    console.log("Token contract name not found in dex contract code");
-    return false;
+    throwVerifyError("Token contract name not found in dex contract code");
   }
   // check that dex contract name is used in the pool
   if (!contracts.pool.code.includes(dexContractName)) {
-    console.log("Dex contract name not found in pool contract code");
-    return false;
+    throwVerifyError("Dex contract name not found in pool contract code");
   }
   // check creator address is used in each of the contracts
   if (
@@ -787,11 +787,9 @@ function verifyFaktoryContracts(
     !contracts.dex.code.includes(requestBody.creatorAddress) ||
     !contracts.pool.code.includes(requestBody.creatorAddress)
   ) {
-    console.log("Creator address not found in contract code");
-    return false;
+    throwVerifyError("Creator address not found in contract code");
   }
   // passes all verification checks
-  return true;
 }
 
 //////////////////////////////

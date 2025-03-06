@@ -63,6 +63,7 @@ export class DaoContractGenerator {
       const contractName = getContractName(contract.name, args.tokenSymbol);
       // these are generated through Faktory API URLs instead of templates
       if (contract.type === "TOKEN") {
+        if (contract.subtype === "POOL_STX") return; // skip STX pool contract
         const faktoryContract: GeneratedContractRegistryEntry = {
           name: contractName,
           type: contract.type,
