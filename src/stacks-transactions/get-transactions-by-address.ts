@@ -1,6 +1,19 @@
-// CONFIGURATION
+import {
+  createErrorResponse,
+  getApiUrl,
+  getNetworkByPrincipal,
+  sendToLLM,
+  ToolResponse
+} from "../utilities";
 
-import { getApiUrl, getNetworkByPrincipal } from "../utilities";
+const usage = "Usage: bun run get-transactions-by-address.ts <address> [limit] [offset]";
+const usageExample = "Example: bun run get-transactions-by-address.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM 20 0";
+
+interface ExpectedArgs {
+  address: string;
+  limit?: number;
+  offset?: number;
+}
 
 interface TransactionResponse {
   limit: number;
@@ -101,6 +114,23 @@ interface TransactionResponse {
   }>;
 }
 
+function validateArgs(): ExpectedArgs {
+  const [address, limitStr, offsetStr] = process.argv.slice(2);
+  if (!address) {
+    const errorMessage = [
+      "No address provided",
+      usage,
+      usageExample
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  
+  const limit = limitStr ? Number(limitStr) : 20;
+  const offset = offsetStr ? Number(offsetStr) : 0;
+  
+  return { address, limit, offset };
+}
+
 async function getTransactionsByAddress(
   address: string,
   limit: number = 20,
@@ -123,58 +153,56 @@ async function getTransactionsByAddress(
   return data;
 }
 
-async function main() {
-  // expect txId as first argument
-  const address = process.argv[2];
-  const limit = Number(process.argv[3]) || 20;
-  const offset = Number(process.argv[4]) || 0;
-
-  if (!address) {
-    console.error("No address provided, exiting...");
-    return;
-  }
-
+async function main(): Promise<ToolResponse<TransactionResponse>> {
+  // validate and store provided args
+  const args = validateArgs();
+  
   // get transaction info from API
-  try {
-    const response = await getTransactionsByAddress(address, limit, offset);
-    // for x in response
-    for (let i = 0; i < response.results.length; i++) {
-      console.log("START TRANSACTION");
-      console.log("Status: ", response.results[i].tx.tx_status);
-      console.log("Sender Address: " + response.results[i].tx.sender_address);
-      console.log("Block Time ISO: " + response.results[i].tx.block_time_iso);
-      console.log("Type: ", response.results[i].tx.tx_type);
-      if (response.results[i].tx.tx_type == "contract_call") {
-        console.log(
-          "Contract Name: ",
-          response.results[i].tx.contract_call.contract_id
-        );
-        console.log(
-          "Function Name: ",
-          response.results[i].tx.contract_call.function_name
-        );
-      }
-      if (response.results[i].tx.tx_type == "smart_contract") {
-        console.log(
-          "Contract Name: ",
-          response.results[i].tx.smart_contract.contract_id
-        );
-      }
-      if (response.results[i].tx.tx_type == "token_transfer") {
-        console.log(
-          "Recipient Address: ",
-          response.results[i].tx.token_transfer.recipient_address
-        );
-      }
-      console.log("MicroSTX Sent: ", response.results[i].stx_sent);
-      console.log("MicroSTX Received: ", response.results[i].stx_received);
-      console.log("END TRANSACTION");
+  const response = await getTransactionsByAddress(
+    args.address, 
+    args.limit || 20, 
+    args.offset || 0
+  );
+  
+  // Format the transactions for better readability in the response
+  const formattedTransactions = response.results.map(result => ({
+    status: result.tx.tx_status,
+    senderAddress: result.tx.sender_address,
+    blockTimeIso: result.tx.block_time_iso,
+    type: result.tx.tx_type,
+    contractInfo: result.tx.tx_type === "contract_call" 
+      ? {
+          contractId: result.tx.contract_call.contract_id,
+          functionName: result.tx.contract_call.function_name
+        } 
+      : undefined,
+    smartContractInfo: result.tx.tx_type === "smart_contract"
+      ? {
+          contractId: result.tx.smart_contract.contract_id
+        }
+      : undefined,
+    tokenTransferInfo: result.tx.tx_type === "token_transfer"
+      ? {
+          recipientAddress: result.tx.token_transfer.recipient_address
+        }
+      : undefined,
+    stxSent: result.stx_sent,
+    stxReceived: result.stx_received
+  }));
+  
+  return {
+    success: true,
+    message: `Retrieved ${response.results.length} transactions for address ${args.address}`,
+    data: {
+      ...response,
+      formattedTransactions
     }
-    // console.log(JSON.stringify(response, null, 2));
-  } catch (error) {
-    // report error
-    console.error(`General/Unexpected Failure: ${error}`);
-  }
+  };
 }
 
-main();
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });
