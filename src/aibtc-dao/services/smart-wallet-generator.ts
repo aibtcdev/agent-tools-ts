@@ -66,7 +66,10 @@ export class SmartWalletGenerator {
     };
 
     // Render the template
-    const source = this.eta.render("smart-wallet.eta", templateVars);
+    const source = this.eta.render(
+      "aibtc-user-agent-smart-wallet.clar",
+      templateVars
+    );
 
     // Hash the contract
     const hash = crypto.createHash("sha256").update(source).digest("hex");

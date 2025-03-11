@@ -3,9 +3,10 @@ import {
   createErrorResponse,
   deriveChildAccount,
   sendToLLM,
-} from "../../../utilities";
+} from "../../utilities";
 import { SmartWalletGenerator } from "../services/smart-wallet-generator";
 import { SmartWalletDeployer } from "../services/smart-wallet-deployer";
+import { validateStacksAddress } from "@stacks/transactions";
 
 const usage =
   "Usage: bun run deploy-smart-wallet.ts <userAddress> <agentAddress> <tokenSymbol> <sbtcTokenContract> <daoTokenContract>";
@@ -46,10 +47,13 @@ function validateArgs(): ExpectedArgs {
   }
 
   // verify addresses are valid
-  if (!userAddress.startsWith("ST") || !agentAddress.startsWith("ST")) {
+  if (
+    validateStacksAddress(userAddress) ||
+    validateStacksAddress(agentAddress)
+  ) {
     const errorMessage = [
       `Invalid addresses: User=${userAddress}, Agent=${agentAddress}`,
-      "Addresses must be valid Stacks addresses starting with 'ST'",
+      "Addresses must be valid Stacks addresses",
       usage,
       usageExample,
     ].join("\n");
@@ -111,10 +115,14 @@ async function main() {
 
     // Deploy smart wallet contract
     const deployer = new SmartWalletDeployer(CONFIG.NETWORK, address, key);
-    const deployedWallet = await deployer.deploySmartWalletWithNonce(smartWallet);
+    const deployedWallet = await deployer.deploySmartWalletWithNonce(
+      smartWallet
+    );
 
     if (deployedWallet.success) {
-      console.log(`Successfully deployed smart wallet: ${deployedWallet.address}`);
+      console.log(
+        `Successfully deployed smart wallet: ${deployedWallet.address}`
+      );
       console.log(`Transaction ID: ${deployedWallet.txId}`);
       return {
         success: true,
