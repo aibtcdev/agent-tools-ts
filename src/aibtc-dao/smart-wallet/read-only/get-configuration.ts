@@ -6,7 +6,7 @@ import {
   getNetwork,
   sendToLLM,
   ToolResponse,
-} from "../../../../utilities";
+} from "../../../utilities";
 
 const usage = "Usage: bun run get-configuration.ts <smartWalletContract>";
 const usageExample =

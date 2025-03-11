@@ -6,9 +6,10 @@ import {
   getNetwork,
   sendToLLM,
   ToolResponse,
-} from "../../../../utilities";
+} from "../../../utilities";
 
-const usage = "Usage: bun run is-approved-asset.ts <smartWalletContract> <assetContract>";
+const usage =
+  "Usage: bun run is-approved-asset.ts <smartWalletContract> <assetContract>";
 const usageExample =
   "Example: bun run is-approved-asset.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-user-agent-smart-wallet ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token";
 

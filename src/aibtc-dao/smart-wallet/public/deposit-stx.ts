@@ -12,7 +12,7 @@ import {
   getNetwork,
   getNextNonce,
   sendToLLM,
-} from "../../../../utilities";
+} from "../../../utilities";
 
 const usage = "Usage: bun run deposit-stx.ts <smartWalletContract> <amount>";
 const usageExample =

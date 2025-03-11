@@ -12,7 +12,7 @@ import {
   getNetwork,
   getNextNonce,
   sendToLLM,
-} from "../../../../utilities";
+} from "../../../utilities";
 
 const usage =
   "Usage: bun run revoke-asset.ts <smartWalletContract> <assetContract>";
