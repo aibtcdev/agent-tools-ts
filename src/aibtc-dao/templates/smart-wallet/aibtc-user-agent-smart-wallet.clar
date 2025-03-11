@@ -1,25 +1,25 @@
-;; title: user-agent-smart-wallet
+;; title: aibtc-user-agent-smart-wallet
 ;; version: 1.0.0
 ;; summary: A smart wallet contract between a user and an agent for managing assets and DAO interactions
 
 ;; traits
-(impl-trait .aibtc-user-agent-traits.user-agent-smart-wallet)
-(use-trait ft-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
-(use-trait action-trait .aibtc-dao-traits-v2.action)
-(use-trait proposal-trait .aibtc-dao-traits-v2.proposal)
-(use-trait action-proposals-trait .aibtc-dao-traits-v2.action-proposals)
-(use-trait core-proposals-trait .aibtc-dao-traits-v2.core-proposals)
+(impl-trait '<%= it.smart_wallet_trait %>)
+(use-trait ft-trait '<%= it.sip010_trait %>)
+(use-trait action-trait '<%= it.dao_action_trait %>)
+(use-trait proposal-trait '<%= it.dao_proposal_trait %>)
+(use-trait action-proposals-trait '<%= it.dao_action_proposals_trait %>)
+(use-trait core-proposals-trait '<%= it.dao_core_proposals_trait %>)
 
 ;; constants
 (define-constant DEPLOYED_BURN_BLOCK burn-block-height)
 (define-constant DEPLOYED_STACKS_BLOCK stacks-block-height)
 (define-constant SELF (as-contract tx-sender))
-(define-constant USER <%= it.userAddress %>) ;; user (smart wallet owner)
-(define-constant AGENT <%= it.agentAddress %>) ;; agent (proposal voter)
+(define-constant USER '<%= it.smart_wallet_owner %>) ;; user (smart wallet owner)
+(define-constant AGENT '<%= it.smart_wallet_agent %>) ;; agent (proposal voter)
 
 ;; Pre-approved tokens
-(define-constant SBTC_TOKEN <%= it.sbtcTokenContract %>) ;; sBTC token
-(define-constant DAO_TOKEN <%= it.daoTokenContract %>) ;; DAO token
+(define-constant SBTC_TOKEN '<%= it.sbtc_token_contract %>) ;; sBTC token
+(define-constant DAO_TOKEN '<%= it.dao_token_contract %>) ;; DAO token
 
 ;; Error codes
 (define-constant ERR_UNAUTHORIZED (err u1000))

@@ -32,7 +32,7 @@ function validateArgs(): ExpectedArgs {
     daoTokenContract,
     generateFiles,
   ] = process.argv.slice(2);
-  
+
   // verify all required arguments are provided
   if (
     !userAddress ||
@@ -48,7 +48,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // verify addresses are valid
   if (
     !validateStacksAddress(userAddress) ||
@@ -62,7 +62,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // verify token contracts
   const [sbtcAddress, sbtcName] = sbtcTokenContract.split(".");
   const [daoAddress, daoName] = daoTokenContract.split(".");
@@ -75,10 +75,10 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // convert generateFiles to boolean
   const shouldGenerateFiles = generateFiles === "true";
-  
+
   // return validated arguments
   return {
     userAddress,
@@ -94,17 +94,17 @@ async function main(): Promise<ToolResponse<any>> {
   try {
     // validate and store provided args
     const args = validateArgs();
-    
+
     // setup network and wallet info
     const { address } = await deriveChildAccount(
       CONFIG.NETWORK,
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
     );
-    
+
     // create contract generator instance
     const contractGenerator = new SmartWalletGenerator(CONFIG.NETWORK, address);
-    
+
     // generate smart wallet contract
     const smartWallet = contractGenerator.generateSmartWallet({
       userAddress: args.userAddress,
@@ -113,7 +113,7 @@ async function main(): Promise<ToolResponse<any>> {
       sbtcTokenContract: args.sbtcTokenContract,
       daoTokenContract: args.daoTokenContract,
     });
-    
+
     // save contract to file (optional)
     if (args.generateFiles) {
       const outputDir = path.join("generated", args.tokenSymbol.toLowerCase());
@@ -123,7 +123,7 @@ async function main(): Promise<ToolResponse<any>> {
       fs.writeFileSync(filePath, smartWallet.source);
       console.log(`Generated: ${filePath}`);
     }
-    
+
     // return generated contract
     return {
       success: true,
