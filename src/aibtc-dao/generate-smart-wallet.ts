@@ -10,13 +10,12 @@ import {
   ToolResponse,
 } from "../utilities";
 
-const usage = `Usage: bun run generate-smart-wallet.ts <userAddress> <agentAddress> <tokenSymbol> <sbtcTokenContract> <daoTokenContract> <generateFiles>`;
-const usageExample = `Example: bun run generate-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG aibtc STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token true`;
+const usage = `Usage: bun run generate-smart-wallet.ts <userAddress> <agentAddress> <sbtcTokenContract> <daoTokenContract> <generateFiles>`;
+const usageExample = `Example: bun run generate-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token true`;
 
 interface ExpectedArgs {
   userAddress: string;
   agentAddress: string;
-  tokenSymbol: string;
   sbtcTokenContract: string;
   daoTokenContract: string;
   generateFiles: boolean;
@@ -27,7 +26,6 @@ function validateArgs(): ExpectedArgs {
   const [
     userAddress,
     agentAddress,
-    tokenSymbol,
     sbtcTokenContract,
     daoTokenContract,
     generateFiles,
@@ -37,7 +35,6 @@ function validateArgs(): ExpectedArgs {
   if (
     !userAddress ||
     !agentAddress ||
-    !tokenSymbol ||
     !sbtcTokenContract ||
     !daoTokenContract
   ) {
@@ -83,7 +80,6 @@ function validateArgs(): ExpectedArgs {
   return {
     userAddress,
     agentAddress,
-    tokenSymbol,
     sbtcTokenContract,
     daoTokenContract,
     generateFiles: shouldGenerateFiles,
@@ -109,14 +105,13 @@ async function main(): Promise<ToolResponse<any>> {
     const smartWallet = contractGenerator.generateSmartWallet({
       userAddress: args.userAddress,
       agentAddress: args.agentAddress,
-      tokenSymbol: args.tokenSymbol,
       sbtcTokenContract: args.sbtcTokenContract,
       daoTokenContract: args.daoTokenContract,
     });
 
     // save contract to file (optional)
     if (args.generateFiles) {
-      const outputDir = path.join("generated", args.tokenSymbol.toLowerCase());
+      const outputDir = "generated";
       fs.mkdirSync(outputDir, { recursive: true });
       const fileName = `${smartWallet.name}.clar`;
       const filePath = path.join(outputDir, fileName);

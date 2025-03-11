@@ -1,5 +1,4 @@
 import { StacksNetworkName } from "@stacks/network";
-import { ClarityVersion } from "@stacks/transactions";
 
 //////////////////////////////
 // GENERAL HELPERS
@@ -114,6 +113,7 @@ type DaoTraits = {
   DAO_INVOICES: string;
   DAO_MESSAGING: string;
   DAO_RESOURCES: string;
+  DAO_SMART_WALLET: string;
   DAO_TOKEN: string;
   DAO_TOKEN_DEX: string;
   DAO_TOKEN_OWNER: string;
@@ -159,6 +159,8 @@ const mainnetTraits: KnownTraits = {
     "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-dao-traits-v2.messaging",
   DAO_RESOURCES:
     "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-dao-traits-v2.resources",
+  DAO_SMART_WALLET:
+    "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-user-agent-traits.aibtc-smart-wallet",
   DAO_TOKEN:
     "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-dao-traits-v2.token",
   DAO_TOKEN_DEX:
@@ -204,6 +206,8 @@ const testnetTraits: KnownTraits = {
     "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.aibtc-dao-traits-v2.messaging",
   DAO_RESOURCES:
     "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.aibtc-dao-traits-v2.resources",
+  DAO_SMART_WALLET:
+    "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.aibtc-user-agent-traits.aibtc-smart-wallet",
   DAO_TOKEN:
     "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.aibtc-dao-traits-v2.token",
   DAO_TOKEN_DEX:
@@ -249,6 +253,8 @@ const devnetTraits: KnownTraits = {
     "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-dao-traits-v2.messaging",
   DAO_RESOURCES:
     "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-dao-traits-v2.resources",
+  DAO_SMART_WALLET:
+    "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-user-agent-traits.aibtc-smart-wallet",
   DAO_TOKEN:
     "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-dao-traits-v2.token",
   DAO_TOKEN_DEX:

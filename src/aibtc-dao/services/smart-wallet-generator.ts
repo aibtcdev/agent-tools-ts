@@ -2,6 +2,7 @@ import * as path from "path";
 import * as crypto from "crypto";
 import { Eta } from "eta";
 import { StacksNetworkName } from "@stacks/network";
+import { getKnownTraits } from "../types/dao-types";
 
 /**
  * Expected arguments for smart wallet generation
@@ -11,8 +12,6 @@ export interface SmartWalletGeneratorArgs {
   userAddress: string;
   /** The principal address of the agent who will vote on behalf of the user */
   agentAddress: string;
-  /** The token symbol used to name the smart wallet contract */
-  tokenSymbol: string;
   /** The fully qualified contract ID of the sBTC token */
   sbtcTokenContract: string;
   /** The fully qualified contract ID of the DAO token */
@@ -59,8 +58,11 @@ export class SmartWalletGenerator {
   public generateSmartWallet(
     args: SmartWalletGeneratorArgs
   ): GeneratedSmartWallet {
-    // Build contract name with token symbol
-    const contractName = `${args.tokenSymbol.toLowerCase()}-user-agent-smart-wallet`;
+    // Build contract name
+    const contractName = `aibtc-smart-wallet-${args.userAddress}`;
+
+    // Get known traits
+    const traitRefs = getKnownTraits(this.network);
 
     // Template variables
     const templateVars = {
@@ -69,11 +71,11 @@ export class SmartWalletGenerator {
       sbtc_token_contract: args.sbtcTokenContract,
       dao_token_contract: args.daoTokenContract,
       smart_wallet_trait: ".smart-wallet-trait",
-      sip010_trait: ".sip-010-trait-ft-standard",
-      dao_action_trait: ".dao-action-trait",
-      dao_proposal_trait: ".dao-proposal-trait",
-      dao_action_proposals_trait: ".dao-action-proposals-trait",
-      dao_core_proposals_trait: ".dao-core-proposals-trait",
+      sip010_trait: traitRefs["STANDARD_SIP010"],
+      dao_action_trait: traitRefs["DAO_ACTION"],
+      dao_proposal_trait: traitRefs["DAO_PROPOSAL"],
+      dao_action_proposals_trait: traitRefs["DAO_ACTION_PROPOSALS"],
+      dao_core_proposals_trait: traitRefs["DAO_CORE_PROPOSALS"],
     };
 
     // Render the template
