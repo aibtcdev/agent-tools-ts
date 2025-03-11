@@ -67,11 +67,11 @@ export class SmartWalletDeployer {
         contractName: smartWallet.name,
         codeBody: smartWallet.source,
         senderKey: this.senderKey,
-        nonce: nonce ? nonce : undefined,
+        nonce: nonce === 0 ? 0 : nonce ? nonce : undefined,
         network: this.network,
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow,
-        clarityVersion: ClarityVersion.Clarity2,
+        clarityVersion: ClarityVersion.Clarity3,
       });
 
       // Broadcast the transaction
@@ -110,7 +110,8 @@ export class SmartWalletDeployer {
       }
     } catch (error) {
       // Provide more detailed error information
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       console.error(
         `Failed to deploy smart wallet ${smartWallet.name}:`,
         errorMessage

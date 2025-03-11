@@ -9,9 +9,7 @@ import { getKnownAddress, getKnownTraits } from "../types/dao-types";
  */
 export interface SmartWalletGeneratorArgs {
   /** The principal address of the user who will own the smart wallet */
-  userAddress: string;
-  /** The principal address of the agent who will vote on behalf of the user */
-  agentAddress: string;
+  ownerAddress: string;
   /** The fully qualified contract ID of the DAO token */
   daoTokenContract: string;
 }
@@ -57,7 +55,11 @@ export class SmartWalletGenerator {
     args: SmartWalletGeneratorArgs
   ): GeneratedSmartWallet {
     // Build contract name
-    const contractName = `aibtc-smart-wallet-${args.userAddress}`;
+    const truncatedAddress = `${args.ownerAddress.slice(
+      0,
+      5
+    )}-${args.ownerAddress.slice(-5)}`;
+    const contractName = `aibtc-smart-wallet-${truncatedAddress}`;
 
     // Get known addresses and traits
     const sbtcContract = getKnownAddress(this.network, "SBTC");
@@ -65,8 +67,8 @@ export class SmartWalletGenerator {
 
     // Template variables
     const templateVars = {
-      smart_wallet_owner: args.userAddress,
-      smart_wallet_agent: args.agentAddress,
+      smart_wallet_owner: args.ownerAddress,
+      smart_wallet_agent: this.senderAddress,
       sbtc_token_contract: sbtcContract,
       dao_token_contract: args.daoTokenContract,
       smart_wallet_trait: traitRefs["DAO_SMART_WALLET"],

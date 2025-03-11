@@ -4,29 +4,28 @@ import { validateStacksAddress } from "@stacks/transactions";
 import { SmartWalletGenerator } from "./services/smart-wallet-generator";
 import {
   CONFIG,
+  convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
   sendToLLM,
   ToolResponse,
 } from "../utilities";
 
-const usage = `Usage: bun run generate-smart-wallet.ts <userAddress> <agentAddress> <daoTokenContract> <generateFiles>`;
-const usageExample = `Example: bun run generate-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token true`;
+const usage = `Usage: bun run generate-smart-wallet.ts <ownerAddress> <daoTokenContract> <generateFiles>`;
+const usageExample = `Example: bun run generate-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token true`;
 
 interface ExpectedArgs {
-  userAddress: string;
-  agentAddress: string;
+  ownerAddress: string;
   daoTokenContract: string;
-  generateFiles: boolean;
+  generateFiles?: boolean;
 }
 
 function validateArgs(): ExpectedArgs {
   // capture all arguments
-  const [userAddress, agentAddress, daoTokenContract, generateFiles] =
-    process.argv.slice(2);
+  const [ownerAddress, daoTokenContract, generateFiles] = process.argv.slice(2);
 
   // verify all required arguments are provided
-  if (!userAddress || !agentAddress || !daoTokenContract) {
+  if (!ownerAddress || !daoTokenContract) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -36,12 +35,9 @@ function validateArgs(): ExpectedArgs {
   }
 
   // verify addresses are valid
-  if (
-    !validateStacksAddress(userAddress) ||
-    !validateStacksAddress(agentAddress)
-  ) {
+  if (!validateStacksAddress(ownerAddress)) {
     const errorMessage = [
-      `Invalid addresses: User=${userAddress}, Agent=${agentAddress}`,
+      `Invalid addresses: Owner=${ownerAddress}`,
       "Addresses must be valid Stacks addresses",
       usage,
       usageExample,
@@ -62,12 +58,11 @@ function validateArgs(): ExpectedArgs {
   }
 
   // convert generateFiles to boolean
-  const shouldGenerateFiles = generateFiles === "true";
+  const shouldGenerateFiles = convertStringToBoolean(generateFiles);
 
   // return validated arguments
   return {
-    userAddress,
-    agentAddress,
+    ownerAddress,
     daoTokenContract,
     generateFiles: shouldGenerateFiles,
   };
@@ -90,8 +85,7 @@ async function main(): Promise<ToolResponse<any>> {
 
     // generate smart wallet contract
     const smartWallet = contractGenerator.generateSmartWallet({
-      userAddress: args.userAddress,
-      agentAddress: args.agentAddress,
+      ownerAddress: args.ownerAddress,
       daoTokenContract: args.daoTokenContract,
     });
 
