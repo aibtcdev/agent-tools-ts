@@ -67,7 +67,7 @@ export class SmartWalletGenerator {
 
     // Render the template
     const source = this.eta.render(
-      "aibtc-user-agent-smart-wallet.clar",
+      "smart-wallet.eta",
       templateVars
     );
 

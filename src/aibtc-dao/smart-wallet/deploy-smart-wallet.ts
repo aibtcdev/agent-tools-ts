@@ -48,8 +48,8 @@ function validateArgs(): ExpectedArgs {
 
   // verify addresses are valid
   if (
-    validateStacksAddress(userAddress) ||
-    validateStacksAddress(agentAddress)
+    !validateStacksAddress(userAddress) ||
+    !validateStacksAddress(agentAddress)
   ) {
     const errorMessage = [
       `Invalid addresses: User=${userAddress}, Agent=${agentAddress}`,
