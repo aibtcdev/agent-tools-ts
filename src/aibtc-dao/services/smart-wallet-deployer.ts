@@ -29,7 +29,7 @@ export class SmartWalletDeployer {
 
   /**
    * Create a new SmartWalletDeployer instance
-   * 
+   *
    * @param network Network to deploy contracts to
    * @param senderAddress Address that will deploy the contracts
    * @param senderKey Private key for the sender address
@@ -46,7 +46,7 @@ export class SmartWalletDeployer {
 
   /**
    * Deploy a generated smart wallet contract
-   * 
+   *
    * @param smartWallet The generated smart wallet to deploy
    * @param nonce Optional nonce to use for the transaction
    * @returns Deployed smart wallet information
@@ -103,7 +103,10 @@ export class SmartWalletDeployer {
         };
       }
     } catch (error) {
-      console.error(`Failed to deploy smart wallet ${smartWallet.name}:`, error);
+      console.error(
+        `Failed to deploy smart wallet ${smartWallet.name}:`,
+        error
+      );
 
       // Return failure status
       return {
@@ -117,7 +120,7 @@ export class SmartWalletDeployer {
 
   /**
    * Deploy a smart wallet with automatic nonce management
-   * 
+   *
    * @param smartWallet The generated smart wallet to deploy
    * @returns Deployed smart wallet information
    */

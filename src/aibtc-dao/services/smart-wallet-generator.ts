@@ -33,23 +33,27 @@ export class SmartWalletGenerator {
 
   /**
    * Create a new SmartWalletGenerator instance
-   * 
+   *
    * @param network Network to generate contracts for
    * @param senderAddress Address that will deploy the contracts
    */
   constructor(network: StacksNetworkName, senderAddress: string) {
-    this.eta = new Eta({ views: path.join(__dirname, "../templates/smart-wallet") });
+    this.eta = new Eta({
+      views: path.join(__dirname, "../templates/smart-wallet"),
+    });
     this.network = network;
     this.senderAddress = senderAddress;
   }
 
   /**
    * Generate a smart wallet contract
-   * 
+   *
    * @param args Arguments for smart wallet generation
    * @returns Generated smart wallet contract
    */
-  public generateSmartWallet(args: SmartWalletGeneratorArgs): GeneratedSmartWallet {
+  public generateSmartWallet(
+    args: SmartWalletGeneratorArgs
+  ): GeneratedSmartWallet {
     // Build contract name with token symbol
     const contractName = `${args.tokenSymbol.toLowerCase()}-user-agent-smart-wallet`;
 
