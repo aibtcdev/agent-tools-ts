@@ -70,7 +70,7 @@ export class SmartWalletGenerator {
       smart_wallet_agent: args.agentAddress,
       sbtc_token_contract: args.sbtcTokenContract,
       dao_token_contract: args.daoTokenContract,
-      smart_wallet_trait: ".smart-wallet-trait",
+      smart_wallet_trait: traitRefs["DAO_SMART_WALLET"],
       sip010_trait: traitRefs["STANDARD_SIP010"],
       dao_action_trait: traitRefs["DAO_ACTION"],
       dao_proposal_trait: traitRefs["DAO_PROPOSAL"],
