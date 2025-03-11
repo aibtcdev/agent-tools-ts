@@ -13,10 +13,16 @@ import { GeneratedSmartWallet } from "./smart-wallet-generator";
  * Deployed smart wallet contract information
  */
 export interface DeployedSmartWallet extends GeneratedSmartWallet {
+  /** The address that deployed the contract */
   sender: string;
+  /** Whether the deployment was successful */
   success: boolean;
+  /** The transaction ID if the deployment was successful */
   txId?: string;
+  /** The fully qualified contract address (sender.contractName) */
   address: string;
+  /** Error message if the deployment failed */
+  error?: string;
 }
 
 /**
@@ -48,8 +54,8 @@ export class SmartWalletDeployer {
    * Deploy a generated smart wallet contract
    *
    * @param smartWallet The generated smart wallet to deploy
-   * @param nonce Optional nonce to use for the transaction
-   * @returns Deployed smart wallet information
+   * @param nonce Optional nonce to use for the transaction (will be auto-fetched if not provided)
+   * @returns Deployed smart wallet information including transaction ID and success status
    */
   async deploySmartWallet(
     smartWallet: GeneratedSmartWallet,
@@ -103,17 +109,20 @@ export class SmartWalletDeployer {
         };
       }
     } catch (error) {
+      // Provide more detailed error information
+      const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(
         `Failed to deploy smart wallet ${smartWallet.name}:`,
-        error
+        errorMessage
       );
 
-      // Return failure status
+      // Return failure status with error information
       return {
         ...smartWallet,
         sender: this.senderAddress,
         success: false,
         address: `${this.senderAddress}.${smartWallet.name}`,
+        error: errorMessage,
       };
     }
   }
