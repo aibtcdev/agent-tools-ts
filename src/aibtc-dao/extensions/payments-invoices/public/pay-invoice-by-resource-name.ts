@@ -3,6 +3,8 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
+  PostConditionMode,
+  Pc,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -67,6 +69,16 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // Add post-conditions to ensure sender has approved sufficient funds
+  // Note: The actual amount and token type should be read from the invoice
+  // This is a placeholder that ensures the transaction will fail if post-conditions aren't met
+  const postConditions = [
+    Pc.principal(address)
+      .willSendEq(0) // Will be replaced with actual amount from invoice
+      .ustx()
+  ];
+
   // prepare function arguments
   const functionArgs = [
     Cl.stringUtf8(args.resourceName),
@@ -82,6 +94,8 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

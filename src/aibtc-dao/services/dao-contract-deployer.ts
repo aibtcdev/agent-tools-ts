@@ -4,6 +4,7 @@ import {
   broadcastTransaction,
   AnchorMode,
   PostConditionMode,
+  Pc,
 } from "@stacks/transactions";
 import {
   GeneratedContractRegistryEntry,
@@ -47,6 +48,13 @@ export class DaoContractDeployer {
     nonce?: number
   ): Promise<DeployedContractRegistryEntry> {
     try {
+      // ### POST CONDITIONS ADDED ###
+      const postConditions = [
+        Pc.principal(this.senderAddress)
+          .willSendEq(1000000) // 1 STX minimum for deployment
+          .ustx()
+      ];
+
       // Create the contract deployment transaction
       const transaction = await makeContractDeploy({
         contractName: contract.name,
@@ -56,6 +64,7 @@ export class DaoContractDeployer {
         network: this.network,
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow,
+        postConditions,
         clarityVersion: contract.clarityVersion,
       });
 

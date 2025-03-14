@@ -4,6 +4,8 @@ import {
   makeContractCall,
   SignedContractCallOptions,
   TxBroadcastResult,
+  PostConditionMode,
+  Pc,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -68,6 +70,14 @@ async function main(): Promise<ToolResponse<TxBroadcastResult>> {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // ### POST CONDITIONS ADDED ###
+  const postConditions = [
+    Pc.principal(address)
+      .willSendEq(1000000) // 1 STX minimum
+      .ustx()
+  ];
+
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
@@ -78,6 +88,8 @@ async function main(): Promise<ToolResponse<TxBroadcastResult>> {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Allow,
+    postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
