@@ -3,8 +3,6 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
-  PostConditionMode,
-  Pc,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -25,7 +23,6 @@ interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
   daoActionProposalContract: string;
   message: string;
-  minimumStx?: number;  // Optional minimum STX amount
 }
 
 function validateArgs(): ExpectedArgs {
@@ -82,13 +79,6 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // ### POST CONDITIONS ADDED ###
-  const postConditions = [
-    Pc.principal(address)
-      .willSendEq(args.minimumStx || 1000000) // Use provided amount or default to 1 STX
-      .ustx()
-  ];
-
   // configure contract call parameters
   const paramsCV = Cl.stringAscii(args.message);
   // configure contract call options
@@ -104,8 +94,6 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Allow,
-    postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

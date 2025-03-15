@@ -71,6 +71,8 @@ async function main() {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] = args.treasuryContract.split(".");
+  const [ftAddress, ftName] = args.ftContract.split(".");
+  
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -80,11 +82,11 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // ### POST CONDITIONS ADDED ###
+  // Set post-conditions using deconstructed values
   const postConditions = [
     Pc.principal(address)
       .willSendEq(args.amount)
-      .ft(args.ftContract as `${string}.${string}`, "token")
+      .ft(`${ftAddress}.${ftName}`, "token")
   ];
 
   // prepare function arguments
@@ -99,7 +101,7 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Allow,
+    postConditionMode: PostConditionMode.Deny,
     postConditions,
   };
   // broadcast transaction and return response

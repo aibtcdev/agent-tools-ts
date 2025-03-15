@@ -77,7 +77,7 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // ### POST CONDITIONS ADDED ###
+  // Post-conditions to ensure exactly the specified amount of STX is transferred
   const postConditions = [
     Pc.principal(address)
       .willSendEq(args.amount)
@@ -94,7 +94,7 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Allow,
+    postConditionMode: PostConditionMode.Deny, // Strictly enforce post-conditions
     postConditions,
   };
   // broadcast transaction and return response

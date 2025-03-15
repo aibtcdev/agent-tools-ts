@@ -67,6 +67,7 @@ async function main() {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] = args.smartWalletContract.split(".");
+  
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -78,7 +79,7 @@ async function main() {
 
   // Add post-conditions to ensure smart wallet sends exact amount of STX
   const postConditions = [
-    Pc.principal(args.smartWalletContract as `${string}.${string}`)
+    Pc.principal(`${contractAddress}.${contractName}`)
       .willSendEq(args.amount)
       .ustx()
   ];
