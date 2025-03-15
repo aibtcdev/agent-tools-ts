@@ -3,6 +3,8 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
+  PostConditionMode,
+  Pc,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -73,6 +75,14 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // Add post-conditions to ensure sender sends exact amount of STX
+  const postConditions = [
+    Pc.principal(address)
+      .willSendEq(args.amount)
+      .ustx()
+  ];
+
   // prepare function arguments
   const functionArgs = [Cl.uint(args.amount)];
   // configure contract call options
@@ -85,6 +95,8 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

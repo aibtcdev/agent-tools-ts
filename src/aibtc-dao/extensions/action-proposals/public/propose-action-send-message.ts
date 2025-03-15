@@ -78,6 +78,7 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
   // configure contract call parameters
   const paramsCV = Cl.stringAscii(args.message);
   // configure contract call options
