@@ -3,6 +3,11 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
+  PostConditionMode,
+  Pc,
+  callReadOnlyFunction,
+  ClarityType,
+  cvToValue,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -13,11 +18,12 @@ import {
   getNextNonce,
   sendToLLM,
 } from "../../../../utilities";
+import { ResourceData } from "../../../types/dao-types";
 
 const usage =
   "Usage: bun run pay-invoice.ts <paymentsInvoicesContract> <resourceIndex> [memo]";
 const usageExample =
-  "Example: bun run pay-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-payments-invoices 1";
+  "Example: bun run pay-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices 1";
 
 interface ExpectedArgs {
   paymentsInvoicesContract: string;
@@ -59,8 +65,9 @@ function validateArgs(): ExpectedArgs {
 async function main() {
   // validate and store provided args
   const args = validateArgs();
-  const [contractAddress, contractName] =
-    args.paymentsInvoicesContract.split(".");
+  const { paymentsInvoicesContract, resourceIndex, memo } = args;
+  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
+
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -69,11 +76,36 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // Get resource details to set proper post-conditions
+  const resourceData = await callReadOnlyFunction({
+    contractAddress,
+    contractName,
+    functionName: "get-resource",
+    functionArgs: [Cl.uint(resourceIndex)],
+    senderAddress: address,
+    network: networkObj,
+  });
+
+  if (resourceData.type !== ClarityType.OptionalSome) {
+    throw new Error(
+      `Resource not found in ${paymentsInvoicesContract} for index ${resourceIndex}`
+    );
+  }
+
+  const resource = cvToValue(resourceData.value, true) as ResourceData;
+  const { price } = resource;
+
+  // Set post-conditions based on resource price
+  // Note: Contract only supports STX payments currently
+  const postConditions = [Pc.principal(address).willSendEq(price).ustx()];
+
   // prepare function arguments
   const functionArgs = [
-    Cl.uint(args.resourceIndex),
-    args.memo ? Cl.some(Cl.stringUtf8(args.memo)) : Cl.none(),
+    Cl.uint(resourceIndex),
+    memo ? Cl.some(Cl.stringUtf8(memo)) : Cl.none(),
   ];
+
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
@@ -84,7 +116,10 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
   };
+
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTx(transaction, networkObj);

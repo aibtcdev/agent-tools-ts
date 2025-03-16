@@ -345,3 +345,19 @@ const CONTRACT_SUBCATEGORIES = {
 // helper type that infers subcategory keys per category
 export type ContractSubCategory<C extends ContractCategory> =
   (typeof CONTRACT_SUBCATEGORIES)[C][number];
+
+//////////////////////////////
+// CONTRACT DATA STRUCTURES
+//////////////////////////////
+
+// Match the payment-invoices ResourceData map structure
+export interface ResourceData {
+  createdAt: number;
+  enabled: boolean;
+  name: string;
+  description: string;
+  price: number;
+  totalSpent: number;
+  totalUsed: number;
+  url?: string;
+}

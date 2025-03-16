@@ -3,6 +3,8 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
+  PostConditionMode,
+  Pc,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -17,7 +19,7 @@ import {
 const usage =
   "Usage: bun run withdraw-ft.ts <smartWalletContract> <ftContract> <amount>";
 const usageExample =
-  "Example: bun run withdraw-ft.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-user-agent-smart-wallet ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token 1000";
+  "Example: bun run withdraw-ft.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-smart-wallet ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token 1000";
 
 interface ExpectedArgs {
   smartWalletContract: string;
@@ -37,6 +39,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+
   // verify contract addresses extracted from arguments
   const [walletAddress, walletName] = smartWalletContract.split(".");
   const [ftAddress, ftName] = ftContract.split(".");
@@ -48,6 +51,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+
   // verify amount is positive
   if (amount <= 0) {
     const errorMessage = [
@@ -57,7 +61,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  // return validated arguments
+
   return {
     smartWalletContract,
     ftContract,
@@ -69,6 +73,8 @@ async function main() {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] = args.smartWalletContract.split(".");
+  const [ftAddress, ftName] = args.ftContract.split(".");
+
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -77,8 +83,17 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // Add post-conditions to ensure smart wallet sends exact amount of FT
+  const postConditions = [
+    Pc.principal(`${contractAddress}.${contractName}`)
+      .willSendEq(args.amount)
+      .ft(`${ftAddress}.${ftName}`, ftName),
+  ];
+
   // prepare function arguments
   const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
+
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
@@ -89,7 +104,10 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Deny, // Ensures no other transfers are allowed
+    postConditions,
   };
+
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTx(transaction, networkObj);

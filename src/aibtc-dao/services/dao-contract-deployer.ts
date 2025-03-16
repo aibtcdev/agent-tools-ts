@@ -55,7 +55,8 @@ export class DaoContractDeployer {
         nonce: nonce ? nonce : undefined,
         network: this.network,
         anchorMode: AnchorMode.Any,
-        postConditionMode: PostConditionMode.Allow,
+        postConditions: [], // empty, no transfers expected
+        postConditionMode: PostConditionMode.Deny,
         clarityVersion: contract.clarityVersion,
       });
 

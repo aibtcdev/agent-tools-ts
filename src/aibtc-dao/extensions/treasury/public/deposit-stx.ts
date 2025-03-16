@@ -3,6 +3,8 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
+  PostConditionMode,
+  Pc,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -25,9 +27,9 @@ interface ExpectedArgs {
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [treasuryContract, amountStr] = process.argv.slice(2);
+  const [treasuryContractArg, amountStr] = process.argv.slice(2);
   const amount = parseInt(amountStr);
-  if (!treasuryContract || !amount) {
+  if (!treasuryContractArg || !amount) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -35,16 +37,18 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+  
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = treasuryContract.split(".");
+  const [contractAddress, contractName] = treasuryContractArg.split(".");
   if (!contractAddress || !contractName) {
     const errorMessage = [
-      `Invalid contract address: ${treasuryContract}`,
+      `Invalid contract address: ${treasuryContractArg}`,
       usage,
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
+  
   // verify amount is positive
   if (amount <= 0) {
     const errorMessage = [
@@ -54,17 +58,19 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+  
   // return validated arguments
   return {
-    treasuryContract,
+    treasuryContract: treasuryContractArg,
     amount,
   };
 }
 
 async function main() {
   // validate and store provided args
-  const args = validateArgs();
-  const [contractAddress, contractName] = args.treasuryContract.split(".");
+  const { treasuryContract, amount } = validateArgs();
+  const [contractAddress, contractName] = treasuryContract.split(".");
+  
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -73,8 +79,17 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // Set post-conditions to ensure exact STX amount is sent
+  const postConditions = [
+    Pc.principal(address)
+      .willSendEq(amount)
+      .ustx()
+  ];
+
   // prepare function arguments
-  const functionArgs = [Cl.uint(args.amount)];
+  const functionArgs = [Cl.uint(amount)];
+  
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
@@ -85,7 +100,10 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
   };
+  
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTx(transaction, networkObj);

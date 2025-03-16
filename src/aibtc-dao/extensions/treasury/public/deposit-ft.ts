@@ -3,6 +3,8 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
+  PostConditionMode,
+  Pc,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -69,6 +71,8 @@ async function main() {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] = args.treasuryContract.split(".");
+  const [ftAddress, ftName] = args.ftContract.split(".");
+
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -77,6 +81,14 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // Set post-conditions using deconstructed values
+  const postConditions = [
+    Pc.principal(address)
+      .willSendEq(args.amount)
+      .ft(`${ftAddress}.${ftName}`, "token"),
+  ];
+
   // prepare function arguments
   const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
   // configure contract call options
@@ -89,6 +101,8 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

@@ -64,7 +64,8 @@ export class ContractDeployer {
       nonce: nonce ? nonce : undefined,
       network: this.network,
       anchorMode: AnchorMode.Any,
-      postConditionMode: PostConditionMode.Allow,
+      postConditions: [], // empty, no transfers expected
+      postConditionMode: PostConditionMode.Deny,
     });
 
     // Broadcast the transaction
