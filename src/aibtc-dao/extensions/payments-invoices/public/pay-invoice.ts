@@ -22,7 +22,7 @@ import {
 const usage =
   "Usage: bun run pay-invoice.ts <paymentsInvoicesContract> <resourceIndex> [memo]";
 const usageExample =
-  "Example: bun run pay-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-payments-invoices 1";
+  "Example: bun run pay-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices 1";
 
 interface ExpectedArgs {
   paymentsInvoicesContract: string;
@@ -30,13 +30,16 @@ interface ExpectedArgs {
   memo?: string;
 }
 
-// Match the contract's InvoiceData map structure
-interface InvoiceData {
-  amount: number;
+// Match the contract's ResourceData map structure
+interface ResourceData {
   createdAt: number;
-  userIndex: number;
-  resourceName: string;
-  resourceIndex: number;
+  enabled: boolean;
+  name: string;
+  description: string;
+  price: number;
+  totalSpent: number;
+  totalUsed: number;
+  url?: string;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -85,26 +88,28 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // Get invoice details to set proper post-conditions
-  const invoiceResult = await callReadOnlyFunction({
+  // Get resource details to set proper post-conditions
+  const resourceData = await callReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: "get-invoice",
+    functionName: "get-resource",
     functionArgs: [Cl.uint(resourceIndex)],
     senderAddress: address,
     network: networkObj,
   });
 
-  if (invoiceResult.type !== ClarityType.OptionalSome) {
-    throw new Error(`Invoice not found: ${resourceIndex}`);
+  if (resourceData.type !== ClarityType.OptionalSome) {
+    throw new Error(
+      `Resource not found in ${paymentsInvoicesContract} for index ${resourceIndex}`
+    );
   }
 
-  const invoice = cvToValue(invoiceResult.value, true) as InvoiceData;
-  const { amount } = invoice;
+  const resource = cvToValue(resourceData.value, true) as ResourceData;
+  const { price } = resource;
 
-  // Set post-conditions based on invoice amount
+  // Set post-conditions based on resource price
   // Note: Contract only supports STX payments currently
-  const postConditions = [Pc.principal(address).willSendEq(amount).ustx()];
+  const postConditions = [Pc.principal(address).willSendEq(price).ustx()];
 
   // prepare function arguments
   const functionArgs = [
