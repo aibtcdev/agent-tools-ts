@@ -1,39 +1,18 @@
+import { StacksNetworkName } from "@stacks/network";
 import {
   makeContractDeploy,
   broadcastTransaction,
   AnchorMode,
   PostConditionMode,
-  ClarityVersion,
-  Pc,
 } from "@stacks/transactions";
-import { StacksNetworkName } from "@stacks/network";
-import { getNextNonce } from "../../utilities";
-import { 
+import {
   GeneratedContractRegistryEntry,
-  BaseContractRegistryEntry
+  DeployedContractRegistryEntry,
 } from "./dao-contract-registry";
-import { ContractCategory, ContractSubCategory } from "../types/dao-types";
+import { getNextNonce } from "../../utilities";
 
 /**
- * Deployed contract information with error handling
- */
-export type DeployedContract = {
-  name: string;
-  type: ContractCategory;
-  subtype: ContractSubCategory<ContractCategory>;
-  deploymentOrder: number;
-  clarityVersion?: ClarityVersion;
-  source: string;
-  hash?: string;
-  sender: string;
-  success: boolean;
-  txId?: string;
-  address: string;
-  error?: string;
-};
-
-/**
- * Contract deployment service
+ * Contract deployment service for DAO contracts
  */
 export class DaoContractDeployer {
   private network: StacksNetworkName;
@@ -43,7 +22,7 @@ export class DaoContractDeployer {
   /**
    * Create a new DaoContractDeployer instance
    *
-   * @param network Network to deploy contracts to
+   * @param network Network instance to use for deployments
    * @param senderAddress Address that will deploy the contracts
    * @param senderKey Private key for the sender address
    */
@@ -58,34 +37,26 @@ export class DaoContractDeployer {
   }
 
   /**
-   * Deploy a contract
+   * Deploy a generated contract to the blockchain
    *
-   * @param contract The contract to deploy
-   * @param nonce Optional nonce to use for the transaction (will be auto-fetched if not provided)
-   * @returns Deployed contract information including transaction ID and success status
+   * @param contract The generated contract to deploy
+   * @returns A deployed contract registry entry
    */
   async deployContract(
     contract: GeneratedContractRegistryEntry,
     nonce?: number
-  ): Promise<DeployedContract> {
+  ): Promise<DeployedContractRegistryEntry> {
     try {
-      // Create post-condition to ensure no STX transfer
-      const postConditions = [
-        Pc.principal(this.senderAddress)
-          .willSendEq(0)
-          .ustx()
-      ];
-
       // Create the contract deployment transaction
       const transaction = await makeContractDeploy({
         contractName: contract.name,
         codeBody: contract.source,
         senderKey: this.senderKey,
-        nonce: nonce === 0 ? 0 : nonce ? nonce : undefined,
+        nonce: nonce ? nonce : undefined,
         network: this.network,
         anchorMode: AnchorMode.Any,
+        postConditions: [], // empty, no transfers expected
         postConditionMode: PostConditionMode.Deny,
-        postConditions,
         clarityVersion: contract.clarityVersion,
       });
 
@@ -96,14 +67,20 @@ export class DaoContractDeployer {
       );
 
       if (!broadcastResponse.error) {
+        // If successful, return the deployed contract info
+        //console.log(
+        //  `https://explorer.hiro.so/txid/0x${broadcastResponse.txid}?chain=testnet`
+        //);
         return {
           ...contract,
           sender: this.senderAddress,
           success: true,
           txId: broadcastResponse.txid,
           address: `${this.senderAddress}.${contract.name}`,
-        } as DeployedContract;
+        };
       } else {
+        // If failed, return error info
+        // create error message from broadcast response
         let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
         if (broadcastResponse.reason_data) {
           if ("message" in broadcastResponse.reason_data) {
@@ -113,42 +90,58 @@ export class DaoContractDeployer {
             errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
           }
         }
+        //console.error(errorMessage);
         return {
           ...contract,
           sender: this.senderAddress,
           success: false,
           address: `${this.senderAddress}.${contract.name}`,
-          error: errorMessage,
-        } as DeployedContract;
+        };
       }
     } catch (error) {
+      //console.error(`Failed to deploy contract ${contract.name}:`, error);
+
+      // Return failure status
       return {
         ...contract,
         sender: this.senderAddress,
         success: false,
         address: `${this.senderAddress}.${contract.name}`,
-        error: error instanceof Error ? error.message : String(error),
-      } as DeployedContract;
+      };
     }
   }
 
   /**
    * Deploy multiple contracts in sequence
    *
-   * @param contracts Array of contracts to deploy
-   * @returns Array of deployed contract information
+   * @param contracts Array of generated contracts to deploy
+   * @returns Array of deployed contract registry entries
    */
   async deployContracts(
     contracts: GeneratedContractRegistryEntry[]
-  ): Promise<DeployedContract[]> {
-    const deployedContracts: DeployedContract[] = [];
+  ): Promise<DeployedContractRegistryEntry[]> {
+    const deployedContracts: DeployedContractRegistryEntry[] = [];
     let nonce = await getNextNonce(this.network, this.senderAddress);
 
     for (const contract of contracts) {
-      const deployedContract = await this.deployContract(contract, nonce++);
+      //console.log(`Deploying ${contract.name}...`);
+      const deployedContract = await this.deployContract(contract, nonce);
       deployedContracts.push(deployedContract);
+
+      // If deployment failed, throw an error
       if (!deployedContract.success) {
-        break;
+        throw new Error(
+          `Failed to deploy ${contract.name}, ${JSON.stringify(
+            deployedContract
+          )}`
+        );
+      } else {
+        //console.log(
+        //  `Successfully deployed ${contract.name}: ${deployedContract.address}`
+        //);
+        nonce++;
+        // wait 0.5 seconds before deploying the next contract
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
     }
 
