@@ -2,6 +2,8 @@ import {
   AnchorMode,
   Cl,
   makeContractCall,
+  Pc,
+  PostConditionMode,
   SignedContractCallOptions,
 } from "@stacks/transactions";
 import {
@@ -15,19 +17,21 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run deposit-nft.ts <treasuryContract> <nftContract> <tokenId>";
+  "Usage: bun run deposit-nft.ts <treasuryContract> <nftContract> <nftAssetId> <tokenId>";
 const usageExample =
-  "Example: bun run deposit-nft.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-treasury ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdev-airdrop-1 1";
+  "Example: bun run deposit-nft.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-treasury ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdev-airdrop-1 aibtcdev-1 1";
 
 interface ExpectedArgs {
   treasuryContract: string;
   nftContract: string;
+  nftAssetName: string;
   tokenId: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [treasuryContract, nftContract, tokenIdStr] = process.argv.slice(2);
+  const [treasuryContract, nftContract, nftAssetName, tokenIdStr] =
+    process.argv.slice(2);
   const tokenId = parseInt(tokenIdStr);
   if (!treasuryContract || !nftContract || !tokenId) {
     const errorMessage = [
@@ -39,8 +43,13 @@ function validateArgs(): ExpectedArgs {
   }
   // verify contract addresses extracted from arguments
   const [treasuryAddress, treasuryName] = treasuryContract.split(".");
-  const [nftAddress, nftName] = nftContract.split(".");
-  if (!treasuryAddress || !treasuryName || !nftAddress || !nftName) {
+  const [nftContractAddress, nftContractName] = nftContract.split(".");
+  if (
+    !treasuryAddress ||
+    !treasuryName ||
+    !nftContractAddress ||
+    !nftContractName
+  ) {
     const errorMessage = [
       `Invalid contract addresses: ${treasuryContract} ${nftContract}`,
       usage,
@@ -61,6 +70,7 @@ function validateArgs(): ExpectedArgs {
   return {
     treasuryContract,
     nftContract,
+    nftAssetName,
     tokenId,
   };
 }
@@ -69,6 +79,7 @@ async function main() {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] = args.treasuryContract.split(".");
+  const [nftContractAddress, nftContractName] = args.nftContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -77,6 +88,15 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  // set post-conditions
+  const postConditions = [
+    Pc.principal(address)
+      .willSendAsset()
+      .nft(
+        `${nftContractAddress}.${nftContractName}::${args.nftAssetName}`,
+        Cl.uint(args.tokenId)
+      ),
+  ];
   // prepare function arguments
   const functionArgs = [Cl.principal(args.nftContract), Cl.uint(args.tokenId)];
   // configure contract call options
@@ -89,6 +109,8 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
