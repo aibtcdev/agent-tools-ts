@@ -39,6 +39,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+
   // verify contract addresses extracted from arguments
   const [walletAddress, walletName] = smartWalletContract.split(".");
   const [ftAddress, ftName] = ftContract.split(".");
@@ -50,6 +51,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+
   // verify amount is positive
   if (amount <= 0) {
     const errorMessage = [
@@ -59,7 +61,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  // return validated arguments
+
   return {
     smartWalletContract,
     ftContract,
@@ -71,6 +73,8 @@ async function main() {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] = args.smartWalletContract.split(".");
+  const [ftAddress, ftName] = args.ftContract.split(".");
+
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -81,14 +85,17 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Add post-conditions to ensure smart wallet sends exact amount of FT
+  const walletContractId = `${contractAddress}.${contractName}` as `${string}.${string}`;
+  const ftContractId = `${ftAddress}.${ftName}` as `${string}.${string}`;
   const postConditions = [
-    Pc.principal(args.smartWalletContract as `${string}.${string}`)
+    Pc.principal(walletContractId)
       .willSendEq(args.amount)
-      .ft(args.ftContract as `${string}.${string}`, "token")
+      .ft(ftContractId, ftName)
   ];
 
   // prepare function arguments
   const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
+
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
@@ -99,9 +106,10 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Deny,
+    postConditionMode: PostConditionMode.Deny, // Ensures no other transfers are allowed
     postConditions,
   };
+
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTx(transaction, networkObj);

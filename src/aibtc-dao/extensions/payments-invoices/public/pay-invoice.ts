@@ -5,6 +5,9 @@ import {
   SignedContractCallOptions,
   PostConditionMode,
   Pc,
+  callReadOnlyFunction,
+  ClarityType,
+  cvToValue,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -25,6 +28,26 @@ interface ExpectedArgs {
   paymentsInvoicesContract: string;
   resourceIndex: number;
   memo?: string;
+}
+
+// Match the contract's InvoiceData map structure
+interface InvoiceData {
+  amount: number;
+  createdAt: number;
+  userIndex: number;
+  resourceName: string;
+  resourceIndex: number;
+}
+
+type ContractAddress = `${string}.${string}`;
+
+// Helper function to ensure contract address has correct type
+function formatContractAddress(address: string): ContractAddress {
+  const [addr, name] = address.split(".");
+  if (!addr || !name) {
+    throw new Error(`Invalid contract address format: ${address}`);
+  }
+  return `${addr}.${name}` as ContractAddress;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -61,8 +84,9 @@ function validateArgs(): ExpectedArgs {
 async function main() {
   // validate and store provided args
   const args = validateArgs();
-  const [contractAddress, contractName] =
-    args.paymentsInvoicesContract.split(".");
+  const { paymentsInvoicesContract, resourceIndex, memo } = args;
+  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
+  
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -72,20 +96,37 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // Add post-conditions to ensure sender has approved sufficient funds
-  // Note: The actual amount and token type should be read from the invoice
-  // This is a placeholder that ensures the transaction will fail if post-conditions aren't met
+  // Get invoice details to set proper post-conditions
+  const invoiceResult = await callReadOnlyFunction({
+    contractAddress,
+    contractName,
+    functionName: "get-invoice",
+    functionArgs: [Cl.uint(resourceIndex)],
+    senderAddress: address,
+    network: networkObj,
+  });
+
+  if (invoiceResult.type !== ClarityType.OptionalSome) {
+    throw new Error(`Invoice not found: ${resourceIndex}`);
+  }
+
+  const invoice = cvToValue(invoiceResult.value, true) as InvoiceData;
+  const { amount } = invoice;
+
+  // Set post-conditions based on invoice amount
+  // Note: Contract only supports STX payments currently
   const postConditions = [
     Pc.principal(address)
-      .willSendEq(0) // Will be replaced with actual amount from invoice
+      .willSendEq(amount)
       .ustx()
   ];
 
   // prepare function arguments
   const functionArgs = [
-    Cl.uint(args.resourceIndex),
-    args.memo ? Cl.some(Cl.stringUtf8(args.memo)) : Cl.none(),
+    Cl.uint(resourceIndex),
+    memo ? Cl.some(Cl.stringUtf8(memo)) : Cl.none(),
   ];
+  
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
@@ -99,6 +140,7 @@ async function main() {
     postConditionMode: PostConditionMode.Deny,
     postConditions,
   };
+  
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTx(transaction, networkObj);
