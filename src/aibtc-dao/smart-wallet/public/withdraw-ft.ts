@@ -19,7 +19,7 @@ import {
 const usage =
   "Usage: bun run withdraw-ft.ts <smartWalletContract> <ftContract> <amount>";
 const usageExample =
-  "Example: bun run withdraw-ft.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-user-agent-smart-wallet ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token 1000";
+  "Example: bun run withdraw-ft.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-smart-wallet ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token 1000";
 
 interface ExpectedArgs {
   smartWalletContract: string;
@@ -85,12 +85,10 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Add post-conditions to ensure smart wallet sends exact amount of FT
-  const walletContractId = `${contractAddress}.${contractName}` as `${string}.${string}`;
-  const ftContractId = `${ftAddress}.${ftName}` as `${string}.${string}`;
   const postConditions = [
-    Pc.principal(walletContractId)
+    Pc.principal(`${contractAddress}.${contractName}`)
       .willSendEq(args.amount)
-      .ft(ftContractId, ftName)
+      .ft(`${ftAddress}.${ftName}`, ftName),
   ];
 
   // prepare function arguments
