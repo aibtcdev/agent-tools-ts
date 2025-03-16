@@ -383,6 +383,22 @@ export async function getNextNonce(network: string, address: string) {
 }
 
 //////////////////////////////
+// POST CONDITIONS
+//////////////////////////////
+
+// helper type for expected post conditions format
+type ContractAddress = `${string}.${string}`;
+
+// helper function to ensure contract address has correct type
+export function formatContractAddress(address: string): ContractAddress {
+  const [addr, name] = address.split(".");
+  if (!addr || !name) {
+    throw new Error(`Invalid contract address format: ${address}`);
+  }
+  return `${addr}.${name}` as ContractAddress;
+}
+
+//////////////////////////////
 // HIRO
 //////////////////////////////
 

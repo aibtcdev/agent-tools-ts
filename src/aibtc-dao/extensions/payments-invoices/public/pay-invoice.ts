@@ -39,17 +39,6 @@ interface InvoiceData {
   resourceIndex: number;
 }
 
-type ContractAddress = `${string}.${string}`;
-
-// Helper function to ensure contract address has correct type
-function formatContractAddress(address: string): ContractAddress {
-  const [addr, name] = address.split(".");
-  if (!addr || !name) {
-    throw new Error(`Invalid contract address format: ${address}`);
-  }
-  return `${addr}.${name}` as ContractAddress;
-}
-
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
   const [paymentsInvoicesContract, resourceIndexStr, memo] =
@@ -86,7 +75,7 @@ async function main() {
   const args = validateArgs();
   const { paymentsInvoicesContract, resourceIndex, memo } = args;
   const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
-  
+
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -115,18 +104,14 @@ async function main() {
 
   // Set post-conditions based on invoice amount
   // Note: Contract only supports STX payments currently
-  const postConditions = [
-    Pc.principal(address)
-      .willSendEq(amount)
-      .ustx()
-  ];
+  const postConditions = [Pc.principal(address).willSendEq(amount).ustx()];
 
   // prepare function arguments
   const functionArgs = [
     Cl.uint(resourceIndex),
     memo ? Cl.some(Cl.stringUtf8(memo)) : Cl.none(),
   ];
-  
+
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
@@ -140,7 +125,7 @@ async function main() {
     postConditionMode: PostConditionMode.Deny,
     postConditions,
   };
-  
+
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTx(transaction, networkObj);
