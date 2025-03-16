@@ -18,6 +18,7 @@ import {
   getNextNonce,
   sendToLLM,
 } from "../../../../utilities";
+import { ResourceData } from "../../../types/dao-types";
 
 const usage =
   "Usage: bun run pay-invoice.ts <paymentsInvoicesContract> <resourceIndex> [memo]";
@@ -28,18 +29,6 @@ interface ExpectedArgs {
   paymentsInvoicesContract: string;
   resourceIndex: number;
   memo?: string;
-}
-
-// Match the contract's ResourceData map structure
-interface ResourceData {
-  createdAt: number;
-  enabled: boolean;
-  name: string;
-  description: string;
-  price: number;
-  totalSpent: number;
-  totalUsed: number;
-  url?: string;
 }
 
 function validateArgs(): ExpectedArgs {
