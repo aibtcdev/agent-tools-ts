@@ -123,7 +123,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "TOKEN",
     subtype: "PRELAUNCH",
     deploymentOrder: 0,
-    templatePath: `extensions/aibtc-token.clar`, // TODO: add actual path here?
+    templatePath: `extensions/aibtc-pre-dex.clar`,
   },
   {
     name: "aibtc-faktory",
