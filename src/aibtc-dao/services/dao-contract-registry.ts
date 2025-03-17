@@ -725,11 +725,6 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "extension_trait",
       },
       {
-        key: "messaging_contract",
-        category: "EXTENSIONS",
-        subcategory: "MESSAGING",
-      },
-      {
         ref: "DAO_ACTION",
         key: "action_trait",
       },
