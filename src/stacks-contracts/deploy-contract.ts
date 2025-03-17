@@ -89,7 +89,10 @@ async function main(): Promise<ToolResponse<DeployedSingleContract>> {
   return {
     success: true,
     message: `Contract deployed successfully: ${address}.${args.contractName}`,
-    data: deploymentDetails,
+    data: {
+      ...deploymentDetails,
+      source: deploymentDetails.source.substring(0, 250),
+    },
   };
 }
 
