@@ -2,7 +2,7 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Set timed vault holder")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Set or updated the account holder in the timed vault extension")
 (define-constant CFG_ACCOUNT_HOLDER <%= it.account_holder %>)
 
 (define-public (execute (sender principal))

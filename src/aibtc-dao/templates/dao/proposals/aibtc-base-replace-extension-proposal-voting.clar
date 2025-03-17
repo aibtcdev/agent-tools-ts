@@ -2,7 +2,7 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Replaced proposal voting extensions")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Replaced core and action proposal voting extensions in the base DAO")
 (define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)
 (define-constant CFG_BASE_DAO_CONTRACT <%= it.base_dao_contract %>)
 (define-constant CFG_OLD_ACTION_PROPOSALS <%= it.old_action_proposals_contract %>)

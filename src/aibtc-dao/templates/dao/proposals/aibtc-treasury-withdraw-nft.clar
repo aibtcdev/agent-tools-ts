@@ -2,7 +2,7 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Withdraw an NFT from the treasury")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Withdrew an NFT in the treasury extension")
 (define-constant CFG_NFT_ID <%= it.nft_id %>)
 (define-constant CFG_RECIPIENT <%= it.recipient %>)
 (define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)

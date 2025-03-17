@@ -2,7 +2,7 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Withdraw STX from timed vault")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Withdrew STX from the timed vault extension")
 
 (define-public (execute (sender principal))
   (begin

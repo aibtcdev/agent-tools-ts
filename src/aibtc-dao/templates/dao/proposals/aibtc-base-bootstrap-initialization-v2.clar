@@ -9,11 +9,11 @@
     (try! (contract-call? '<%= it.base_dao_contract %> set-extensions
       (list
         {extension: '<%= it.action_proposals_contract %>, enabled: true}
-        {extension: '<%= it.timed_vault_contract %>, enabled: true}
         {extension: '<%= it.core_proposals_contract %>, enabled: true}
         {extension: '<%= it.dao_charter_contract %>, enabled: true}
         {extension: '<%= it.messaging_contract %>, enabled: true}
         {extension: '<%= it.payments_contract %>, enabled: true}
+        {extension: '<%= it.timed_vault_contract %>, enabled: true}
         {extension: '<%= it.token_owner_contract %>, enabled: true}
         {extension: '<%= it.treasury_contract %>, enabled: true}
       )
@@ -35,7 +35,12 @@
     ;; send DAO manifest as onchain message
     (try! (contract-call? '<%= it.messaging_contract %> send CFG_DAO_MANIFEST_TEXT true))
     ;; allow assets in treasury
-    (try! (contract-call? '<%= it.treasury_contract %> allow-asset '<%= it.token_contract %> true))
+    (try! (contract-call? '<%= it.treasury_contract %> allow-assets
+      (list
+        {token: '<%= it.token_contract %>, enabled: true}
+        {token: '<%= it.sbtc_contract %>, enabled: true}
+      )
+    ))
     ;; print manifest
     (print CFG_DAO_MANIFEST_TEXT)
     (ok true)

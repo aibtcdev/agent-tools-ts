@@ -833,6 +833,12 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "proposal_trait",
       },
     ],
+    requiredAddresses: [
+      {
+        ref: "SBTC",
+        key: "sbtc_contract",
+      },
+    ],
     requiredContractAddresses: [
       // base dao
       {

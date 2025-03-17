@@ -2,7 +2,7 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Withdraw fungible tokens from the treasury")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Withdrew fungible tokens in the treasury extension")
 (define-constant CFG_TOKEN_AMOUNT <%= it.token_amount %>) ;; in microFT
 (define-constant CFG_RECIPIENT <%= it.recipient %>)
 (define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)

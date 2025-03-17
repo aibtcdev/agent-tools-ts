@@ -2,11 +2,9 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Set DAO Charter")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Set or updated the DAO charter extension")
 (define-constant CFG_CHARTER_TEXT <%= it.dao_charter_text %>)
 (define-constant CFG_CHARTER_INSCRIPTION_ID <%= it.dao_charter_inscription_id %>)
-(define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)
-(define-constant CFG_CHARTER_CONTRACT <%= it.charter_contract %>)
 
 (define-public (execute (sender principal))
   (begin 

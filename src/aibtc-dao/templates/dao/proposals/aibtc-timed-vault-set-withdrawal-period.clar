@@ -2,7 +2,7 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Set timed vault withdrawal period")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Set withdrawal period in the timed vault extension")
 (define-constant CFG_WITHDRAWAL_PERIOD <%= it.withdrawal_period %>)
 
 (define-public (execute (sender principal))

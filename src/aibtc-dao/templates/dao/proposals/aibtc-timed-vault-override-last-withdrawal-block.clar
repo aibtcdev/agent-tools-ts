@@ -2,7 +2,7 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Override last withdrawal block")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Override last withdrawal block in the timed vault extension")
 (define-constant CFG_LAST_WITHDRAWAL_BLOCK <%= it.last_withdrawal_block %>)
 
 (define-public (execute (sender principal))
