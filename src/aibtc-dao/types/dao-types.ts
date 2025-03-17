@@ -117,7 +117,9 @@ type DaoTraits = {
   DAO_INVOICES: string;
   DAO_MESSAGING: string;
   DAO_RESOURCES: string;
-  DAO_SMART_WALLET: string;
+  DAO_SMART_WALLET_BASE: string;
+  DAO_SMART_WALLET_PROPOSALS: string;
+  DAO_SMART_WALLET_FAKTORY: string;
   DAO_TOKEN: string;
   DAO_TOKEN_DEX: string;
   DAO_TOKEN_OWNER: string;
@@ -163,8 +165,12 @@ const mainnetTraits: KnownTraits = {
     "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-dao-traits-v2.messaging",
   DAO_RESOURCES:
     "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-dao-traits-v2.resources",
-  DAO_SMART_WALLET:
+  DAO_SMART_WALLET_BASE:
     "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-user-agent-traits.aibtc-smart-wallet",
+  DAO_SMART_WALLET_PROPOSALS:
+    "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-user-agent-traits.aibtc-proposals-v2",
+  DAO_SMART_WALLET_FAKTORY:
+    "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-user-agent-traits.faktory-buy-sell",
   DAO_TOKEN:
     "SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC.aibtc-dao-traits-v2.token",
   DAO_TOKEN_DEX:
@@ -210,8 +216,12 @@ const testnetTraits: KnownTraits = {
     "ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-dao-traits-v2.messaging",
   DAO_RESOURCES:
     "ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-dao-traits-v2.resources",
-  DAO_SMART_WALLET:
+  DAO_SMART_WALLET_BASE:
     "ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-smart-wallet-traits.aibtc-smart-wallet",
+  DAO_SMART_WALLET_PROPOSALS:
+    "ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-smart-wallet-traits.aibtc-proposals-v2",
+  DAO_SMART_WALLET_FAKTORY:
+    "ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-smart-wallet-traits.faktory-buy-sell",
   DAO_TOKEN:
     "ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-dao-traits-v2.token",
   DAO_TOKEN_DEX:
@@ -257,8 +267,12 @@ const devnetTraits: KnownTraits = {
     "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-dao-traits-v2.messaging",
   DAO_RESOURCES:
     "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-dao-traits-v2.resources",
-  DAO_SMART_WALLET:
-    "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-user-agent-traits.aibtc-smart-wallet",
+  DAO_SMART_WALLET_BASE:
+    "ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-smart-wallet-traits.aibtc-smart-wallet",
+  DAO_SMART_WALLET_PROPOSALS:
+    "ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-smart-wallet-traits.aibtc-proposals-v2",
+  DAO_SMART_WALLET_FAKTORY:
+    "ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-smart-wallet-traits.faktory-buy-sell",
   DAO_TOKEN:
     "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-dao-traits-v2.token",
   DAO_TOKEN_DEX:

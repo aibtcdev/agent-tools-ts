@@ -12,6 +12,8 @@ export interface SmartWalletGeneratorArgs {
   ownerAddress: string;
   /** The fully qualified contract ID of the DAO token */
   daoTokenContract: string;
+  /** The fully qualified contract ID of the DAO token dex */
+  daoTokenDexContract: string;
 }
 
 /**
@@ -71,12 +73,17 @@ export class SmartWalletGenerator {
       smart_wallet_agent: this.senderAddress,
       sbtc_token_contract: sbtcContract,
       dao_token_contract: args.daoTokenContract,
-      smart_wallet_trait: traitRefs["DAO_SMART_WALLET"],
+      dao_token_dex_contract: args.daoTokenDexContract,
+      smart_wallet_base_trait: traitRefs["DAO_SMART_WALLET_BASE"],
+      smart_wallet_proposals_trait: traitRefs["DAO_SMART_WALLET_PROPOSALS"],
+      smart_wallet_faktory_trait: traitRefs["DAO_SMART_WALLET_FAKTORY"],
       sip010_trait: traitRefs["STANDARD_SIP010"],
       dao_action_trait: traitRefs["DAO_ACTION"],
       dao_proposal_trait: traitRefs["DAO_PROPOSAL"],
       dao_action_proposals_trait: traitRefs["DAO_ACTION_PROPOSALS"],
       dao_core_proposals_trait: traitRefs["DAO_CORE_PROPOSALS"],
+      dao_faktory_dex_trait: traitRefs["DAO_TOKEN_DEX"],
+      faktory_token_trait: traitRefs["FAKTORY_SIP010"],
     };
 
     // Render the template
