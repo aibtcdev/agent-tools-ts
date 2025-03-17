@@ -15,7 +15,7 @@
     )
     (try! (is-dao-or-extension))
     (try! (contract-call? '<%= it.messaging_contract %> send CFG_MESSAGE true))
-    (contract-call? '<%= it.bank_account_contract %> set-account-holder accountHolder)
+    (contract-call? '<%= it.timed_vault_contract %> set-account-holder accountHolder)
   )
 )
 

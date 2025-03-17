@@ -5,7 +5,7 @@
 ;; traits
 ;;
 (impl-trait '<%= it.extension_trait %>)
-(impl-trait '<%= it.bank_account_trait %>)
+(impl-trait '<%= it.timed_vault_trait %>)
 
 ;; constants
 ;;

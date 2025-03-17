@@ -9,7 +9,7 @@
     (try! (contract-call? '<%= it.base_dao_contract %> set-extensions
       (list
         {extension: '<%= it.action_proposals_contract %>, enabled: true}
-        {extension: '<%= it.bank_account_contract %>, enabled: true}
+        {extension: '<%= it.timed_vault_contract %>, enabled: true}
         {extension: '<%= it.core_proposals_contract %>, enabled: true}
         {extension: '<%= it.dao_charter_contract %>, enabled: true}
         {extension: '<%= it.messaging_contract %>, enabled: true}

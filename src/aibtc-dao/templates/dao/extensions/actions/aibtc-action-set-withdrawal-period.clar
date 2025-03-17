@@ -19,7 +19,7 @@
     ;; more than 6 blocks (1hr), less than 1008 blocks (~1 week)
     (asserts! (and (> period u6) (< period u1008)) ERR_PARAMS_OUT_OF_RANGE)
     (try! (contract-call? '<%= it.messaging_contract %> send CFG_MESSAGE true))
-    (contract-call? '<%= it.bank_account_contract %> set-withdrawal-period period)
+    (contract-call? '<%= it.timed_vault_contract %> set-withdrawal-period period)
   )
 )
 

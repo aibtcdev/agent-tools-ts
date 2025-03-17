@@ -8,7 +8,7 @@
     (try! (contract-call? <%= it.base_dao_contract %> set-extensions
       (list
         {extension: CFG_ACTION_PROPOSALS, enabled: true}
-        {extension: CFG_BANK_ACCOUNT, enabled: true}
+        {extension: CFG_TIMED_VAULT, enabled: true}
         {extension: CFG_CORE_PROPOSALS, enabled: true}
         {extension: CFG_MESSAGING, enabled: true}
         {extension: CFG_PAYMENTS, enabled: true}

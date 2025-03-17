@@ -19,7 +19,7 @@
     ;; more than 0, less than 100 STX (100_000_000)
     (asserts! (and (> amount u0) (< amount u100000000)) ERR_INVALID_PARAMS)
     (try! (contract-call? '<%= it.messaging_contract %> send CFG_MESSAGE true))
-    (contract-call? '<%= it.bank_account_contract %> set-withdrawal-amount amount)
+    (contract-call? '<%= it.timed_vault_contract %> set-withdrawal-amount amount)
   )
 )
 
