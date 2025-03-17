@@ -14,7 +14,7 @@ import {
 
 const usage = "Usage: bun run get-account-terms.ts <timedVaultContract>";
 const usageExample =
-  "Example: bun run get-account-terms.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-timed-vault";
+  "Example: bun run get-account-terms.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-timed-vault";
 
 interface ExpectedArgs {
   timedVaultContract: string;

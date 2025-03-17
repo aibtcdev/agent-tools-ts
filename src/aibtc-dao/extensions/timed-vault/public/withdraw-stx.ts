@@ -15,7 +15,7 @@ import {
 
 const usage = "Usage: bun run withdraw-stx.ts <timedVaultContract>";
 const usageExample =
-  "Example: bun run withdraw-stx.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-timed-vault";
+  "Example: bun run withdraw-stx.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-timed-vault";
 
 interface ExpectedArgs {
   timedVaultContract: string;
