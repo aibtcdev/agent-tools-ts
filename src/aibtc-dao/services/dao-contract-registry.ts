@@ -123,14 +123,14 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "TOKEN",
     subtype: "PRELAUNCH",
     deploymentOrder: 0,
-    templatePath: `extensions/aibtc-pre-dex.clar`,
+    templatePath: `token/aibtc-pre-dex.clar`,
   },
   {
     name: "aibtc-faktory",
     type: "TOKEN",
     subtype: "DAO",
     deploymentOrder: 1,
-    templatePath: `extensions/aibtc-token.clar`,
+    templatePath: `token/aibtc-token.clar`,
     requiredTraits: [
       {
         ref: "STANDARD_SIP010",
@@ -149,7 +149,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "TOKEN",
     subtype: "DEX",
     deploymentOrder: 3,
-    templatePath: `extensions/aibtc-token-dex.clar`,
+    templatePath: `token/aibtc-token-dex.clar`,
     requiredTraits: [
       {
         ref: "STANDARD_SIP010",
@@ -207,7 +207,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "TOKEN",
     subtype: "POOL",
     deploymentOrder: 2,
-    templatePath: `extensions/aibtc-bitflow-pool.clar`,
+    templatePath: `token/aibtc-bitflow-pool.clar`,
     requiredTraits: [
       {
         ref: "BITFLOW_POOL",
@@ -237,7 +237,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "TOKEN",
     subtype: "POOL_STX",
     deploymentOrder: 2,
-    templatePath: `extensions/aibtc-bitflow-pool.clar`,
+    templatePath: `token/aibtc-bitflow-pool.clar`,
     requiredTraits: [
       {
         ref: "BITFLOW_POOL",
@@ -786,7 +786,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "ACTIONS",
     subtype: "PAYMENTS_INVOICES_TOGGLE_RESOURCE",
     deploymentOrder: 19,
-    templatePath: `extensions/actions/aibtc-action-toggle-resource.clar`,
+    templatePath: `extensions/actions/aibtc-action-toggle-resource-by-name.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
