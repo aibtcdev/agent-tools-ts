@@ -1,4 +1,4 @@
-;; title: aibtc-bank-account
+;; title: aibtc-timed-vault
 ;; version: 1.0.0
 ;; summary: An extension that allows a principal to withdraw STX from the contract with given rules.
 
@@ -10,7 +10,7 @@
 ;; constants
 ;;
 (define-constant SELF (as-contract tx-sender))
-(define-constant DEPLOYED_AT burn-block-height)
+(define-constant DEPLOYED_BURN_BLOCK burn-block-height)
 (define-constant ERR_INVALID (err u2000))
 (define-constant ERR_UNAUTHORIZED (err u2001))
 (define-constant ERR_TOO_SOON (err u2002))
@@ -59,7 +59,7 @@
 (define-public (override-last-withdrawal-block (block uint))
   (begin
     (try! (is-dao-or-extension))
-    (asserts! (> block DEPLOYED_AT) ERR_INVALID)
+    (asserts! (> block DEPLOYED_BURN_BLOCK) ERR_INVALID)
     (ok (var-set lastWithdrawalBlock block))
   )
 )
@@ -103,7 +103,7 @@
 ;; read only functions
 ;;
 (define-read-only (get-deployed-block)
-  DEPLOYED_AT
+  DEPLOYED_BURN_BLOCK
 )
 
 (define-read-only (get-account-balance)
