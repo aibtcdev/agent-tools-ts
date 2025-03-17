@@ -5,6 +5,8 @@
 (define-constant ERR_INVALID_PARAMS (err u10002))
 (define-constant ERR_PARAMS_OUT_OF_RANGE (err u10003))
 
+(define-constant CFG_MESSAGE "Executed Action Proposal: Set withdrawal period in timed vault extension")
+
 (define-public (callback (sender principal) (memo (buff 34))) (ok true))
 
 (define-public (run (parameters (buff 2048)))
@@ -16,6 +18,7 @@
     ;; verify within limits for low quorum
     ;; more than 6 blocks (1hr), less than 1008 blocks (~1 week)
     (asserts! (and (> period u6) (< period u1008)) ERR_PARAMS_OUT_OF_RANGE)
+    (try! (contract-call? '<%= it.messaging_contract %> send CFG_MESSAGE true))
     (contract-call? '<%= it.bank_account_contract %> set-withdrawal-period period)
   )
 )

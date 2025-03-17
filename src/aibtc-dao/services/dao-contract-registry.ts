@@ -600,6 +600,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "DAO",
       },
       {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
         key: "payments_contract",
         category: "EXTENSIONS",
         subcategory: "PAYMENTS",
@@ -627,6 +632,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
       },
       {
         key: "treasury_contract",
@@ -662,6 +672,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         category: "EXTENSIONS",
         subcategory: "MESSAGING",
       },
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
     ],
   },
   {
@@ -687,6 +702,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "DAO",
       },
       {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
         key: "bank_account_contract",
         category: "EXTENSIONS",
         subcategory: "BANK_ACCOUNT",
@@ -705,6 +725,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "extension_trait",
       },
       {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
         ref: "DAO_ACTION",
         key: "action_trait",
       },
@@ -714,6 +739,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
       },
       {
         key: "bank_account_contract",
@@ -745,6 +775,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "DAO",
       },
       {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
         key: "bank_account_contract",
         category: "EXTENSIONS",
         subcategory: "BANK_ACCOUNT",
@@ -772,6 +807,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
       },
       {
         key: "bank_account_contract",
