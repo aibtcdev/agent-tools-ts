@@ -2,6 +2,8 @@ import {
   AnchorMode,
   Cl,
   makeContractCall,
+  Pc,
+  PostConditionMode,
   SignedContractCallOptions,
 } from "@stacks/transactions";
 import {
@@ -11,17 +13,19 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  getProposalBondAmount,
   sendToLLM,
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <message>";
+  "Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenContract> <message>";
 const usageExample =
-  'Example: bun run propose-action-send-message.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-send-message "hello world"';
+  'Example: bun run propose-action-send-message.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token "hello world"';
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
   daoActionProposalContract: string;
+  daoTokenContract: string;
   message: string;
 }
 
@@ -30,11 +34,13 @@ function validateArgs(): ExpectedArgs {
   const [
     daoActionProposalsExtensionContract,
     daoActionProposalContract,
+    daoTokenContract,
     message,
   ] = process.argv.slice(2);
   if (
     !daoActionProposalsExtensionContract ||
     !daoActionProposalContract ||
+    !daoTokenContract ||
     !message
   ) {
     const errorMessage = [
@@ -48,9 +54,10 @@ function validateArgs(): ExpectedArgs {
   const [extensionAddress, extensionName] =
     daoActionProposalsExtensionContract.split(".");
   const [actionAddress, actionName] = daoActionProposalContract.split(".");
-  if (!extensionAddress || !extensionName || !actionAddress || !actionName) {
+  const [tokenAddress, tokenName] = daoTokenContract.split(".");
+  if (!extensionAddress || !extensionName || !actionAddress || !actionName || !tokenAddress || !tokenName) {
     const errorMessage = [
-      `Invalid contract addresses: ${daoActionProposalsExtensionContract} ${daoActionProposalContract}`,
+      `Invalid contract addresses: ${daoActionProposalsExtensionContract} ${daoActionProposalContract} ${daoTokenContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -60,6 +67,7 @@ function validateArgs(): ExpectedArgs {
   return {
     daoActionProposalsExtensionContract,
     daoActionProposalContract,
+    daoTokenContract,
     message,
   };
 }
@@ -70,6 +78,7 @@ async function main() {
   const args = validateArgs();
   const [extensionAddress, extensionName] =
     args.daoActionProposalsExtensionContract.split(".");
+  const [daoTokenAddress, daoTokenName] = args.daoTokenContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -78,6 +87,17 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  // get the proposal bond amount from the contract
+  const bondAmountInfo = await getProposalBondAmount(
+    args.daoActionProposalsExtensionContract,
+    address
+  );
+  // configure post conditions
+  const postConditions = [
+    Pc.principal(`${extensionAddress}.${extensionName}`)
+      .willSendEq(bondAmountInfo.bond)
+      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.tokenName),
+  ];
 
   // configure contract call parameters
   const paramsCV = Cl.stringAscii(args.message);
@@ -94,6 +114,8 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions: postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
