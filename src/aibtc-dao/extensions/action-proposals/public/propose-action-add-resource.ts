@@ -1,8 +1,6 @@
 import {
   AnchorMode,
-  callReadOnlyFunction,
   Cl,
-  cvToValue,
   makeContractCall,
   Pc,
   PostConditionMode,
@@ -15,6 +13,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  getProposalBondAmount,
   sendToLLM,
 } from "../../../../utilities";
 
@@ -31,32 +30,6 @@ interface ExpectedArgs {
   resourceDescription: string;
   resourcePrice: number;
   resourceUrl: string;
-}
-
-async function getProposalBondAmount(
-  proposalsExtensionContract: string,
-  sender: string
-) {
-  // get the token name from the contract name
-  // TODO: can query contract here in future
-  const tokenName = proposalsExtensionContract.split(".")[1].split("-")[0];
-  // get the proposal bond amount from the contract
-  const [extensionAddress, extensionName] =
-    proposalsExtensionContract.split(".");
-  const proposalBond = await callReadOnlyFunction({
-    contractAddress: extensionAddress,
-    contractName: extensionName,
-    functionName: "get-proposal-bond",
-    functionArgs: [],
-    network: getNetwork(CONFIG.NETWORK),
-    senderAddress: sender,
-  });
-  //console.log("proposalBond", proposalBond);
-  //console.log("cvToValue(proposalBond)", cvToValue(proposalBond));
-  return {
-    bond: BigInt(cvToValue(proposalBond)),
-    tokenName: tokenName,
-  };
 }
 
 function validateArgs(): ExpectedArgs {

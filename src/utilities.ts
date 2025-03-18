@@ -13,6 +13,8 @@ import {
 import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
 import {
   broadcastTransaction,
+  callReadOnlyFunction,
+  cvToValue,
   StacksTransaction,
   TxBroadcastResult,
   validateStacksAddress,
@@ -396,6 +398,33 @@ export function formatContractAddress(address: string): ContractAddress {
     throw new Error(`Invalid contract address format: ${address}`);
   }
   return `${addr}.${name}` as ContractAddress;
+}
+
+// helper function to fetch the proposal bond amount from a core/action proposals voting contract
+export async function getProposalBondAmount(
+  proposalsExtensionContract: string,
+  sender: string
+) {
+  // get the token name from the contract name
+  // TODO: can query contract here in future
+  const tokenName = proposalsExtensionContract.split(".")[1].split("-")[0];
+  // get the proposal bond amount from the contract
+  const [extensionAddress, extensionName] =
+    proposalsExtensionContract.split(".");
+  const proposalBond = await callReadOnlyFunction({
+    contractAddress: extensionAddress,
+    contractName: extensionName,
+    functionName: "get-proposal-bond",
+    functionArgs: [],
+    network: getNetwork(CONFIG.NETWORK),
+    senderAddress: sender,
+  });
+  //console.log("proposalBond", proposalBond);
+  //console.log("cvToValue(proposalBond)", cvToValue(proposalBond));
+  return {
+    bond: BigInt(cvToValue(proposalBond)),
+    tokenName: tokenName,
+  };
 }
 
 //////////////////////////////
