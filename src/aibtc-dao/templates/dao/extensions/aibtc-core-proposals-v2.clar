@@ -42,7 +42,7 @@
 (define-constant VOTING_THRESHOLD u90) ;; 90% of votes must be in favor
 
 ;; contracts used for voting calculations
-(define-constant VOTING_TOKEN_PRE_DEX '<%= it.token_dex_contract %>)
+(define-constant VOTING_TOKEN_PRE_DEX '<%= it.token_pre_dex_contract %>)
 (define-constant VOTING_TOKEN_DEX '<%= it.token_dex_contract %>)
 (define-constant VOTING_TOKEN_POOL '<%= it.token_pool_contract %>)
 (define-constant VOTING_TREASURY '<%= it.treasury_contract %>)
@@ -127,7 +127,7 @@
     ;; caller has the required balance
     (asserts! (> senderBalance bondAmount) ERR_INSUFFICIENT_BALANCE)
     ;; transfer the proposal bond to this contract
-    (try! (contract-call? .aibtc-token transfer bondAmount tx-sender SELF none))
+    (try! (contract-call? '<%= it.token_contract %> transfer bondAmount tx-sender SELF none))
     ;; proposal was not already executed
     (asserts! (is-none (contract-call? '<%= it.base_dao_contract %> executed-at proposal)) ERR_PROPOSAL_ALREADY_EXECUTED)
     ;; print proposal creation event
@@ -241,6 +241,7 @@
       payload: {
         caller: contract-caller,
         concludedBy: tx-sender,
+        bond: (get bond proposalRecord),
         proposal: proposalContract,
         votesFor: votesFor,
         votesAgainst: votesAgainst,
@@ -332,6 +333,7 @@
       (dexBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TOKEN_DEX)) ERR_FETCHING_TOKEN_DATA))
       (poolBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TOKEN_POOL)) ERR_FETCHING_TOKEN_DATA))
       (treasuryBalance (unwrap! (at-block blockHash (contract-call? '<%= it.token_contract %> get-balance VOTING_TREASURY)) ERR_FETCHING_TOKEN_DATA))
+      (totalLocked (+ preDexBalance dexBalance poolBalance treasuryBalance))
     )
     (ok (- totalSupply totalLocked))
   )
