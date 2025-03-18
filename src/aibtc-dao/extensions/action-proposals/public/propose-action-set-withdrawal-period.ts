@@ -56,7 +56,14 @@ function validateArgs(): ExpectedArgs {
     daoActionProposalsExtensionContract.split(".");
   const [actionAddress, actionName] = daoActionProposalContract.split(".");
   const [tokenAddress, tokenName] = daoTokenContract.split(".");
-  if (!extensionAddress || !extensionName || !actionAddress || !actionName || !tokenAddress || !tokenName) {
+  if (
+    !extensionAddress ||
+    !extensionName ||
+    !actionAddress ||
+    !actionName ||
+    !tokenAddress ||
+    !tokenName
+  ) {
     const errorMessage = [
       `Invalid contract addresses: ${daoActionProposalsExtensionContract} ${daoActionProposalContract} ${daoTokenContract}`,
       usage,
