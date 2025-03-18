@@ -123,14 +123,14 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "TOKEN",
     subtype: "PRELAUNCH",
     deploymentOrder: 0,
-    templatePath: `extensions/aibtc-token.clar`, // TODO: add actual path here?
+    templatePath: `token/aibtc-pre-dex.clar`,
   },
   {
     name: "aibtc-faktory",
     type: "TOKEN",
     subtype: "DAO",
     deploymentOrder: 1,
-    templatePath: `extensions/aibtc-token.clar`,
+    templatePath: `token/aibtc-token.clar`,
     requiredTraits: [
       {
         ref: "STANDARD_SIP010",
@@ -149,7 +149,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "TOKEN",
     subtype: "DEX",
     deploymentOrder: 3,
-    templatePath: `extensions/aibtc-token-dex.clar`,
+    templatePath: `token/aibtc-token-dex.clar`,
     requiredTraits: [
       {
         ref: "STANDARD_SIP010",
@@ -207,7 +207,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "TOKEN",
     subtype: "POOL",
     deploymentOrder: 2,
-    templatePath: `extensions/aibtc-bitflow-pool.clar`,
+    templatePath: `token/aibtc-bitflow-pool.clar`,
     requiredTraits: [
       {
         ref: "BITFLOW_POOL",
@@ -237,7 +237,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "TOKEN",
     subtype: "POOL_STX",
     deploymentOrder: 2,
-    templatePath: `extensions/aibtc-bitflow-pool.clar`,
+    templatePath: `token/aibtc-bitflow-pool.clar`,
     requiredTraits: [
       {
         ref: "BITFLOW_POOL",
@@ -323,6 +323,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "DAO",
       },
       {
+        key: "token_pre_dex_contract",
+        category: "TOKEN",
+        subcategory: "PRELAUNCH",
+      },
+      {
         key: "token_dex_contract",
         category: "TOKEN",
         subcategory: "DEX",
@@ -340,19 +345,19 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     ],
   },
   {
-    name: "aibtc-bank-account",
+    name: "aibtc-timed-vault",
     type: "EXTENSIONS",
-    subtype: "BANK_ACCOUNT",
+    subtype: "TIMED_VAULT",
     deploymentOrder: 6,
-    templatePath: `extensions/aibtc-bank-account.clar`,
+    templatePath: `extensions/aibtc-timed-vault.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
         key: "extension_trait",
       },
       {
-        ref: "DAO_BANK_ACCOUNT",
-        key: "bank_account_trait",
+        ref: "DAO_TIMED_VAULT",
+        key: "timed_vault_trait",
       },
     ],
     requiredContractAddresses: [
@@ -398,6 +403,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "token_contract",
         category: "TOKEN",
         subcategory: "DAO",
+      },
+      {
+        key: "token_pre_dex_contract",
+        category: "TOKEN",
+        subcategory: "PRELAUNCH",
       },
       {
         key: "token_dex_contract",
@@ -590,6 +600,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "DAO",
       },
       {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
         key: "payments_contract",
         category: "EXTENSIONS",
         subcategory: "PAYMENTS",
@@ -617,6 +632,11 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
       },
       {
         key: "treasury_contract",
@@ -652,12 +672,17 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         category: "EXTENSIONS",
         subcategory: "MESSAGING",
       },
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
     ],
   },
   {
     name: "aibtc-action-set-account-holder",
     type: "ACTIONS",
-    subtype: "BANK_ACCOUNT_SET_ACCOUNT_HOLDER",
+    subtype: "TIMED_VAULT_SET_ACCOUNT_HOLDER",
     deploymentOrder: 16,
     templatePath: `extensions/actions/aibtc-action-set-account-holder.clar`,
     requiredTraits: [
@@ -677,16 +702,21 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "DAO",
       },
       {
-        key: "bank_account_contract",
+        key: "messaging_contract",
         category: "EXTENSIONS",
-        subcategory: "BANK_ACCOUNT",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT",
       },
     ],
   },
   {
     name: "aibtc-action-set-withdrawal-amount",
     type: "ACTIONS",
-    subtype: "BANK_ACCOUNT_SET_WITHDRAWAL_AMOUNT",
+    subtype: "TIMED_VAULT_SET_WITHDRAWAL_AMOUNT",
     deploymentOrder: 17,
     templatePath: `extensions/actions/aibtc-action-set-withdrawal-amount.clar`,
     requiredTraits: [
@@ -706,16 +736,21 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "DAO",
       },
       {
-        key: "bank_account_contract",
+        key: "messaging_contract",
         category: "EXTENSIONS",
-        subcategory: "BANK_ACCOUNT",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT",
       },
     ],
   },
   {
     name: "aibtc-action-set-withdrawal-period",
     type: "ACTIONS",
-    subtype: "BANK_ACCOUNT_SET_WITHDRAWAL_PERIOD",
+    subtype: "TIMED_VAULT_SET_WITHDRAWAL_PERIOD",
     deploymentOrder: 18,
     templatePath: `extensions/actions/aibtc-action-set-withdrawal-period.clar`,
     requiredTraits: [
@@ -735,9 +770,14 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "DAO",
       },
       {
-        key: "bank_account_contract",
+        key: "messaging_contract",
         category: "EXTENSIONS",
-        subcategory: "BANK_ACCOUNT",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT",
       },
     ],
   },
@@ -746,7 +786,7 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
     type: "ACTIONS",
     subtype: "PAYMENTS_INVOICES_TOGGLE_RESOURCE",
     deploymentOrder: 19,
-    templatePath: `extensions/actions/aibtc-action-toggle-resource.clar`,
+    templatePath: `extensions/actions/aibtc-action-toggle-resource-by-name.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
@@ -764,9 +804,14 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "DAO",
       },
       {
-        key: "bank_account_contract",
+        key: "messaging_contract",
         category: "EXTENSIONS",
-        subcategory: "BANK_ACCOUNT",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT",
       },
       {
         key: "payments_contract",
@@ -786,6 +831,12 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         ref: "DAO_PROPOSAL",
         key: "proposal_trait",
+      },
+    ],
+    requiredAddresses: [
+      {
+        ref: "SBTC",
+        key: "sbtc_contract",
       },
     ],
     requiredContractAddresses: [
@@ -808,9 +859,9 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
         subcategory: "ACTION_PROPOSALS",
       },
       {
-        key: "bank_account_contract",
+        key: "timed_vault_contract",
         category: "EXTENSIONS",
-        subcategory: "BANK_ACCOUNT",
+        subcategory: "TIMED_VAULT",
       },
       {
         key: "core_proposals_contract",
@@ -861,17 +912,17 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       {
         key: "action_set_account_holder_contract",
         category: "ACTIONS",
-        subcategory: "BANK_ACCOUNT_SET_ACCOUNT_HOLDER",
+        subcategory: "TIMED_VAULT_SET_ACCOUNT_HOLDER",
       },
       {
         key: "action_set_withdrawal_amount_contract",
         category: "ACTIONS",
-        subcategory: "BANK_ACCOUNT_SET_WITHDRAWAL_AMOUNT",
+        subcategory: "TIMED_VAULT_SET_WITHDRAWAL_AMOUNT",
       },
       {
         key: "action_set_withdrawal_period_contract",
         category: "ACTIONS",
-        subcategory: "BANK_ACCOUNT_SET_WITHDRAWAL_PERIOD",
+        subcategory: "TIMED_VAULT_SET_WITHDRAWAL_PERIOD",
       },
       {
         key: "action_toggle_resource_by_name_contract",

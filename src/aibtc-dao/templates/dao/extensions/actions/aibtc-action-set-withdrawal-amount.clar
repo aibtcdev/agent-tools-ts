@@ -5,6 +5,8 @@
 (define-constant ERR_INVALID_PARAMS (err u10002))
 (define-constant ERR_PARAMS_OUT_OF_RANGE (err u10003))
 
+(define-constant CFG_MESSAGE "Executed Action Proposal: Set withdrawal amount in timed vault extension")
+
 (define-public (callback (sender principal) (memo (buff 34))) (ok true))
 
 (define-public (run (parameters (buff 2048)))
@@ -16,7 +18,8 @@
     ;; verify within limits for low quorum
     ;; more than 0, less than 100 STX (100_000_000)
     (asserts! (and (> amount u0) (< amount u100000000)) ERR_INVALID_PARAMS)
-    (contract-call? '<%= it.bank_account_contract %> set-withdrawal-amount amount)
+    (try! (contract-call? '<%= it.messaging_contract %> send CFG_MESSAGE true))
+    (contract-call? '<%= it.timed_vault_contract %> set-withdrawal-amount amount)
   )
 )
 

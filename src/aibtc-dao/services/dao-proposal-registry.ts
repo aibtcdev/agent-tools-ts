@@ -79,42 +79,42 @@ export type DeployedCoreProposalRegistryEntry =
  * Clone this object to generate and deploy core proposals.
  */
 export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
-  // Bank Account Proposals
+  // Timed Vault Proposals
   {
-    name: "aibtc-bank-account-deposit-stx",
-    friendlyName: "Bank Account: Deposit STX",
-    templatePath: "proposals/aibtc-bank-account-deposit-stx.clar",
+    name: "aibtc-timed-vault-deposit-stx",
+    friendlyName: "Timed Vault: Deposit STX",
+    templatePath: "proposals/aibtc-timed-vault-deposit-stx.clar",
   },
   {
-    name: "aibtc-bank-account-initialize-new-account",
-    friendlyName: "Bank Account: Initialize New Account",
-    templatePath: "proposals/aibtc-bank-account-initialize-new-account.clar",
+    name: "aibtc-timed-vault-initialize-new-account",
+    friendlyName: "Timed Vault: Initialize New Account",
+    templatePath: "proposals/aibtc-timed-vault-initialize-new-account.clar",
   },
   {
-    name: "aibtc-bank-account-override-last-withdrawal-block",
-    friendlyName: "Bank Account: Override Last Withdrawal Block",
+    name: "aibtc-timed-vault-override-last-withdrawal-block",
+    friendlyName: "Timed Vault: Override Last Withdrawal Block",
     templatePath:
-      "proposals/aibtc-bank-account-override-last-withdrawal-block.clar",
+      "proposals/aibtc-timed-vault-override-last-withdrawal-block.clar",
   },
   {
-    name: "aibtc-bank-account-set-account-holder",
-    friendlyName: "Bank Account: Set Account Holder",
-    templatePath: "proposals/aibtc-bank-account-set-account-holder.clar",
+    name: "aibtc-timed-vault-set-account-holder",
+    friendlyName: "Timed Vault: Set Account Holder",
+    templatePath: "proposals/aibtc-timed-vault-set-account-holder.clar",
   },
   {
-    name: "aibtc-bank-account-set-withdrawal-amount",
-    friendlyName: "Bank Account: Set Withdrawal Amount",
-    templatePath: "proposals/aibtc-bank-account-set-withdrawal-amount.clar",
+    name: "aibtc-timed-vault-set-withdrawal-amount",
+    friendlyName: "Timed Vault: Set Withdrawal Amount",
+    templatePath: "proposals/aibtc-timed-vault-set-withdrawal-amount.clar",
   },
   {
-    name: "aibtc-bank-account-set-withdrawal-period",
-    friendlyName: "Bank Account: Set Withdrawal Period",
-    templatePath: "proposals/aibtc-bank-account-set-withdrawal-period.clar",
+    name: "aibtc-timed-vault-set-withdrawal-period",
+    friendlyName: "Timed Vault: Set Withdrawal Period",
+    templatePath: "proposals/aibtc-timed-vault-set-withdrawal-period.clar",
   },
   {
-    name: "aibtc-bank-account-withdraw-stx",
-    friendlyName: "Bank Account: Withdraw STX",
-    templatePath: "proposals/aibtc-bank-account-withdraw-stx.clar",
+    name: "aibtc-timed-vault-withdraw-stx",
+    friendlyName: "Timed Vault: Withdraw STX",
+    templatePath: "proposals/aibtc-timed-vault-withdraw-stx.clar",
   },
 
   // Base DAO Proposals

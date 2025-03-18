@@ -2,7 +2,7 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Withdraw STX from the treasury")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Withdrew an NFT in the treasury extension")
 (define-constant CFG_STX_AMOUNT <%= it.stx_amount %>) ;; in microSTX
 (define-constant CFG_RECIPIENT <%= it.recipient %>)
 (define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)

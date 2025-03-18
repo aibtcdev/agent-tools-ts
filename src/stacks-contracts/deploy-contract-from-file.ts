@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import { ClarityVersion } from "@stacks/transactions";
 import {
   CONFIG,
@@ -14,23 +15,32 @@ import {
 } from "./services/contract-deployer";
 
 const usage =
-  "Usage: bun run deploy-contract.ts <contractName> <sourceCode> [clarityVersion]";
+  "Usage: bun run deploy-contract-from-file.ts <contractName> <sourceFile> [clarityVersion]";
 const usageExample =
-  'Example: bun run deploy-contract.ts aibtcdao-charter "(define-public (hello-world) (ok u1))" 3';
+  'Example: bun run deploy-contract-from-file.ts "wow-dao-charter" "./generated/wow/wow-dao-charter.clar" 3';
 
 interface ExpectedArgs {
   contractName: string;
-  sourceCode: string;
+  sourceFile: string;
   clarityVersion?: ClarityVersion;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [contractName, sourceCode, clarityVersion] = process.argv.slice(2);
+  const [contractName, sourceFile, clarityVersion] = process.argv.slice(2);
   // check for req params
-  if (!contractName || !sourceCode) {
+  if (!contractName || !sourceFile) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // verify sourceFile exists on disk
+  if (!existsSync(sourceFile)) {
+    const errorMessage = [
+      `Source file not found: ${sourceFile}`,
       usage,
       usageExample,
     ].join("\n");
@@ -60,7 +70,7 @@ function validateArgs(): ExpectedArgs {
   // return validated arguments
   return {
     contractName,
-    sourceCode,
+    sourceFile,
     clarityVersion: clarityVer,
   };
 }
@@ -68,18 +78,25 @@ function validateArgs(): ExpectedArgs {
 async function main(): Promise<ToolResponse<DeployedSingleContract>> {
   // validate and store provided args
   const args = validateArgs();
+  console.log(JSON.stringify(args, null, 2));
   // setup network and wallet info
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  // read source code from source file
+  const sourceCode = readFileSync(args.sourceFile, "utf-8");
+  // verify source code is not empty
+  if (!sourceCode) {
+    throw new Error(`Source file is empty: ${args.sourceFile}`);
+  }
   // setup deployment details
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   const contractDeployer = new ContractDeployer(CONFIG.NETWORK, address, key);
   const contract: SingleContract = {
     name: args.contractName,
-    source: args.sourceCode,
+    source: sourceCode,
   };
   const deploymentDetails = await contractDeployer.deployContract(
     contract,

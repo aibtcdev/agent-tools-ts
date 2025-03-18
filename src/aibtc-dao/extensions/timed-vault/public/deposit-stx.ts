@@ -16,20 +16,20 @@ import {
   sendToLLM,
 } from "../../../../utilities";
 
-const usage = "Usage: bun run deposit-stx.ts <bankAccountContract> <amount>";
+const usage = "Usage: bun run deposit-stx.ts <timedVaultContract> <amount>";
 const usageExample =
-  "Example: bun run deposit-stx.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-bank-account 1000000";
+  "Example: bun run deposit-stx.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-timed-vault 1000000";
 
 interface ExpectedArgs {
-  bankAccountContract: string;
+  timedVaultContract: string;
   amount: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [bankAccountContract, amountStr] = process.argv.slice(2);
+  const [timedVaultContract, amountStr] = process.argv.slice(2);
   const amount = parseInt(amountStr);
-  if (!bankAccountContract || !amount) {
+  if (!timedVaultContract || !amount) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -38,10 +38,10 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = bankAccountContract.split(".");
+  const [contractAddress, contractName] = timedVaultContract.split(".");
   if (!contractAddress || !contractName) {
     const errorMessage = [
-      `Invalid contract address: ${bankAccountContract}`,
+      `Invalid contract address: ${timedVaultContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -58,16 +58,16 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    bankAccountContract,
+    timedVaultContract,
     amount,
   };
 }
 
-// deposits STX into the bank account contract
+// deposits STX into the timed vault contract
 async function main() {
   // validate and store provided args
   const args = validateArgs();
-  const [contractAddress, contractName] = args.bankAccountContract.split(".");
+  const [contractAddress, contractName] = args.timedVaultContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -78,11 +78,7 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Post-conditions to ensure exactly the specified amount of STX is transferred
-  const postConditions = [
-    Pc.principal(address)
-      .willSendEq(args.amount)
-      .ustx()
-  ];
+  const postConditions = [Pc.principal(address).willSendEq(args.amount).ustx()];
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {

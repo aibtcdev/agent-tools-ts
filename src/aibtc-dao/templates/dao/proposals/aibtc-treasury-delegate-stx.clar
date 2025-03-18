@@ -2,7 +2,7 @@
 
 ;; template vars
 ;;
-(define-constant CFG_MESSAGE "Executed Core Proposal: Delegate STX for stacking")
+(define-constant CFG_MESSAGE "Executed Core Proposal: Delegated STX for stacking in the treasury extension")
 (define-constant CFG_AMOUNT <%= it.amount %>)
 (define-constant CFG_DELEGATE_TO <%= it.delegate_to %>)
 (define-constant CFG_MESSAGE_CONTRACT <%= it.message_contract %>)

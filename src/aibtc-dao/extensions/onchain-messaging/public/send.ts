@@ -14,10 +14,9 @@ import {
   sendToLLM,
 } from "../../../../utilities";
 
-const usage =
-  "Usage: bun run send.ts <messagingContract> <message>";
+const usage = "Usage: bun run send.ts <messagingContract> <message>";
 const usageExample =
-  "Example: bun run send.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-messaging 'Hello World'";
+  "Example: bun run send.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-messaging 'Hello World'";
 
 interface ExpectedArgs {
   messagingContract: string;
@@ -47,11 +46,9 @@ function validateArgs(): ExpectedArgs {
   }
   // verify message is not empty
   if (message.length === 0) {
-    const errorMessage = [
-      "Message cannot be empty",
-      usage,
-      usageExample,
-    ].join("\n");
+    const errorMessage = ["Message cannot be empty", usage, usageExample].join(
+      "\n"
+    );
     throw new Error(errorMessage);
   }
   // return validated arguments

@@ -52,7 +52,7 @@ export class DaoContractDeployer {
         contractName: contract.name,
         codeBody: contract.source,
         senderKey: this.senderKey,
-        nonce: nonce ? nonce : undefined,
+        nonce: nonce === 0 ? 0 : nonce ? nonce : undefined,
         network: this.network,
         anchorMode: AnchorMode.Any,
         postConditions: [], // empty, no transfers expected

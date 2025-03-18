@@ -17,7 +17,7 @@ import {
 const usage =
   "Usage: bun run propose-action-set-account-holder.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <accountHolderAddress>";
 const usageExample =
-  "Example: bun run propose-action-set-account-holder.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-action-set-account-holder ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
+  "Example: bun run propose-action-set-account-holder.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-set-account-holder ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;

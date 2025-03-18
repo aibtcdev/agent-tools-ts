@@ -71,6 +71,7 @@ export class DaoContractGenerator {
           source: "",
         } as GeneratedContractRegistryEntry; // make TS happy
         generatedContracts[contractName] = faktoryContract;
+        return;
       }
       // collect all traits into template variables
       const traitVars = Object.fromEntries(

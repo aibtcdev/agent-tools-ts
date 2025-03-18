@@ -4,6 +4,8 @@
 (define-constant ERR_UNAUTHORIZED (err u10001))
 (define-constant ERR_INVALID_PARAMS (err u10002))
 
+(define-constant CFG_MESSAGE "Executed Action Proposal: Set new account holder in timed vault extension")
+
 (define-public (callback (sender principal) (memo (buff 34))) (ok true))
 
 (define-public (run (parameters (buff 2048)))
@@ -12,7 +14,8 @@
       (accountHolder (unwrap! (from-consensus-buff? principal parameters) ERR_INVALID_PARAMS))
     )
     (try! (is-dao-or-extension))
-    (contract-call? '<%= it.bank_account_contract %> set-account-holder accountHolder)
+    (try! (contract-call? '<%= it.messaging_contract %> send CFG_MESSAGE true))
+    (contract-call? '<%= it.timed_vault_contract %> set-account-holder accountHolder)
   )
 )
 

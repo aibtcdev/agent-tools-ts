@@ -11,21 +11,23 @@ import {
   ToolResponse,
 } from "../utilities";
 
-const usage = `Usage: bun run generate-smart-wallet.ts <ownerAddress> <daoTokenContract> <generateFiles>`;
-const usageExample = `Example: bun run generate-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token true`;
+const usage = `Usage: bun run generate-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> <generateFiles>`;
+const usageExample = `Example: bun run generate-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token-dex true`;
 
 interface ExpectedArgs {
   ownerAddress: string;
   daoTokenContract: string;
+  daoTokenDexContract: string;
   generateFiles?: boolean;
 }
 
 function validateArgs(): ExpectedArgs {
   // capture all arguments
-  const [ownerAddress, daoTokenContract, generateFiles] = process.argv.slice(2);
+  const [ownerAddress, daoTokenContract, daoTokenDexContract, generateFiles] =
+    process.argv.slice(2);
 
   // verify all required arguments are provided
-  if (!ownerAddress || !daoTokenContract) {
+  if (!ownerAddress || !daoTokenContract || !daoTokenDexContract) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -56,6 +58,16 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+  const [dexAddress, dexName] = daoTokenDexContract.split(".");
+  if (!dexAddress || !dexName) {
+    const errorMessage = [
+      `Invalid token contracts: daoTokenDexContract=${daoTokenDexContract}`,
+      "Token contracts must be in the format 'address.contractName'",
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
 
   // convert generateFiles to boolean
   const shouldGenerateFiles = convertStringToBoolean(generateFiles);
@@ -64,6 +76,7 @@ function validateArgs(): ExpectedArgs {
   return {
     ownerAddress,
     daoTokenContract,
+    daoTokenDexContract,
     generateFiles: shouldGenerateFiles,
   };
 }
@@ -87,11 +100,12 @@ async function main(): Promise<ToolResponse<any>> {
     const smartWallet = contractGenerator.generateSmartWallet({
       ownerAddress: args.ownerAddress,
       daoTokenContract: args.daoTokenContract,
+      daoTokenDexContract: args.daoTokenDexContract,
     });
 
     // save contract to file (optional)
     if (args.generateFiles) {
-      const outputDir = "generated";
+      const outputDir = `generated/${address}`;
       fs.mkdirSync(outputDir, { recursive: true });
       const fileName = `${smartWallet.name}.clar`;
       const filePath = path.join(outputDir, fileName);

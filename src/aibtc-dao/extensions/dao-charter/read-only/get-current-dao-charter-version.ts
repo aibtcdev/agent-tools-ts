@@ -15,7 +15,7 @@ import {
 const usage =
   "Usage: bun run get-current-dao-charter-version.ts <daoCharterContract>";
 const usageExample =
-  "Example: bun run get-current-dao-charter-version.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-charter";
+  "Example: bun run get-current-dao-charter-version.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-charter";
 
 interface ExpectedArgs {
   daoCharterContract: string;

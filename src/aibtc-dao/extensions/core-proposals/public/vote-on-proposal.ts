@@ -19,7 +19,7 @@ import {
 const usage =
   "Usage: bun run vote-on-proposal.ts <daoCoreProposalsExtensionContract> <daoProposalContract> <vote>";
 const usageExample =
-  "Example: bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-onchain-messaging-send true";
+  "Example: bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-onchain-messaging-send true";
 
 interface ExpectedArgs {
   daoCoreProposalsExtensionContract: string;

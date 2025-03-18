@@ -18,7 +18,7 @@ import {
 const usage =
   "Usage: bun run vote-on-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <vote>";
 const usageExample =
-  "Example: bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtcdao-action-proposals-v2 1 true";
+  "Example: bun run vote-on-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 1 true";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
