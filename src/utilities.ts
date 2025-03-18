@@ -48,8 +48,16 @@ export function createErrorResponse(
   return response;
 }
 
+// Helper function to handle BigInt serialization
+export function replaceBigintWithString(key: string, value: any) {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+  return value;
+}
+
 export function sendToLLM(toolResponse: ToolResponse<any>) {
-  console.log(JSON.stringify(toolResponse, null, 2));
+  console.log(JSON.stringify(toolResponse, replaceBigintWithString, 2));
 }
 
 export function convertStringToBoolean(value = "false"): boolean {
