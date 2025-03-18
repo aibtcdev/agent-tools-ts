@@ -13,7 +13,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
-  getProposalBondAmount,
+  getCurrentBondProposalAmount,
   sendToLLM,
 } from "../../../../utilities";
 
@@ -97,13 +97,13 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   // get the proposal bond amount from the contract
-  const bondAmountInfo = await getProposalBondAmount(
+  const bondAmountInfo = await getCurrentBondProposalAmount(
     args.daoActionProposalsExtensionContract,
     address
   );
   // configure post conditions
   const postConditions = [
-    Pc.principal(`${extensionAddress}.${extensionName}`)
+    Pc.principal(address)
       .willSendEq(bondAmountInfo.bond)
       .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.tokenName),
   ];
