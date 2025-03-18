@@ -13,6 +13,11 @@ import {
 import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
 import {
   broadcastTransaction,
+  callReadOnlyFunction,
+  Cl,
+  ClarityType,
+  ClarityValue,
+  cvToValue,
   StacksTransaction,
   TxBroadcastResult,
   validateStacksAddress,
@@ -46,8 +51,16 @@ export function createErrorResponse(
   return response;
 }
 
+// Helper function to handle BigInt serialization
+export function replaceBigintWithString(key: string, value: any) {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+  return value;
+}
+
 export function sendToLLM(toolResponse: ToolResponse<any>) {
-  console.log(JSON.stringify(toolResponse, null, 2));
+  console.log(JSON.stringify(toolResponse, replaceBigintWithString, 2));
 }
 
 export function convertStringToBoolean(value = "false"): boolean {
@@ -396,6 +409,122 @@ export function formatContractAddress(address: string): ContractAddress {
     throw new Error(`Invalid contract address format: ${address}`);
   }
   return `${addr}.${name}` as ContractAddress;
+}
+
+export async function getBondFromActionProposal(
+  proposalsExtensionContract: string,
+  sender: string,
+  proposalId: number
+) {
+  // get the token name from the contract name
+  // TODO: can query contract here in future
+  const tokenName = proposalsExtensionContract.split(".")[1].split("-")[0];
+  // get the proposal info from the contract
+  const [extensionAddress, extensionName] =
+    proposalsExtensionContract.split(".");
+  const proposalInfo = await callReadOnlyFunction({
+    contractAddress: extensionAddress,
+    contractName: extensionName,
+    functionName: "get-proposal",
+    functionArgs: [Cl.uint(proposalId)],
+    network: getNetwork(CONFIG.NETWORK),
+    senderAddress: sender,
+  });
+  if (proposalInfo.type !== ClarityType.OptionalSome) {
+    throw new Error(
+      `Proposal ID ${proposalId} not found in extension ${proposalsExtensionContract}`
+    );
+  }
+  if (proposalInfo.value.type !== ClarityType.Tuple) {
+    throw new Error(
+      `Invalid proposal info type: ${proposalInfo.type} for proposal ID ${proposalId}`
+    );
+  }
+  const proposalData = Object.fromEntries(
+    Object.entries(proposalInfo.value.data).map(
+      ([key, value]: [string, ClarityValue]) => [key, cvToValue(value, true)]
+    )
+  );
+  // console.log(JSON.stringify(proposalData, replaceBigintWithString, 2));
+  // get the bond amount from the proposal info
+  const bondAmount = BigInt(proposalData.bond);
+  return {
+    bond: bondAmount,
+    tokenName: tokenName,
+  };
+}
+
+export async function getBondFromCoreProposal(
+  proposalsExtensionContract: string,
+  sender: string,
+  proposalContract: string
+) {
+  // get the token name from the contract name
+  // TODO: can query contract here in future
+  const tokenName = proposalsExtensionContract.split(".")[1].split("-")[0];
+  // get the proposal info from the contract
+  const [extensionAddress, extensionName] =
+    proposalsExtensionContract.split(".");
+  const proposalInfo = await callReadOnlyFunction({
+    contractAddress: extensionAddress,
+    contractName: extensionName,
+    functionName: "get-proposal",
+    functionArgs: [Cl.principal(proposalContract)],
+    network: getNetwork(CONFIG.NETWORK),
+    senderAddress: sender,
+  });
+  if (proposalInfo.type !== ClarityType.OptionalSome) {
+    throw new Error(
+      `Proposal contract ${proposalContract} not found in extension ${proposalsExtensionContract}`
+    );
+  }
+  if (proposalInfo.value.type !== ClarityType.Tuple) {
+    throw new Error(
+      `Invalid proposal info type: ${proposalInfo.type} for proposal contract ${proposalContract}`
+    );
+  }
+  const proposalData = Object.fromEntries(
+    Object.entries(proposalInfo.value.data).map(
+      ([key, value]: [string, ClarityValue]) => [key, cvToValue(value, true)]
+    )
+  );
+  // console.log(JSON.stringify(proposalData, replaceBigintWithString, 2));
+  // get the bond amount from the proposal info
+  const bondAmount = BigInt(proposalData.bond);
+  return {
+    bond: bondAmount,
+    tokenName: tokenName,
+  };
+}
+
+// helper function to fetch the proposal bond amount from a core/action proposals voting contract
+export async function getCurrentBondProposalAmount(
+  proposalsExtensionContract: string,
+  sender: string
+) {
+  // get the token name from the contract name
+  // TODO: can query contract here in future
+  const tokenName = proposalsExtensionContract
+    .split(".")[1]
+    .split("-")[0]
+    .toUpperCase();
+  // get the proposal bond amount from the contract
+  const [extensionAddress, extensionName] =
+    proposalsExtensionContract.split(".");
+  const proposalBond = await callReadOnlyFunction({
+    contractAddress: extensionAddress,
+    contractName: extensionName,
+    functionName: "get-proposal-bond",
+    functionArgs: [],
+    network: getNetwork(CONFIG.NETWORK),
+    senderAddress: sender,
+  });
+  //console.log("proposalBond", proposalBond);
+  //console.log("cvToValue(proposalBond)", cvToValue(proposalBond));
+  return {
+    bond: BigInt(cvToValue(proposalBond)),
+    tokenName: tokenName,
+  };
 }
 
 //////////////////////////////

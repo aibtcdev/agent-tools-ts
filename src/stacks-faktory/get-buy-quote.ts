@@ -1,18 +1,14 @@
 import { FaktorySDK } from "@faktoryfun/core-sdk";
-import { CONFIG, deriveChildAccount } from "../utilities";
+import {
+  CONFIG,
+  deriveChildAccount,
+  replaceBigintWithString,
+} from "../utilities";
 import type { NetworkType } from "@faktoryfun/core-sdk";
 import { hexToCV, cvToJSON } from "@stacks/transactions";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-// Helper function to handle BigInt serialization
-function replacer(key: string, value: any) {
-  if (typeof value === "bigint") {
-    return value.toString();
-  }
-  return value;
-}
 
 const btcAmount = Number(process.argv[2]); // BTC amount in normal units
 const dexContract = process.argv[3];
@@ -116,7 +112,7 @@ const sdk = new FaktorySDK({
       buyParams,
     };
 
-    console.log(JSON.stringify(result, replacer, 2));
+    console.log(JSON.stringify(result, replaceBigintWithString, 2));
   } catch (error) {
     console.error("\nError getting buy quote:", error);
     process.exit(1);

@@ -2,6 +2,8 @@ import {
   AnchorMode,
   Cl,
   makeContractCall,
+  Pc,
+  PostConditionMode,
   SignedContractCallOptions,
 } from "@stacks/transactions";
 import {
@@ -11,17 +13,19 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  getCurrentBondProposalAmount,
   sendToLLM,
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run propose-action-set-withdrawal-period.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <withdrawalPeriod>";
+  "Usage: bun run propose-action-set-withdrawal-period.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenContract> <withdrawalPeriod>";
 const usageExample =
-  "Example: bun run propose-action-set-withdrawal-period.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-set-withdrawal-period 50";
+  "Example: bun run propose-action-set-withdrawal-period.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-set-withdrawal-period ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token 50";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
   daoActionProposalContract: string;
+  daoTokenContract: string;
   withdrawalPeriod: number;
 }
 
@@ -30,12 +34,14 @@ function validateArgs(): ExpectedArgs {
   const [
     daoActionProposalsExtensionContract,
     daoActionProposalContract,
+    daoTokenContract,
     withdrawalPeriodStr,
   ] = process.argv.slice(2);
   const withdrawalPeriod = parseInt(withdrawalPeriodStr);
   if (
     !daoActionProposalsExtensionContract ||
     !daoActionProposalContract ||
+    !daoTokenContract ||
     !withdrawalPeriod
   ) {
     const errorMessage = [
@@ -49,9 +55,17 @@ function validateArgs(): ExpectedArgs {
   const [extensionAddress, extensionName] =
     daoActionProposalsExtensionContract.split(".");
   const [actionAddress, actionName] = daoActionProposalContract.split(".");
-  if (!extensionAddress || !extensionName || !actionAddress || !actionName) {
+  const [tokenAddress, tokenName] = daoTokenContract.split(".");
+  if (
+    !extensionAddress ||
+    !extensionName ||
+    !actionAddress ||
+    !actionName ||
+    !tokenAddress ||
+    !tokenName
+  ) {
     const errorMessage = [
-      `Invalid contract addresses: ${daoActionProposalsExtensionContract} ${daoActionProposalContract}`,
+      `Invalid contract addresses: ${daoActionProposalsExtensionContract} ${daoActionProposalContract} ${daoTokenContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -61,6 +75,7 @@ function validateArgs(): ExpectedArgs {
   return {
     daoActionProposalsExtensionContract,
     daoActionProposalContract,
+    daoTokenContract,
     withdrawalPeriod,
   };
 }
@@ -71,6 +86,7 @@ async function main() {
   const args = validateArgs();
   const [extensionAddress, extensionName] =
     args.daoActionProposalsExtensionContract.split(".");
+  const [daoTokenAddress, daoTokenName] = args.daoTokenContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -79,6 +95,17 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  // get the proposal bond amount from the contract
+  const bondAmountInfo = await getCurrentBondProposalAmount(
+    args.daoActionProposalsExtensionContract,
+    address
+  );
+  // configure post conditions
+  const postConditions = [
+    Pc.principal(address)
+      .willSendEq(bondAmountInfo.bond)
+      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.tokenName),
+  ];
   // configure contract call parameters
   const paramsCV = Cl.uint(args.withdrawalPeriod);
   // configure contract call options
@@ -94,6 +121,8 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions: postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
