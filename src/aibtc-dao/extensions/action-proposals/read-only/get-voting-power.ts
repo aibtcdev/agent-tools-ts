@@ -90,7 +90,7 @@ async function main(): Promise<ToolResponse<number>> {
   });
   // extract and return voting power
   if (result.type === ClarityType.ResponseOk) {
-    const parsedResult = parseInt(cvToValue(result, true));
+    const parsedResult = parseInt(cvToValue(result.value, true));
     if (isNaN(parsedResult)) {
       throw new Error(`Failed to parse voting power from result: ${result}`);
     }
