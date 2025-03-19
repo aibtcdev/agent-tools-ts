@@ -79,62 +79,12 @@ export type DeployedCoreProposalRegistryEntry =
  * Clone this object to generate and deploy core proposals.
  */
 export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
-  // Timed Vault Proposals
-  {
-    name: "aibtc-timed-vault-deposit-stx",
-    friendlyName: "Timed Vault: Deposit STX",
-    templatePath: "proposals/aibtc-timed-vault-deposit-stx.clar",
-  },
-  {
-    name: "aibtc-timed-vault-initialize-new-account",
-    friendlyName: "Timed Vault: Initialize New Account",
-    templatePath: "proposals/aibtc-timed-vault-initialize-new-account.clar",
-  },
-  {
-    name: "aibtc-timed-vault-override-last-withdrawal-block",
-    friendlyName: "Timed Vault: Override Last Withdrawal Block",
-    templatePath:
-      "proposals/aibtc-timed-vault-override-last-withdrawal-block.clar",
-  },
-  {
-    name: "aibtc-timed-vault-set-account-holder",
-    friendlyName: "Timed Vault: Set Account Holder",
-    templatePath: "proposals/aibtc-timed-vault-set-account-holder.clar",
-  },
-  {
-    name: "aibtc-timed-vault-set-withdrawal-amount",
-    friendlyName: "Timed Vault: Set Withdrawal Amount",
-    templatePath: "proposals/aibtc-timed-vault-set-withdrawal-amount.clar",
-  },
-  {
-    name: "aibtc-timed-vault-set-withdrawal-period",
-    friendlyName: "Timed Vault: Set Withdrawal Period",
-    templatePath: "proposals/aibtc-timed-vault-set-withdrawal-period.clar",
-  },
-  {
-    name: "aibtc-timed-vault-withdraw-stx",
-    friendlyName: "Timed Vault: Withdraw STX",
-    templatePath: "proposals/aibtc-timed-vault-withdraw-stx.clar",
-  },
-
   // Base DAO Proposals
   {
     name: "aibtc-base-add-new-extension",
     friendlyName: "Base DAO: Add New Extension",
     templatePath: "proposals/aibtc-base-add-new-extension.clar",
   },
-  /* REMOVING as these are just used for construction
-  {
-    name: "aibtc-base-bootstrap-initialization",
-    friendlyName: "Base DAO: Bootstrap Initialization",
-    templatePath: "proposals/aibtc-base-bootstrap-initialization.clar",
-  },
-  {
-    name: "aibtc-base-bootstrap-initialization-v2",
-    friendlyName: "Base DAO: Bootstrap Initialization v2",
-    templatePath: "proposals/aibtc-base-bootstrap-initialization-v2.clar",
-  },
-  */
   {
     name: "aibtc-base-disable-extension",
     friendlyName: "Base DAO: Disable Extension",
@@ -202,6 +152,44 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-payments-invoices-toggle-resource",
     friendlyName: "Payments & Invoices: Toggle Resource",
     templatePath: "proposals/aibtc-payments-invoices-toggle-resource.clar",
+  },
+
+  // Timed Vault Proposals
+  {
+    name: "aibtc-timed-vault-deposit-stx",
+    friendlyName: "Timed Vault: Deposit STX",
+    templatePath: "proposals/aibtc-timed-vault-deposit-stx.clar",
+  },
+  {
+    name: "aibtc-timed-vault-initialize-new-account",
+    friendlyName: "Timed Vault: Initialize New Account",
+    templatePath: "proposals/aibtc-timed-vault-initialize-new-account.clar",
+  },
+  {
+    name: "aibtc-timed-vault-override-last-withdrawal-block",
+    friendlyName: "Timed Vault: Override Last Withdrawal Block",
+    templatePath:
+      "proposals/aibtc-timed-vault-override-last-withdrawal-block.clar",
+  },
+  {
+    name: "aibtc-timed-vault-set-account-holder",
+    friendlyName: "Timed Vault: Set Account Holder",
+    templatePath: "proposals/aibtc-timed-vault-set-account-holder.clar",
+  },
+  {
+    name: "aibtc-timed-vault-set-withdrawal-amount",
+    friendlyName: "Timed Vault: Set Withdrawal Amount",
+    templatePath: "proposals/aibtc-timed-vault-set-withdrawal-amount.clar",
+  },
+  {
+    name: "aibtc-timed-vault-set-withdrawal-period",
+    friendlyName: "Timed Vault: Set Withdrawal Period",
+    templatePath: "proposals/aibtc-timed-vault-set-withdrawal-period.clar",
+  },
+  {
+    name: "aibtc-timed-vault-withdraw-stx",
+    friendlyName: "Timed Vault: Withdraw STX",
+    templatePath: "proposals/aibtc-timed-vault-withdraw-stx.clar",
   },
 
   // Token Owner Proposals
