@@ -79,6 +79,13 @@ export type DeployedCoreProposalRegistryEntry =
  * Clone this object to generate and deploy core proposals.
  */
 export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
+  // Action Proposals
+  {
+    name: "aibtc-action-proposals-set-proposal-bond",
+    friendlyName: "Action Proposals: Set Proposal Bond",
+    templatePath: "proposals/aibtc-action-proposals-set-proposal-bond.clar",
+  },
+
   // Base DAO Proposals
   {
     name: "aibtc-base-add-new-extension",
@@ -104,6 +111,13 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-base-replace-extension-proposal-voting",
     friendlyName: "Base DAO: Replace Extension Proposal Voting",
     templatePath: "proposals/aibtc-base-replace-extension-proposal-voting.clar",
+  },
+
+  // Core Proposals
+  {
+    name: "aibtc-core-proposals-set-proposal-bond",
+    friendlyName: "Core Proposals: Set Proposal Bond",
+    templatePath: "proposals/aibtc-core-proposals-set-proposal-bond.clar",
   },
 
   // DAO Charter Proposals
@@ -155,11 +169,6 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
   },
 
   // Timed Vault Proposals
-  {
-    name: "aibtc-timed-vault-deposit-stx",
-    friendlyName: "Timed Vault: Deposit STX",
-    templatePath: "proposals/aibtc-timed-vault-deposit-stx.clar",
-  },
   {
     name: "aibtc-timed-vault-initialize-new-account",
     friendlyName: "Timed Vault: Initialize New Account",
@@ -214,21 +223,6 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-treasury-delegate-stx",
     friendlyName: "Treasury: Delegate STX",
     templatePath: "proposals/aibtc-treasury-delegate-stx.clar",
-  },
-  {
-    name: "aibtc-treasury-deposit-ft",
-    friendlyName: "Treasury: Deposit FT",
-    templatePath: "proposals/aibtc-treasury-deposit-ft.clar",
-  },
-  {
-    name: "aibtc-treasury-deposit-nft",
-    friendlyName: "Treasury: Deposit NFT",
-    templatePath: "proposals/aibtc-treasury-deposit-nft.clar",
-  },
-  {
-    name: "aibtc-treasury-deposit-stx",
-    friendlyName: "Treasury: Deposit STX",
-    templatePath: "proposals/aibtc-treasury-deposit-stx.clar",
   },
   {
     name: "aibtc-treasury-disable-asset",
