@@ -9,20 +9,22 @@ import { SmartWalletDeployer } from "./services/smart-wallet-deployer";
 import { validateStacksAddress } from "@stacks/transactions";
 
 const usage =
-  "Usage: bun run deploy-smart-wallet.ts <ownerAddress> <daoTokenContract>";
+  "Usage: bun run deploy-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract>";
 const usageExample =
-  "Example: bun run deploy-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token";
+  "Example: bun run deploy-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token-dex";
 
 interface ExpectedArgs {
   ownerAddress: string;
   daoTokenContract: string;
+  daoTokenDexContract: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [ownerAddress, daoTokenContract] = process.argv.slice(2);
+  const [ownerAddress, daoTokenContract, daoTokenDexContract] =
+    process.argv.slice(2);
 
-  if (!ownerAddress || !daoTokenContract) {
+  if (!ownerAddress || !daoTokenContract || !daoTokenDexContract) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -54,10 +56,22 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
+  const [dexAddress, dexName] = daoTokenDexContract.split(".");
+  if (!dexAddress || !dexName) {
+    const errorMessage = [
+      `Invalid token contracts: daoTokenDexContract=${daoTokenDexContract}`,
+      "Token contracts must be in the format 'address.contractName'",
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
   // return validated arguments
   return {
     ownerAddress,
     daoTokenContract,
+    daoTokenDexContract,
   };
 }
 
@@ -81,6 +95,7 @@ async function main() {
     const smartWallet = generator.generateSmartWallet({
       ownerAddress: args.ownerAddress,
       daoTokenContract: args.daoTokenContract,
+      daoTokenDexContract: args.daoTokenDexContract,
     });
 
     console.log(`Generated smart wallet contract: ${smartWallet.name}`);
