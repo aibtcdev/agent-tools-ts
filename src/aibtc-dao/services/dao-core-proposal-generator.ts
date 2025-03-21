@@ -57,7 +57,7 @@ export class DaoCoreProposalGenerator {
       (coreProposal.requiredAddresses || []).map(({ ref, key }) => {
         // Ensure we have a valid address reference
         if (!knownAddresses[ref]) {
-          //console.warn(`Warning: Missing address reference for ${ref}`);
+          console.warn(`Warning: Missing address reference for ${ref}`);
         }
         return [key, knownAddresses[ref]];
       })
@@ -88,6 +88,9 @@ export class DaoCoreProposalGenerator {
     );
     const runtimeVars = Object.fromEntries(
       (coreProposal.requiredRuntimeValues || []).map(({ key }) => {
+        if (proposalArgs[key] === undefined) {
+          throw new Error(`Missing required runtime value: ${key} for proposal ${proposalContractName}`);
+        }
         return [key, proposalArgs[key]];
       })
     );

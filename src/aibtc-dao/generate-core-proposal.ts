@@ -16,13 +16,13 @@ import { GeneratedCoreProposalRegistryEntry } from "./services/dao-core-proposal
 const usage = `Usage: bun run generate-core-proposal.ts <proposalContractName> <proposalArgs> [generateFiles]`;
 const usageExample = `Example: bun run generate-core-proposal.ts aibtc-treasury-withdraw-stx '{"amount": "1000000"}' true`;
 
-interface ProposalGeneratorArgs {
+interface ExpectedArgs {
   proposalContractName: string;
   proposalArgs: Record<string, string>;
-  generateFiles: boolean;
+  generateFiles?: boolean;
 }
 
-function validateArgs(): ProposalGeneratorArgs {
+function validateArgs(): ExpectedArgs {
   // capture all arguments
   const [proposalContractName, proposalArgsJson, generateFiles] =
     process.argv.slice(2);
@@ -72,41 +72,40 @@ async function main(): Promise<
     // validate and store provided args
     const args = validateArgs();
 
-  // setup network and wallet info
-  const { address } = await deriveChildAccount(
-    CONFIG.NETWORK,
-    CONFIG.MNEMONIC,
-    CONFIG.ACCOUNT_INDEX
-  );
-  const truncatedAddress = `${address.substring(0, 5)}-${address.slice(-5)}`;
+    // setup network and wallet info
+    const { address } = await deriveChildAccount(
+      CONFIG.NETWORK,
+      CONFIG.MNEMONIC,
+      CONFIG.ACCOUNT_INDEX
+    );
+    const truncatedAddress = `${address.substring(0, 5)}-${address.slice(-5)}`;
 
-  // get current block height
-  const blockHeights = await getCurrentBlockHeights();
+    // get current block height
+    const blockHeights = await getCurrentBlockHeights();
 
-  // create proposal generator instance
-  const proposalGenerator = new DaoCoreProposalGenerator(
-    CONFIG.NETWORK,
-    address
-  );
+    // create proposal generator instance
+    const proposalGenerator = new DaoCoreProposalGenerator(
+      CONFIG.NETWORK,
+      address
+    );
 
-  // Step 1 - generate core proposal
+    // Step 1 - generate core proposal
+    const generatedProposal = await proposalGenerator.generateCoreProposal(
+      args.proposalContractName,
+      args.proposalArgs
+    );
 
-  const generatedProposal = await proposalGenerator.generateCoreProposal(
-    args.proposalContractName,
-    args.proposalArgs
-  );
+    // Step 2 - save proposal (optional)
+    if (args.generateFiles) {
+      const outputDir = path.join("generated", "proposals");
+      fs.mkdirSync(outputDir, { recursive: true });
+      const fileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
+      const filePath = path.join(outputDir, fileName);
+      fs.writeFileSync(filePath, generatedProposal.source);
+      console.log(`Proposal saved to ${filePath}`);
+    }
 
-  // Step 2 - save proposal (optional)
-
-  if (args.generateFiles) {
-    const outputDir = path.join("generated", "proposals");
-    fs.mkdirSync(outputDir, { recursive: true });
-    const fileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
-    const filePath = path.join(outputDir, fileName);
-    fs.writeFileSync(filePath, generatedProposal.source);
-  }
-
-  // Step 3 - return generated proposal
+    // Step 3 - return generated proposal
 
     return {
       success: true,
