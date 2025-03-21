@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import * as path from "path";
-import { validateStacksAddress } from "@stacks/transactions";
 import { DaoCoreProposalGenerator } from "./services/dao-core-proposal-generator";
 import {
   CONFIG,
@@ -13,10 +12,11 @@ import {
 } from "../utilities";
 import { GeneratedCoreProposalRegistryEntry } from "./services/dao-core-proposal-registry";
 
-const usage = `Usage: bun run generate-core-proposal.ts <proposalContractName> <proposalArgs> [generateFiles]`;
-const usageExample = `Example: bun run generate-core-proposal.ts aibtc-treasury-withdraw-stx '{"CFG_STX_AMOUNT": "1000000", "CFG_RECIPIENT": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
+const usage = `Usage: bun run generate-core-proposal.ts <daoTokenSymbol> <proposalContractName> <proposalArgs> [generateFiles]`;
+const usageExample = `Example: bun run generate-core-proposal.ts aibtc aibtc-treasury-withdraw-stx '{"CFG_STX_AMOUNT": "1000000", "CFG_RECIPIENT": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
 
 interface ExpectedArgs {
+  tokenSymbol: string;
   proposalContractName: string;
   proposalArgs: Record<string, string>;
   generateFiles?: boolean;
@@ -24,11 +24,11 @@ interface ExpectedArgs {
 
 function validateArgs(): ExpectedArgs {
   // capture all arguments
-  const [proposalContractName, proposalArgsJson, generateFiles] =
+  const [tokenSymbol, proposalContractName, proposalArgsJson, generateFiles] =
     process.argv.slice(2);
 
   // verify required arguments are provided
-  if (!proposalContractName) {
+  if (!tokenSymbol || !proposalContractName) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -46,7 +46,9 @@ function validateArgs(): ExpectedArgs {
       // Provide more helpful error message with the specific JSON error
       const errorMessage = [
         `Invalid JSON for proposal arguments: ${proposalArgsJson}`,
-        `JSON parse error: ${error.message}`,
+        `JSON parse error: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
         usage,
         usageExample,
       ].join("\n");
@@ -59,6 +61,7 @@ function validateArgs(): ExpectedArgs {
 
   // return validated arguments
   return {
+    tokenSymbol,
     proposalContractName,
     proposalArgs,
     generateFiles: shouldGenerateFiles,
@@ -70,60 +73,57 @@ async function main(): Promise<
 > {
   // Step 0 - prep work
 
-  try {
-    // validate and store provided args
-    const args = validateArgs();
+  // validate and store provided args
+  const args = validateArgs();
 
-    // setup network and wallet info
-    const { address } = await deriveChildAccount(
-      CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
-    const truncatedAddress = `${address.substring(0, 5)}-${address.slice(-5)}`;
+  // setup network and wallet info
+  const { address } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+  const truncatedAddress = `${address.substring(0, 5)}-${address.slice(-5)}`;
 
-    // get current block height
-    const blockHeights = await getCurrentBlockHeights();
+  // get current block height
+  const blockHeights = await getCurrentBlockHeights();
 
-    // create proposal generator instance
-    const proposalGenerator = new DaoCoreProposalGenerator(
-      CONFIG.NETWORK,
-      address
-    );
+  // create proposal generator instance
+  const proposalGenerator = new DaoCoreProposalGenerator(
+    CONFIG.NETWORK,
+    address
+  );
 
-    // Step 1 - generate core proposal
-    console.log(`Generating core proposal: ${args.proposalContractName}`);
-    console.log(`With arguments:`, args.proposalArgs);
-    
-    const generatedProposal = await proposalGenerator.generateCoreProposal(
-      args.proposalContractName,
-      args.proposalArgs
-    );
+  // Step 1 - generate core proposal
+  console.log(`Generating core proposal: ${args.proposalContractName}`);
+  console.log(`With arguments:`, args.proposalArgs);
 
-    // Step 2 - save proposal (optional)
-    if (args.generateFiles) {
-      const outputDir = path.join("generated", "proposals");
-      fs.mkdirSync(outputDir, { recursive: true });
-      const fileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
-      const filePath = path.join(outputDir, fileName);
-      fs.writeFileSync(filePath, generatedProposal.source);
-      console.log(`Proposal saved to ${filePath}`);
-    }
+  const generatedProposal = proposalGenerator.generateCoreProposal(
+    args.tokenSymbol,
+    args.proposalContractName,
+    args.proposalArgs
+  );
 
-    // Step 3 - return generated proposal
-
-    return {
-      success: true,
-      message: `Core proposal ${args.proposalContractName} generated successfully`,
-      data: {
-        ...generatedProposal,
-        // limit source to set chars for display / context size
-        source: generatedProposal.source.substring(0, 250) + "...",
-      },
-    };
-  } catch (error) {
-    return createErrorResponse(error);
+  // Step 2 - save proposal (optional)
+  if (args.generateFiles) {
+    const outputDir = path.join("generated", "proposals");
+    fs.mkdirSync(outputDir, { recursive: true });
+    const fileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
+    const filePath = path.join(outputDir, fileName);
+    fs.writeFileSync(filePath, generatedProposal.source);
+    console.log(`Proposal saved to ${filePath}`);
   }
+
+  // Step 3 - return generated proposal
+
+  return {
+    success: true,
+    message: `Core proposal ${args.proposalContractName} generated successfully`,
+    data: {
+      ...generatedProposal,
+      // limit source to set chars for display / context size
+      source: generatedProposal.source.substring(0, 250) + "...",
+    },
+  };
 }
 
 main()

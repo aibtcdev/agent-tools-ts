@@ -35,6 +35,7 @@ export class DaoCoreProposalGenerator {
    * @returns Generated contract registry entry
    */
   public generateCoreProposal(
+    tokenSymbol: string,
     proposalContractName: string,
     proposalArgs: Record<string, string>
   ): GeneratedCoreProposalRegistryEntry {
@@ -67,7 +68,7 @@ export class DaoCoreProposalGenerator {
       (coreProposal.requiredTraits || []).map(({ ref, key }) => {
         // Ensure we have a valid trait reference
         if (!knownTraitRefs[ref]) {
-          //console.warn(`Warning: Missing trait reference for ${ref}`);
+          console.warn(`Warning: Missing trait reference for ${ref}`);
         }
         return [key, knownTraitRefs[ref]];
       })
@@ -78,10 +79,7 @@ export class DaoCoreProposalGenerator {
         ({ key, category, subcategory }) => {
           // Find the matching contract in the CONTRACT_REGISTRY
           const [contract] = getContractsBySubcategory(category, subcategory);
-          const contractAddress = getContractName(
-            contract.name,
-            "aibtc" //args.tokenSymbol
-          );
+          const contractAddress = getContractName(contract.name, tokenSymbol);
           return [key, this.generateContractPrincipal(contractAddress)];
         }
       )
@@ -90,30 +88,11 @@ export class DaoCoreProposalGenerator {
       (coreProposal.requiredRuntimeValues || []).map(({ key }) => {
         // Handle special cases for parameter name mismatches
         let paramValue = proposalArgs[key];
-        
-        // Map common parameter name variations
         if (paramValue === undefined) {
-          // Handle common parameter name variations
-          if (key === 'CFG_STX_AMOUNT' && proposalArgs['CFG_AMOUNT'] !== undefined) {
-            paramValue = proposalArgs['CFG_AMOUNT'];
-            console.log(`Using CFG_AMOUNT value for ${key}`);
-          } else if (key === 'CFG_AMOUNT' && proposalArgs['CFG_STX_AMOUNT'] !== undefined) {
-            paramValue = proposalArgs['CFG_STX_AMOUNT'];
-            console.log(`Using CFG_STX_AMOUNT value for ${key}`);
-          }
+          console.warn(`Warning: Missing argument for ${key}`);
+          paramValue = "";
         }
-        
-        // Skip CFG_MESSAGE for now as it's handled separately
-        if (key !== 'CFG_MESSAGE' && paramValue === undefined) {
-          throw new Error(`Missing required runtime value: ${key} for proposal ${proposalContractName}. Available args: ${Object.keys(proposalArgs).join(', ')}`);
-        }
-        
-        // Use the provided value or a default empty string for CFG_MESSAGE
-        const value = key === 'CFG_MESSAGE' 
-          ? (paramValue || 'DAO proposal execution')
-          : paramValue;
-          
-        return [key, value];
+        return [key, paramValue];
       })
     );
     // assemble all vars here to pass to ETA
@@ -131,39 +110,40 @@ export class DaoCoreProposalGenerator {
         missingVars.push(key);
       }
     }
-    
+
     if (missingVars.length > 0) {
-      throw new Error(`Missing required template variables: ${missingVars.join(', ')} for proposal ${proposalContractName}`);
+      throw new Error(
+        `Missing required template variables: ${missingVars.join(
+          ", "
+        )} for proposal ${proposalContractName}`
+      );
     }
-    
-    // Debug output to help with troubleshooting
-    console.log(`Template variables for ${proposalContractName}:`, 
-      Object.keys(templateVars).reduce((acc, key) => {
-        acc[key] = typeof templateVars[key] === 'string' && 
-                  templateVars[key].length > 30 ? 
-                  templateVars[key].substring(0, 30) + '...' : 
-                  templateVars[key];
-        return acc;
-      }, {})
-    );
 
     try {
       // Generate the contract source
       const source = this.eta.render(coreProposal.templatePath, templateVars);
-      
+
       if (!source) {
-        throw new Error(`Failed to generate source for proposal ${proposalContractName}`);
+        throw new Error(
+          `Failed to generate source for proposal ${proposalContractName}`
+        );
       }
-      
+
       return {
         ...coreProposal,
         source,
         hash: crypto.createHash("sha256").update(source).digest("hex"),
       };
     } catch (error) {
-      console.error(`Error rendering template for ${proposalContractName}:`, error);
-      throw new Error(`Failed to generate proposal ${proposalContractName}: ${error.message}`);
+      console.error(
+        `Error rendering template for ${proposalContractName}:`,
+        error
+      );
+      throw new Error(
+        `Failed to generate proposal ${proposalContractName}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
     }
-    // This code is now handled in the try/catch block above
   }
 }
