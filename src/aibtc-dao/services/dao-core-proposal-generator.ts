@@ -5,7 +5,7 @@ import { StacksNetworkName } from "@stacks/network";
 import {
   CORE_PROPOSAL_REGISTRY,
   GeneratedCoreProposalRegistryEntry,
-} from "./dao-proposal-registry";
+} from "./dao-core-proposal-registry";
 import { getKnownAddresses, getKnownTraits } from "../types/dao-types";
 import {
   getContractName,
