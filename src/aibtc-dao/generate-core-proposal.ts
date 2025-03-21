@@ -90,6 +90,9 @@ async function main(): Promise<
     );
 
     // Step 1 - generate core proposal
+    console.log(`Generating core proposal: ${args.proposalContractName}`);
+    console.log(`With arguments:`, args.proposalArgs);
+    
     const generatedProposal = await proposalGenerator.generateCoreProposal(
       args.proposalContractName,
       args.proposalArgs

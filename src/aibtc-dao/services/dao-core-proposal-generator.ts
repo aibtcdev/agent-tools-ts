@@ -88,10 +88,15 @@ export class DaoCoreProposalGenerator {
     );
     const runtimeVars = Object.fromEntries(
       (coreProposal.requiredRuntimeValues || []).map(({ key }) => {
-        if (proposalArgs[key] === undefined) {
+        // Skip CFG_MESSAGE for now as it's handled separately
+        if (key !== 'CFG_MESSAGE' && proposalArgs[key] === undefined) {
           throw new Error(`Missing required runtime value: ${key} for proposal ${proposalContractName}`);
         }
-        return [key, proposalArgs[key]];
+        // Use the provided value or a default empty string for CFG_MESSAGE
+        const value = key === 'CFG_MESSAGE' 
+          ? (proposalArgs[key] || 'DAO proposal execution')
+          : proposalArgs[key];
+        return [key, value];
       })
     );
     // assemble all vars here to pass to ETA
@@ -102,20 +107,35 @@ export class DaoCoreProposalGenerator {
       ...runtimeVars,
     };
 
-    // Generate the contract source
-    const source = this.eta.render(coreProposal.templatePath, templateVars);
+    // Debug: Check if all required variables are present
+    const missingVars = [];
+    for (const { key } of coreProposal.requiredRuntimeValues || []) {
+      if (templateVars[key] === undefined) {
+        missingVars.push(key);
+      }
+    }
+    
+    if (missingVars.length > 0) {
+      throw new Error(`Missing required template variables: ${missingVars.join(', ')} for proposal ${proposalContractName}`);
+    }
 
-    // hash the contract
-    const hash = crypto.createHash("sha256").update(source).digest("hex");
-
-    // create the generated contract entry
-    const generatedCoreProposal: GeneratedCoreProposalRegistryEntry = {
-      ...coreProposal,
-      source,
-      hash,
-    };
-
-    // Create the generated contract registry entry
-    return generatedCoreProposal;
+    try {
+      // Generate the contract source
+      const source = this.eta.render(coreProposal.templatePath, templateVars);
+      
+      if (!source) {
+        throw new Error(`Failed to generate source for proposal ${proposalContractName}`);
+      }
+      
+      return {
+        ...coreProposal,
+        source,
+        hash: crypto.createHash("sha256").update(source).digest("hex"),
+      };
+    } catch (error) {
+      console.error(`Error rendering template for ${proposalContractName}:`, error);
+      throw new Error(`Failed to generate proposal ${proposalContractName}: ${error.message}`);
+    }
+    // This code is now handled in the try/catch block above
   }
 }
