@@ -10,7 +10,10 @@ import {
   generateWallet,
   getStxAddress,
 } from "@stacks/wallet-sdk";
-import type { AddressNonces } from "@stacks/stacks-blockchain-api-types";
+import type {
+  AddressNonces,
+  NakamotoBlockListResponse,
+} from "@stacks/stacks-blockchain-api-types";
 import {
   broadcastTransaction,
   callReadOnlyFunction,
@@ -547,6 +550,31 @@ export async function getHiroTokenMetadata(
 export function getAssetNameFromIdentifier(assetIdentifier: string): string {
   const parts = assetIdentifier.split("::");
   return parts.length === 2 ? parts[1] : "";
+}
+
+export type BlockHeightResponse = {
+  bitcoin: number;
+  stacks: number;
+};
+
+export async function getCurrentBlockHeights(): Promise<BlockHeightResponse> {
+  try {
+    const baseUrl = getApiUrl(CONFIG.NETWORK);
+    const response = await fetch(`${baseUrl}/extended/v2/blocks?limit=1`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const blockList = (await response.json()) as NakamotoBlockListResponse;
+    const blockData = blockList.results[0];
+    return {
+      bitcoin: blockData.burn_block_height,
+      stacks: blockData.height,
+    };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(`Failed to get current block heights: ${errorMsg}`);
+    throw error;
+  }
 }
 
 //////////////////////////////
