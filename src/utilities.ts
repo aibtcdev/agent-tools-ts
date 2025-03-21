@@ -202,49 +202,6 @@ export function validateNetwork(
   return DEFAULT_CONFIG.NETWORK;
 }
 
-export function getApiUrl(network: string) {
-  switch (network) {
-    case "mainnet":
-      return "https://api.hiro.so";
-    case "testnet":
-      return "https://api.testnet.hiro.so";
-    default:
-      return "https://api.testnet.hiro.so";
-  }
-}
-
-export function getFaktoryApiUrl(network: string) {
-  switch (network) {
-    case "mainnet":
-      return "https://faktory-be.vercel.app/api/aibtcdev";
-    case "testnet":
-      return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
-    default:
-      return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
-  }
-}
-
-// https://explorer.hiro.so/txid/STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token?chain=testnet
-const faktorySbtcContract =
-  "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token";
-export function getFaktorySbtcContract(network: string) {
-  if (network !== "testnet") {
-    throw new Error("Faktory sBTC contract is only supported on testnet.");
-  }
-  return faktorySbtcContract.split(".");
-}
-
-export function getAibtcCoreApiUrl(network: string) {
-  switch (network) {
-    case "mainnet":
-      return "https://core.aibtc.dev/webhooks/dao";
-    case "testnet":
-      return "https://core-staging.aibtc.dev/webhooks/dao";
-    default:
-      return "https://core-staging.aibtc.dev/webhooks/dao";
-  }
-}
-
 //////////////////////////////
 // BROADCAST HELPERS
 //////////////////////////////
@@ -531,6 +488,17 @@ export async function getCurrentBondProposalAmount(
 // HIRO
 //////////////////////////////
 
+export function getApiUrl(network: string) {
+  switch (network) {
+    case "mainnet":
+      return "https://api.hiro.so";
+    case "testnet":
+      return "https://api.testnet.hiro.so";
+    default:
+      return "https://api.testnet.hiro.so";
+  }
+}
+
 // Type definition for Hiro token metadata response
 export type HiroTokenMetadata = {
   tx_id: string;
@@ -640,6 +608,27 @@ export async function getStxCityHash(data: string): Promise<string> {
 //////////////////////////////
 // FAKTORY
 //////////////////////////////
+
+export function getFaktoryApiUrl(network: string) {
+  switch (network) {
+    case "mainnet":
+      return "https://faktory-be.vercel.app/api/aibtcdev";
+    case "testnet":
+      return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
+    default:
+      return "https://faktory-testnet-be.vercel.app/api/aibtcdev";
+  }
+}
+
+// https://explorer.hiro.so/txid/STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token?chain=testnet
+const faktorySbtcContract =
+  "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token";
+export function getFaktorySbtcContract(network: string) {
+  if (network !== "testnet") {
+    throw new Error("Faktory sBTC contract is only supported on testnet.");
+  }
+  return faktorySbtcContract.split(".");
+}
 
 export type FaktoryGeneratedContracts = {
   prelaunch: FaktoryContractInfo;
@@ -940,6 +929,17 @@ function verifyFaktoryContracts(
 //////////////////////////////
 // AIBTC CORE
 //////////////////////////////
+
+export function getAibtcCoreApiUrl(network: string) {
+  switch (network) {
+    case "mainnet":
+      return "https://core.aibtc.dev/webhooks/dao";
+    case "testnet":
+      return "https://core-staging.aibtc.dev/webhooks/dao";
+    default:
+      return "https://core-staging.aibtc.dev/webhooks/dao";
+  }
+}
 
 export type aibtcCoreRequestBody = {
   name: string;
