@@ -1,4 +1,4 @@
-(impl-trait '<%= it.proposal_trait %>)
+(impl-trait '<%= it.dao_proposal_trait %>)
 
 (define-constant CFG_DAO_MANIFEST_TEXT "<%= it.dao_manifest %>")
 (define-constant CFG_DAO_MANIFEST_INSCRIPTION_ID "<%= it.dao_manifest_inscription_id %>")

@@ -1,4 +1,4 @@
-(impl-trait .aibtc-dao-traits-v2.proposal)
+(impl-trait '<%= it.dao_proposal_trait %>)
 
 ;; template vars
 ;;
@@ -8,8 +8,8 @@
 (define-public (execute (sender principal))
   (begin
     ;; send a message from the dao
-    (try! (contract-call? .aibtc-onchain-messaging send CFG_MESSAGE true))
+    (try! (contract-call? '<%= it.message_contract %> send CFG_MESSAGE true))
     ;; update proposal bond amount
-    (contract-call? .aibtc-core-proposals-v2 set-proposal-bond CFG_BOND_AMOUNT)
+    (contract-call? '<%= it.core_proposals_contract %> set-proposal-bond CFG_BOND_AMOUNT)
   )
 )
