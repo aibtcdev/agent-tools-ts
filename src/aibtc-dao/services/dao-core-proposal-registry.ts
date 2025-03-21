@@ -301,7 +301,8 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-dao-charter-set-dao-charter.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_CHARTER_URL" }
+      { key: "CFG_CHARTER_TEXT" },
+      { key: "CFG_CHARTER_INSCRIPTION_ID" }
     ],
     requiredTraits: [
       { ref: "DAO_MESSAGING", key: "messaging_trait" },
@@ -309,7 +310,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -327,15 +328,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Onchain Messaging: Send Message",
     templatePath: "proposals/aibtc-onchain-messaging-send.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_OFFICIAL" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       }
@@ -351,16 +351,15 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_RESOURCE_NAME" },
       { key: "CFG_RESOURCE_DESCRIPTION" },
-      { key: "CFG_RESOURCE_PRICE" },
+      { key: "CFG_RESOURCE_AMOUNT" },
       { key: "CFG_RESOURCE_URL" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_INVOICES", key: "invoices_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -432,15 +431,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-payments-invoices-set-payment-address.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_PAYMENT_ADDRESS" }
+      { key: "CFG_PAYOUT_ADDRESS" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_INVOICES", key: "invoices_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -461,12 +459,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_RESOURCE_NAME" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_INVOICES", key: "invoices_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -483,15 +480,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-payments-invoices-toggle-resource.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_RESOURCE_ID" }
+      { key: "CFG_RESOURCE_INDEX" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_INVOICES", key: "invoices_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
