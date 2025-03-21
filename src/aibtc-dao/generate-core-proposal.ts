@@ -14,7 +14,7 @@ import {
 import { GeneratedCoreProposalRegistryEntry } from "./services/dao-core-proposal-registry";
 
 const usage = `Usage: bun run generate-core-proposal.ts <proposalContractName> <proposalArgs> [generateFiles]`;
-const usageExample = `Example: bun run generate-core-proposal.ts aibtc-treasury-withdraw-stx '{"amount": "1000000"}' true`;
+const usageExample = `Example: bun run generate-core-proposal.ts aibtc-treasury-withdraw-stx '{"CFG_AMOUNT": "1000000", "CFG_RECIPIENT": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
 
 interface ExpectedArgs {
   proposalContractName: string;
@@ -43,8 +43,10 @@ function validateArgs(): ExpectedArgs {
     try {
       proposalArgs = JSON.parse(proposalArgsJson);
     } catch (error) {
+      // Provide more helpful error message with the specific JSON error
       const errorMessage = [
         `Invalid JSON for proposal arguments: ${proposalArgsJson}`,
+        `JSON parse error: ${error.message}`,
         usage,
         usageExample,
       ].join("\n");

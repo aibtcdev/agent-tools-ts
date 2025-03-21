@@ -118,6 +118,17 @@ export class DaoCoreProposalGenerator {
     if (missingVars.length > 0) {
       throw new Error(`Missing required template variables: ${missingVars.join(', ')} for proposal ${proposalContractName}`);
     }
+    
+    // Debug output to help with troubleshooting
+    console.log(`Template variables for ${proposalContractName}:`, 
+      Object.keys(templateVars).reduce((acc, key) => {
+        acc[key] = typeof templateVars[key] === 'string' && 
+                  templateVars[key].length > 30 ? 
+                  templateVars[key].substring(0, 30) + '...' : 
+                  templateVars[key];
+        return acc;
+      }, {})
+    );
 
     try {
       // Generate the contract source
