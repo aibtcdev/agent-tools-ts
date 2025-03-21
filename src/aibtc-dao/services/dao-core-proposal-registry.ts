@@ -112,6 +112,17 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_EXTENSION_CONTRACT" },
       { key: "CFG_EXTENSION_ENABLED" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_EXTENSION", key: "extension_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      }
+    ]
   },
   {
     name: "aibtc-base-disable-extension",
@@ -121,6 +132,16 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_EXTENSION_CONTRACT" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      }
+    ]
   },
   {
     name: "aibtc-base-enable-extension",
@@ -130,6 +151,16 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_EXTENSION_CONTRACT" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      }
+    ]
   },
   {
     name: "aibtc-base-replace-extension",
@@ -141,6 +172,17 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_NEW_EXTENSION_CONTRACT" },
       { key: "CFG_EXTENSION_ENABLED" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_EXTENSION", key: "extension_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      }
+    ]
   },
   {
     name: "aibtc-base-replace-extension-proposal-voting",
@@ -151,6 +193,17 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_OLD_EXTENSION_CONTRACT" },
       { key: "CFG_NEW_EXTENSION_CONTRACT" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_PROPOSAL", key: "proposal_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      }
+    ]
   },
 
   // Core Proposals
@@ -185,6 +238,22 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_CHARTER_URL" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_CHARTER", key: "charter_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "charter_contract",
+        category: "EXTENSIONS",
+        subcategory: "CHARTER"
+      }
+    ]
   },
 
   // Messaging Proposals
@@ -196,6 +265,16 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_OFFICIAL" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      }
+    ]
   },
 
   // Payments & Invoices Proposals
@@ -210,6 +289,22 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_RESOURCE_PRICE" },
       { key: "CFG_RESOURCE_URL" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_INVOICES", key: "invoices_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS"
+      }
+    ]
   },
   {
     name: "aibtc-payments-invoices-pay-invoice-by-resource-name",
@@ -222,6 +317,22 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_INVOICE_MEMO" },
       { key: "CFG_RECIPIENT" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_INVOICES", key: "invoices_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS"
+      }
+    ]
   },
   {
     name: "aibtc-payments-invoices-pay-invoice",
@@ -233,6 +344,22 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_INVOICE_MEMO" },
       { key: "CFG_RECIPIENT" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_INVOICES", key: "invoices_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS"
+      }
+    ]
   },
   {
     name: "aibtc-payments-invoices-set-payment-address",
@@ -242,6 +369,22 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_PAYMENT_ADDRESS" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_INVOICES", key: "invoices_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS"
+      }
+    ]
   },
   {
     name: "aibtc-payments-invoices-toggle-resource-by-name",
@@ -252,6 +395,22 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_RESOURCE_NAME" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_INVOICES", key: "invoices_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS"
+      }
+    ]
   },
   {
     name: "aibtc-payments-invoices-toggle-resource",
@@ -261,6 +420,22 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_RESOURCE_ID" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_INVOICES", key: "invoices_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS"
+      }
+    ]
   },
 
   // Timed Vault Proposals
