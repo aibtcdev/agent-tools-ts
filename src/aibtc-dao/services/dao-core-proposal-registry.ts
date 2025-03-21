@@ -215,6 +215,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_BOND_AMOUNT" }
     ],
+    requiredTraits: [
+      { ref: "DAO_MESSAGING", key: "messaging_trait" },
+      { ref: "DAO_CORE_PROPOSALS", key: "core_proposals_trait" }
+    ],
     requiredContractAddresses: [
       {
         key: "messaging_contract",
