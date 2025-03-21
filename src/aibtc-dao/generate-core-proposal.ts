@@ -4,24 +4,28 @@ import { validateStacksAddress } from "@stacks/transactions";
 import { DaoCoreProposalGenerator } from "./services/dao-core-proposal-generator";
 import {
   CONFIG,
+  convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
+  getCurrentBlockHeights,
   sendToLLM,
   ToolResponse,
 } from "../utilities";
 import { GeneratedCoreProposalRegistryEntry } from "./services/dao-core-proposal-registry";
 
-const usage = `Usage: bun run generate-core-proposal.ts <proposalContractName> [proposalArgs]`;
-const usageExample = `Example: bun run generate-core-proposal.ts aibtc-treasury-withdraw-stx '{"amount": "1000000"}'`;
+const usage = `Usage: bun run generate-core-proposal.ts <proposalContractName> <proposalArgs> [generateFiles]`;
+const usageExample = `Example: bun run generate-core-proposal.ts aibtc-treasury-withdraw-stx '{"amount": "1000000"}' true`;
 
 interface ProposalGeneratorArgs {
   proposalContractName: string;
   proposalArgs: Record<string, string>;
+  generateFiles: boolean;
 }
 
 function validateArgs(): ProposalGeneratorArgs {
   // capture all arguments
-  const [proposalContractName, proposalArgsJson] = process.argv.slice(2);
+  const [proposalContractName, proposalArgsJson, generateFiles] =
+    process.argv.slice(2);
 
   // verify required arguments are provided
   if (!proposalContractName) {
@@ -48,10 +52,14 @@ function validateArgs(): ProposalGeneratorArgs {
     }
   }
 
+  // convert generateFiles to boolean
+  const shouldGenerateFiles = convertStringToBoolean(generateFiles);
+
   // return validated arguments
   return {
     proposalContractName,
     proposalArgs,
+    generateFiles: shouldGenerateFiles,
   };
 }
 
@@ -69,6 +77,10 @@ async function main(): Promise<
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  const truncatedAddress = `${address.substring(0, 5)}-${address.slice(-5)}`;
+
+  // get current block height
+  const blockHeights = await getCurrentBlockHeights();
 
   // create proposal generator instance
   const proposalGenerator = new DaoCoreProposalGenerator(
@@ -85,11 +97,13 @@ async function main(): Promise<
 
   // Step 2 - save proposal (optional)
 
-  const outputDir = path.join("generated", "proposals");
-  fs.mkdirSync(outputDir, { recursive: true });
-  const fileName = `${args.proposalContractName}.clar`;
-  const filePath = path.join(outputDir, fileName);
-  fs.writeFileSync(filePath, generatedProposal.source);
+  if (args.shouldGenerateFiles) {
+    const outputDir = path.join("generated", "proposals");
+    fs.mkdirSync(outputDir, { recursive: true });
+    const fileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
+    const filePath = path.join(outputDir, fileName);
+    fs.writeFileSync(filePath, generatedProposal.source);
+  }
 
   // Step 3 - return generated proposal
 
