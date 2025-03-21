@@ -88,14 +88,31 @@ export class DaoCoreProposalGenerator {
     );
     const runtimeVars = Object.fromEntries(
       (coreProposal.requiredRuntimeValues || []).map(({ key }) => {
-        // Skip CFG_MESSAGE for now as it's handled separately
-        if (key !== 'CFG_MESSAGE' && proposalArgs[key] === undefined) {
-          throw new Error(`Missing required runtime value: ${key} for proposal ${proposalContractName}`);
+        // Handle special cases for parameter name mismatches
+        let paramValue = proposalArgs[key];
+        
+        // Map common parameter name variations
+        if (paramValue === undefined) {
+          // Handle common parameter name variations
+          if (key === 'CFG_STX_AMOUNT' && proposalArgs['CFG_AMOUNT'] !== undefined) {
+            paramValue = proposalArgs['CFG_AMOUNT'];
+            console.log(`Using CFG_AMOUNT value for ${key}`);
+          } else if (key === 'CFG_AMOUNT' && proposalArgs['CFG_STX_AMOUNT'] !== undefined) {
+            paramValue = proposalArgs['CFG_STX_AMOUNT'];
+            console.log(`Using CFG_STX_AMOUNT value for ${key}`);
+          }
         }
+        
+        // Skip CFG_MESSAGE for now as it's handled separately
+        if (key !== 'CFG_MESSAGE' && paramValue === undefined) {
+          throw new Error(`Missing required runtime value: ${key} for proposal ${proposalContractName}. Available args: ${Object.keys(proposalArgs).join(', ')}`);
+        }
+        
         // Use the provided value or a default empty string for CFG_MESSAGE
         const value = key === 'CFG_MESSAGE' 
-          ? (proposalArgs[key] || 'DAO proposal execution')
-          : proposalArgs[key];
+          ? (paramValue || 'DAO proposal execution')
+          : paramValue;
+          
         return [key, value];
       })
     );

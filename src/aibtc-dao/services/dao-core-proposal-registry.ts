@@ -828,7 +828,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-treasury-withdraw-stx.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_AMOUNT" },
+      { key: "CFG_STX_AMOUNT" },
       { key: "CFG_RECIPIENT" }
     ],
     requiredTraits: [

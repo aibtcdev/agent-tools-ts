@@ -14,7 +14,7 @@ import {
 import { GeneratedCoreProposalRegistryEntry } from "./services/dao-core-proposal-registry";
 
 const usage = `Usage: bun run generate-core-proposal.ts <proposalContractName> <proposalArgs> [generateFiles]`;
-const usageExample = `Example: bun run generate-core-proposal.ts aibtc-treasury-withdraw-stx '{"CFG_AMOUNT": "1000000", "CFG_RECIPIENT": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
+const usageExample = `Example: bun run generate-core-proposal.ts aibtc-treasury-withdraw-stx '{"CFG_STX_AMOUNT": "1000000", "CFG_RECIPIENT": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
 
 interface ExpectedArgs {
   proposalContractName: string;
