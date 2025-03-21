@@ -506,18 +506,16 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-timed-vault-initialize-new-account.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_ACCOUNT_NAME" },
       { key: "CFG_ACCOUNT_HOLDER" },
-      { key: "CFG_WITHDRAWAL_AMOUNT" },
-      { key: "CFG_WITHDRAWAL_PERIOD" }
+      { key: "CFG_AMOUNT_TO_FUND_STX" },
+      { key: "CFG_AMOUNT_TO_FUND_FT" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TIMED_VAULT", key: "timed_vault_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -525,6 +523,21 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
         key: "timed_vault_contract",
         category: "EXTENSIONS",
         subcategory: "TIMED_VAULT"
+      },
+      {
+        key: "base_dao_contract",
+        category: "DAO",
+        subcategory: "BASE"
+      },
+      {
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY"
+      },
+      {
+        key: "token_contract",
+        category: "TOKENS",
+        subcategory: "DAO_TOKEN"
       }
     ]
   },
@@ -535,16 +548,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       "proposals/aibtc-timed-vault-override-last-withdrawal-block.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_ACCOUNT_NAME" },
-      { key: "CFG_BLOCK_HEIGHT" }
+      { key: "CFG_LAST_WITHDRAWAL_BLOCK" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TIMED_VAULT", key: "timed_vault_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -561,16 +572,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-timed-vault-set-account-holder.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_ACCOUNT_NAME" },
       { key: "CFG_ACCOUNT_HOLDER" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TIMED_VAULT", key: "timed_vault_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -587,16 +596,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-timed-vault-set-withdrawal-amount.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_ACCOUNT_NAME" },
       { key: "CFG_WITHDRAWAL_AMOUNT" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TIMED_VAULT", key: "timed_vault_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -613,16 +620,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-timed-vault-set-withdrawal-period.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_ACCOUNT_NAME" },
       { key: "CFG_WITHDRAWAL_PERIOD" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TIMED_VAULT", key: "timed_vault_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -638,17 +643,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Timed Vault: Withdraw STX",
     templatePath: "proposals/aibtc-timed-vault-withdraw-stx.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_ACCOUNT_NAME" },
-      { key: "CFG_RECIPIENT" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TIMED_VAULT", key: "timed_vault_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -670,12 +672,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_TOKEN_URI" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TOKEN_OWNER", key: "token_owner_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -695,12 +696,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_NEW_OWNER" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TOKEN_OWNER", key: "token_owner_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
