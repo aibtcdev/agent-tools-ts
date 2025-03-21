@@ -718,16 +718,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Treasury: Allow Asset",
     templatePath: "proposals/aibtc-treasury-allow-asset.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_ASSET_CONTRACT" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TREASURY", key: "treasury_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -735,6 +733,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
         key: "treasury_contract",
         category: "EXTENSIONS",
         subcategory: "TREASURY"
+      },
+      {
+        key: "asset_contract",
+        category: "TOKENS",
+        subcategory: "CUSTOM"
       }
     ]
   },
@@ -744,21 +747,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-treasury-delegate-stx.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_AMOUNT" },
-      { key: "CFG_DELEGATE_TO" },
-      { key: "CFG_UNTIL_BURN_HEIGHT" },
-      { key: "CFG_POX_ADDRESS" }
+      { key: "CFG_AMOUNT" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TREASURY", key: "treasury_trait" }
-    ],
-    requiredAddresses: [
-      { ref: "POX", key: "pox_contract" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -766,6 +762,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
         key: "treasury_contract",
         category: "EXTENSIONS",
         subcategory: "TREASURY"
+      },
+      {
+        key: "delegate_to",
+        category: "ACCOUNTS",
+        subcategory: "DELEGATE"
       }
     ]
   },
@@ -774,16 +775,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Treasury: Disable Asset",
     templatePath: "proposals/aibtc-treasury-disable-asset.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_ASSET_CONTRACT" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TREASURY", key: "treasury_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -791,6 +790,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
         key: "treasury_contract",
         category: "EXTENSIONS",
         subcategory: "TREASURY"
+      },
+      {
+        key: "asset_contract",
+        category: "TOKENS",
+        subcategory: "CUSTOM"
       }
     ]
   },
@@ -799,20 +803,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Treasury: Revoke Delegation",
     templatePath: "proposals/aibtc-treasury-revoke-delegation.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_AMOUNT" },
-      { key: "CFG_DELEGATE_TO" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TREASURY", key: "treasury_trait" }
-    ],
-    requiredAddresses: [
-      { ref: "POX", key: "pox_contract" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -829,18 +827,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-treasury-withdraw-ft.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_TOKEN_CONTRACT" },
-      { key: "CFG_AMOUNT" },
-      { key: "CFG_RECIPIENT" }
+      { key: "CFG_TOKEN_AMOUNT" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TREASURY", key: "treasury_trait" },
-      { ref: "STANDARD_SIP010", key: "ft_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -848,6 +842,16 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
         key: "treasury_contract",
         category: "EXTENSIONS",
         subcategory: "TREASURY"
+      },
+      {
+        key: "token_contract",
+        category: "TOKENS",
+        subcategory: "CUSTOM"
+      },
+      {
+        key: "recipient",
+        category: "ACCOUNTS",
+        subcategory: "RECIPIENT"
       }
     ]
   },
@@ -857,18 +861,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-treasury-withdraw-nft.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_NFT_CONTRACT" },
-      { key: "CFG_NFT_ID" },
-      { key: "CFG_RECIPIENT" }
+      { key: "CFG_NFT_ID" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TREASURY", key: "treasury_trait" },
-      { ref: "STANDARD_SIP009", key: "nft_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -876,6 +876,16 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
         key: "treasury_contract",
         category: "EXTENSIONS",
         subcategory: "TREASURY"
+      },
+      {
+        key: "nft_contract",
+        category: "TOKENS",
+        subcategory: "NFT"
+      },
+      {
+        key: "recipient",
+        category: "ACCOUNTS",
+        subcategory: "RECIPIENT"
       }
     ]
   },
@@ -885,16 +895,14 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-treasury-withdraw-stx.clar",
     requiredRuntimeValues: [
       { key: "CFG_MESSAGE" },
-      { key: "CFG_STX_AMOUNT" },
-      { key: "CFG_RECIPIENT" }
+      { key: "CFG_STX_AMOUNT" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_TREASURY", key: "treasury_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -902,6 +910,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
         key: "treasury_contract",
         category: "EXTENSIONS",
         subcategory: "TREASURY"
+      },
+      {
+        key: "recipient",
+        category: "ACCOUNTS",
+        subcategory: "RECIPIENT"
       }
     ]
   },
