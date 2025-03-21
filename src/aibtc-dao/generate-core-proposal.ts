@@ -68,8 +68,9 @@ async function main(): Promise<
 > {
   // Step 0 - prep work
 
-  // validate and store provided args
-  const args = validateArgs();
+  try {
+    // validate and store provided args
+    const args = validateArgs();
 
   // setup network and wallet info
   const { address } = await deriveChildAccount(
@@ -90,14 +91,14 @@ async function main(): Promise<
 
   // Step 1 - generate core proposal
 
-  const generatedProposal = proposalGenerator.generateCoreProposal(
+  const generatedProposal = await proposalGenerator.generateCoreProposal(
     args.proposalContractName,
     args.proposalArgs
   );
 
   // Step 2 - save proposal (optional)
 
-  if (args.shouldGenerateFiles) {
+  if (args.generateFiles) {
     const outputDir = path.join("generated", "proposals");
     fs.mkdirSync(outputDir, { recursive: true });
     const fileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
@@ -107,15 +108,18 @@ async function main(): Promise<
 
   // Step 3 - return generated proposal
 
-  return {
-    success: true,
-    message: `Core proposal ${args.proposalContractName} generated successfully`,
-    data: {
-      ...generatedProposal,
-      // limit source to set chars for display / context size
-      source: generatedProposal.source.substring(0, 250) + "...",
-    },
-  };
+    return {
+      success: true,
+      message: `Core proposal ${args.proposalContractName} generated successfully`,
+      data: {
+        ...generatedProposal,
+        // limit source to set chars for display / context size
+        source: generatedProposal.source.substring(0, 250) + "...",
+      },
+    };
+  } catch (error) {
+    return createErrorResponse(error);
+  }
 }
 
 main()
