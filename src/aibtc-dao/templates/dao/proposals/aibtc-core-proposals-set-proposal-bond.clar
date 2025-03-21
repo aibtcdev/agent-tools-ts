@@ -8,8 +8,8 @@
 (define-public (execute (sender principal))
   (begin
     ;; send a message from the dao
-    (try! (contract-call? .aibtc-onchain-messaging send CFG_MESSAGE true)) ;; CFG_MESSAGE_CONTRACT
-    ;; deposit STX in the timed vault
-    (contract-call? .aibtc-core-proposals-v2 set-proposal-bond CFG_BOND_AMOUNT) ;; CFG_BOND_AMOUNT
+    (try! (contract-call? .aibtc-onchain-messaging send CFG_MESSAGE true))
+    ;; update proposal bond amount
+    (contract-call? .aibtc-core-proposals-v2 set-proposal-bond CFG_BOND_AMOUNT)
   )
 )

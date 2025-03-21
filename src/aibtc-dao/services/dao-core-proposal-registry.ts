@@ -88,6 +88,18 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_BOND_AMOUNT" }
     ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "action_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "ACTION_PROPOSALS"
+      }
+    ]
   },
 
   // Base DAO Proposals
@@ -150,6 +162,18 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_BOND_AMOUNT" }
     ],
+    requiredContractAddresses: [
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "core_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "CORE_PROPOSALS"
+      }
+    ]
   },
 
   // DAO Charter Proposals
