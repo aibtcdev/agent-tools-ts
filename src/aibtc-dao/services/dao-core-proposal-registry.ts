@@ -88,14 +88,17 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_MESSAGE" },
       { key: "CFG_BOND_AMOUNT" }
     ],
+    requiredTraits: [
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
+    ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
       {
-        key: "action_proposals_contract",
+        key: "action_proposal_contract",
         category: "EXTENSIONS",
         subcategory: "ACTION_PROPOSALS"
       }
@@ -108,19 +111,26 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Base DAO: Add New Extension",
     templatePath: "proposals/aibtc-base-add-new-extension.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_EXTENSION_CONTRACT" },
-      { key: "CFG_EXTENSION_ENABLED" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_EXTENSION", key: "extension_trait" }
+      { ref: "DAO_MESSAGING", key: "messaging_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
+      },
+      {
+        key: "base_dao_contract",
+        category: "DAO",
+        subcategory: "BASE"
+      },
+      {
+        key: "new_extension_contract",
+        category: "EXTENSIONS",
+        subcategory: "CUSTOM"
       }
     ]
   },
@@ -129,17 +139,26 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Base DAO: Disable Extension",
     templatePath: "proposals/aibtc-base-disable-extension.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_EXTENSION_CONTRACT" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
       { ref: "DAO_MESSAGING", key: "messaging_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
+      },
+      {
+        key: "base_dao_contract",
+        category: "DAO",
+        subcategory: "BASE"
+      },
+      {
+        key: "extension_contract",
+        category: "EXTENSIONS",
+        subcategory: "CUSTOM"
       }
     ]
   },
@@ -148,17 +167,26 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Base DAO: Enable Extension",
     templatePath: "proposals/aibtc-base-enable-extension.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_EXTENSION_CONTRACT" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
       { ref: "DAO_MESSAGING", key: "messaging_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
+      },
+      {
+        key: "base_dao_contract",
+        category: "DAO",
+        subcategory: "BASE"
+      },
+      {
+        key: "extension_contract",
+        category: "EXTENSIONS",
+        subcategory: "CUSTOM"
       }
     ]
   },
@@ -167,20 +195,31 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Base DAO: Replace Extension",
     templatePath: "proposals/aibtc-base-replace-extension.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_OLD_EXTENSION_CONTRACT" },
-      { key: "CFG_NEW_EXTENSION_CONTRACT" },
-      { key: "CFG_EXTENSION_ENABLED" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_EXTENSION", key: "extension_trait" }
+      { ref: "DAO_MESSAGING", key: "messaging_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
+      },
+      {
+        key: "base_dao_contract",
+        category: "DAO",
+        subcategory: "BASE"
+      },
+      {
+        key: "old_extension_contract",
+        category: "EXTENSIONS",
+        subcategory: "CUSTOM"
+      },
+      {
+        key: "new_extension_contract",
+        category: "EXTENSIONS",
+        subcategory: "CUSTOM"
       }
     ]
   },
@@ -189,19 +228,42 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Base DAO: Replace Extension Proposal Voting",
     templatePath: "proposals/aibtc-base-replace-extension-proposal-voting.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_OLD_EXTENSION_CONTRACT" },
-      { key: "CFG_NEW_EXTENSION_CONTRACT" }
+      { key: "CFG_MESSAGE" }
     ],
     requiredTraits: [
       { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_PROPOSAL", key: "proposal_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
+      },
+      {
+        key: "base_dao_contract",
+        category: "DAO",
+        subcategory: "BASE"
+      },
+      {
+        key: "old_action_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "ACTION_PROPOSALS"
+      },
+      {
+        key: "old_core_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "CORE_PROPOSALS"
+      },
+      {
+        key: "new_action_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "ACTION_PROPOSALS"
+      },
+      {
+        key: "new_core_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "CORE_PROPOSALS"
       }
     ]
   },
@@ -216,12 +278,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_BOND_AMOUNT" }
     ],
     requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_CORE_PROPOSALS", key: "core_proposals_trait" }
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
     ],
     requiredContractAddresses: [
       {
-        key: "messaging_contract",
+        key: "message_contract",
         category: "EXTENSIONS",
         subcategory: "MESSAGING"
       },
@@ -845,6 +906,111 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
         key: "treasury_contract",
         category: "EXTENSIONS",
         subcategory: "TREASURY"
+      }
+    ]
+  },
+  // Bootstrap Initialization Proposal
+  {
+    name: "aibtc-base-bootstrap-initialization-v2",
+    friendlyName: "Base DAO: Bootstrap Initialization V2",
+    templatePath: "proposals/aibtc-base-bootstrap-initialization-v2.clar",
+    requiredRuntimeValues: [
+      { key: "CFG_DAO_MANIFEST_TEXT" },
+      { key: "CFG_DAO_MANIFEST_INSCRIPTION_ID" }
+    ],
+    requiredTraits: [
+      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "DAO",
+        subcategory: "BASE"
+      },
+      {
+        key: "action_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "ACTION_PROPOSALS"
+      },
+      {
+        key: "core_proposals_contract",
+        category: "EXTENSIONS",
+        subcategory: "CORE_PROPOSALS"
+      },
+      {
+        key: "dao_charter_contract",
+        category: "EXTENSIONS",
+        subcategory: "CHARTER"
+      },
+      {
+        key: "messaging_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING"
+      },
+      {
+        key: "payments_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS"
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT"
+      },
+      {
+        key: "token_owner_contract",
+        category: "EXTENSIONS",
+        subcategory: "TOKEN_OWNER"
+      },
+      {
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY"
+      },
+      {
+        key: "action_add_resource_contract",
+        category: "ACTIONS",
+        subcategory: "ADD_RESOURCE"
+      },
+      {
+        key: "action_allow_asset_contract",
+        category: "ACTIONS",
+        subcategory: "ALLOW_ASSET"
+      },
+      {
+        key: "action_send_message_contract",
+        category: "ACTIONS",
+        subcategory: "SEND_MESSAGE"
+      },
+      {
+        key: "action_set_account_holder_contract",
+        category: "ACTIONS",
+        subcategory: "SET_ACCOUNT_HOLDER"
+      },
+      {
+        key: "action_set_withdrawal_amount_contract",
+        category: "ACTIONS",
+        subcategory: "SET_WITHDRAWAL_AMOUNT"
+      },
+      {
+        key: "action_set_withdrawal_period_contract",
+        category: "ACTIONS",
+        subcategory: "SET_WITHDRAWAL_PERIOD"
+      },
+      {
+        key: "action_toggle_resource_by_name_contract",
+        category: "ACTIONS",
+        subcategory: "TOGGLE_RESOURCE_BY_NAME"
+      },
+      {
+        key: "token_contract",
+        category: "TOKENS",
+        subcategory: "DAO_TOKEN"
+      },
+      {
+        key: "sbtc_contract",
+        category: "TOKENS",
+        subcategory: "SBTC"
       }
     ]
   },
