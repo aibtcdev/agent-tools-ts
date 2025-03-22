@@ -92,7 +92,6 @@ export class DaoCoreProposalDeployer {
           contractAddress: `${this.senderAddress}.${proposal.name}`,
           sender: this.senderAddress,
           success: false,
-          error: errorMessage,
         };
       }
     } catch (error) {
@@ -102,7 +101,6 @@ export class DaoCoreProposalDeployer {
         contractAddress: `${this.senderAddress}.${proposal.name}`,
         sender: this.senderAddress,
         success: false,
-        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -125,11 +123,7 @@ export class DaoCoreProposalDeployer {
 
       // If deployment failed, throw an error
       if (!deployedProposal.success) {
-        throw new Error(
-          `Failed to deploy proposal ${proposal.name}: ${
-            deployedProposal.error || "Unknown error"
-          }`
-        );
+        throw new Error(`Failed to deploy proposal ${proposal.name}`);
       } else {
         nonce++;
         // wait 0.5 seconds before deploying the next proposal
