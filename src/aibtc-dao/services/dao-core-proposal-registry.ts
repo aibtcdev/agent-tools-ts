@@ -272,11 +272,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Payments & Invoices: Add Resource",
     templatePath: "proposals/aibtc-payments-invoices-add-resource.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_RESOURCE_NAME" },
-      { key: "CFG_RESOURCE_DESCRIPTION" },
-      { key: "CFG_RESOURCE_AMOUNT" },
-      { key: "CFG_RESOURCE_URL" },
+      { key: "resource_name" },
+      { key: "resource_description" },
+      { key: "resource_amount" },
+      { key: "resource_url" },
     ],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -293,68 +292,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     ],
   },
   {
-    name: "aibtc-payments-invoices-pay-invoice-by-resource-name",
-    friendlyName: "Payments & Invoices: Pay Invoice By Resource Name",
-    templatePath:
-      "proposals/aibtc-payments-invoices-pay-invoice-by-resource-name.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_RESOURCE_NAME" },
-      { key: "CFG_INVOICE_MEMO" },
-      { key: "CFG_RECIPIENT" },
-    ],
-    requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_INVOICES", key: "invoices_trait" },
-    ],
-    requiredContractAddresses: [
-      {
-        key: "messaging_contract",
-        category: "EXTENSIONS",
-        subcategory: "MESSAGING",
-      },
-      {
-        key: "payments_contract",
-        category: "EXTENSIONS",
-        subcategory: "PAYMENTS",
-      },
-    ],
-  },
-  {
-    name: "aibtc-payments-invoices-pay-invoice",
-    friendlyName: "Payments & Invoices: Pay Invoice",
-    templatePath: "proposals/aibtc-payments-invoices-pay-invoice.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_RESOURCE_ID" },
-      { key: "CFG_INVOICE_MEMO" },
-      { key: "CFG_RECIPIENT" },
-    ],
-    requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_INVOICES", key: "invoices_trait" },
-    ],
-    requiredContractAddresses: [
-      {
-        key: "messaging_contract",
-        category: "EXTENSIONS",
-        subcategory: "MESSAGING",
-      },
-      {
-        key: "payments_contract",
-        category: "EXTENSIONS",
-        subcategory: "PAYMENTS",
-      },
-    ],
-  },
-  {
     name: "aibtc-payments-invoices-set-payment-address",
     friendlyName: "Payments & Invoices: Set Payment Address",
     templatePath: "proposals/aibtc-payments-invoices-set-payment-address.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_PAYOUT_ADDRESS" },
-    ],
+    requiredRuntimeValues: [{ key: "payout_address" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -374,10 +315,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Payments & Invoices: Toggle Resource By Name",
     templatePath:
       "proposals/aibtc-payments-invoices-toggle-resource-by-name.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_RESOURCE_NAME" },
-    ],
+    requiredRuntimeValues: [{ key: "resource_name" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -396,10 +334,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-payments-invoices-toggle-resource",
     friendlyName: "Payments & Invoices: Toggle Resource",
     templatePath: "proposals/aibtc-payments-invoices-toggle-resource.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_RESOURCE_INDEX" },
-    ],
+    requiredRuntimeValues: [{ key: "resource_index" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -421,10 +356,9 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Timed Vault: Initialize New Account",
     templatePath: "proposals/aibtc-timed-vault-initialize-new-account.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_ACCOUNT_HOLDER" },
-      { key: "CFG_AMOUNT_TO_FUND_STX" },
-      { key: "CFG_AMOUNT_TO_FUND_FT" },
+      { key: "account_holder" },
+      { key: "amount_to_fund_stx" },
+      { key: "amount_to_fund_ft" },
     ],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -460,10 +394,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Timed Vault: Override Last Withdrawal Block",
     templatePath:
       "proposals/aibtc-timed-vault-override-last-withdrawal-block.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_LAST_WITHDRAWAL_BLOCK" },
-    ],
+    requiredRuntimeValues: [{ key: "last_withdrawal_block" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -482,10 +413,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-timed-vault-set-account-holder",
     friendlyName: "Timed Vault: Set Account Holder",
     templatePath: "proposals/aibtc-timed-vault-set-account-holder.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_ACCOUNT_HOLDER" },
-    ],
+    requiredRuntimeValues: [{ key: "account_holder" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -504,10 +432,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-timed-vault-set-withdrawal-amount",
     friendlyName: "Timed Vault: Set Withdrawal Amount",
     templatePath: "proposals/aibtc-timed-vault-set-withdrawal-amount.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_WITHDRAWAL_AMOUNT" },
-    ],
+    requiredRuntimeValues: [{ key: "withdrawal_amount" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -526,10 +451,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-timed-vault-set-withdrawal-period",
     friendlyName: "Timed Vault: Set Withdrawal Period",
     templatePath: "proposals/aibtc-timed-vault-set-withdrawal-period.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_WITHDRAWAL_PERIOD" },
-    ],
+    requiredRuntimeValues: [{ key: "withdrawal_period" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -548,7 +470,6 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-timed-vault-withdraw-stx",
     friendlyName: "Timed Vault: Withdraw STX",
     templatePath: "proposals/aibtc-timed-vault-withdraw-stx.clar",
-    requiredRuntimeValues: [{ key: "CFG_MESSAGE" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -569,7 +490,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-token-owner-set-token-uri",
     friendlyName: "Token Owner: Set Token URI",
     templatePath: "proposals/aibtc-token-owner-set-token-uri.clar",
-    requiredRuntimeValues: [{ key: "CFG_MESSAGE" }, { key: "CFG_TOKEN_URI" }],
+    requiredRuntimeValues: [{ key: "token_uri" }, { key: "CFG_TOKEN_URI" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -588,7 +509,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-token-owner-transfer-ownership",
     friendlyName: "Token Owner: Transfer Ownership",
     templatePath: "proposals/aibtc-token-owner-transfer-ownership.clar",
-    requiredRuntimeValues: [{ key: "CFG_MESSAGE" }, { key: "CFG_NEW_OWNER" }],
+    requiredRuntimeValues: [{ key: "new_owner_address" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -628,7 +549,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-treasury-delegate-stx",
     friendlyName: "Treasury: Delegate STX",
     templatePath: "proposals/aibtc-treasury-delegate-stx.clar",
-    requiredRuntimeValues: [{ key: "delegate_to" }, { key: "CFG_AMOUNT" }],
+    requiredRuntimeValues: [{ key: "delegate_amount" }, { key: "delegate_to" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -666,7 +587,6 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-treasury-revoke-delegation",
     friendlyName: "Treasury: Revoke Delegation",
     templatePath: "proposals/aibtc-treasury-revoke-delegation.clar",
-    requiredRuntimeValues: [{ key: "CFG_MESSAGE" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -686,9 +606,8 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Treasury: Withdraw FT",
     templatePath: "proposals/aibtc-treasury-withdraw-ft.clar",
     requiredRuntimeValues: [
-      { key: "token_contract" },
-      { key: "recipient" },
-      { key: "CFG_TOKEN_AMOUNT" },
+      { key: "token_amount" },
+      { key: "recipient_address" },
     ],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -714,9 +633,9 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Treasury: Withdraw NFT",
     templatePath: "proposals/aibtc-treasury-withdraw-nft.clar",
     requiredRuntimeValues: [
-      { key: "CFG_MESSAGE" },
-      { key: "CFG_NFT_ID" },
-      { key: "recipieint" },
+      { key: "nft_id" },
+      { key: "nft_contract" },
+      { key: "recipient_address" },
       { key: "CFG_NFT_CONTRACT" },
     ],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
@@ -737,7 +656,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-treasury-withdraw-stx",
     friendlyName: "Treasury: Withdraw STX",
     templatePath: "proposals/aibtc-treasury-withdraw-stx.clar",
-    requiredRuntimeValues: [{ key: "recipient" }, { key: "CFG_STX_AMOUNT" }],
+    requiredRuntimeValues: [
+      { key: "stx_amount" },
+      { key: "recipient_address" },
+    ],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -753,102 +675,5 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     ],
   },
   // Bootstrap Initialization Proposal
-  {
-    name: "aibtc-base-bootstrap-initialization-v2",
-    friendlyName: "Base DAO: Bootstrap Initialization V2",
-    templatePath: "proposals/aibtc-base-bootstrap-initialization-v2.clar",
-    requiredRuntimeValues: [
-      { key: "CFG_DAO_MANIFEST_TEXT" },
-      { key: "CFG_DAO_MANIFEST_INSCRIPTION_ID" },
-    ],
-    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
-    requiredAddresses: [{ key: "sbtc_contract", ref: "SBTC" }],
-    requiredContractAddresses: [
-      {
-        key: "base_dao_contract",
-        category: "BASE",
-        subcategory: "DAO",
-      },
-      {
-        key: "action_proposals_contract",
-        category: "EXTENSIONS",
-        subcategory: "ACTION_PROPOSALS",
-      },
-      {
-        key: "core_proposals_contract",
-        category: "EXTENSIONS",
-        subcategory: "CORE_PROPOSALS",
-      },
-      {
-        key: "dao_charter_contract",
-        category: "EXTENSIONS",
-        subcategory: "CHARTER",
-      },
-      {
-        key: "messaging_contract",
-        category: "EXTENSIONS",
-        subcategory: "MESSAGING",
-      },
-      {
-        key: "payments_contract",
-        category: "EXTENSIONS",
-        subcategory: "PAYMENTS",
-      },
-      {
-        key: "timed_vault_contract",
-        category: "EXTENSIONS",
-        subcategory: "TIMED_VAULT",
-      },
-      {
-        key: "token_owner_contract",
-        category: "EXTENSIONS",
-        subcategory: "TOKEN_OWNER",
-      },
-      {
-        key: "treasury_contract",
-        category: "EXTENSIONS",
-        subcategory: "TREASURY",
-      },
-      {
-        key: "action_add_resource_contract",
-        category: "ACTIONS",
-        subcategory: "PAYMENTS_INVOICES_ADD_RESOURCE",
-      },
-      {
-        key: "action_allow_asset_contract",
-        category: "ACTIONS",
-        subcategory: "TREASURY_ALLOW_ASSET",
-      },
-      {
-        key: "action_send_message_contract",
-        category: "ACTIONS",
-        subcategory: "MESSAGING_SEND_MESSAGE",
-      },
-      {
-        key: "action_set_account_holder_contract",
-        category: "ACTIONS",
-        subcategory: "TIMED_VAULT_SET_ACCOUNT_HOLDER",
-      },
-      {
-        key: "action_set_withdrawal_amount_contract",
-        category: "ACTIONS",
-        subcategory: "TIMED_VAULT_SET_WITHDRAWAL_AMOUNT",
-      },
-      {
-        key: "action_set_withdrawal_period_contract",
-        category: "ACTIONS",
-        subcategory: "TIMED_VAULT_SET_WITHDRAWAL_PERIOD",
-      },
-      {
-        key: "action_toggle_resource_by_name_contract",
-        category: "ACTIONS",
-        subcategory: "PAYMENTS_INVOICES_TOGGLE_RESOURCE",
-      },
-      {
-        key: "token_contract",
-        category: "TOKEN",
-        subcategory: "DAO",
-      },
-    ],
-  },
+  // left out here, covered in dao-generator.ts
 ] as const;

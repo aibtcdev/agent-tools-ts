@@ -4,8 +4,6 @@
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Toggled a resource status by name in the payments/invoices extension")
 (define-constant CFG_RESOURCE_NAME "<%= it.resource_name %>")
-(define-constant CFG_MESSAGE_CONTRACT '<%= it.message_contract %>)
-(define-constant CFG_PAYMENTS_CONTRACT '<%= it.payments_contract %>)
 
 (define-public (execute (sender principal))
   (begin 

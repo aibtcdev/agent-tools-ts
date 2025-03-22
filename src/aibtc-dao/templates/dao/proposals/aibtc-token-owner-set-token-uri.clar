@@ -4,8 +4,6 @@
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Set token URI in the DAO token contract")
 (define-constant CFG_TOKEN_URI "<%= it.token_uri %>")
-(define-constant CFG_MESSAGE_CONTRACT '<%= it.message_contract %>)
-(define-constant CFG_TOKEN_OWNER_CONTRACT '<%= it.token_owner_contract %>)
 
 (define-public (execute (sender principal))
   (begin

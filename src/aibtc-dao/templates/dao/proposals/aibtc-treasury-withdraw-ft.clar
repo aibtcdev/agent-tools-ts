@@ -3,10 +3,8 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Withdrew fungible tokens in the treasury extension")
-(define-constant CFG_TOKEN_AMOUNT <%= it.token_amount %>) ;; in microFT
-(define-constant CFG_RECIPIENT '<%= it.recipient %>)
-(define-constant CFG_MESSAGE_CONTRACT '<%= it.message_contract %>)
-(define-constant CFG_TREASURY_CONTRACT '<%= it.treasury_contract %>)
+(define-constant CFG_TOKEN_AMOUNT u<%= it.token_amount %>) ;; in microFT
+(define-constant CFG_RECIPIENT '<%= it.recipient_address %>)
 (define-constant CFG_TOKEN_CONTRACT '<%= it.token_contract %>)
 
 (define-public (execute (sender principal))

@@ -3,9 +3,7 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Toggled a resource status by index in the payments/invoices extension")
-(define-constant CFG_RESOURCE_INDEX <%= it.resource_index %>)
-(define-constant CFG_MESSAGE_CONTRACT '<%= it.message_contract %>)
-(define-constant CFG_PAYMENTS_CONTRACT '<%= it.payments_contract %>)
+(define-constant CFG_RESOURCE_INDEX u<%= it.resource_index %>)
 
 (define-public (execute (sender principal))
   (begin 

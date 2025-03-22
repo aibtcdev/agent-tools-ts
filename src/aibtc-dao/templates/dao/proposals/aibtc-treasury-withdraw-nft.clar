@@ -4,10 +4,8 @@
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Withdrew an NFT in the treasury extension")
 (define-constant CFG_NFT_ID <%= it.nft_id %>)
-(define-constant CFG_RECIPIENT '<%= it.recipient %>)
-(define-constant CFG_MESSAGE_CONTRACT '<%= it.message_contract %>)
-(define-constant CFG_TREASURY_CONTRACT '<%= it.treasury_contract %>)
 (define-constant CFG_NFT_CONTRACT '<%= it.nft_contract %>)
+(define-constant CFG_RECIPIENT '<%= it.recipient_address %>)
 
 (define-public (execute (sender principal))
   (begin

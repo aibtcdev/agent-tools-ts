@@ -5,8 +5,8 @@
 (define-constant CFG_MESSAGE "Initialized a new timed vault in the base dao and funded it from the treasury")
 (define-constant CFG_ACCOUNT_HOLDER '<%= it.account_holder %>)
 (define-constant CFG_TIMED_VAULT_CONTRACT '<%= it.timed_vault_contract)
-(define-constant CFG_AMOUNT_TO_FUND_STX <%= it.amount_to_fund_stx %>) ;; set to 0 to skip, in microSTX
-(define-constant CFG_AMOUNT_TO_FUND_FT <%= it.amount_to_fund_ft %>) ;; set to 0 to skip, in microFT
+(define-constant CFG_AMOUNT_TO_FUND_STX u<%= it.amount_to_fund_stx %>) ;; set to 0 to skip, in microSTX
+(define-constant CFG_AMOUNT_TO_FUND_FT u<%= it.amount_to_fund_ft %>) ;; set to 0 to skip, in microFT
 
 (define-public (execute (sender principal))
   (begin

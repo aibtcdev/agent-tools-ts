@@ -4,8 +4,6 @@
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Allowed or enabled asset for use in the treasury extension")
 (define-constant CFG_ASSET '<%= it.asset_contract %>)
-(define-constant CFG_MESSAGE_CONTRACT '<%= it.message_contract %>)
-(define-constant CFG_TREASURY_CONTRACT '<%= it.treasury_contract %>)
 
 (define-public (execute (sender principal))
   (begin 

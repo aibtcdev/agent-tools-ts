@@ -4,8 +4,6 @@
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Disabled an asset for deposit and withdrawal in the treasury")
 (define-constant CFG_ASSET_CONTRACT '<%= it.asset_contract %>)
-(define-constant CFG_MESSAGE_CONTRACT '<%= it.message_contract %>)
-(define-constant CFG_TREASURY_CONTRACT '<%= it.treasury_contract %>)
 
 (define-public (execute (sender principal))
   (begin 

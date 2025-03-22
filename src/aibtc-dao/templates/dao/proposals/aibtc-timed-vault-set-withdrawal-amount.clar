@@ -3,7 +3,7 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Set withdrawal amount in the timed vault extension")
-(define-constant CFG_WITHDRAWAL_AMOUNT <%= it.withdrawal_amount %>)
+(define-constant CFG_WITHDRAWAL_AMOUNT u<%= it.withdrawal_amount %>)
 
 (define-public (execute (sender principal))
   (begin
