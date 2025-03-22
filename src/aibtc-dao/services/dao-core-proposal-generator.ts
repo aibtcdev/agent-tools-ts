@@ -30,6 +30,7 @@ export class DaoCoreProposalGenerator {
   /**
    * Generate a core proposal based on the CORE_PROPOSAL_REGISTRY
    *
+   * @param tokenSymbol Token symbol for the DAO
    * @param proposalContractName Name of the proposal contract to generate
    * @param proposalArgs Arguments to pass to the proposal contract
    * @returns Generated contract registry entry
@@ -145,5 +146,53 @@ export class DaoCoreProposalGenerator {
         }`
       );
     }
+  }
+
+  /**
+   * Generate all core proposals with default arguments
+   * 
+   * @param tokenSymbol Token symbol for the DAO
+   * @returns Array of generated core proposal registry entries
+   */
+  public generateAllCoreProposals(
+    tokenSymbol: string
+  ): GeneratedCoreProposalRegistryEntry[] {
+    const results: GeneratedCoreProposalRegistryEntry[] = [];
+    
+    // Generate each proposal in the registry with default arguments
+    for (const proposal of CORE_PROPOSAL_REGISTRY) {
+      try {
+        // Create default arguments based on required runtime values
+        const defaultArgs: Record<string, string> = {};
+        
+        // For each required runtime value, provide a placeholder value
+        (proposal.requiredRuntimeValues || []).forEach(({ key }) => {
+          // Set default values based on common parameter types
+          if (key.includes('AMOUNT')) {
+            defaultArgs[key] = '1000000'; // Default STX amount (1 STX)
+          } else if (key.includes('RECIPIENT') || key.includes('ADDRESS')) {
+            defaultArgs[key] = this.senderAddress; // Use sender address as default recipient
+          } else if (key.includes('PERIOD') || key.includes('HEIGHT')) {
+            defaultArgs[key] = '144'; // Default to ~1 day in blocks
+          } else {
+            defaultArgs[key] = 'default-value'; // Generic default
+          }
+        });
+
+        // Generate the proposal with default arguments
+        const generatedProposal = this.generateCoreProposal(
+          tokenSymbol,
+          proposal.name,
+          defaultArgs
+        );
+        
+        results.push(generatedProposal);
+      } catch (error) {
+        console.error(`Error generating proposal ${proposal.name}:`, error);
+        // Continue with other proposals even if one fails
+      }
+    }
+    
+    return results;
   }
 }
