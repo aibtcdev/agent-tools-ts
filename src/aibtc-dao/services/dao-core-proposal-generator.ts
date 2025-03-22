@@ -156,95 +156,93 @@ export class DaoCoreProposalGenerator {
    * @returns Appropriate mock value for the parameter
    */
   private generateMockRuntimeValue(proposalName: string, paramKey: string, tokenSymbol: string = 'DAO'): string {
-    // Convert to lowercase for easier matching
-    const keyLower = paramKey.toLowerCase();
-    const proposalLower = proposalName.toLowerCase();
-
+    // Use proposal name for context-specific values if needed
+    
     // STX and token amounts
-    if (keyLower.includes('stx_amount') || keyLower === 'amount_to_fund_stx') {
+    if (paramKey.includes('stx_amount') || paramKey === 'amount_to_fund_stx') {
       return '10000000'; // 10 STX
     }
     
-    if (keyLower === 'token_amount' || keyLower === 'amount_to_fund_ft') {
+    if (paramKey === 'token_amount' || paramKey === 'amount_to_fund_ft') {
       return '1000000000'; // 1000 tokens (assuming 6 decimals)
     }
     
-    if (keyLower === 'bond_amount') {
+    if (paramKey === 'bond_amount') {
       return '5000000'; // 5 STX for proposal bonds
     }
     
-    if (keyLower === 'delegate_amount') {
+    if (paramKey === 'delegate_amount') {
       return '100000000'; // 100 STX for delegation
     }
     
-    if (keyLower === 'withdrawal_amount') {
+    if (paramKey === 'withdrawal_amount') {
       return '2500000'; // 2.5 STX for withdrawals
     }
 
     // Addresses and principals
-    if (keyLower.includes('address') || 
-        keyLower.includes('recipient') || 
-        keyLower === 'account_holder' ||
-        keyLower === 'delegate_to' ||
-        keyLower === 'payout_address') {
+    if (paramKey.includes('address') || 
+        paramKey.includes('recipient') || 
+        paramKey === 'account_holder' ||
+        paramKey === 'delegate_to' ||
+        paramKey === 'payout_address') {
       return this.senderAddress;
     }
     
-    if (keyLower.includes('contract') || keyLower.includes('extension')) {
+    if (paramKey.includes('contract') || paramKey.includes('extension')) {
       return `${this.senderAddress}.example-contract`;
     }
 
     // Time periods
-    if (keyLower.includes('period') || keyLower.includes('block')) {
+    if (paramKey.includes('period') || paramKey.includes('block')) {
       return '144'; // ~1 day in blocks
     }
     
-    if (keyLower === 'last_withdrawal_block') {
+    if (paramKey === 'last_withdrawal_block') {
       return '100000'; // Some past block
     }
 
     // Resource-related fields
-    if (keyLower === 'resource_name') {
+    if (paramKey === 'resource_name') {
       return 'example-resource';
     }
     
-    if (keyLower === 'resource_description') {
+    if (paramKey === 'resource_description') {
       return 'This is an example resource for the DAO';
     }
     
-    if (keyLower === 'resource_price' || keyLower === 'resource_amount') {
+    if (paramKey === 'resource_price' || paramKey === 'resource_amount') {
       return '1000000'; // 1 STX
     }
     
-    if (keyLower === 'resource_url') {
+    if (paramKey === 'resource_url') {
       return 'https://example.com/resource';
     }
     
-    if (keyLower === 'resource_index') {
+    if (paramKey === 'resource_index') {
       return '0'; // First resource
     }
 
     // NFT-related fields
-    if (keyLower === 'nft_id') {
+    if (paramKey === 'nft_id') {
       return '1';
     }
 
     // Message-related fields
-    if (keyLower === 'message' || keyLower === 'message_to_send') {
+    if (paramKey === 'message' || paramKey === 'message_to_send') {
       return `"Example DAO message from ${tokenSymbol} DAO"`;
     }
 
     // DAO Charter fields
-    if (keyLower === 'dao_charter_text') {
+    if (paramKey === 'dao_charter_text') {
       return `"This is the charter for the ${tokenSymbol} DAO"`;
     }
     
-    if (keyLower === 'dao_charter_inscription_id') {
+    if (paramKey === 'dao_charter_inscription_id') {
       return '"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"';
     }
 
     // Token URI
-    if (keyLower === 'token_uri') {
+    if (paramKey === 'token_uri') {
       return `"https://example.com/${tokenSymbol.toLowerCase()}-metadata.json"`;
     }
 
