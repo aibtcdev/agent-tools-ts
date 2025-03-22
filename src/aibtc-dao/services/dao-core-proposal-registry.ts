@@ -210,7 +210,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-core-proposals-set-proposal-bond",
     friendlyName: "Core Proposals: Set Proposal Bond",
     templatePath: "proposals/aibtc-core-proposals-set-proposal-bond.clar",
-    requiredRuntimeValues: [{ key: "bond_amount" }, { key: "CFG_BOND_AMOUNT" }],
+    requiredRuntimeValues: [{ key: "bond_amount" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -490,7 +490,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-token-owner-set-token-uri",
     friendlyName: "Token Owner: Set Token URI",
     templatePath: "proposals/aibtc-token-owner-set-token-uri.clar",
-    requiredRuntimeValues: [{ key: "token_uri" }, { key: "CFG_TOKEN_URI" }],
+    requiredRuntimeValues: [{ key: "token_uri" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -636,7 +636,6 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "nft_id" },
       { key: "nft_contract" },
       { key: "recipient_address" },
-      { key: "CFG_NFT_CONTRACT" },
     ],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
