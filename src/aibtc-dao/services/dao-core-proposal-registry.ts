@@ -84,7 +84,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-action-proposals-set-proposal-bond",
     friendlyName: "Action Proposals: Set Proposal Bond",
     templatePath: "proposals/aibtc-action-proposals-set-proposal-bond.clar",
-    requiredRuntimeValues: [{ key: "CFG_BOND_AMOUNT" }],
+    requiredRuntimeValues: [{ key: "bond_amount" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -105,8 +105,8 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-base-add-new-extension",
     friendlyName: "Base DAO: Add New Extension",
     templatePath: "proposals/aibtc-base-add-new-extension.clar",
-    requiredRuntimeValues: [{ key: "CFG_NEW_EXTENSION" }],
-    requiredTraits: [{ ref: "DAO_MESSAGING", key: "messaging_trait" }],
+    requiredRuntimeValues: [{ key: "new_extension_contract" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
         key: "message_contract",
@@ -124,8 +124,8 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-base-disable-extension",
     friendlyName: "Base DAO: Disable Extension",
     templatePath: "proposals/aibtc-base-disable-extension.clar",
-    requiredRuntimeValues: [{ key: "CFG_EXTENSION" }],
-    requiredTraits: [{ ref: "DAO_MESSAGING", key: "messaging_trait" }],
+    requiredRuntimeValues: [{ key: "extension_contract" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
         key: "message_contract",
@@ -143,8 +143,8 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-base-enable-extension",
     friendlyName: "Base DAO: Enable Extension",
     templatePath: "proposals/aibtc-base-enable-extension.clar",
-    requiredRuntimeValues: [{ key: "CFG_EXTENSION" }],
-    requiredTraits: [{ ref: "DAO_MESSAGING", key: "messaging_trait" }],
+    requiredRuntimeValues: [{ key: "extension_contract" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
         key: "message_contract",
@@ -163,10 +163,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Base DAO: Replace Extension",
     templatePath: "proposals/aibtc-base-replace-extension.clar",
     requiredRuntimeValues: [
-      { key: "CFG_OLD_EXTENSION" },
-      { key: "CFG_NEW_EXTENSION" },
+      { key: "old_extension_contract" },
+      { key: "new_extension_contract" },
     ],
-    requiredTraits: [{ ref: "DAO_MESSAGING", key: "messaging_trait" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
         key: "message_contract",
@@ -185,15 +185,12 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "Base DAO: Replace Extension Proposal Voting",
     templatePath: "proposals/aibtc-base-replace-extension-proposal-voting.clar",
     requiredRuntimeValues: [
-      { key: "CFG_OLD_ACTION_PROPOSALS" },
-      { key: "CFG_OLD_CORE_PROPOSALS" },
-      { key: "CFG_NEW_ACTION_PROPOSALS" },
-      { key: "CFG_NEW_CORE_PROPOSALS" },
+      { key: "old_action_proposals_contract" },
+      { key: "old_core_proposals_contract" },
+      { key: "new_action_proposals_contract" },
+      { key: "new_core_proposals_contract" },
     ],
-    requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_PROPOSAL", key: "dao_proposal_trait" },
-    ],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
         key: "message_contract",
@@ -235,13 +232,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     friendlyName: "DAO Charter: Set DAO Charter",
     templatePath: "proposals/aibtc-dao-charter-set-dao-charter.clar",
     requiredRuntimeValues: [
-      { key: "CFG_CHARTER_TEXT" },
-      { key: "CFG_CHARTER_INSCRIPTION_ID" },
+      { key: "dao_charter_text" },
+      { key: "dao_charter_inscription_id" },
     ],
-    requiredTraits: [
-      { ref: "DAO_MESSAGING", key: "messaging_trait" },
-      { ref: "DAO_CHARTER", key: "charter_trait" },
-    ],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
         key: "message_contract",
@@ -261,7 +255,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-onchain-messaging-send",
     friendlyName: "Onchain Messaging: Send Message",
     templatePath: "proposals/aibtc-onchain-messaging-send.clar",
-    requiredRuntimeValues: [{ key: "CFG_MESSAGE" }],
+    requiredRuntimeValues: [{ key: "message_to_send" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -693,7 +687,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     templatePath: "proposals/aibtc-treasury-withdraw-ft.clar",
     requiredRuntimeValues: [
       { key: "token_contract" },
-      { key: "recipient" }
+      { key: "recipient" },
       { key: "CFG_TOKEN_AMOUNT" },
     ],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
@@ -719,7 +713,12 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
     name: "aibtc-treasury-withdraw-nft",
     friendlyName: "Treasury: Withdraw NFT",
     templatePath: "proposals/aibtc-treasury-withdraw-nft.clar",
-    requiredRuntimeValues: [{ key: "CFG_MESSAGE" }, { key: "CFG_NFT_ID" }, { key: "recipieint" }, { key: "CFG_NFT_CONTRACT" }],
+    requiredRuntimeValues: [
+      { key: "CFG_MESSAGE" },
+      { key: "CFG_NFT_ID" },
+      { key: "recipieint" },
+      { key: "CFG_NFT_CONTRACT" },
+    ],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -763,7 +762,7 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       { key: "CFG_DAO_MANIFEST_INSCRIPTION_ID" },
     ],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
-    requiredAddresses: [{ key: "sbtc_contract", ref: "SBTC"}],
+    requiredAddresses: [{ key: "sbtc_contract", ref: "SBTC" }],
     requiredContractAddresses: [
       {
         key: "base_dao_contract",

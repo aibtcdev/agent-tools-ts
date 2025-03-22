@@ -3,13 +3,11 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Replaced extension in the base DAO")
-(define-constant CFG_MESSAGE_CONTRACT '<%= it.message_contract %>)
-(define-constant CFG_BASE_DAO_CONTRACT '<%= it.base_dao_contract %>)
 (define-constant CFG_OLD_EXTENSION '<%= it.old_extension_contract %>)
 (define-constant CFG_NEW_EXTENSION '<%= it.new_extension_contract %>)
 
 ;; errors
-(define-constant ERR_EXTENSION_NOT_FOUND (err u3003))
+(define-constant ERR_EXTENSION_NOT_FOUND (err u30003))
 
 (define-public (execute (sender principal))
   ;; replaces an extension in the DAO

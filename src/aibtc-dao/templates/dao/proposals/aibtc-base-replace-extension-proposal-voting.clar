@@ -3,15 +3,13 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Replaced core and action proposal voting extensions in the base DAO")
-(define-constant CFG_MESSAGE_CONTRACT '<%= it.message_contract %>)
-(define-constant CFG_BASE_DAO_CONTRACT '<%= it.base_dao_contract %>)
 (define-constant CFG_OLD_ACTION_PROPOSALS '<%= it.old_action_proposals_contract %>)
 (define-constant CFG_OLD_CORE_PROPOSALS '<%= it.old_core_proposals_contract %>)
 (define-constant CFG_NEW_ACTION_PROPOSALS '<%= it.new_action_proposals_contract %>)
 (define-constant CFG_NEW_CORE_PROPOSALS '<%= it.new_core_proposals_contract %>)
 
 ;; errors
-(define-constant ERR_EXTENSION_NOT_FOUND (err u3003))
+(define-constant ERR_EXTENSION_NOT_FOUND (err u30003))
 
 (define-public (execute (sender principal))
   ;; replaces the core and action voting proposals in a dao
