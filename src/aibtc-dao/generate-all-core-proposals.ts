@@ -83,6 +83,18 @@ async function main(): Promise<
     const outputDir = path.join("generated", "proposals");
     fs.mkdirSync(outputDir, { recursive: true });
     
+    // Create a summary file with information about all proposals
+    const summaryPath = path.join(outputDir, `${args.tokenSymbol}-proposals-summary.json`);
+    const summary = generatedProposals.map(proposal => ({
+      name: proposal.name,
+      friendlyName: proposal.friendlyName,
+      hash: proposal.hash,
+      fileName: `${proposal.name}-${truncatedAddress}-${blockHeights.stacks}.clar`
+    }));
+    fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
+    console.log(`Proposal summary saved to ${summaryPath}`);
+    
+    // Save each individual proposal
     generatedProposals.forEach(proposal => {
       const fileName = `${proposal.name}-${truncatedAddress}-${blockHeights.stacks}.clar`;
       const filePath = path.join(outputDir, fileName);
@@ -95,11 +107,17 @@ async function main(): Promise<
   return {
     success: true,
     message: `Generated ${generatedProposals.length} core proposals for ${args.tokenSymbol}`,
-    data: generatedProposals.map(proposal => ({
-      ...proposal,
-      // limit source to set chars for display / context size
-      source: proposal.source.substring(0, 250) + "...",
-    })),
+    data: {
+      totalProposals: generatedProposals.length,
+      outputDirectory: args.generateFiles ? path.join("generated", "proposals") : null,
+      proposals: generatedProposals.map(proposal => ({
+        name: proposal.name,
+        friendlyName: proposal.friendlyName,
+        hash: proposal.hash,
+        // Include a preview of the source code
+        sourcePreview: proposal.source.substring(0, 250) + "...",
+      })),
+    },
   };
 }
 
