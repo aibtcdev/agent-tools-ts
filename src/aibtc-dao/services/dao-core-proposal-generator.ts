@@ -150,109 +150,115 @@ export class DaoCoreProposalGenerator {
 
   /**
    * Generate mock runtime values based on proposal type and parameter name
-   * 
+   *
    * @param proposalName Name of the proposal
    * @param paramKey Parameter key
    * @returns Appropriate mock value for the parameter
    */
-  private generateMockRuntimeValue(proposalName: string, paramKey: string, tokenSymbol: string = 'DAO'): string {
+  private generateMockRuntimeValue(
+    proposalName: string,
+    paramKey: string,
+    tokenSymbol: string = "DAO"
+  ): string {
     // Use proposal name for context-specific values if needed
-    
+
     // STX and token amounts
-    if (paramKey.includes('stx_amount') || paramKey === 'amount_to_fund_stx') {
-      return '10000000'; // 10 STX
+    if (paramKey.includes("stx_amount") || paramKey === "amount_to_fund_stx") {
+      return "10000000"; // 10 STX
     }
-    
-    if (paramKey === 'token_amount' || paramKey === 'amount_to_fund_ft') {
-      return '1000000000'; // 1000 tokens (assuming 6 decimals)
+
+    if (paramKey === "token_amount" || paramKey === "amount_to_fund_ft") {
+      return "1000000000"; // 1000 tokens (assuming 6 decimals)
     }
-    
-    if (paramKey === 'bond_amount') {
-      return '5000000'; // 5 STX for proposal bonds
+
+    if (paramKey === "bond_amount") {
+      return "5000000"; // 5 STX for proposal bonds
     }
-    
-    if (paramKey === 'delegate_amount') {
-      return '100000000'; // 100 STX for delegation
+
+    if (paramKey === "delegate_amount") {
+      return "100000000"; // 100 STX for delegation
     }
-    
-    if (paramKey === 'withdrawal_amount') {
-      return '2500000'; // 2.5 STX for withdrawals
+
+    if (paramKey === "withdrawal_amount") {
+      return "2500000"; // 2.5 STX for withdrawals
     }
 
     // Addresses and principals
-    if (paramKey.includes('address') || 
-        paramKey.includes('recipient') || 
-        paramKey === 'account_holder' ||
-        paramKey === 'delegate_to' ||
-        paramKey === 'payout_address') {
+    if (
+      paramKey.includes("address") ||
+      paramKey.includes("recipient") ||
+      paramKey === "account_holder" ||
+      paramKey === "delegate_to" ||
+      paramKey === "payout_address"
+    ) {
       return this.senderAddress;
     }
-    
-    if (paramKey.includes('contract') || paramKey.includes('extension')) {
+
+    if (paramKey.includes("contract") || paramKey.includes("extension")) {
       return `${this.senderAddress}.example-contract`;
     }
 
     // Time periods
-    if (paramKey.includes('period') || paramKey.includes('block')) {
-      return '144'; // ~1 day in blocks
+    if (paramKey.includes("period") || paramKey.includes("block")) {
+      return "144"; // ~1 day in blocks
     }
-    
-    if (paramKey === 'last_withdrawal_block') {
-      return '100000'; // Some past block
+
+    if (paramKey === "last_withdrawal_block") {
+      return "100000"; // Some past block
     }
 
     // Resource-related fields
-    if (paramKey === 'resource_name') {
-      return 'example-resource';
+    if (paramKey === "resource_name") {
+      return "example-resource";
     }
-    
-    if (paramKey === 'resource_description') {
-      return 'This is an example resource for the DAO';
+
+    if (paramKey === "resource_description") {
+      return "This is an example resource for the DAO";
     }
-    
-    if (paramKey === 'resource_price' || paramKey === 'resource_amount') {
-      return '1000000'; // 1 STX
+
+    if (paramKey === "resource_price" || paramKey === "resource_amount") {
+      return "1000000"; // 1 STX
     }
-    
-    if (paramKey === 'resource_url') {
-      return 'https://example.com/resource';
+
+    if (paramKey === "resource_url") {
+      return "https://example.com/resource";
     }
-    
-    if (paramKey === 'resource_index') {
-      return '0'; // First resource
+
+    if (paramKey === "resource_index") {
+      return "0"; // First resource
     }
 
     // NFT-related fields
-    if (paramKey === 'nft_id') {
-      return '1';
+    if (paramKey === "nft_id") {
+      return "1";
     }
 
     // Message-related fields
-    if (paramKey === 'message' || paramKey === 'message_to_send') {
-      return `"Example DAO message from ${tokenSymbol} DAO"`;
+    if (paramKey === "message" || paramKey === "message_to_send") {
+      return "Example DAO message from ${tokenSymbol} DAO";
     }
 
     // DAO Charter fields
-    if (paramKey === 'dao_charter_text') {
-      return `"This is the charter for the ${tokenSymbol} DAO"`;
+    if (paramKey === "dao_charter_text") {
+      return "This is the charter for the ${tokenSymbol} DAO";
     }
-    
-    if (paramKey === 'dao_charter_inscription_id') {
+
+    if (paramKey === "dao_charter_inscription_id") {
       return '"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"';
     }
 
     // Token URI
-    if (paramKey === 'token_uri') {
-      return `"https://example.com/${tokenSymbol.toLowerCase()}-metadata.json"`;
+    if (paramKey === "token_uri") {
+      return "https://example.com/${tokenSymbol.toLowerCase()}-metadata.json";
     }
 
     // Default fallback
-    return `"default-value-for-${paramKey}"`;
+    return "default-value-for-${paramKey}";
   }
 
   /**
    * Generate all core proposals with intelligent mock arguments
-   * 
+   *
    * @param tokenSymbol Token symbol for the DAO
    * @returns Array of generated core proposal registry entries
    */
@@ -260,16 +266,20 @@ export class DaoCoreProposalGenerator {
     tokenSymbol: string
   ): GeneratedCoreProposalRegistryEntry[] {
     const results: GeneratedCoreProposalRegistryEntry[] = [];
-    
+
     // Generate each proposal in the registry with mock arguments
     for (const proposal of CORE_PROPOSAL_REGISTRY) {
       try {
         // Create mock arguments based on required runtime values
         const mockArgs: Record<string, string> = {};
-        
+
         // For each required runtime value, provide an appropriate mock value
         (proposal.requiredRuntimeValues || []).forEach(({ key }) => {
-          mockArgs[key] = this.generateMockRuntimeValue(proposal.name, key, tokenSymbol);
+          mockArgs[key] = this.generateMockRuntimeValue(
+            proposal.name,
+            key,
+            tokenSymbol
+          );
         });
 
         // Generate the proposal with mock arguments
@@ -278,14 +288,14 @@ export class DaoCoreProposalGenerator {
           proposal.name,
           mockArgs
         );
-        
+
         results.push(generatedProposal);
       } catch (error) {
         console.error(`Error generating proposal ${proposal.name}:`, error);
         // Continue with other proposals even if one fails
       }
     }
-    
+
     return results;
   }
 }

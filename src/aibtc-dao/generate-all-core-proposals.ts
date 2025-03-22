@@ -71,7 +71,7 @@ async function main(): Promise<
 
   // Step 1 - generate all core proposals
   console.log(`Generating all core proposals for ${args.tokenSymbol}`);
-  
+
   const generatedProposals = proposalGenerator.generateAllCoreProposals(
     args.tokenSymbol
   );
@@ -80,22 +80,25 @@ async function main(): Promise<
 
   // Step 2 - save proposals (optional)
   if (args.generateFiles) {
-    const outputDir = path.join("generated", "proposals");
+    const outputDir = path.join("generated", "proposals", args.tokenSymbol);
     fs.mkdirSync(outputDir, { recursive: true });
-    
+
     // Create a summary file with information about all proposals
-    const summaryPath = path.join(outputDir, `${args.tokenSymbol}-proposals-summary.json`);
-    const summary = generatedProposals.map(proposal => ({
+    const summaryPath = path.join(
+      outputDir,
+      `${args.tokenSymbol}-proposals-summary.json`
+    );
+    const summary = generatedProposals.map((proposal) => ({
       name: proposal.name,
       friendlyName: proposal.friendlyName,
       hash: proposal.hash,
-      fileName: `${proposal.name}-${truncatedAddress}-${blockHeights.stacks}.clar`
+      fileName: `${proposal.name}-${truncatedAddress}-${blockHeights.stacks}.clar`,
     }));
     fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
     console.log(`Proposal summary saved to ${summaryPath}`);
-    
+
     // Save each individual proposal
-    generatedProposals.forEach(proposal => {
+    generatedProposals.forEach((proposal) => {
       const fileName = `${proposal.name}-${truncatedAddress}-${blockHeights.stacks}.clar`;
       const filePath = path.join(outputDir, fileName);
       fs.writeFileSync(filePath, proposal.source);
@@ -107,17 +110,7 @@ async function main(): Promise<
   return {
     success: true,
     message: `Generated ${generatedProposals.length} core proposals for ${args.tokenSymbol}`,
-    data: {
-      totalProposals: generatedProposals.length,
-      outputDirectory: args.generateFiles ? path.join("generated", "proposals") : null,
-      proposals: generatedProposals.map(proposal => ({
-        name: proposal.name,
-        friendlyName: proposal.friendlyName,
-        hash: proposal.hash,
-        // Include a preview of the source code
-        sourcePreview: proposal.source.substring(0, 250) + "...",
-      })),
-    },
+    data: generatedProposals,
   };
 }
 
