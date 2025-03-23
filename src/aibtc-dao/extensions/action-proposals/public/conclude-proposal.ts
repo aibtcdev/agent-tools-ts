@@ -75,7 +75,7 @@ function validateArgs(): ExpectedArgs {
     daoActionProposalsExtensionContract: actionProposalsExtension,
     proposalId,
     daoActionProposalContract: actionContract,
-    daoTokenContract: tokenAddress,
+    daoTokenContract: tokenContract,
   };
 }
 
@@ -104,7 +104,10 @@ async function main() {
   const postConditions = [
     Pc.principal(`${extensionAddress}.${extensionName}`)
       .willSendEq(bondAmountInfo.bond)
-      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.tokenName),
+      .ft(
+        `${daoTokenAddress}.${daoTokenName}`,
+        bondAmountInfo.tokenName.toUpperCase()
+      ),
   ];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
