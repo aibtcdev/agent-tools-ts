@@ -277,6 +277,23 @@ export function broadcastTx(
 }
 
 //////////////////////////////
+// STACKS CONTRACT HELPERS
+//////////////////////////////
+
+export function isValidContractPrincipal(principal: string): boolean {
+  const [addr, name] = principal.split(".");
+  if (!addr || !validateStacksAddress(addr)) {
+    // throw new Error(`Invalid contract address: ${addr}`);
+    return false;
+  }
+  if (!name) {
+    // throw new Error(`Invalid contract name: ${name}`);
+    return false;
+  }
+  return true;
+}
+
+//////////////////////////////
 // STACKS WALLET / ACCOUNTS
 //////////////////////////////
 
