@@ -50,12 +50,17 @@ export class DaoCoreProposalDeployer {
     try {
       console.log(`Deploy proposal called for: ${proposalName}`);
 
+      // Get the next nonce if not provided
+      if (nonce === undefined) {
+        nonce = await getNextNonce(this.network, this.senderAddress);
+      }
+
       // Create the contract deployment transaction
       const transaction = await makeContractDeploy({
         contractName: proposalName,
         codeBody: proposal.source,
         senderKey: this.senderKey,
-        nonce: 2, // nonce === 0 ? 0 : nonce ? nonce : undefined,
+        nonce: nonce,
         network: this.network,
         anchorMode: AnchorMode.Any,
         //postConditions: [], // empty, no transfers expected
@@ -65,9 +70,6 @@ export class DaoCoreProposalDeployer {
         throw error;
       });
 
-      console.log(`full transaction`);
-      console.log(transaction);
-
       // Broadcast the transaction
       const broadcastResponse = await broadcastTransaction(
         transaction,
@@ -76,9 +78,6 @@ export class DaoCoreProposalDeployer {
         console.error(`Error broadcasting transaction: ${error}`);
         throw error;
       });
-
-      console.log(`full broadcast response`);
-      console.log(JSON.stringify(broadcastResponse));
 
       if (!broadcastResponse.error) {
         // If successful, return the deployed proposal info
