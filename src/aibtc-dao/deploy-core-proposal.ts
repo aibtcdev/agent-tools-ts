@@ -12,6 +12,7 @@ import {
   ToolResponse,
 } from "../utilities";
 import { DeployedCoreProposalRegistryEntry } from "./services/dao-core-proposal-registry";
+import { getContractName } from "./services/dao-contract-registry";
 
 const usage = `Usage: bun run deploy-core-proposal.ts <daoDeployerAddress> <daoTokenSymbol> <proposalContractName> <proposalArgs> [generateFiles]`;
 const usageExample = `Example: bun run deploy-core-proposal.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM aibtc aibtc-treasury-withdraw-stx '{"stx_amount": "1000000", "recipient_address": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
@@ -122,8 +123,16 @@ async function main(): Promise<
     key
   );
 
+  // create a unique name for the proposal contract
+  const contractName = getContractName(
+    args.proposalContractName,
+    args.daoTokenSymbol
+  );
+  const proposalName = `${contractName}-${blockHeights.stacks}`;
+
   // deploy the proposal
   const deployedProposal = await proposalDeployer.deployProposal(
+    proposalName,
     generatedProposal
   );
 
@@ -138,12 +147,12 @@ async function main(): Promise<
     fs.mkdirSync(outputDir, { recursive: true });
 
     // Save the proposal source code
-    const sourceFileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
+    const sourceFileName = `${proposalName}.clar`;
     const sourceFilePath = path.join(outputDir, sourceFileName);
     fs.writeFileSync(sourceFilePath, generatedProposal.source);
 
     // Save deployment info
-    const infoFileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.json`;
+    const infoFileName = `${proposalName}.json`;
     const infoFilePath = path.join(outputDir, infoFileName);
     const deploymentInfo = {
       name: deployedProposal.name,

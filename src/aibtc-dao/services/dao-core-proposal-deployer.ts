@@ -43,28 +43,42 @@ export class DaoCoreProposalDeployer {
    * @returns A deployed core proposal registry entry
    */
   async deployProposal(
+    proposalName: string,
     proposal: GeneratedCoreProposalRegistryEntry,
     nonce?: number
   ): Promise<DeployedCoreProposalRegistryEntry> {
     try {
+      console.log(`Deploy proposal called for: ${proposalName}`);
+
       // Create the contract deployment transaction
       const transaction = await makeContractDeploy({
-        contractName: proposal.name,
+        contractName: proposalName,
         codeBody: proposal.source,
         senderKey: this.senderKey,
-        nonce: nonce === 0 ? 0 : nonce ? nonce : undefined,
+        nonce: 2, // nonce === 0 ? 0 : nonce ? nonce : undefined,
         network: this.network,
         anchorMode: AnchorMode.Any,
-        postConditions: [], // empty, no transfers expected
-        postConditionMode: PostConditionMode.Deny,
-        clarityVersion: proposal.clarityVersion,
+        //postConditions: [], // empty, no transfers expected
+        postConditionMode: PostConditionMode.Allow,
+      }).catch((error) => {
+        console.error(`Error creating contract deploy transaction: ${error}`);
+        throw error;
       });
+
+      console.log(`full transaction`);
+      console.log(transaction);
 
       // Broadcast the transaction
       const broadcastResponse = await broadcastTransaction(
         transaction,
         this.network
-      );
+      ).catch((error) => {
+        console.error(`Error broadcasting transaction: ${error}`);
+        throw error;
+      });
+
+      console.log(`full broadcast response`);
+      console.log(JSON.stringify(broadcastResponse));
 
       if (!broadcastResponse.error) {
         // If successful, return the deployed proposal info
@@ -118,7 +132,11 @@ export class DaoCoreProposalDeployer {
     let nonce = await getNextNonce(this.network, this.senderAddress);
 
     for (const proposal of proposals) {
-      const deployedProposal = await this.deployProposal(proposal, nonce);
+      const deployedProposal = await this.deployProposal(
+        proposal.name,
+        proposal,
+        nonce
+      );
       deployedProposals.push(deployedProposal);
 
       // If deployment failed, throw an error
