@@ -1,5 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
+import { getContractName } from "../../services/dao-contract-registry";
+import { DeployedCoreProposalRegistryEntry } from "../../services/dao-core-proposal-registry";
 import { DaoCoreProposalGenerator } from "../../services/dao-core-proposal-generator";
 import { DaoCoreProposalDeployer } from "../../services/dao-core-proposal-deployer";
 import {
@@ -11,8 +13,6 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../../../utilities";
-import { DeployedCoreProposalRegistryEntry } from "../../services/dao-core-proposal-registry";
-import { getContractName } from "../../services/dao-contract-registry";
 
 const usage = `Usage: bun run deploy-core-proposal.ts <daoDeployerAddress> <daoTokenSymbol> <proposalContractName> <proposalArgs> [generateFiles]`;
 const usageExample = `Example: bun run deploy-core-proposal.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM aibtc aibtc-treasury-withdraw-stx '{"stx_amount": "1000000", "recipient_address": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;

@@ -6,11 +6,11 @@ import {
   CORE_PROPOSAL_REGISTRY,
   GeneratedCoreProposalRegistryEntry,
 } from "./dao-core-proposal-registry";
-import { getKnownAddresses, getKnownTraits } from "../types/dao-types";
 import {
   getContractName,
   getContractsBySubcategory,
 } from "./dao-contract-registry";
+import { getKnownAddresses, getKnownTraits } from "../types/dao-types";
 
 export class DaoCoreProposalGenerator {
   private eta: Eta;

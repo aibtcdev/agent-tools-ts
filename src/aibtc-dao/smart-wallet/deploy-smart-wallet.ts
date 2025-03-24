@@ -1,12 +1,12 @@
+import { validateStacksAddress } from "@stacks/transactions";
+import { SmartWalletGenerator } from "../services/smart-wallet-generator";
+import { SmartWalletDeployer } from "../services/smart-wallet-deployer";
 import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   sendToLLM,
 } from "../../utilities";
-import { SmartWalletGenerator } from "../services/smart-wallet-generator";
-import { SmartWalletDeployer } from "../services/smart-wallet-deployer";
-import { validateStacksAddress } from "@stacks/transactions";
 
 const usage =
   "Usage: bun run deploy-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract>";

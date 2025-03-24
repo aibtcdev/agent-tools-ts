@@ -6,8 +6,8 @@ import {
   PostConditionMode,
   ClarityVersion,
 } from "@stacks/transactions";
-import { getNextNonce } from "../../utilities";
 import { GeneratedSmartWallet } from "./smart-wallet-generator";
+import { getNextNonce } from "../../utilities";
 
 /**
  * Deployed smart wallet contract information

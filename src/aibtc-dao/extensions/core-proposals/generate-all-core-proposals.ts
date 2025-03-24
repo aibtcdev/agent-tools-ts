@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { GeneratedCoreProposalRegistryEntry } from "../../services/dao-core-proposal-registry";
 import { DaoCoreProposalGenerator } from "../../services/dao-core-proposal-generator";
 import {
   CONFIG,
@@ -10,7 +11,6 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../../../utilities";
-import { GeneratedCoreProposalRegistryEntry } from "../../services/dao-core-proposal-registry";
 
 const usage = `Usage: bun run generate-all-core-proposals.ts <daoDeployerAddress> <daodaoTokenSymbol> [generateFiles]`;
 const usageExample = `Example: bun run generate-all-core-proposals.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM aibtc true`;

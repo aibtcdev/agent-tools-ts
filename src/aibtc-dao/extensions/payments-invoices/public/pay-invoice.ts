@@ -9,6 +9,7 @@ import {
   ClarityType,
   cvToValue,
 } from "@stacks/transactions";
+import { ResourceData } from "../../../types/dao-types";
 import {
   broadcastTx,
   CONFIG,
@@ -18,7 +19,6 @@ import {
   getNextNonce,
   sendToLLM,
 } from "../../../../utilities";
-import { ResourceData } from "../../../types/dao-types";
 
 const usage =
   "Usage: bun run pay-invoice.ts <paymentsInvoicesContract> <resourceIndex> [memo]";
