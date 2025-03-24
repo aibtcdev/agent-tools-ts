@@ -112,7 +112,7 @@ async function main(): Promise<
 
   // Step 2 - save proposal (optional)
   if (args.generateFiles) {
-    const outputDir = path.join("generated", "proposals");
+    const outputDir = path.join("generated", "proposals", args.daoTokenSymbol);
     fs.mkdirSync(outputDir, { recursive: true });
     const fileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
     const filePath = path.join(outputDir, fileName);
