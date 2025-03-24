@@ -1,85 +1,165 @@
-# aibtc-dao tools
+# aibtc-dao Tools
 
-## Creating a new DAO
+This directory contains Bun TypeScript scripts for interacting with aibtc DAOs on the Stacks blockchain. These tools enable the creation, deployment, and management of decentralized autonomous organizations with various extensions and capabilities.
 
-- `generate-dao.ts` will create the contracts and return their information in a structured format, with an option to save to the `./generated` folder of the project
-- `deploy-dao.ts` will create the contracts, deploy them to testnet, then return their information in a structured format, with an option to save to the `./generated` folder of the project
-- `construct-dao.ts` will send the required transaction to create and instantiate the DAO, enabling all related extensions and starting operation
+## Overview
 
-### V2 DAO traits
+The aibtc-dao toolkit is organized into several components:
 
-The latest version has new traits to simplify things, deployed here on testnet:
+- **Core Scripts**: Tools for generating, deploying, and constructing DAOs
+- **Base DAO**: Scripts for interacting with the base DAO contract
+- **Extensions**: Specialized modules that add functionality to the DAO
+- **Smart Wallet**: Tools for managing DAO-controlled wallets
+- **Services**: Registry and utility services that support DAO operations
+
+All interactions with deployed contracts fall into two categories:
+- **Public Functions**: Require submitting a transaction to the Stacks blockchain
+- **Read-Only Functions**: Query contract data without modifying state
+
+## Architecture
+
+The aibtc-dao system uses a modular architecture:
+
+1. **Base DAO**: Core contract that manages membership and governance
+2. **Extensions**: Specialized contracts that add functionality to the DAO
+3. **Contract Registry**: Source of truth for contract types, requirements, and deployments
+4. **Service Layer**: Utilities for generating and deploying contracts
+
+## Creating a New DAO
+
+Three main scripts handle DAO creation:
+
+- `generate-dao.ts`: Creates contract code without deployment
+- `deploy-dao.ts`: Generates and deploys contracts to the blockchain
+- `construct-dao.ts`: Initializes the DAO and enables extensions
+
+### V2 DAO Traits
+
+The latest version has improved traits deployed on testnet:
 
 - [aibtc-dao-traits-v2](https://explorer.hiro.so/txid/ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.aibtc-dao-traits-v2?chain=testnet)
 - [aibtc-dao-v2](https://explorer.hiro.so/txid/ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.aibtc-dao-v2?chain=testnet)
 
-### Example with scripts
+## Workflow Examples
 
-Generate and deploy the 20 DAO contracts
+### Example 1: Deploying and Activating a New DAO
 
+1. **Generate and deploy the DAO contracts**:
 ```
 Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>
 
-bun run src/stacks-contracts/deploy-dao.ts LFG4 GoTimeTest 1000000000 https://aibtc.dev https://aibtc.dev ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18 "Ze Manifesto" "1234" "dao manifest inscription id" true
+bun run src/aibtc-dao/deploy-dao.ts LFG4 GoTimeTest 1000000000 https://aibtc.dev https://aibtc.dev ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18 "Ze Manifesto" "1234" "dao manifest inscription id" true
 ```
 
-Construct the dao with bootstrap proposal
-[example](https://explorer.hiro.so/txid/0x9467fbb7c1ce5dfdaef9ac99e35a8f4ab10c82e56dd527911b46f484817ef67c?chain=testnet)
-
+2. **Construct the DAO with bootstrap proposal**:
 ```
 Usage: bun run construct-dao.ts <baseDaoContract> <proposalContract>
 
 bun run src/aibtc-dao/construct-dao.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-base-dao ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-base-bootstrap-initialization-v2
 ```
 
-## Interacting with a DAO
-
-All tools for working with a DAO are in the `base-dao` and `extensions` folder to start, organized by the associated contract.
-
-Any public functions require creating a TX and making a contract call. Read-only functions can be called by any sender.
-
-If there is a protected function that requires the DAO context then it cannot be called directly. Any DAO decisions require either an action or core proposal.
-
-## Submitting Proposals
-
-Proposals can only be submitted by token holders, so first we have to buy from the DEX:
-
-Buy token from bonding curve
-[example](https://explorer.hiro.so/txid/0x994906d2202d1f65df270df43e9564b8bdd12b953565d3fcb92ba853e9813bc4?chain=testnet)
-
+3. **Buy tokens to participate in governance**:
 ```
 Usage: bun run exec-buy.ts <stxAmount> <dexContract> [slippage]
 
 bun run src/stacks-faktory/exec-buy.ts 100 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-faktory-dex
 ```
 
-Then we can submit an action proposal based on our deployed options, starting with the example below for a signed message.
-[example](https://explorer.hiro.so/txid/0xd32f91ecaf6336a9318da69e06e0ee14f0a8787722334a89e5f9fdc43c31815a?chain=testnet)
+### Example 2: Creating and Managing a Smart Wallet
 
+1. **Propose creating a new smart wallet**:
 ```
-Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <message>
+Usage: bun run propose-create-wallet.ts <daoActionProposalsExtensionContract> <daoSmartWalletExtensionContract> <walletName>
 
-bun run src/aibtc-dao/extensions/action-proposals/public/propose-action-send-message.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-send-message "well hello there"
+bun run src/aibtc-dao/extensions/smart-wallet/public/propose-create-wallet.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-smart-wallet-v2 "treasury"
 ```
 
-Vote on action proposal, voting happens based on the snapshot of the balance at the block height the proposal was created.
-[example](https://explorer.hiro.so/txid/0xa8ab22b1f74ff3d709de4c930b512b56c32fd6592adebfc2960aca292048ae0a?chain=testnet)
-
+2. **Vote on the proposal**:
 ```
 Usage: bun run vote-on-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <vote>
 
 bun run src/aibtc-dao/extensions/action-proposals/public/vote-on-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 1 true
 ```
 
-Conclude action proposal (in this case, sends message from dao)
-[example](https://explorer.hiro.so/txid/0x1cbf0d4f15a63d5cf54918a6948d2a687541cffb4f88517c59b5dfb7f62f27e2?chain=testnet)
-
+3. **Conclude the proposal to create the wallet**:
 ```
 Usage: bun run conclude-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <daoActionProposalContract>
 
-bun run src/aibtc-dao/extensions/action-proposals/public/conclude-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 1 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-send-message
+bun run src/aibtc-dao/extensions/action-proposals/public/conclude-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 1 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-smart-wallet-v2
 ```
 
-Proposals can be concluded by anyone and should always conclude with a successful transaction.
+### Example 3: Submitting and Processing a Core Proposal
 
-If the proposal criteria is met the proposal code will run.
+1. **Propose a core change to the DAO**:
+```
+Usage: bun run propose-core-change.ts <daoCoreProposalsExtensionContract> <proposalContract> <proposalDetails>
+
+bun run src/aibtc-dao/extensions/core-proposals/public/propose-core-change.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposal-change-threshold "Change voting threshold to 60%"
+```
+
+2. **Vote on the core proposal**:
+```
+Usage: bun run vote-on-core-proposal.ts <daoCoreProposalsExtensionContract> <proposalContract> <vote>
+
+bun run src/aibtc-dao/extensions/core-proposals/public/vote-on-core-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposal-change-threshold true
+```
+
+3. **Conclude the core proposal**:
+```
+Usage: bun run conclude-core-proposal.ts <daoCoreProposalsExtensionContract> <proposalContract>
+
+bun run src/aibtc-dao/extensions/core-proposals/public/conclude-core-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposal-change-threshold
+```
+
+## DAO Extensions
+
+The aibtc-dao system includes several extensions that add functionality:
+
+### Action Proposals
+Tools for creating, voting on, and executing action proposals that perform specific operations.
+
+### Core Proposals
+Tools for proposing and implementing fundamental changes to the DAO's structure or parameters.
+
+### Smart Wallet
+Enables the DAO to control multiple wallets for different purposes (treasury, operations, etc.).
+
+### Timed Vault
+Manages time-locked assets with scheduled release dates.
+
+### Payments & Invoices
+Handles payment processing and invoice management for the DAO.
+
+## Contract Interaction
+
+### Public Functions
+Require submitting a transaction to the Stacks blockchain. Examples include:
+- Proposing actions
+- Voting on proposals
+- Concluding proposals
+- Creating wallets
+- Transferring assets
+
+### Read-Only Functions
+Query contract data without modifying state. Examples include:
+- Checking proposal status
+- Viewing wallet balances
+- Getting voting power
+- Retrieving DAO configuration
+
+## Services
+
+The services directory provides:
+- **Contract Registry**: Source of truth for contract types and requirements
+- **Contract Generator**: Creates contract code from templates
+- **Contract Deployer**: Handles deployment to the blockchain
+
+## Notes on Proposal Lifecycle
+
+Proposals follow a standard lifecycle:
+1. **Creation**: A token holder submits a proposal
+2. **Voting**: Token holders vote based on their balance at proposal creation
+3. **Conclusion**: Anyone can conclude a proposal after the voting period
+4. **Execution**: If approved, the proposal's code executes automatically
+
+Proposals can be concluded by anyone and should always conclude with a successful transaction if the proposal criteria are met.
