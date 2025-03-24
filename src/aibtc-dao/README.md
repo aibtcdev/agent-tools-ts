@@ -35,7 +35,7 @@ Three main scripts handle DAO creation:
 
 - `generate-dao.ts`: Creates contract code without deployment
 - `deploy-dao.ts`: Generates and deploys contracts to the blockchain
-- `construct-dao.ts`: Initializes the DAO and enables extensions
+- `construct.ts`: Initializes the DAO and enables extensions
 
 ### V2 DAO Traits
 
@@ -51,77 +51,43 @@ The latest version has improved traits deployed on testnet:
 1. **Generate and deploy the DAO contracts**:
 
 ```
-Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>
+Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> [daoManifestInscriptionId] [generateFiles]
 
-bun run src/aibtc-dao/deploy-dao.ts LFG4 GoTimeTest 1000000000 https://aibtc.dev https://aibtc.dev ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18 "Ze Manifesto" "1234" "dao manifest inscription id" true
+bun run src/aibtc-dao/deploy-dao.ts LFG GoTimeTest 1000000000 https://mkkhfmcrbwyuutcvtier.supabase.co/storage/v1/object/public/tokens//251.json https://mkkhfmcrbwyuutcvtier.supabase.co/storage/v1/object/public/tokens//251.png ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18 "Ze Manifesto goes here and is used for all voting." "1234" "779b53221183cdee5168671b696cf99f60b6be0ce596777ec5f066bf9be44fbfi0" true
 ```
 
 2. **Construct the DAO with bootstrap proposal**:
 
 ```
-Usage: bun run construct-dao.ts <baseDaoContract> <proposalContract>
+Usage: bun run construct.ts <baseDaoContract> <proposalContract>
 
-bun run src/aibtc-dao/construct-dao.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-base-dao ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-base-bootstrap-initialization-v2
+bun run src/aibtc-dao/base-dao/public/construct.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg-base-dao ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg-base-bootstrap-initialization-v2
 ```
 
 3. **Buy tokens to participate in governance**:
 
 ```
-Usage: bun run exec-buy.ts <stxAmount> <dexContract> [slippage]
+Usage: bun run exec-buy.ts <btcAmount> <dexContract> [slippage]
 
-bun run src/stacks-faktory/exec-buy.ts 100 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-faktory-dex
+bun run src/stacks-faktory/exec-buy.ts 0.0004 ST252TFQ08T74ZZ6XK426TQNV4EXF1D4RMTTNCWFA.lfg-faktory-dex
 ```
 
 ### Example 2: Creating and Managing a Smart Wallet
 
-1. **Propose creating a new smart wallet**:
+1. **Create and deploy a new smart wallet between the agent and user**:
 
 ```
-Usage: bun run propose-create-wallet.ts <daoActionProposalsExtensionContract> <daoSmartWalletExtensionContract> <walletName>
+Usage: bun run deploy-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract>
 
-bun run src/aibtc-dao/extensions/smart-wallet/public/propose-create-wallet.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-smart-wallet-v2 "treasury"
+bun run src/aibtc-dao/deploy-smart-wallet.ts ST3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKQ3H2FSP ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg-faktory true
 ```
 
-2. **Vote on the proposal**:
+2. **Get the smart wallet configuration**:
 
 ```
-Usage: bun run vote-on-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <vote>
+Usage: bun run get-configuration.ts <smartWalletContract>
 
-bun run src/aibtc-dao/extensions/action-proposals/public/vote-on-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 1 true
-```
-
-3. **Conclude the proposal to create the wallet**:
-
-```
-Usage: bun run conclude-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <daoActionProposalContract>
-
-bun run src/aibtc-dao/extensions/action-proposals/public/conclude-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 1 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-smart-wallet-v2
-```
-
-### Example 3: Submitting and Processing a Core Proposal
-
-1. **Propose a core change to the DAO**:
-
-```
-Usage: bun run propose-core-change.ts <daoCoreProposalsExtensionContract> <proposalContract> <proposalDetails>
-
-bun run src/aibtc-dao/extensions/core-proposals/public/propose-core-change.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposal-change-threshold "Change voting threshold to 60%"
-```
-
-2. **Vote on the core proposal**:
-
-```
-Usage: bun run vote-on-core-proposal.ts <daoCoreProposalsExtensionContract> <proposalContract> <vote>
-
-bun run src/aibtc-dao/extensions/core-proposals/public/vote-on-core-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposal-change-threshold true
-```
-
-3. **Conclude the core proposal**:
-
-```
-Usage: bun run conclude-core-proposal.ts <daoCoreProposalsExtensionContract> <proposalContract>
-
-bun run src/aibtc-dao/extensions/core-proposals/public/conclude-core-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-core-proposal-change-threshold
+bun run src/aibtc-dao/smart-wallet/read-only/get-configuration.ts ST3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKQ3H2FSP.aibtc-smart-wallet-ST3ZA-H2FSP
 ```
 
 ## Contract Interaction
@@ -155,7 +121,7 @@ The services directory provides:
 
 ## Notes on Proposal Lifecycle
 
-Proposals follow a standard life cycle:
+Proposals follow a standard lifecycle:
 
 1. **Creation**: A token holder submits a proposal
 2. **Voting**: Token holders vote based on their balance at proposal creation
