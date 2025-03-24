@@ -15,16 +15,16 @@ import {
 export class DaoCoreProposalGenerator {
   private eta: Eta;
   private network: StacksNetworkName;
-  private senderAddress: string;
+  private daoDeployerAddress: string;
 
-  constructor(network: StacksNetworkName, senderAddress: string) {
+  constructor(network: StacksNetworkName, daoDeployerAddress: string) {
     this.eta = new Eta({ views: path.join(__dirname, "../templates/dao") });
     this.network = network;
-    this.senderAddress = senderAddress;
+    this.daoDeployerAddress = daoDeployerAddress;
   }
 
   private generateContractPrincipal(contractName: string): string {
-    return `${this.senderAddress}.${contractName}`;
+    return `${this.daoDeployerAddress}.${contractName}`;
   }
 
   /**
@@ -191,11 +191,11 @@ export class DaoCoreProposalGenerator {
       paramKey === "delegate_to" ||
       paramKey === "payout_address"
     ) {
-      return this.senderAddress;
+      return this.daoDeployerAddress;
     }
 
     if (paramKey.includes("contract") || paramKey.includes("extension")) {
-      return `${this.senderAddress}.example-contract`;
+      return `${this.daoDeployerAddress}.example-contract`;
     }
 
     // Time periods

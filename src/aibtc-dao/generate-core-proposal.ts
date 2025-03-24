@@ -12,11 +12,12 @@ import {
 } from "../utilities";
 import { GeneratedCoreProposalRegistryEntry } from "./services/dao-core-proposal-registry";
 
-const usage = `Usage: bun run generate-core-proposal.ts <daoTokenSymbol> <proposalContractName> <proposalArgs> [generateFiles]`;
-const usageExample = `Example: bun run generate-core-proposal.ts aibtc aibtc-treasury-withdraw-stx '{"CFG_STX_AMOUNT": "1000000", "CFG_RECIPIENT": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
+const usage = `Usage: bun run generate-core-proposal.ts <daoDeployerAddress> <daoTokenSymbol> <proposalContractName> '<proposalArgs>' [generateFiles]`;
+const usageExample = `Example: bun run generate-core-proposal.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM aibtc aibtc-treasury-withdraw-stx '{"CFG_STX_AMOUNT": "1000000", "CFG_RECIPIENT": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
 
 interface ExpectedArgs {
-  tokenSymbol: string;
+  daoDeployerAddress: string;
+  daoTokenSymbol: string;
   proposalContractName: string;
   proposalArgs: Record<string, string>;
   generateFiles?: boolean;
@@ -24,11 +25,16 @@ interface ExpectedArgs {
 
 function validateArgs(): ExpectedArgs {
   // capture all arguments
-  const [tokenSymbol, proposalContractName, proposalArgsJson, generateFiles] =
-    process.argv.slice(2);
+  const [
+    daoDeployerAddress,
+    daoTokenSymbol,
+    proposalContractName,
+    proposalArgsJson,
+    generateFiles,
+  ] = process.argv.slice(2);
 
   // verify required arguments are provided
-  if (!tokenSymbol || !proposalContractName) {
+  if (!daoDeployerAddress || !daoTokenSymbol || !proposalContractName) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -61,7 +67,8 @@ function validateArgs(): ExpectedArgs {
 
   // return validated arguments
   return {
-    tokenSymbol,
+    daoDeployerAddress,
+    daoTokenSymbol,
     proposalContractName,
     proposalArgs,
     generateFiles: shouldGenerateFiles,
@@ -90,7 +97,7 @@ async function main(): Promise<
   // create proposal generator instance
   const proposalGenerator = new DaoCoreProposalGenerator(
     CONFIG.NETWORK,
-    address
+    args.daoDeployerAddress
   );
 
   // Step 1 - generate core proposal
@@ -98,7 +105,7 @@ async function main(): Promise<
   console.log(`With arguments:`, args.proposalArgs);
 
   const generatedProposal = proposalGenerator.generateCoreProposal(
-    args.tokenSymbol,
+    args.daoTokenSymbol,
     args.proposalContractName,
     args.proposalArgs
   );
