@@ -13,11 +13,12 @@ import {
 } from "../utilities";
 import { DeployedCoreProposalRegistryEntry } from "./services/dao-core-proposal-registry";
 
-const usage = `Usage: bun run deploy-core-proposal.ts <daoTokenSymbol> <proposalContractName> <proposalArgs> [generateFiles]`;
-const usageExample = `Example: bun run deploy-core-proposal.ts aibtc aibtc-treasury-withdraw-stx '{"stx_amount": "1000000", "recipient_address": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
+const usage = `Usage: bun run deploy-core-proposal.ts <daoDeployerAddress> <daoTokenSymbol> <proposalContractName> <proposalArgs> [generateFiles]`;
+const usageExample = `Example: bun run deploy-core-proposal.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM aibtc aibtc-treasury-withdraw-stx '{"stx_amount": "1000000", "recipient_address": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
 
 interface ExpectedArgs {
-  tokenSymbol: string;
+  daoDeployerAddress: string;
+  daoTokenSymbol: string;
   proposalContractName: string;
   proposalArgs: Record<string, string>;
   generateFiles?: boolean;
@@ -25,11 +26,16 @@ interface ExpectedArgs {
 
 function validateArgs(): ExpectedArgs {
   // capture all arguments
-  const [tokenSymbol, proposalContractName, proposalArgsJson, generateFiles] =
-    process.argv.slice(2);
+  const [
+    daoDeployerAddress,
+    daoTokenSymbol,
+    proposalContractName,
+    proposalArgsJson,
+    generateFiles,
+  ] = process.argv.slice(2);
 
   // verify required arguments are provided
-  if (!tokenSymbol || !proposalContractName) {
+  if (!daoDeployerAddress || !daoTokenSymbol || !proposalContractName) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -62,7 +68,8 @@ function validateArgs(): ExpectedArgs {
 
   // return validated arguments
   return {
-    tokenSymbol,
+    daoDeployerAddress,
+    daoTokenSymbol,
     proposalContractName,
     proposalArgs,
     generateFiles: shouldGenerateFiles,
@@ -95,12 +102,12 @@ async function main(): Promise<
   // create proposal generator instance
   const proposalGenerator = new DaoCoreProposalGenerator(
     CONFIG.NETWORK,
-    address
+    args.daoDeployerAddress
   );
 
   // generate the proposal
   const generatedProposal = proposalGenerator.generateCoreProposal(
-    args.tokenSymbol,
+    args.daoTokenSymbol,
     args.proposalContractName,
     args.proposalArgs
   );
@@ -125,16 +132,16 @@ async function main(): Promise<
     const outputDir = path.join(
       "generated",
       "proposals",
-      args.tokenSymbol,
+      args.daoTokenSymbol,
       "deployed"
     );
     fs.mkdirSync(outputDir, { recursive: true });
-    
+
     // Save the proposal source code
     const sourceFileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
     const sourceFilePath = path.join(outputDir, sourceFileName);
     fs.writeFileSync(sourceFilePath, generatedProposal.source);
-    
+
     // Save deployment info
     const infoFileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.json`;
     const infoFilePath = path.join(outputDir, infoFileName);
@@ -149,7 +156,7 @@ async function main(): Promise<
       blockHeight: blockHeights.stacks,
     };
     fs.writeFileSync(infoFilePath, JSON.stringify(deploymentInfo, null, 2));
-    
+
     console.log(`Proposal source saved to ${sourceFilePath}`);
     console.log(`Deployment info saved to ${infoFilePath}`);
   }
