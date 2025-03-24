@@ -2,6 +2,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
+import { GeneratedContractRegistryEntry } from "./services/dao-contract-registry";
+import { ExpectedContractGeneratorArgs } from "./types/dao-types";
 import {
   CONFIG,
   convertStringToBoolean,
@@ -12,8 +14,6 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../utilities";
-import { ExpectedContractGeneratorArgs } from "./types/dao-types";
-import { GeneratedContractRegistryEntry } from "./services/dao-contract-registry";
 
 const usage = `Usage: bun run generate-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>`;
 const usageExample = `Example: bun run generate-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin" "DAO manifest inscription ID" "true"`;

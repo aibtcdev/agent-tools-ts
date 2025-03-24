@@ -6,35 +6,37 @@ import {
   CORE_PROPOSAL_REGISTRY,
   GeneratedCoreProposalRegistryEntry,
 } from "./dao-core-proposal-registry";
-import { getKnownAddresses, getKnownTraits } from "../types/dao-types";
 import {
   getContractName,
   getContractsBySubcategory,
 } from "./dao-contract-registry";
+import { getKnownAddresses, getKnownTraits } from "../types/dao-types";
 
 export class DaoCoreProposalGenerator {
   private eta: Eta;
   private network: StacksNetworkName;
-  private senderAddress: string;
+  private daoDeployerAddress: string;
 
-  constructor(network: StacksNetworkName, senderAddress: string) {
+  constructor(network: StacksNetworkName, daoDeployerAddress: string) {
     this.eta = new Eta({ views: path.join(__dirname, "../templates/dao") });
     this.network = network;
-    this.senderAddress = senderAddress;
+    this.daoDeployerAddress = daoDeployerAddress;
   }
 
   private generateContractPrincipal(contractName: string): string {
-    return `${this.senderAddress}.${contractName}`;
+    return `${this.daoDeployerAddress}.${contractName}`;
   }
 
   /**
    * Generate a core proposal based on the CORE_PROPOSAL_REGISTRY
    *
+   * @param daoTokenSymbol Token symbol for the DAO
    * @param proposalContractName Name of the proposal contract to generate
    * @param proposalArgs Arguments to pass to the proposal contract
    * @returns Generated contract registry entry
    */
   public generateCoreProposal(
+    daoTokenSymbol: string,
     proposalContractName: string,
     proposalArgs: Record<string, string>
   ): GeneratedCoreProposalRegistryEntry {
@@ -57,7 +59,7 @@ export class DaoCoreProposalGenerator {
       (coreProposal.requiredAddresses || []).map(({ ref, key }) => {
         // Ensure we have a valid address reference
         if (!knownAddresses[ref]) {
-          //console.warn(`Warning: Missing address reference for ${ref}`);
+          console.warn(`Warning: Missing address reference for ${ref}`);
         }
         return [key, knownAddresses[ref]];
       })
@@ -67,7 +69,7 @@ export class DaoCoreProposalGenerator {
       (coreProposal.requiredTraits || []).map(({ ref, key }) => {
         // Ensure we have a valid trait reference
         if (!knownTraitRefs[ref]) {
-          //console.warn(`Warning: Missing trait reference for ${ref}`);
+          console.warn(`Warning: Missing trait reference for ${ref}`);
         }
         return [key, knownTraitRefs[ref]];
       })
@@ -80,7 +82,7 @@ export class DaoCoreProposalGenerator {
           const [contract] = getContractsBySubcategory(category, subcategory);
           const contractAddress = getContractName(
             contract.name,
-            "aibtc" //args.tokenSymbol
+            daoTokenSymbol
           );
           return [key, this.generateContractPrincipal(contractAddress)];
         }
@@ -88,7 +90,13 @@ export class DaoCoreProposalGenerator {
     );
     const runtimeVars = Object.fromEntries(
       (coreProposal.requiredRuntimeValues || []).map(({ key }) => {
-        return [key, proposalArgs[key]];
+        // Handle special cases for parameter name mismatches
+        let paramValue = proposalArgs[key];
+        if (paramValue === undefined) {
+          console.warn(`Warning: Missing argument for ${key}`);
+          paramValue = "";
+        }
+        return [key, paramValue];
       })
     );
     // assemble all vars here to pass to ETA
@@ -99,20 +107,193 @@ export class DaoCoreProposalGenerator {
       ...runtimeVars,
     };
 
-    // Generate the contract source
-    const source = this.eta.render(coreProposal.templatePath, templateVars);
+    // Debug: Check if all required variables are present
+    const missingVars = [];
+    for (const { key } of coreProposal.requiredRuntimeValues || []) {
+      if (templateVars[key] === undefined) {
+        missingVars.push(key);
+      }
+    }
 
-    // hash the contract
-    const hash = crypto.createHash("sha256").update(source).digest("hex");
+    if (missingVars.length > 0) {
+      throw new Error(
+        `Missing required template variables: ${missingVars.join(
+          ", "
+        )} for proposal ${proposalContractName}`
+      );
+    }
 
-    // create the generated contract entry
-    const generatedCoreProposal: GeneratedCoreProposalRegistryEntry = {
-      ...coreProposal,
-      source,
-      hash,
-    };
+    try {
+      // Generate the contract source
+      const source = this.eta.render(coreProposal.templatePath, templateVars);
 
-    // Create the generated contract registry entry
-    return generatedCoreProposal;
+      if (!source) {
+        throw new Error(
+          `Failed to generate source for proposal ${proposalContractName}`
+        );
+      }
+
+      return {
+        ...coreProposal,
+        source,
+        hash: crypto.createHash("sha256").update(source).digest("hex"),
+      };
+    } catch (error) {
+      console.error(
+        `Error rendering template for ${proposalContractName}:`,
+        error
+      );
+      throw new Error(
+        `Failed to generate proposal ${proposalContractName}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  /**
+   * Generate mock runtime values based on proposal type and parameter name
+   *
+   * @param paramKey Parameter key
+   * @param daoTokenSymbol Token symbol for the DAO
+   * @returns Appropriate mock value for the parameter
+   */
+  private generateMockRuntimeValue(
+    paramKey: string,
+    daoTokenSymbol: string = "AIBTC"
+  ): string {
+    // Use proposal name for context-specific values if needed
+
+    // STX and token amounts
+    if (paramKey.includes("stx_amount") || paramKey === "amount_to_fund_stx") {
+      return "10000000"; // 10 STX
+    }
+
+    if (paramKey === "token_amount" || paramKey === "amount_to_fund_ft") {
+      return "1000000000"; // 1000 tokens (assuming 6 decimals)
+    }
+
+    if (paramKey === "bond_amount") {
+      return "5000000"; // 5 STX for proposal bonds
+    }
+
+    if (paramKey === "delegate_amount") {
+      return "100000000"; // 100 STX for delegation
+    }
+
+    if (paramKey === "withdrawal_amount") {
+      return "2500000"; // 2.5 STX for withdrawals
+    }
+
+    // Addresses and principals
+    if (
+      paramKey.includes("address") ||
+      paramKey.includes("recipient") ||
+      paramKey === "account_holder" ||
+      paramKey === "delegate_to" ||
+      paramKey === "payout_address"
+    ) {
+      return this.daoDeployerAddress;
+    }
+
+    if (paramKey.includes("contract") || paramKey.includes("extension")) {
+      return `${this.daoDeployerAddress}.example-contract`;
+    }
+
+    // Time periods
+    if (paramKey.includes("period") || paramKey.includes("block")) {
+      return "144"; // ~1 day in blocks
+    }
+
+    if (paramKey === "last_withdrawal_block") {
+      return "100000"; // Some past block
+    }
+
+    // Resource-related fields
+    if (paramKey === "resource_name") {
+      return "example-resource";
+    }
+
+    if (paramKey === "resource_description") {
+      return "This is an example resource for the DAO";
+    }
+
+    if (paramKey === "resource_price" || paramKey === "resource_amount") {
+      return "1000000"; // 1 STX
+    }
+
+    if (paramKey === "resource_url") {
+      return "https://example.com/resource";
+    }
+
+    if (paramKey === "resource_index") {
+      return "0"; // First resource
+    }
+
+    // NFT-related fields
+    if (paramKey === "nft_id") {
+      return "1";
+    }
+
+    // Message-related fields
+    if (paramKey === "message" || paramKey === "message_to_send") {
+      return `Example DAO message from ${daoTokenSymbol} DAO`;
+    }
+
+    // DAO Charter fields
+    if (paramKey === "dao_charter_text") {
+      return `This is the charter for the ${daoTokenSymbol} DAO`;
+    }
+
+    if (paramKey === "dao_charter_inscription_id") {
+      return "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    }
+
+    // Token URI
+    if (paramKey === "token_uri") {
+      return `https://example.com/${daoTokenSymbol.toLowerCase()}-metadata.json`;
+    }
+
+    // Default fallback
+    return `default-value-for-${paramKey}`;
+  }
+
+  /**
+   * Generate all core proposals with intelligent mock arguments
+   *
+   * @param daoTokenSymbol Token symbol for the DAO
+   * @returns Array of generated core proposal registry entries
+   */
+  public generateAllCoreProposals(
+    daoTokenSymbol: string
+  ): GeneratedCoreProposalRegistryEntry[] {
+    const results: GeneratedCoreProposalRegistryEntry[] = [];
+
+    // Generate each proposal in the registry with mock arguments
+    for (const proposal of CORE_PROPOSAL_REGISTRY) {
+      try {
+        // Create mock arguments based on required runtime values
+        const mockArgs: Record<string, string> = {};
+
+        // For each required runtime value, provide an appropriate mock value
+        (proposal.requiredRuntimeValues || []).forEach(({ key }) => {
+          mockArgs[key] = this.generateMockRuntimeValue(key, daoTokenSymbol);
+        });
+
+        // Generate the proposal with mock arguments
+        const generatedProposal = this.generateCoreProposal(
+          daoTokenSymbol,
+          proposal.name,
+          mockArgs
+        );
+
+        results.push(generatedProposal);
+      } catch (error) {
+        console.error(`Error generating proposal ${proposal.name}:`, error);
+        // Continue with other proposals even if one fails
+      }
+    }
+
+    return results;
   }
 }

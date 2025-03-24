@@ -2,6 +2,13 @@ import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
 import {
+  DeployedContractRegistryEntry,
+  GeneratedContractRegistryEntry,
+} from "./services/dao-contract-registry";
+import { DaoContractGenerator } from "./services/dao-contract-generator";
+import { DaoContractDeployer } from "./services/dao-contract-deployer";
+import { ExpectedContractGeneratorArgs } from "./types/dao-types";
+import {
   aibtcCoreRequestBody,
   CONFIG,
   convertStringToBoolean,
@@ -13,16 +20,8 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../utilities";
-import {
-  DeployedContractRegistryEntry,
-  GeneratedContractRegistryEntry,
-  getContractName,
-} from "./services/dao-contract-registry";
-import { DaoContractGenerator } from "./services/dao-contract-generator";
-import { ExpectedContractGeneratorArgs } from "./types/dao-types";
-import { DaoContractDeployer } from "./services/dao-contract-deployer";
 
-const usage = `Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>`;
+const usage = `Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> [daoManifestInscriptionId] [generateFiles]`;
 const usageExample = `Example: bun run deploy-dao.ts BTC Bitcoin 21000000 https://bitcoin.org/ https://bitcoin.org/logo.png SP352...SGEV4 "DAO Manifest" "Tweet Origin" "DAO manifest inscription ID" "true"`;
 
 function validateArgs(): ExpectedContractGeneratorArgs {

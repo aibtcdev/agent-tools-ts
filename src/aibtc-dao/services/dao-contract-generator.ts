@@ -3,17 +3,17 @@ import * as path from "path";
 import { Eta } from "eta";
 import { StacksNetworkName } from "@stacks/network";
 import {
-  ExpectedContractGeneratorArgs,
-  getKnownAddresses,
-  getKnownTraits,
-} from "../types/dao-types";
-import {
   CONTRACT_REGISTRY,
   BaseContractRegistryEntry,
   GeneratedContractRegistryEntry,
   getContractName,
   getContractsBySubcategory,
 } from "./dao-contract-registry";
+import {
+  ExpectedContractGeneratorArgs,
+  getKnownAddresses,
+  getKnownTraits,
+} from "../types/dao-types";
 
 export class DaoContractGenerator {
   private eta: Eta;

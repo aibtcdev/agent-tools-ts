@@ -1,85 +1,131 @@
-# aibtc-dao tools
+# aibtc-dao Tools
 
-## Creating a new DAO
+This directory contains Bun TypeScript scripts for interacting with AIBTC DAOs on the Stacks blockchain.
 
-- `generate-dao.ts` will create the contracts and return their information in a structured format, with an option to save to the `./generated` folder of the project
-- `deploy-dao.ts` will create the contracts, deploy them to testnet, then return their information in a structured format, with an option to save to the `./generated` folder of the project
-- `construct-dao.ts` will send the required transaction to create and instantiate the DAO, enabling all related extensions and starting operation
+These tools enable the creation, deployment, and management of decentralized autonomous organizations with various extensions and capabilities.
 
-### V2 DAO traits
+## Overview
 
-The latest version has new traits to simplify things, deployed here on testnet:
+The aibtc-dao toolkit is organized into several components:
 
-- [aibtc-dao-traits-v2](https://explorer.hiro.so/txid/ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.aibtc-dao-traits-v2?chain=testnet)
-- [aibtc-dao-v2](https://explorer.hiro.so/txid/ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.aibtc-dao-v2?chain=testnet)
+- **Core Scripts**: generating, deploying, and constructing DAOs
+- **Base DAO**: interacting with the base DAO contract
+- **Extensions**: interacting with specialized modules that add functionality to the DAO
+- **Smart Wallet**: generating, deploying, and managing smart wallets
+- **Services**: Registry and utility services that support DAO operations
 
-### Example with scripts
+All interactions with deployed contracts fall into two categories:
 
-Generate and deploy the 20 DAO contracts
+- **Public Functions**: Require submitting a transaction to the Stacks blockchain
+- **Read-Only Functions**: Query contract data without modifying state
 
-```
-Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> <daoManifestInscriptionId> <generateFiles>
+## Architecture
 
-bun run src/stacks-contracts/deploy-dao.ts LFG4 GoTimeTest 1000000000 https://aibtc.dev https://aibtc.dev ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18 "Ze Manifesto" "1234" "dao manifest inscription id" true
-```
+The aibtc-dao system uses a modular architecture:
 
-Construct the dao with bootstrap proposal
-[example](https://explorer.hiro.so/txid/0x9467fbb7c1ce5dfdaef9ac99e35a8f4ab10c82e56dd527911b46f484817ef67c?chain=testnet)
+1. **Base DAO**: Core contract that forms the execution layer of the DAO
+2. **Extensions**: Specialized contracts that add functionality to the DAO
+3. **Proposals**: Specialized contracts that perform actions on behalf of the DAO
+4. **Contract Registry**: Source of truth for contract types, requirements, and deployments
+5. **Service Layer**: Utilities for generating and deploying contracts
 
-```
-Usage: bun run construct-dao.ts <baseDaoContract> <proposalContract>
+## Creating a New DAO
 
-bun run src/aibtc-dao/construct-dao.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-base-dao ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-base-bootstrap-initialization-v2
-```
+Three main scripts handle DAO creation:
 
-## Interacting with a DAO
+- `generate-dao.ts`: Creates contract code without deployment
+- `deploy-dao.ts`: Generates and deploys contracts to the blockchain
+- `construct.ts`: Initializes the DAO and enables extensions
 
-All tools for working with a DAO are in the `base-dao` and `extensions` folder to start, organized by the associated contract.
+### V2 DAO Traits
 
-Any public functions require creating a TX and making a contract call. Read-only functions can be called by any sender.
+The latest version has improved traits deployed on testnet:
 
-If there is a protected function that requires the DAO context then it cannot be called directly. Any DAO decisions require either an action or core proposal.
+- [aibtc-dao-traits-v2](https://explorer.hiro.so/txid/ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-dao-traits-v2?chain=testnet)
+- [aibtc-dao-v2](https://explorer.hiro.so/txid/ST1B1CCG03BTGDAAR49R3KM34V48P3RPAQ4P2SSJG.aibtc-dao-v2?chain=testnet)
 
-## Submitting Proposals
+## Workflow Examples
 
-Proposals can only be submitted by token holders, so first we have to buy from the DEX:
+### Example 1: Deploying and Activating a New DAO
 
-Buy token from bonding curve
-[example](https://explorer.hiro.so/txid/0x994906d2202d1f65df270df43e9564b8bdd12b953565d3fcb92ba853e9813bc4?chain=testnet)
-
-```
-Usage: bun run exec-buy.ts <stxAmount> <dexContract> [slippage]
-
-bun run src/stacks-faktory/exec-buy.ts 100 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-faktory-dex
-```
-
-Then we can submit an action proposal based on our deployed options, starting with the example below for a signed message.
-[example](https://explorer.hiro.so/txid/0xd32f91ecaf6336a9318da69e06e0ee14f0a8787722334a89e5f9fdc43c31815a?chain=testnet)
+1. **Generate and deploy the DAO contracts**:
 
 ```
-Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <message>
+Usage: bun run deploy-dao.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> [daoManifestInscriptionId] [generateFiles]
 
-bun run src/aibtc-dao/extensions/action-proposals/public/propose-action-send-message.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-send-message "well hello there"
+bun run src/aibtc-dao/deploy-dao.ts LFG GoTimeTest 1000000000 https://mkkhfmcrbwyuutcvtier.supabase.co/storage/v1/object/public/tokens//251.json https://mkkhfmcrbwyuutcvtier.supabase.co/storage/v1/object/public/tokens//251.png ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18 "Ze Manifesto goes here and is used for all voting." "1234" "779b53221183cdee5168671b696cf99f60b6be0ce596777ec5f066bf9be44fbfi0" true
 ```
 
-Vote on action proposal, voting happens based on the snapshot of the balance at the block height the proposal was created.
-[example](https://explorer.hiro.so/txid/0xa8ab22b1f74ff3d709de4c930b512b56c32fd6592adebfc2960aca292048ae0a?chain=testnet)
+2. **Construct the DAO with bootstrap proposal**:
 
 ```
-Usage: bun run vote-on-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <vote>
+Usage: bun run construct.ts <baseDaoContract> <proposalContract>
 
-bun run src/aibtc-dao/extensions/action-proposals/public/vote-on-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 1 true
+bun run src/aibtc-dao/base-dao/public/construct.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg-base-dao ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg-base-bootstrap-initialization-v2
 ```
 
-Conclude action proposal (in this case, sends message from dao)
-[example](https://explorer.hiro.so/txid/0x1cbf0d4f15a63d5cf54918a6948d2a687541cffb4f88517c59b5dfb7f62f27e2?chain=testnet)
+3. **Buy tokens to participate in governance**:
 
 ```
-Usage: bun run conclude-proposal.ts <daoActionProposalsExtensionContract> <proposalId> <daoActionProposalContract>
+Usage: bun run exec-buy.ts <btcAmount> <dexContract> [slippage]
 
-bun run src/aibtc-dao/extensions/action-proposals/public/conclude-proposal.ts ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-proposals-v2 1 ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg4-action-send-message
+bun run src/stacks-faktory/exec-buy.ts 0.0004 ST252TFQ08T74ZZ6XK426TQNV4EXF1D4RMTTNCWFA.lfg-faktory-dex
 ```
+
+### Example 2: Creating and Managing a Smart Wallet
+
+1. **Create and deploy a new smart wallet between the agent and user**:
+
+```
+Usage: bun run deploy-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract>
+
+bun run src/aibtc-dao/deploy-smart-wallet.ts ST3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKQ3H2FSP ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.lfg-faktory true
+```
+
+2. **Get the smart wallet configuration**:
+
+```
+Usage: bun run get-configuration.ts <smartWalletContract>
+
+bun run src/aibtc-dao/smart-wallet/read-only/get-configuration.ts ST3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKQ3H2FSP.aibtc-smart-wallet-ST3ZA-H2FSP
+```
+
+## Contract Interaction
+
+### Public Functions
+
+Require submitting a transaction to the Stacks blockchain. Examples include:
+
+- Proposing actions
+- Voting on proposals
+- Concluding proposals
+- Creating wallets
+- Transferring assets
+
+### Read-Only Functions
+
+Query contract data without modifying state. Examples include:
+
+- Checking proposal status
+- Viewing wallet balances
+- Getting voting power
+- Retrieving DAO configuration
+
+## Services
+
+The services directory provides:
+
+- **Contract Registry**: Source of truth for contract types and requirements
+- **Contract Generator**: Creates contract code from templates
+- **Contract Deployer**: Handles deployment to the blockchain
+
+## Notes on Proposal Lifecycle
+
+Proposals follow a standard lifecycle:
+
+1. **Creation**: A token holder submits a proposal
+2. **Voting**: Token holders vote based on their balance at proposal creation
+3. **Conclusion**: Anyone can conclude a proposal after the voting period
+4. **Execution**: If approved, the proposal's code executes automatically
 
 Proposals can be concluded by anyone and should always conclude with a successful transaction.
-
-If the proposal criteria is met the proposal code will run.

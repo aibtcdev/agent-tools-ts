@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { validateStacksAddress } from "@stacks/transactions";
-import { DaoCoreProposalGenerator } from "./services/dao-core-proposal-generator";
+import { GeneratedCoreProposalRegistryEntry } from "../../services/dao-core-proposal-registry";
+import { DaoCoreProposalGenerator } from "../../services/dao-core-proposal-generator";
 import {
   CONFIG,
   convertStringToBoolean,
@@ -10,25 +10,31 @@ import {
   getCurrentBlockHeights,
   sendToLLM,
   ToolResponse,
-} from "../utilities";
-import { GeneratedCoreProposalRegistryEntry } from "./services/dao-core-proposal-registry";
+} from "../../../utilities";
 
-const usage = `Usage: bun run generate-core-proposal.ts <proposalContractName> <proposalArgs> [generateFiles]`;
-const usageExample = `Example: bun run generate-core-proposal.ts aibtc-treasury-withdraw-stx '{"amount": "1000000"}' true`;
+const usage = `Usage: bun run generate-core-proposal.ts <daoDeployerAddress> <daoTokenSymbol> <proposalContractName> '<proposalArgs>' [generateFiles]`;
+const usageExample = `Example: bun run generate-core-proposal.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM aibtc aibtc-treasury-withdraw-stx '{"CFG_STX_AMOUNT": "1000000", "CFG_RECIPIENT": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"}' true`;
 
-interface ProposalGeneratorArgs {
+interface ExpectedArgs {
+  daoDeployerAddress: string;
+  daoTokenSymbol: string;
   proposalContractName: string;
   proposalArgs: Record<string, string>;
-  generateFiles: boolean;
+  generateFiles?: boolean;
 }
 
-function validateArgs(): ProposalGeneratorArgs {
+function validateArgs(): ExpectedArgs {
   // capture all arguments
-  const [proposalContractName, proposalArgsJson, generateFiles] =
-    process.argv.slice(2);
+  const [
+    daoDeployerAddress,
+    daoTokenSymbol,
+    proposalContractName,
+    proposalArgsJson,
+    generateFiles,
+  ] = process.argv.slice(2);
 
   // verify required arguments are provided
-  if (!proposalContractName) {
+  if (!daoDeployerAddress || !daoTokenSymbol || !proposalContractName) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -43,8 +49,12 @@ function validateArgs(): ProposalGeneratorArgs {
     try {
       proposalArgs = JSON.parse(proposalArgsJson);
     } catch (error) {
+      // Provide more helpful error message with the specific JSON error
       const errorMessage = [
         `Invalid JSON for proposal arguments: ${proposalArgsJson}`,
+        `JSON parse error: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
         usage,
         usageExample,
       ].join("\n");
@@ -57,6 +67,8 @@ function validateArgs(): ProposalGeneratorArgs {
 
   // return validated arguments
   return {
+    daoDeployerAddress,
+    daoTokenSymbol,
     proposalContractName,
     proposalArgs,
     generateFiles: shouldGenerateFiles,
@@ -85,24 +97,27 @@ async function main(): Promise<
   // create proposal generator instance
   const proposalGenerator = new DaoCoreProposalGenerator(
     CONFIG.NETWORK,
-    address
+    args.daoDeployerAddress
   );
 
   // Step 1 - generate core proposal
+  console.log(`Generating core proposal: ${args.proposalContractName}`);
+  console.log(`With arguments:`, args.proposalArgs);
 
   const generatedProposal = proposalGenerator.generateCoreProposal(
+    args.daoTokenSymbol,
     args.proposalContractName,
     args.proposalArgs
   );
 
   // Step 2 - save proposal (optional)
-
-  if (args.shouldGenerateFiles) {
-    const outputDir = path.join("generated", "proposals");
+  if (args.generateFiles) {
+    const outputDir = path.join("generated", "proposals", args.daoTokenSymbol);
     fs.mkdirSync(outputDir, { recursive: true });
     const fileName = `${args.proposalContractName}-${truncatedAddress}-${blockHeights.stacks}.clar`;
     const filePath = path.join(outputDir, fileName);
     fs.writeFileSync(filePath, generatedProposal.source);
+    console.log(`Proposal saved to ${filePath}`);
   }
 
   // Step 3 - return generated proposal
