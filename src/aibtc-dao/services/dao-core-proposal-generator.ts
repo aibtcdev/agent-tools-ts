@@ -30,13 +30,13 @@ export class DaoCoreProposalGenerator {
   /**
    * Generate a core proposal based on the CORE_PROPOSAL_REGISTRY
    *
-   * @param tokenSymbol Token symbol for the DAO
+   * @param daoTokenSymbol Token symbol for the DAO
    * @param proposalContractName Name of the proposal contract to generate
    * @param proposalArgs Arguments to pass to the proposal contract
    * @returns Generated contract registry entry
    */
   public generateCoreProposal(
-    tokenSymbol: string,
+    daoTokenSymbol: string,
     proposalContractName: string,
     proposalArgs: Record<string, string>
   ): GeneratedCoreProposalRegistryEntry {
@@ -80,7 +80,10 @@ export class DaoCoreProposalGenerator {
         ({ key, category, subcategory }) => {
           // Find the matching contract in the CONTRACT_REGISTRY
           const [contract] = getContractsBySubcategory(category, subcategory);
-          const contractAddress = getContractName(contract.name, tokenSymbol);
+          const contractAddress = getContractName(
+            contract.name,
+            daoTokenSymbol
+          );
           return [key, this.generateContractPrincipal(contractAddress)];
         }
       )
@@ -151,14 +154,13 @@ export class DaoCoreProposalGenerator {
   /**
    * Generate mock runtime values based on proposal type and parameter name
    *
-   * @param proposalName Name of the proposal
    * @param paramKey Parameter key
+   * @param daoTokenSymbol Token symbol for the DAO
    * @returns Appropriate mock value for the parameter
    */
   private generateMockRuntimeValue(
-    proposalName: string,
     paramKey: string,
-    tokenSymbol: string = "DAO"
+    daoTokenSymbol: string = "AIBTC"
   ): string {
     // Use proposal name for context-specific values if needed
 
@@ -235,35 +237,35 @@ export class DaoCoreProposalGenerator {
 
     // Message-related fields
     if (paramKey === "message" || paramKey === "message_to_send") {
-      return "Example DAO message from ${tokenSymbol} DAO";
+      return `Example DAO message from ${daoTokenSymbol} DAO`;
     }
 
     // DAO Charter fields
     if (paramKey === "dao_charter_text") {
-      return "This is the charter for the ${tokenSymbol} DAO";
+      return `This is the charter for the ${daoTokenSymbol} DAO`;
     }
 
     if (paramKey === "dao_charter_inscription_id") {
-      return '"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"';
+      return "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     }
 
     // Token URI
     if (paramKey === "token_uri") {
-      return "https://example.com/${tokenSymbol.toLowerCase()}-metadata.json";
+      return `https://example.com/${daoTokenSymbol.toLowerCase()}-metadata.json`;
     }
 
     // Default fallback
-    return "default-value-for-${paramKey}";
+    return `default-value-for-${paramKey}`;
   }
 
   /**
    * Generate all core proposals with intelligent mock arguments
    *
-   * @param tokenSymbol Token symbol for the DAO
+   * @param daoTokenSymbol Token symbol for the DAO
    * @returns Array of generated core proposal registry entries
    */
   public generateAllCoreProposals(
-    tokenSymbol: string
+    daoTokenSymbol: string
   ): GeneratedCoreProposalRegistryEntry[] {
     const results: GeneratedCoreProposalRegistryEntry[] = [];
 
@@ -275,16 +277,12 @@ export class DaoCoreProposalGenerator {
 
         // For each required runtime value, provide an appropriate mock value
         (proposal.requiredRuntimeValues || []).forEach(({ key }) => {
-          mockArgs[key] = this.generateMockRuntimeValue(
-            proposal.name,
-            key,
-            tokenSymbol
-          );
+          mockArgs[key] = this.generateMockRuntimeValue(key, daoTokenSymbol);
         });
 
         // Generate the proposal with mock arguments
         const generatedProposal = this.generateCoreProposal(
-          tokenSymbol,
+          daoTokenSymbol,
           proposal.name,
           mockArgs
         );
