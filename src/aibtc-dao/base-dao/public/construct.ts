@@ -14,12 +14,12 @@ import {
   getNextNonce,
   sendToLLM,
   ToolResponse,
-} from "../utilities";
+} from "../../../utilities";
 
 const usage =
-  "Usage: bun run construct-dao.ts <baseDaoContract> <proposalContract>";
+  "Usage: bun run construct.ts <baseDaoContract> <proposalContract>";
 const usageExample =
-  "Example: bun run construct-dao.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-base-dao ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-base-bootstrap-initialization-v2";
+  "Example: bun run construct.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-base-dao ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-base-bootstrap-initialization-v2";
 
 interface ExpectedArgs {
   baseDaoContract: string;

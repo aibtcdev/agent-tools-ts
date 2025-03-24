@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
-import { SmartWalletGenerator } from "./services/smart-wallet-generator";
+import { SmartWalletGenerator } from "../services/smart-wallet-generator";
 import {
   CONFIG,
   convertStringToBoolean,
@@ -9,7 +9,7 @@ import {
   deriveChildAccount,
   sendToLLM,
   ToolResponse,
-} from "../utilities";
+} from "../../utilities";
 
 const usage = `Usage: bun run generate-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> <generateFiles>`;
 const usageExample = `Example: bun run generate-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token-dex true`;

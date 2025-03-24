@@ -3,9 +3,9 @@ import {
   createErrorResponse,
   deriveChildAccount,
   sendToLLM,
-} from "../utilities";
-import { SmartWalletGenerator } from "./services/smart-wallet-generator";
-import { SmartWalletDeployer } from "./services/smart-wallet-deployer";
+} from "../../utilities";
+import { SmartWalletGenerator } from "../services/smart-wallet-generator";
+import { SmartWalletDeployer } from "../services/smart-wallet-deployer";
 import { validateStacksAddress } from "@stacks/transactions";
 
 const usage =
