@@ -9,9 +9,9 @@ import {
 } from "../../utilities";
 
 const usage =
-  "Usage: bun run deploy-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract>";
+  "Usage: bun run deploy-my-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract>";
 const usageExample =
-  "Example: bun run deploy-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token-dex";
+  "Example: bun run deploy-my-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token-dex";
 
 interface ExpectedArgs {
   ownerAddress: string;
