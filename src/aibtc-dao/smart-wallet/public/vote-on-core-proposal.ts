@@ -14,7 +14,7 @@ import {
   getNetwork,
   getNextNonce,
   sendToLLM,
-} from "../../../../utilities";
+} from "../../../utilities";
 
 const usage =
   "Usage: bun run vote-on-core-proposal.ts <smartWalletContract> <daoCoreProposalsExtensionContract> <daoProposalContract> <vote>";
@@ -30,10 +30,19 @@ interface ExpectedArgs {
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [smartWalletContract, coreProposalsExtension, proposalContract, voteStr] =
-    process.argv.slice(2);
+  const [
+    smartWalletContract,
+    coreProposalsExtension,
+    proposalContract,
+    voteStr,
+  ] = process.argv.slice(2);
   const vote = convertStringToBoolean(voteStr);
-  if (!smartWalletContract || !coreProposalsExtension || !proposalContract || vote === undefined) {
+  if (
+    !smartWalletContract ||
+    !coreProposalsExtension ||
+    !proposalContract ||
+    vote === undefined
+  ) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -91,7 +100,7 @@ async function main() {
     functionArgs: [
       principalCV(args.daoCoreProposalsExtensionContract),
       principalCV(args.daoProposalContract),
-      boolCV(args.vote)
+      boolCV(args.vote),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,

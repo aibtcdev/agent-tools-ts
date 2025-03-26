@@ -14,7 +14,7 @@ import {
   getNetwork,
   getNextNonce,
   sendToLLM,
-} from "../../../../utilities";
+} from "../../../utilities";
 
 const usage =
   "Usage: bun run vote-on-action-proposal.ts <smartWalletContract> <daoActionProposalsExtensionContract> <proposalId> <vote>";
@@ -30,8 +30,12 @@ interface ExpectedArgs {
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [smartWalletContract, daoActionProposalsExtensionContract, proposalIdStr, voteStr] =
-    process.argv.slice(2);
+  const [
+    smartWalletContract,
+    daoActionProposalsExtensionContract,
+    proposalIdStr,
+    voteStr,
+  ] = process.argv.slice(2);
   const proposalId = parseInt(proposalIdStr);
   const vote = convertStringToBoolean(voteStr);
   if (
@@ -49,7 +53,8 @@ function validateArgs(): ExpectedArgs {
   }
   // verify contract addresses extracted from arguments
   const [walletAddress, walletName] = smartWalletContract.split(".");
-  const [extensionAddress, extensionName] = daoActionProposalsExtensionContract.split(".");
+  const [extensionAddress, extensionName] =
+    daoActionProposalsExtensionContract.split(".");
   if (!walletAddress || !walletName || !extensionAddress || !extensionName) {
     const errorMessage = [
       `Invalid contract addresses: ${smartWalletContract} ${daoActionProposalsExtensionContract}`,
@@ -89,7 +94,7 @@ async function main() {
     functionArgs: [
       principalCV(args.daoActionProposalsExtensionContract),
       Cl.uint(args.proposalId),
-      Cl.bool(args.vote)
+      Cl.bool(args.vote),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,
