@@ -1,7 +1,6 @@
 import {
   AnchorMode,
   makeContractCall,
-  Pc,
   PostConditionMode,
   principalCV,
   SignedContractCallOptions,
@@ -11,7 +10,6 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getBondFromCoreProposal,
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
@@ -98,7 +96,8 @@ function validateArgs(): ExpectedArgs {
 async function main() {
   // validate and store provided args
   const args = validateArgs();
-  const [smartWalletAddress, smartWalletName] = args.smartWalletContract.split(".");
+  const [smartWalletAddress, smartWalletName] =
+    args.smartWalletContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -107,7 +106,7 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-  
+
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
     anchorMode: AnchorMode.Any,
@@ -123,7 +122,7 @@ async function main() {
     senderKey: key,
     postConditionMode: PostConditionMode.Allow,
   };
-  
+
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTx(transaction, networkObj);

@@ -2,7 +2,6 @@ import {
   AnchorMode,
   Cl,
   makeContractCall,
-  Pc,
   PostConditionMode,
   SignedContractCallOptions,
 } from "@stacks/transactions";
