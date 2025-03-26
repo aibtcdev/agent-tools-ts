@@ -94,6 +94,7 @@ async function main() {
     const generator = new SmartWalletGenerator(CONFIG.NETWORK, address);
     const smartWallet = generator.generateSmartWallet({
       ownerAddress: args.ownerAddress,
+      agentAddress: address, // Use the derived address as the agent
       daoTokenContract: args.daoTokenContract,
       daoTokenDexContract: args.daoTokenDexContract,
     });
@@ -119,6 +120,7 @@ async function main() {
           smartWalletAddress: deployedWallet.address,
           txId: deployedWallet.txId,
           owner: args.ownerAddress,
+          agent: address,
         },
       };
     } else {

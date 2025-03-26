@@ -99,6 +99,7 @@ async function main(): Promise<ToolResponse<any>> {
     // generate smart wallet contract
     const smartWallet = contractGenerator.generateSmartWallet({
       ownerAddress: args.ownerAddress,
+      agentAddress: address, // Use the derived address as the agent
       daoTokenContract: args.daoTokenContract,
       daoTokenDexContract: args.daoTokenDexContract,
     });
