@@ -64,7 +64,12 @@ export class SmartWalletGenerator {
       5
     )}-${args.ownerAddress.slice(-5)}`;
     
-    const contractName = `aibtc-smart-wallet-${truncatedOwner}`;
+    const truncatedAgent = `${args.agentAddress.slice(
+      0,
+      5
+    )}-${args.agentAddress.slice(-5)}`;
+    
+    const contractName = `aibtc-smart-wallet-${truncatedOwner}-${truncatedAgent}`;
 
     // Get known addresses and traits
     const sbtcContract = getKnownAddress(this.network, "SBTC");
