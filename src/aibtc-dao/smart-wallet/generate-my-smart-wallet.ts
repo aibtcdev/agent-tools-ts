@@ -11,8 +11,8 @@ import {
   ToolResponse,
 } from "../../utilities";
 
-const usage = `Usage: bun run generate-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> <generateFiles>`;
-const usageExample = `Example: bun run generate-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token-dex true`;
+const usage = `Usage: bun run generate-my-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> <generateFiles>`;
+const usageExample = `Example: bun run generate-my-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token-dex true`;
 
 interface ExpectedArgs {
   ownerAddress: string;
