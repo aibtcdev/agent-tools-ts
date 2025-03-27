@@ -50,4 +50,5 @@ export async function getSIP010Info(
 }
 
 // Re-export types for convenience
-export { TokenInfo, CacheControlOptions };
+export type { TokenInfo };
+export type { CacheControlOptions } from "./api/contract-calls-client";
