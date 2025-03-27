@@ -72,7 +72,8 @@ async function main() {
   const args = validateArgs();
   const [contractAddress, contractName] = args.smartWalletContract.split(".");
   const [ftAddress, ftName] = args.ftContract.split(".");
-  
+  const tokenName = ftName.split("-")[0].toUpperCase();
+
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -86,7 +87,7 @@ async function main() {
   const postConditions = [
     Pc.principal(address)
       .willSendEq(args.amount)
-      .ft(`${ftAddress}.${ftName}`, "token")
+      .ft(`${ftAddress}.${ftName}`, tokenName),
   ];
 
   // prepare function arguments
