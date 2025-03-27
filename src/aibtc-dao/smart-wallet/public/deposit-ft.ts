@@ -15,6 +15,7 @@ import {
   getNextNonce,
   sendToLLM,
 } from "../../../utilities";
+import { getSIP010Info } from "../../../cache-utils";
 
 const usage =
   "Usage: bun run deposit-ft.ts <smartWalletContract> <ftContract> <amount>";
@@ -72,7 +73,6 @@ async function main() {
   const args = validateArgs();
   const [contractAddress, contractName] = args.smartWalletContract.split(".");
   const [ftAddress, ftName] = args.ftContract.split(".");
-  const tokenName = ftName.split("-")[0].toUpperCase();
 
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
@@ -82,6 +82,14 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // get token name from ft contract
+  const tokenSip010Info = await getSIP010Info(args.ftContract);
+  console.log(tokenSip010Info);
+  const tokenName = tokenSip010Info.name;
+  if (!tokenName) {
+    throw new Error(`Failed to get token name for ${args.ftContract}`);
+  }
 
   // Add post-conditions to ensure sender sends exact amount of FT
   const postConditions = [
