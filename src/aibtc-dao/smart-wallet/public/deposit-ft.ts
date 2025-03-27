@@ -83,40 +83,45 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // get token name from ft contract
-  const tokenSip010Info = await getSIP010Info(args.ftContract);
-  console.log(tokenSip010Info);
-  const tokenName = tokenSip010Info.name;
-  if (!tokenName) {
-    throw new Error(`Failed to get token name for ${args.ftContract}`);
+  try {
+    // get token info from ft contract
+    const tokenInfo = await getSIP010Info(args.ftContract);
+    console.log(`Token info: ${tokenInfo.name} (${tokenInfo.symbol})`);
+
+    // Add post-conditions to ensure sender sends exact amount of FT
+    const postConditions = [
+      Pc.principal(address)
+        .willSendEq(args.amount)
+        .ft(`${ftAddress}.${ftName}`, tokenInfo.name),
+    ];
+
+    // prepare function arguments
+    const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
+    
+    // configure contract call options
+    const txOptions: SignedContractCallOptions = {
+      anchorMode: AnchorMode.Any,
+      contractAddress,
+      contractName,
+      functionName: "deposit-ft",
+      functionArgs,
+      network: networkObj,
+      nonce: nextPossibleNonce,
+      senderKey: key,
+      postConditionMode: PostConditionMode.Deny,
+      postConditions,
+    };
+    
+    // broadcast transaction and return response
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastTx(transaction, networkObj);
+    return broadcastResponse;
+  } catch (error) {
+    if (error.name === "ContractCallError") {
+      throw new Error(`Contract call failed: ${error.message} (${error.code})`);
+    }
+    throw error;
   }
-
-  // Add post-conditions to ensure sender sends exact amount of FT
-  const postConditions = [
-    Pc.principal(address)
-      .willSendEq(args.amount)
-      .ft(`${ftAddress}.${ftName}`, tokenName),
-  ];
-
-  // prepare function arguments
-  const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
-  // configure contract call options
-  const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
-    contractAddress,
-    contractName,
-    functionName: "deposit-ft",
-    functionArgs,
-    network: networkObj,
-    nonce: nextPossibleNonce,
-    senderKey: key,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions,
-  };
-  // broadcast transaction and return response
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
 }
 
 main()
