@@ -1,4 +1,4 @@
-import { StacksNetworkName } from "@stacks/transactions";
+import { StacksNetworkName } from "@stacks/network";
 import { ContractCallsClient } from "./contract-calls-client";
 import { getNetworkByPrincipal } from "../utilities";
 
@@ -10,9 +10,9 @@ export interface TokenInfo {
   name: string;
   /** The symbol of the token */
   symbol: string;
-  /** The number of decimal places */
-  decimals: number;
-  /** The total supply of the token */
+  /** The number of decimal places as a string (may include 'n' suffix for bigint) */
+  decimals: string;
+  /** The total supply of the token as a string (may include 'n' suffix for bigint) */
   totalSupply: string;
   /** URI for token metadata */
   tokenUri?: string;
@@ -45,7 +45,7 @@ export class TokenInfoService {
     }
     
     // Get all token information in parallel
-    const [name, symbol, decimalsStr, totalSupply, tokenUri] = await Promise.all([
+    const [name, symbol, decimals, totalSupply, tokenUri] = await Promise.all([
       this.client.callContractFunction<string>(tokenContract, "get-name", [], {
         cacheControl: { bustCache }
       }),
@@ -56,15 +56,12 @@ export class TokenInfoService {
         cacheControl: { bustCache }
       }),
       this.client.callContractFunction<string>(tokenContract, "get-total-supply", [], {
-        cacheControl: { bustCache: true } // Always get fresh total supply
+        cacheControl: { bustCache } // Use the same cache setting as other calls
       }),
       this.client.callContractFunction<string>(tokenContract, "get-token-uri", [], {
         cacheControl: { bustCache }
       }).catch(() => undefined) // Token URI is optional
     ]);
-    
-    // Parse decimals as a number
-    const decimals = parseInt(decimalsStr, 10);
     
     return {
       name,

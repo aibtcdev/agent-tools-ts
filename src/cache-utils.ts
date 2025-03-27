@@ -1,4 +1,5 @@
-import { ClarityValue, StacksNetworkName } from "@stacks/transactions";
+import { ClarityValue } from "@stacks/transactions";
+import { StacksNetworkName } from "@stacks/network";
 import { ContractCallsClient, CacheControlOptions } from "./api/contract-calls-client";
 import { TokenInfoService, TokenInfo } from "./api/token-info-service";
 

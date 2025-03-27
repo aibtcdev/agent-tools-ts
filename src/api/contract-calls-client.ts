@@ -1,4 +1,5 @@
-import { ClarityValue, StacksNetworkName } from "@stacks/transactions";
+import { ClarityValue } from "@stacks/transactions";
+import { StacksNetworkName } from "@stacks/network";
 
 /**
  * Options for controlling cache behavior
@@ -81,10 +82,10 @@ export class ContractCallsClient {
       return result.data as T;
     } else {
       throw new ContractCallError(
-        result.error.code,
-        result.error.message,
-        result.error.details,
-        result.error.id
+        result.error?.code || 'UNKNOWN_ERROR',
+        result.error?.message || 'Unknown error occurred',
+        result.error?.details,
+        result.error?.id
       );
     }
   }
