@@ -76,10 +76,19 @@ export class ContractCallsClient {
       body: JSON.stringify(body),
     });
 
-    const result = await response.json();
+    const result = await response.json() as {
+      success: boolean;
+      data?: T;
+      error?: {
+        code: string;
+        message: string;
+        details?: any;
+        id?: string;
+      };
+    };
 
-    if (result.success) {
-      return result.data as T;
+    if (result.success && result.data !== undefined) {
+      return result.data;
     } else {
       throw new ContractCallError(
         result.error?.code || "UNKNOWN_ERROR",

@@ -117,7 +117,8 @@ async function main() {
     const broadcastResponse = await broadcastTx(transaction, networkObj);
     return broadcastResponse;
   } catch (error) {
-    if (error.name === "ContractCallError") {
+    // Check if it's a ContractCallError by checking for the code property
+    if (error && typeof error === 'object' && 'code' in error) {
       throw new Error(`Contract call failed: ${error.message} (${error.code})`);
     }
     throw error;
