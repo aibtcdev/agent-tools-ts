@@ -41,7 +41,7 @@ export class ContractCallsClient {
 
   /**
    * Call a read-only function on a smart contract
-   * 
+   *
    * @param contractAddress - The contract address
    * @param contractName - The contract name
    * @param functionName - The function to call
@@ -60,30 +60,30 @@ export class ContractCallsClient {
     } = {}
   ): Promise<T> {
     const url = `${this.baseUrl}/contract-calls/read-only/${contractAddress}/${contractName}/${functionName}`;
-    
+
     const body = {
       functionArgs,
       network: this.network,
       senderAddress: options.senderAddress,
-      cacheControl: options.cacheControl || {}
+      cacheControl: options.cacheControl || {},
     };
 
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
 
     const result = await response.json();
-    
+
     if (result.success) {
       return result.data as T;
     } else {
       throw new ContractCallError(
-        result.error?.code || 'UNKNOWN_ERROR',
-        result.error?.message || 'Unknown error occurred',
+        result.error?.code || "UNKNOWN_ERROR",
+        result.error?.message || "Unknown error occurred",
         result.error?.details,
         result.error?.id
       );
@@ -92,7 +92,7 @@ export class ContractCallsClient {
 
   /**
    * Call a read-only function using a fully qualified contract ID
-   * 
+   *
    * @param contractId - The fully qualified contract ID (address.name)
    * @param functionName - The function to call
    * @param functionArgs - Arguments to pass to the function
@@ -109,11 +109,13 @@ export class ContractCallsClient {
     } = {}
   ): Promise<T> {
     const [contractAddress, contractName] = contractId.split(".");
-    
+
     if (!contractAddress || !contractName) {
-      throw new Error(`Invalid contract ID: ${contractId}. Expected format: address.name`);
+      throw new Error(
+        `Invalid contract ID: ${contractId}. Expected format: address.name`
+      );
     }
-    
+
     return this.callReadOnlyFunction<T>(
       contractAddress,
       contractName,

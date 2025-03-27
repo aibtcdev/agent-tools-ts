@@ -1,11 +1,14 @@
 import { ClarityValue } from "@stacks/transactions";
 import { StacksNetworkName } from "@stacks/network";
-import { ContractCallsClient, CacheControlOptions } from "./api/contract-calls-client";
+import {
+  ContractCallsClient,
+  CacheControlOptions,
+} from "./api/contract-calls-client";
 import { TokenInfoService, TokenInfo } from "./api/token-info-service";
 
 /**
  * Call a read-only function on a smart contract
- * 
+ *
  * @param contractId - The fully qualified contract ID (address.name)
  * @param functionName - The function to call
  * @param functionArgs - Arguments to pass to the function
@@ -21,14 +24,19 @@ export async function callReadOnlyFunction<T = any>(
   cacheOptions?: CacheControlOptions
 ): Promise<T> {
   const client = new ContractCallsClient(network);
-  return client.callContractFunction<T>(contractId, functionName, functionArgs, {
-    cacheControl: cacheOptions
-  });
+  return client.callContractFunction<T>(
+    contractId,
+    functionName,
+    functionArgs,
+    {
+      cacheControl: cacheOptions,
+    }
+  );
 }
 
 /**
  * Get information about a SIP-010 fungible token
- * 
+ *
  * @param tokenContract - The fully qualified contract ID of the token
  * @param bustCache - Whether to bypass the cache
  * @returns Information about the token

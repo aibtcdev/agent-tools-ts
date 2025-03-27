@@ -97,7 +97,7 @@ async function main() {
 
     // prepare function arguments
     const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
-    
+
     // configure contract call options
     const txOptions: SignedContractCallOptions = {
       anchorMode: AnchorMode.Any,
@@ -111,7 +111,7 @@ async function main() {
       postConditionMode: PostConditionMode.Deny,
       postConditions,
     };
-    
+
     // broadcast transaction and return response
     const transaction = await makeContractCall(txOptions);
     const broadcastResponse = await broadcastTx(transaction, networkObj);
