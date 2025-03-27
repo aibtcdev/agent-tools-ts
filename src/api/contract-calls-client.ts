@@ -76,7 +76,7 @@ export class ContractCallsClient {
       body: JSON.stringify(body),
     });
 
-    const result = await response.json() as {
+    const result = (await response.json()) as {
       success: boolean;
       data?: T;
       error?: {
