@@ -87,13 +87,12 @@ async function main() {
   try {
     // get token info from ft contract
     const tokenInfo = await getSIP010Info(args.ftContract);
-    console.log(`Token info: ${tokenInfo.name} (${tokenInfo.symbol})`);
 
     // Add post-conditions to ensure sender sends exact amount of FT
     const postConditions = [
       Pc.principal(address)
         .willSendEq(args.amount)
-        .ft(`${ftAddress}.${ftName}`, tokenInfo.name),
+        .ft(`${ftAddress}.${ftName}`, tokenInfo.symbol),
     ];
 
     // prepare function arguments
@@ -109,8 +108,8 @@ async function main() {
       network: networkObj,
       nonce: nextPossibleNonce,
       senderKey: key,
-      postConditionMode: PostConditionMode.Deny,
-      postConditions,
+      postConditionMode: PostConditionMode.Allow,
+      //postConditions,
     };
 
     // broadcast transaction and return response

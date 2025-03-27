@@ -13,9 +13,6 @@ export interface CacheControlOptions {
   ttl?: number;
 }
 
-// Re-export types
-export type { CacheControlOptions };
-
 /**
  * Client for interacting with the AIBTC Contract Calls API
  */
