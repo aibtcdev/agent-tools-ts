@@ -16,6 +16,7 @@ import {
   sendToLLM,
 } from "../../../utilities";
 import { getSIP010Info } from "../../../cache-utils";
+import { ContractCallError } from "../../../api/contract-calls-client";
 
 const usage =
   "Usage: bun run deposit-ft.ts <smartWalletContract> <ftContract> <amount>";
@@ -117,8 +118,8 @@ async function main() {
     const broadcastResponse = await broadcastTx(transaction, networkObj);
     return broadcastResponse;
   } catch (error) {
-    // Check if it's a ContractCallError by checking for the code property
-    if (error && typeof error === 'object' && 'code' in error) {
+    // Check if it's a ContractCallError
+    if (error instanceof ContractCallError) {
       throw new Error(`Contract call failed: ${error.message} (${error.code})`);
     }
     throw error;
