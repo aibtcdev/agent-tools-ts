@@ -18,8 +18,6 @@ import {
   broadcastTransaction,
   callReadOnlyFunction,
   Cl,
-  ClarityType,
-  ClarityValue,
   cvToValue,
   StacksTransaction,
   TxBroadcastResult,
@@ -395,104 +393,50 @@ type BondInfo = {
   assetName: string;
 };
 
-// helper to get the proposal info
-export async function getProposalInfo(
-  proposalsExtensionContract: string,
-  daoTokenContract: string,
-  sender: string,
-  proposalContract?: string,
-  proposalId?: number
-): Promise<{
-  bond: BigInt;
-  assetName: string;
-  daoActionProposalContract?: string;
+type ProposalInfo = {
+  createdAt: number;
+  caller: string;
+  creator: string;
+  bond: string;
+  startBlock: number;
+  endBlock: number;
+  votesFor: string;
+  votesAgainst: string;
+  liquidTokens: string;
   concluded: boolean;
+  metQuorum: boolean;
+  metThreshold: boolean;
   passed: boolean;
   executed: boolean;
-}> {
-  // check that either the proposal name or proposal ID is provided
-  if (!proposalContract && !proposalId === undefined) {
-    throw new Error(
-      "Either proposal name or proposal ID must be provided to get proposal info."
-    );
-  }
-  
-  // Get asset name from contract ABI
-  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
-  const assetName = await tokenInfoService.getAssetNameFromAbi(
-    daoTokenContract
-  );
-  if (!assetName) {
-    throw new Error(
-      `Could not determine asset name for token contract: ${daoTokenContract}`
-    );
-  }
-  
-  // Create a contract calls client to use the cache API
-  const client = new ContractCallsClient(CONFIG.NETWORK as StacksNetworkName);
-  
-  try {
-    // Determine if we're dealing with a core proposal or action proposal
-    const isActionProposal = proposalId !== undefined;
-    
-    // Get the proposal data using the appropriate method
-    let proposalData;
-    if (isActionProposal) {
-      // For action proposals, use the proposal ID
-      proposalData = await client.callContractFunction(
-        proposalsExtensionContract,
-        "get-proposal",
-        [Cl.uint(proposalId!)],
-        { senderAddress: sender }
-      );
-    } else {
-      // For core proposals, use the proposal contract
-      proposalData = await client.callContractFunction(
-        proposalsExtensionContract,
-        "get-proposal",
-        [Cl.principal(proposalContract!)],
-        { senderAddress: sender }
-      );
-    }
-    
-    if (!proposalData) {
-      throw new Error(
-        `Proposal ${proposalId || proposalContract} not found in extension ${proposalsExtensionContract}`
-      );
-    }
-    
-    // Extract the relevant data from the proposal
-    const bondAmount = BigInt(proposalData.bond);
-    const concluded = proposalData.concluded;
-    const passed = proposalData.passed;
-    const executed = proposalData.executed;
-    
-    // For action proposals, also get the action contract
-    const daoActionProposalContract = isActionProposal ? proposalData.action : undefined;
-    
-    return {
-      bond: bondAmount,
-      assetName,
-      daoActionProposalContract,
-      concluded,
-      passed,
-      executed
-    };
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to get proposal info: ${error.message}`);
-    }
-    throw error;
-  }
-}
+};
 
-export async function getBondFromActionProposal(
+type ActionProposalInfo = ProposalInfo & {
+  action: string;
+  parameters: string;
+};
+
+type TokenAssetName = {
+  assetName: string;
+};
+
+export async function getActionProposalInfo(
   proposalsExtensionContract: string,
   daoTokenContract: string,
   sender: string,
   proposalId: number
-): Promise<BondInfo> {
-  // Get asset name from contract ABI
+): Promise<ActionProposalInfo & TokenAssetName> {
+  // create a contract calls client to use the cache API
+  const client = new ContractCallsClient(CONFIG.NETWORK);
+  // get the proposal data from the contract
+  console.log("Getting proposal info for proposal ID:", proposalId);
+  const proposalInfo = await client.callContractFunction(
+    proposalsExtensionContract,
+    "get-proposal",
+    [Cl.uint(proposalId)],
+    { senderAddress: sender }
+  );
+  console.log("done with that!");
+  // create a token info service to get the asset name
   const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
   const assetName = await tokenInfoService.getAssetNameFromAbi(
     daoTokenContract
@@ -502,48 +446,28 @@ export async function getBondFromActionProposal(
       `Could not determine asset name for token contract: ${daoTokenContract}`
     );
   }
-  // get the proposal info from the contract
-  const [extensionAddress, extensionName] =
-    proposalsExtensionContract.split(".");
-  const proposalInfo = await callReadOnlyFunction({
-    contractAddress: extensionAddress,
-    contractName: extensionName,
-    functionName: "get-proposal",
-    functionArgs: [Cl.uint(proposalId)],
-    network: getNetwork(CONFIG.NETWORK),
-    senderAddress: sender,
-  });
-  if (proposalInfo.type !== ClarityType.OptionalSome) {
-    throw new Error(
-      `Proposal ID ${proposalId} not found in extension ${proposalsExtensionContract}`
-    );
-  }
-  if (proposalInfo.value.type !== ClarityType.Tuple) {
-    throw new Error(
-      `Invalid proposal info type: ${proposalInfo.type} for proposal ID ${proposalId}`
-    );
-  }
-  const proposalData = Object.fromEntries(
-    Object.entries(proposalInfo.value.data).map(
-      ([key, value]: [string, ClarityValue]) => [key, cvToValue(value, true)]
-    )
-  );
-  // console.log(JSON.stringify(proposalData, replaceBigintWithString, 2));
-  // get the bond amount from the proposal info
-  const bondAmount = BigInt(proposalData.bond);
   return {
-    bond: bondAmount,
-    assetName: assetName,
+    ...proposalInfo,
+    assetName,
   };
 }
 
-export async function getBondFromCoreProposal(
+export async function getCoreProposalInfo(
   proposalsExtensionContract: string,
   daoTokenContract: string,
   sender: string,
   proposalContract: string
-): Promise<BondInfo> {
-  // Get asset name from contract ABI
+): Promise<ProposalInfo & TokenAssetName> {
+  // create a contract calls client to use the cache API
+  const client = new ContractCallsClient(CONFIG.NETWORK);
+  // get the proposal data from the contract
+  const proposalInfo = await client.callContractFunction(
+    proposalsExtensionContract,
+    "get-proposal",
+    [Cl.principal(proposalContract)],
+    { senderAddress: sender }
+  );
+  // create a token info service to get the asset name
   const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
   const assetName = await tokenInfoService.getAssetNameFromAbi(
     daoTokenContract
@@ -553,38 +477,9 @@ export async function getBondFromCoreProposal(
       `Could not determine asset name for token contract: ${daoTokenContract}`
     );
   }
-  // get the proposal info from the contract
-  const [extensionAddress, extensionName] =
-    proposalsExtensionContract.split(".");
-  const proposalInfo = await callReadOnlyFunction({
-    contractAddress: extensionAddress,
-    contractName: extensionName,
-    functionName: "get-proposal",
-    functionArgs: [Cl.principal(proposalContract)],
-    network: getNetwork(CONFIG.NETWORK),
-    senderAddress: sender,
-  });
-  if (proposalInfo.type !== ClarityType.OptionalSome) {
-    throw new Error(
-      `Proposal contract ${proposalContract} not found in extension ${proposalsExtensionContract}`
-    );
-  }
-  if (proposalInfo.value.type !== ClarityType.Tuple) {
-    throw new Error(
-      `Invalid proposal info type: ${proposalInfo.type} for proposal contract ${proposalContract}`
-    );
-  }
-  const proposalData = Object.fromEntries(
-    Object.entries(proposalInfo.value.data).map(
-      ([key, value]: [string, ClarityValue]) => [key, cvToValue(value, true)]
-    )
-  );
-  // console.log(JSON.stringify(proposalData, replaceBigintWithString, 2));
-  // get the bond amount from the proposal info
-  const bondAmount = BigInt(proposalData.bond);
   return {
-    bond: bondAmount,
-    assetName: assetName,
+    ...proposalInfo,
+    assetName,
   };
 }
 

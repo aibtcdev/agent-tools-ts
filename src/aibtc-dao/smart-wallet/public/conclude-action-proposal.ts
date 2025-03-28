@@ -11,10 +11,11 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getCurrentBondProposalAmount,
+  getActionProposalInfo,
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
+  replaceBigintWithString,
   sendToLLM,
 } from "../../../utilities";
 
@@ -90,6 +91,7 @@ function validateArgs(): ExpectedArgs {
 
 // concludes an action proposal through a smart wallet
 async function main() {
+  console.log("Script starting");
   // validate and store provided args
   const args = validateArgs();
   const [smartWalletAddress, smartWalletName] =
@@ -104,15 +106,18 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  console.log(`next nonce set: ${nextPossibleNonce}`);
   // get the proposal info from the contract
-  const proposalInfo = await getProposalInfo(
+  const proposalInfo = await getActionProposalInfo(
     args.daoActionProposalsExtensionContract,
     args.daoTokenContract,
     address,
-    undefined,
     args.proposalId
   );
-  
+  console.log("fails before here?");
+  console.log("Proposal Info:");
+  console.log(proposalInfo, replaceBigintWithString, 2);
+
   // configure post conditions
   const postConditions = [
     Pc.principal(args.daoActionProposalsExtensionContract)
@@ -129,12 +134,13 @@ async function main() {
     functionArgs: [
       Cl.principal(args.daoActionProposalsExtensionContract),
       Cl.uint(args.proposalId),
-      Cl.principal(proposalInfo.daoActionProposalContract || ""),
+      Cl.principal(proposalInfo.action),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Allow,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions: postConditions,
   };
 
   // broadcast transaction and return response

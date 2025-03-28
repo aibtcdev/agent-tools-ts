@@ -1,5 +1,6 @@
 import { ClarityValue } from "@stacks/transactions";
 import { StacksNetworkName } from "@stacks/network";
+import { replaceBigintWithString } from "../utilities";
 
 /**
  * Options for controlling cache behavior
@@ -73,7 +74,7 @@ export class ContractCallsClient {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(body, replaceBigintWithString, 2),
     });
 
     const result = (await response.json()) as {

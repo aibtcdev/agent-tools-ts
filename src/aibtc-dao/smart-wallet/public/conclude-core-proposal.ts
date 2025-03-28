@@ -11,6 +11,7 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
+  getCoreProposalInfo,
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
@@ -108,15 +109,15 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-  
+
   // get the proposal info from the contract
-  const proposalInfo = await getProposalInfo(
+  const proposalInfo = await getCoreProposalInfo(
     args.daoCoreProposalsExtensionContract,
     args.daoTokenContract,
     address,
     args.daoProposalContract
   );
-  
+
   // configure post conditions
   const postConditions = [
     Pc.principal(args.daoCoreProposalsExtensionContract)
@@ -138,7 +139,8 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Allow,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions: postConditions,
   };
 
   // broadcast transaction and return response
