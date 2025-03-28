@@ -11,6 +11,8 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
+  getAssetNameFromIdentifier,
+  getHiroTokenMetadata,
   getNetwork,
   getNextNonce,
   sendToLLM,
@@ -86,13 +88,18 @@ async function main() {
 
   try {
     // get token info from ft contract
-    const tokenInfo = await getSIP010Info(args.ftContract);
+    // const tokenInfo = await getSIP010Info(args.ftContract);
+
+    let assetName: string;
+    const tokenMetadata = await getHiroTokenMetadata(args.ftContract);
+    console.log(`tokenMetadata`, tokenMetadata);
+    assetName = getAssetNameFromIdentifier(tokenMetadata.asset_identifier);
 
     // Add post-conditions to ensure sender sends exact amount of FT
     const postConditions = [
       Pc.principal(address)
         .willSendEq(args.amount)
-        .ft(`${ftAddress}.${ftName}`, tokenInfo.symbol),
+        .ft(`${ftAddress}.${ftName}`, assetName),
     ];
 
     // prepare function arguments
@@ -108,8 +115,8 @@ async function main() {
       network: networkObj,
       nonce: nextPossibleNonce,
       senderKey: key,
-      postConditionMode: PostConditionMode.Allow,
-      //postConditions,
+      postConditionMode: PostConditionMode.Deny,
+      postConditions,
     };
 
     // broadcast transaction and return response
