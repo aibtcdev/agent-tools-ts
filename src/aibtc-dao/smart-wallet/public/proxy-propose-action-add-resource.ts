@@ -11,6 +11,7 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
+  getCurrentBondProposalAmount,
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
@@ -113,6 +114,7 @@ async function main() {
   // validate and store provided args
   const args = validateArgs();
   const [walletAddress, walletName] = args.smartWalletContract.split(".");
+  const [daoTokenAddress, daoTokenName] = args.daoTokenContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -121,6 +123,18 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  // get the proposal bond amount from the contract
+  const bondAmountInfo = await getCurrentBondProposalAmount(
+    args.daoActionProposalsExtensionContract,
+    args.daoTokenContract,
+    address
+  );
+  // configure post conditions
+  const postConditions = [
+    Pc.principal(args.smartWalletContract)
+      .willSendEq(bondAmountInfo.bond.toString())
+      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.assetName),
+  ];
   // configure contract call parameters
   const paramsCV = Cl.tuple({
     name: Cl.stringUtf8(args.resourceName),
@@ -143,7 +157,7 @@ async function main() {
     nonce: nextPossibleNonce,
     senderKey: key,
     postConditionMode: PostConditionMode.Deny,
-    postConditions: [],
+    postConditions: postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

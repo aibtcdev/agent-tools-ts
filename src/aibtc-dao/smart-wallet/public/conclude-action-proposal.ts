@@ -2,6 +2,7 @@ import {
   AnchorMode,
   Cl,
   makeContractCall,
+  Pc,
   PostConditionMode,
   SignedContractCallOptions,
 } from "@stacks/transactions";
@@ -10,6 +11,7 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
+  getCurrentBondProposalAmount,
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
@@ -17,16 +19,15 @@ import {
 } from "../../../utilities";
 
 const usage =
-  "Usage: bun run conclude-action-proposal.ts <smartWalletContract> <daoActionProposalsExtensionContract> <proposalId> <daoActionProposalContract> <daoTokenContract>";
+  "Usage: bun run conclude-action-proposal.ts <smartWalletContract> <daoActionProposalsExtensionContract> <daoTokenContract> <proposalId>";
 const usageExample =
-  "Example: bun run conclude-action-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-user-agent-smart-wallet ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token";
+  "Example: bun run conclude-action-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-user-agent-smart-wallet ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token 12";
 
 interface ExpectedArgs {
   smartWalletContract: string;
   daoActionProposalsExtensionContract: string;
-  proposalId: number;
-  daoActionProposalContract: string;
   daoTokenContract: string;
+  proposalId: number;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -34,16 +35,14 @@ function validateArgs(): ExpectedArgs {
   const [
     smartWalletContract,
     actionProposalsExtension,
-    proposalIdStr,
-    actionContract,
     tokenContract,
+    proposalIdStr,
   ] = process.argv.slice(2);
   const proposalId = parseInt(proposalIdStr);
   if (
     !smartWalletContract ||
     !actionProposalsExtension ||
     !proposalId ||
-    !actionContract ||
     !tokenContract
   ) {
     const errorMessage = [
@@ -71,14 +70,6 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  if (!isValidContractPrincipal(actionContract)) {
-    const errorMessage = [
-      `Invalid contract address: ${actionContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
   if (!isValidContractPrincipal(tokenContract)) {
     const errorMessage = [
       `Invalid contract address: ${tokenContract}`,
@@ -92,9 +83,8 @@ function validateArgs(): ExpectedArgs {
   return {
     smartWalletContract,
     daoActionProposalsExtensionContract: actionProposalsExtension,
-    proposalId,
-    daoActionProposalContract: actionContract,
     daoTokenContract: tokenContract,
+    proposalId,
   };
 }
 
@@ -104,6 +94,7 @@ async function main() {
   const args = validateArgs();
   const [smartWalletAddress, smartWalletName] =
     args.smartWalletContract.split(".");
+  const [daoTokenAddress, daoTokenName] = args.daoTokenContract.split(".");
 
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
@@ -113,6 +104,18 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  // get the proposal bond amount from the contract
+  const bondAmountInfo = await getCurrentBondProposalAmount(
+    args.daoActionProposalsExtensionContract,
+    args.daoTokenContract,
+    address
+  );
+  // configure post conditions
+  const postConditions = [
+    Pc.principal(args.daoActionProposalsExtensionContract)
+      .willSendEq(bondAmountInfo.bond.toString())
+      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.assetName),
+  ];
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {

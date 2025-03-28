@@ -394,6 +394,47 @@ type BondInfo = {
   assetName: string;
 };
 
+// helper to get the proposal info
+export async function getProposalInfo(
+  proposalsExtensionContract: string,
+  daoTokenContract: string,
+  sender: string,
+  proposalContract?: string,
+  proposalId?: number
+) {
+  // check that either the proposal name or proposal ID is provided
+  if (!proposalContract && !proposalId) {
+    throw new Error(
+      "Either proposal name or proposal ID must be provided to get proposal info."
+    );
+  }
+  // conslidate proposal value into one variable
+  const proposalCV = proposalContract
+    ? Cl.principal(proposalContract)
+    : proposalId
+    ? Cl.uint(proposalId)
+    : undefined;
+  if (!proposalCV) {
+    throw new Error("Failed to derive proposal value from provided arguments.");
+  }
+  // break contracts into parts
+  const [extensionAddress, extensionName] =
+    proposalsExtensionContract.split(".");
+  const [tokenAddress, tokenName] = daoTokenContract.split(".");
+  // get proposal info from the extension contract
+  // const proposalInfo = await getProposalInfo(proposalsExtensionContract, ); // TODO
+  // get asset name from contract ABI
+  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+  const assetName = await tokenInfoService.getAssetNameFromAbi(
+    daoTokenContract
+  );
+  if (!assetName) {
+    throw new Error(
+      `Could not determine asset name for token contract: ${daoTokenContract}`
+    );
+  }
+}
+
 export async function getBondFromActionProposal(
   proposalsExtensionContract: string,
   daoTokenContract: string,
