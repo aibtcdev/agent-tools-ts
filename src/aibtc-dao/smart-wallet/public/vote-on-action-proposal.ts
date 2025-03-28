@@ -13,6 +13,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../utilities";
 
@@ -52,12 +53,17 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [walletAddress, walletName] = smartWalletContract.split(".");
-  const [extensionAddress, extensionName] =
-    daoActionProposalsExtensionContract.split(".");
-  if (!walletAddress || !walletName || !extensionAddress || !extensionName) {
+  if (!isValidContractPrincipal(smartWalletContract)) {
     const errorMessage = [
-      `Invalid contract addresses: ${smartWalletContract} ${daoActionProposalsExtensionContract}`,
+      `Invalid contract address: ${smartWalletContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(daoActionProposalsExtensionContract)) {
+    const errorMessage = [
+      `Invalid contract address: ${daoActionProposalsExtensionContract}`,
       usage,
       usageExample,
     ].join("\n");
