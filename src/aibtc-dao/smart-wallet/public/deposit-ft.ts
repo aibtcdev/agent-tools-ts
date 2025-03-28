@@ -15,7 +15,6 @@ import {
   getNextNonce,
   sendToLLM,
 } from "../../../utilities";
-import { getSIP010Info } from "../../../cache-utils";
 import { ContractCallError } from "../../../api/contract-calls-client";
 import { TokenInfoService } from "../../../api/token-info-service";
 
