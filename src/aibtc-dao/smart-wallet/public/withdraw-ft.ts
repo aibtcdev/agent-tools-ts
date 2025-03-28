@@ -15,6 +15,8 @@ import {
   getNextNonce,
   sendToLLM,
 } from "../../../utilities";
+import { ContractCallError } from "../../../api/contract-calls-client";
+import { TokenInfoService } from "../../../api/token-info-service";
 
 const usage =
   "Usage: bun run withdraw-ft.ts <smartWalletContract> <ftContract> <amount>";
@@ -84,34 +86,56 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // Add post-conditions to ensure smart wallet sends exact amount of FT
-  const postConditions = [
-    Pc.principal(`${contractAddress}.${contractName}`)
-      .willSendEq(args.amount)
-      .ft(`${ftAddress}.${ftName}`, ftName),
-  ];
+  try {
+    // Get asset name from contract ABI
+    const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+    const assetName = await tokenInfoService.getAssetNameFromAbi(
+      args.ftContract
+    );
 
-  // prepare function arguments
-  const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
+    if (!assetName) {
+      throw new Error(
+        `Could not determine asset name for token contract: ${args.ftContract}`
+      );
+    }
 
-  // configure contract call options
-  const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
-    contractAddress,
-    contractName,
-    functionName: "withdraw-ft",
-    functionArgs,
-    network: networkObj,
-    nonce: nextPossibleNonce,
-    senderKey: key,
-    postConditionMode: PostConditionMode.Deny, // Ensures no other transfers are allowed
-    postConditions,
-  };
+    console.log(`Asset name from ABI: ${assetName}`);
 
-  // broadcast transaction and return response
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+    // Add post-conditions to ensure sender sends exact amount of FT
+    const postConditions = [
+      Pc.principal(address)
+        .willSendEq(args.amount)
+        .ft(`${ftAddress}.${ftName}`, assetName),
+    ];
+
+    // prepare function arguments
+    const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
+
+    // configure contract call options
+    const txOptions: SignedContractCallOptions = {
+      anchorMode: AnchorMode.Any,
+      contractAddress,
+      contractName,
+      functionName: "withdraw-ft",
+      functionArgs,
+      network: networkObj,
+      nonce: nextPossibleNonce,
+      senderKey: key,
+      postConditionMode: PostConditionMode.Deny, // Ensures no other transfers are allowed
+      postConditions,
+    };
+
+    // broadcast transaction and return response
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastTx(transaction, networkObj);
+    return broadcastResponse;
+  } catch (error) {
+    // Check if it's a ContractCallError
+    if (error instanceof ContractCallError) {
+      throw new Error(`Contract call failed: ${error.message} (${error.code})`);
+    }
+    throw error;
+  }
 }
 
 main()

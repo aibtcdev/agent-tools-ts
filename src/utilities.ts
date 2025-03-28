@@ -30,6 +30,7 @@ import {
   getContractName,
   getContractsBySubcategory,
 } from "./aibtc-dao/services/dao-contract-registry";
+import { TokenInfoService } from "./api/token-info-service";
 
 //////////////////////////////
 // GENERAL HELPERS
@@ -388,14 +389,27 @@ export function formatContractAddress(address: string): ContractAddress {
   return `${addr}.${name}` as ContractAddress;
 }
 
+type BondInfo = {
+  bond: BigInt;
+  assetName: string;
+};
+
 export async function getBondFromActionProposal(
   proposalsExtensionContract: string,
+  daoTokenContract: string,
   sender: string,
   proposalId: number
-) {
-  // get the token name from the contract name
-  // TODO: can query contract here in future
-  const tokenName = proposalsExtensionContract.split(".")[1].split("-")[0];
+): Promise<BondInfo> {
+  // Get asset name from contract ABI
+  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+  const assetName = await tokenInfoService.getAssetNameFromAbi(
+    daoTokenContract
+  );
+  if (!assetName) {
+    throw new Error(
+      `Could not determine asset name for token contract: ${daoTokenContract}`
+    );
+  }
   // get the proposal info from the contract
   const [extensionAddress, extensionName] =
     proposalsExtensionContract.split(".");
@@ -427,18 +441,26 @@ export async function getBondFromActionProposal(
   const bondAmount = BigInt(proposalData.bond);
   return {
     bond: bondAmount,
-    tokenName: tokenName,
+    assetName: assetName,
   };
 }
 
 export async function getBondFromCoreProposal(
   proposalsExtensionContract: string,
+  daoTokenContract: string,
   sender: string,
   proposalContract: string
-) {
-  // get the token name from the contract name
-  // TODO: can query contract here in future
-  const tokenName = proposalsExtensionContract.split(".")[1].split("-")[0];
+): Promise<BondInfo> {
+  // Get asset name from contract ABI
+  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+  const assetName = await tokenInfoService.getAssetNameFromAbi(
+    daoTokenContract
+  );
+  if (!assetName) {
+    throw new Error(
+      `Could not determine asset name for token contract: ${daoTokenContract}`
+    );
+  }
   // get the proposal info from the contract
   const [extensionAddress, extensionName] =
     proposalsExtensionContract.split(".");
@@ -470,21 +492,26 @@ export async function getBondFromCoreProposal(
   const bondAmount = BigInt(proposalData.bond);
   return {
     bond: bondAmount,
-    tokenName: tokenName,
+    assetName: assetName,
   };
 }
 
 // helper function to fetch the proposal bond amount from a core/action proposals voting contract
 export async function getCurrentBondProposalAmount(
   proposalsExtensionContract: string,
+  daoTokenContract: string,
   sender: string
-) {
-  // get the token name from the contract name
-  // TODO: can query contract here in future
-  const tokenName = proposalsExtensionContract
-    .split(".")[1]
-    .split("-")[0]
-    .toUpperCase();
+): Promise<BondInfo> {
+  // Get asset name from contract ABI
+  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+  const assetName = await tokenInfoService.getAssetNameFromAbi(
+    daoTokenContract
+  );
+  if (!assetName) {
+    throw new Error(
+      `Could not determine asset name for token contract: ${daoTokenContract}`
+    );
+  }
   // get the proposal bond amount from the contract
   const [extensionAddress, extensionName] =
     proposalsExtensionContract.split(".");
@@ -500,7 +527,7 @@ export async function getCurrentBondProposalAmount(
   //console.log("cvToValue(proposalBond)", cvToValue(proposalBond));
   return {
     bond: BigInt(cvToValue(proposalBond)),
-    tokenName: tokenName,
+    assetName: assetName,
   };
 }
 

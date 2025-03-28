@@ -103,8 +103,8 @@ async function main() {
   // configure post conditions
   const postConditions = [
     Pc.principal(address)
-      .willSendEq(bondAmountInfo.bond)
-      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.tokenName),
+      .willSendEq(bondAmountInfo.bond.toString())
+      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.assetName),
   ];
   // configure contract call parameters
   const paramsCV = Cl.uint(args.withdrawalPeriod);
