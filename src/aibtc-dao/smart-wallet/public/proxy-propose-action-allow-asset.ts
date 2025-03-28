@@ -12,6 +12,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../utilities";
 
@@ -52,25 +53,41 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [walletAddress, walletName] = smartWalletContract.split(".");
-  const [extensionAddress, extensionName] =
-    daoActionProposalsExtensionContract.split(".");
-  const [actionAddress, actionName] = daoActionProposalContract.split(".");
-  const [daoTokenAddress, daoTokenName] = daoTokenContract.split(".");
-  const [tokenAddress] = tokenContractAddress.split(".");
-  if (
-    !walletAddress ||
-    !walletName ||
-    !extensionAddress ||
-    !extensionName ||
-    !actionAddress ||
-    !actionName ||
-    !daoTokenAddress ||
-    !daoTokenName ||
-    !tokenAddress
-  ) {
+  if (!isValidContractPrincipal(smartWalletContract)) {
     const errorMessage = [
-      `Invalid contract addresses: ${smartWalletContract} ${daoActionProposalsExtensionContract} ${daoActionProposalContract} ${daoTokenContract} ${tokenContractAddress}`,
+      `Invalid contract address: ${smartWalletContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(daoActionProposalsExtensionContract)) {
+    const errorMessage = [
+      `Invalid contract address: ${daoActionProposalsExtensionContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(daoActionProposalContract)) {
+    const errorMessage = [
+      `Invalid contract address: ${daoActionProposalContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(daoTokenContract)) {
+    const errorMessage = [
+      `Invalid contract address: ${daoTokenContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(tokenContractAddress)) {
+    const errorMessage = [
+      `Invalid contract address: ${tokenContractAddress}`,
       usage,
       usageExample,
     ].join("\n");

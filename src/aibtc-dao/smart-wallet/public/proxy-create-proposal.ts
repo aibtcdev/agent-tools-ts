@@ -12,6 +12,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../utilities";
 
@@ -49,23 +50,33 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [walletAddress, walletName] = smartWalletContract.split(".");
-  const [extensionAddress, extensionName] =
-    daoCoreProposalsExtensionContract.split(".");
-  const [proposalAddress, proposalName] = daoProposalContract.split(".");
-  const [tokenAddress, tokenName] = daoTokenContract.split(".");
-  if (
-    !walletAddress ||
-    !walletName ||
-    !extensionAddress ||
-    !extensionName ||
-    !proposalAddress ||
-    !proposalName ||
-    !tokenAddress ||
-    !tokenName
-  ) {
+  if (!isValidContractPrincipal(smartWalletContract)) {
     const errorMessage = [
-      `Invalid contract addresses: ${smartWalletContract} ${daoCoreProposalsExtensionContract} ${daoProposalContract} ${daoTokenContract}`,
+      `Invalid contract address: ${smartWalletContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(daoCoreProposalsExtensionContract)) {
+    const errorMessage = [
+      `Invalid contract address: ${daoCoreProposalsExtensionContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(daoProposalContract)) {
+    const errorMessage = [
+      `Invalid contract address: ${daoProposalContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(daoTokenContract)) {
+    const errorMessage = [
+      `Invalid contract address: ${daoTokenContract}`,
       usage,
       usageExample,
     ].join("\n");
