@@ -133,6 +133,97 @@ export class ContractCallsClient {
       options
     );
   }
+
+  /**
+   * Fetch the ABI for a smart contract
+   * 
+   * @param contractAddress - The contract address
+   * @param contractName - The contract name
+   * @param options - Additional options including cache control
+   * @returns The contract ABI
+   */
+  async getContractAbi<T = any>(
+    contractAddress: string,
+    contractName: string,
+    options: {
+      cacheControl?: CacheControlOptions;
+    } = {}
+  ): Promise<T> {
+    const url = `${this.baseUrl}/contract-calls/abi/${contractAddress}/${contractName}`;
+
+    const queryParams = new URLSearchParams();
+    
+    // Add cache control options to query parameters if provided
+    const cacheControl = options.cacheControl || {};
+    if (cacheControl.bustCache) {
+      queryParams.append('bustCache', 'true');
+    }
+    if (cacheControl.skipCache) {
+      queryParams.append('skipCache', 'true');
+    }
+    if (cacheControl.ttl !== undefined) {
+      queryParams.append('ttl', cacheControl.ttl.toString());
+    }
+
+    // Add network to query parameters
+    queryParams.append('network', this.network);
+
+    // Append query parameters to URL if any exist
+    const queryString = queryParams.toString();
+    const requestUrl = queryString ? `${url}?${queryString}` : url;
+
+    const response = await fetch(requestUrl);
+
+    const result = (await response.json()) as {
+      success: boolean;
+      data?: T;
+      error?: {
+        code: string;
+        message: string;
+        details?: any;
+        id?: string;
+      };
+    };
+
+    if (result.success && result.data !== undefined) {
+      return result.data;
+    } else {
+      throw new ContractCallError(
+        result.error?.code || "UNKNOWN_ERROR",
+        result.error?.message || "Unknown error occurred",
+        result.error?.details,
+        result.error?.id
+      );
+    }
+  }
+
+  /**
+   * Fetch the ABI for a contract using a fully qualified contract ID
+   *
+   * @param contractId - The fully qualified contract ID (address.name)
+   * @param options - Additional options including cache control
+   * @returns The contract ABI
+   */
+  async getAbi<T = any>(
+    contractId: string,
+    options: {
+      cacheControl?: CacheControlOptions;
+    } = {}
+  ): Promise<T> {
+    const [contractAddress, contractName] = contractId.split(".");
+
+    if (!contractAddress || !contractName) {
+      throw new Error(
+        `Invalid contract ID: ${contractId}. Expected format: address.name`
+      );
+    }
+
+    return this.getContractAbi<T>(
+      contractAddress,
+      contractName,
+      options
+    );
+  }
 }
 
 /**
