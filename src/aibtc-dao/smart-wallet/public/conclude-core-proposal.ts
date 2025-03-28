@@ -1,8 +1,9 @@
 import {
   AnchorMode,
+  Cl,
   makeContractCall,
+  Pc,
   PostConditionMode,
-  principalCV,
   SignedContractCallOptions,
 } from "@stacks/transactions";
 import {
@@ -98,6 +99,7 @@ async function main() {
   const args = validateArgs();
   const [smartWalletAddress, smartWalletName] =
     args.smartWalletContract.split(".");
+  const [daoTokenAddress, daoTokenName] = args.daoTokenContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -106,6 +108,21 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  
+  // get the proposal info from the contract
+  const proposalInfo = await getProposalInfo(
+    args.daoCoreProposalsExtensionContract,
+    args.daoTokenContract,
+    address,
+    args.daoProposalContract
+  );
+  
+  // configure post conditions
+  const postConditions = [
+    Pc.principal(args.daoCoreProposalsExtensionContract)
+      .willSendEq(proposalInfo.bond.toString())
+      .ft(`${daoTokenAddress}.${daoTokenName}`, proposalInfo.assetName),
+  ];
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
@@ -114,8 +131,9 @@ async function main() {
     contractName: smartWalletName,
     functionName: "conclude-core-proposal",
     functionArgs: [
-      principalCV(args.daoCoreProposalsExtensionContract),
-      principalCV(args.daoProposalContract),
+      Cl.principal(args.daoCoreProposalsExtensionContract),
+      Cl.principal(args.daoProposalContract),
+      Cl.principal(args.daoTokenContract),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,

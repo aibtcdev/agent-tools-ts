@@ -104,17 +104,20 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-  // get the proposal bond amount from the contract
-  const bondAmountInfo = await getCurrentBondProposalAmount(
+  // get the proposal info from the contract
+  const proposalInfo = await getProposalInfo(
     args.daoActionProposalsExtensionContract,
     args.daoTokenContract,
-    address
+    address,
+    undefined,
+    args.proposalId
   );
+  
   // configure post conditions
   const postConditions = [
     Pc.principal(args.daoActionProposalsExtensionContract)
-      .willSendEq(bondAmountInfo.bond.toString())
-      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.assetName),
+      .willSendEq(proposalInfo.bond.toString())
+      .ft(`${daoTokenAddress}.${daoTokenName}`, proposalInfo.assetName),
   ];
 
   // configure contract call options
@@ -126,7 +129,7 @@ async function main() {
     functionArgs: [
       Cl.principal(args.daoActionProposalsExtensionContract),
       Cl.uint(args.proposalId),
-      Cl.principal(args.daoActionProposalContract),
+      Cl.principal(proposalInfo.daoActionProposalContract || ""),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,

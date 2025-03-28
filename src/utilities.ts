@@ -30,6 +30,7 @@ import {
   getContractName,
   getContractsBySubcategory,
 } from "./aibtc-dao/services/dao-contract-registry";
+import { ContractCallsClient } from "./api/contract-calls-client";
 import { TokenInfoService } from "./api/token-info-service";
 
 //////////////////////////////
@@ -401,29 +402,22 @@ export async function getProposalInfo(
   sender: string,
   proposalContract?: string,
   proposalId?: number
-) {
+): Promise<{
+  bond: BigInt;
+  assetName: string;
+  daoActionProposalContract?: string;
+  concluded: boolean;
+  passed: boolean;
+  executed: boolean;
+}> {
   // check that either the proposal name or proposal ID is provided
-  if (!proposalContract && !proposalId) {
+  if (!proposalContract && !proposalId === undefined) {
     throw new Error(
       "Either proposal name or proposal ID must be provided to get proposal info."
     );
   }
-  // conslidate proposal value into one variable
-  const proposalCV = proposalContract
-    ? Cl.principal(proposalContract)
-    : proposalId
-    ? Cl.uint(proposalId)
-    : undefined;
-  if (!proposalCV) {
-    throw new Error("Failed to derive proposal value from provided arguments.");
-  }
-  // break contracts into parts
-  const [extensionAddress, extensionName] =
-    proposalsExtensionContract.split(".");
-  const [tokenAddress, tokenName] = daoTokenContract.split(".");
-  // get proposal info from the extension contract
-  // const proposalInfo = await getProposalInfo(proposalsExtensionContract, ); // TODO
-  // get asset name from contract ABI
+  
+  // Get asset name from contract ABI
   const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
   const assetName = await tokenInfoService.getAssetNameFromAbi(
     daoTokenContract
@@ -432,6 +426,63 @@ export async function getProposalInfo(
     throw new Error(
       `Could not determine asset name for token contract: ${daoTokenContract}`
     );
+  }
+  
+  // Create a contract calls client to use the cache API
+  const client = new ContractCallsClient(CONFIG.NETWORK as StacksNetworkName);
+  
+  try {
+    // Determine if we're dealing with a core proposal or action proposal
+    const isActionProposal = proposalId !== undefined;
+    
+    // Get the proposal data using the appropriate method
+    let proposalData;
+    if (isActionProposal) {
+      // For action proposals, use the proposal ID
+      proposalData = await client.callContractFunction(
+        proposalsExtensionContract,
+        "get-proposal",
+        [Cl.uint(proposalId!)],
+        { senderAddress: sender }
+      );
+    } else {
+      // For core proposals, use the proposal contract
+      proposalData = await client.callContractFunction(
+        proposalsExtensionContract,
+        "get-proposal",
+        [Cl.principal(proposalContract!)],
+        { senderAddress: sender }
+      );
+    }
+    
+    if (!proposalData) {
+      throw new Error(
+        `Proposal ${proposalId || proposalContract} not found in extension ${proposalsExtensionContract}`
+      );
+    }
+    
+    // Extract the relevant data from the proposal
+    const bondAmount = BigInt(proposalData.bond);
+    const concluded = proposalData.concluded;
+    const passed = proposalData.passed;
+    const executed = proposalData.executed;
+    
+    // For action proposals, also get the action contract
+    const daoActionProposalContract = isActionProposal ? proposalData.action : undefined;
+    
+    return {
+      bond: bondAmount,
+      assetName,
+      daoActionProposalContract,
+      concluded,
+      passed,
+      executed
+    };
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to get proposal info: ${error.message}`);
+    }
+    throw error;
   }
 }
 
