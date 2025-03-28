@@ -19,6 +19,7 @@ import {
 } from "../../../utilities";
 import { getSIP010Info } from "../../../cache-utils";
 import { ContractCallError } from "../../../api/contract-calls-client";
+import { TokenInfoService } from "../../../api/token-info-service";
 
 const usage =
   "Usage: bun run deposit-ft.ts <smartWalletContract> <ftContract> <amount>";
@@ -87,13 +88,24 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   try {
-    // get token info from ft contract
-    // const tokenInfo = await getSIP010Info(args.ftContract);
-
-    let assetName: string;
-    const tokenMetadata = await getHiroTokenMetadata(args.ftContract);
-    console.log(`tokenMetadata`, tokenMetadata);
-    assetName = getAssetNameFromIdentifier(tokenMetadata.asset_identifier);
+    // Try to get asset name from contract ABI first
+    const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+    let assetName: string | undefined;
+    
+    try {
+      // First try to get the asset name from the contract ABI
+      assetName = await tokenInfoService.getAssetNameFromAbi(args.ftContract);
+      console.log(`Asset name from ABI: ${assetName}`);
+    } catch (error) {
+      console.log(`Could not get asset name from ABI: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    
+    // If we couldn't get the asset name from the ABI, fall back to the Hiro API
+    if (!assetName) {
+      const tokenMetadata = await getHiroTokenMetadata(args.ftContract);
+      console.log(`tokenMetadata`, tokenMetadata);
+      assetName = getAssetNameFromIdentifier(tokenMetadata.asset_identifier);
+    }
 
     // Add post-conditions to ensure sender sends exact amount of FT
     const postConditions = [

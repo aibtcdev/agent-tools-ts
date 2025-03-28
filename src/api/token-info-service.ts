@@ -19,6 +19,19 @@ export interface TokenInfo {
 }
 
 /**
+ * Contract ABI structure for fungible tokens
+ */
+export interface ContractAbi {
+  functions: any[];
+  variables: any[];
+  maps: any[];
+  fungible_tokens: Array<{ name: string }>;
+  non_fungible_tokens: any[];
+  epoch?: string;
+  clarity_version?: string;
+}
+
+/**
  * Service for retrieving information about tokens
  */
 export class TokenInfoService {
@@ -26,6 +39,38 @@ export class TokenInfoService {
 
   constructor(network: StacksNetworkName = "testnet") {
     this.client = new ContractCallsClient(network);
+  }
+
+  /**
+   * Get the asset name from a contract ABI
+   * 
+   * @param contractId - The fully qualified contract ID
+   * @param bustCache - Whether to bypass the cache
+   * @returns The asset name from the contract ABI
+   */
+  async getAssetNameFromAbi(
+    contractId: string,
+    bustCache: boolean = false
+  ): Promise<string | undefined> {
+    const [contractAddress, contractName] = contractId.split(".");
+    const network = getNetworkByPrincipal(contractAddress);
+
+    // Create a new client with the correct network if needed
+    if (network !== this.client.network) {
+      this.client = new ContractCallsClient(network);
+    }
+
+    // Get the contract ABI
+    const abi = await this.client.getAbi<ContractAbi>(contractId, {
+      cacheControl: { bustCache }
+    });
+
+    // Extract the fungible token name from the ABI
+    if (abi.fungible_tokens && abi.fungible_tokens.length > 0) {
+      return abi.fungible_tokens[0].name;
+    }
+
+    return undefined;
   }
 
   /**
