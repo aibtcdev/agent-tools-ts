@@ -11,8 +11,6 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getAssetNameFromIdentifier,
-  getHiroTokenMetadata,
   getNetwork,
   getNextNonce,
   sendToLLM,
@@ -88,24 +86,15 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   try {
-    // Try to get asset name from contract ABI first
+    // Get asset name from contract ABI
     const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
-    let assetName: string | undefined;
+    const assetName = await tokenInfoService.getAssetNameFromAbi(args.ftContract);
     
-    try {
-      // First try to get the asset name from the contract ABI
-      assetName = await tokenInfoService.getAssetNameFromAbi(args.ftContract);
-      console.log(`Asset name from ABI: ${assetName}`);
-    } catch (error) {
-      console.log(`Could not get asset name from ABI: ${error instanceof Error ? error.message : String(error)}`);
-    }
-    
-    // If we couldn't get the asset name from the ABI, fall back to the Hiro API
     if (!assetName) {
-      const tokenMetadata = await getHiroTokenMetadata(args.ftContract);
-      console.log(`tokenMetadata`, tokenMetadata);
-      assetName = getAssetNameFromIdentifier(tokenMetadata.asset_identifier);
+      throw new Error(`Could not determine asset name for token contract: ${args.ftContract}`);
     }
+    
+    console.log(`Asset name from ABI: ${assetName}`);
 
     // Add post-conditions to ensure sender sends exact amount of FT
     const postConditions = [
