@@ -136,7 +136,7 @@ export class ContractCallsClient {
 
   /**
    * Fetch the ABI for a smart contract
-   * 
+   *
    * @param contractAddress - The contract address
    * @param contractName - The contract name
    * @param options - Additional options including cache control
@@ -152,21 +152,21 @@ export class ContractCallsClient {
     const url = `${this.baseUrl}/contract-calls/abi/${contractAddress}/${contractName}`;
 
     const queryParams = new URLSearchParams();
-    
+
     // Add cache control options to query parameters if provided
     const cacheControl = options.cacheControl || {};
     if (cacheControl.bustCache) {
-      queryParams.append('bustCache', 'true');
+      queryParams.append("bustCache", "true");
     }
     if (cacheControl.skipCache) {
-      queryParams.append('skipCache', 'true');
+      queryParams.append("skipCache", "true");
     }
     if (cacheControl.ttl !== undefined) {
-      queryParams.append('ttl', cacheControl.ttl.toString());
+      queryParams.append("ttl", cacheControl.ttl.toString());
     }
 
     // Add network to query parameters
-    queryParams.append('network', this.network);
+    queryParams.append("network", this.network);
 
     // Append query parameters to URL if any exist
     const queryString = queryParams.toString();
@@ -218,11 +218,7 @@ export class ContractCallsClient {
       );
     }
 
-    return this.getContractAbi<T>(
-      contractAddress,
-      contractName,
-      options
-    );
+    return this.getContractAbi<T>(contractAddress, contractName, options);
   }
 }
 

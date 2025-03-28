@@ -88,12 +88,16 @@ async function main() {
   try {
     // Get asset name from contract ABI
     const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
-    const assetName = await tokenInfoService.getAssetNameFromAbi(args.ftContract);
-    
+    const assetName = await tokenInfoService.getAssetNameFromAbi(
+      args.ftContract
+    );
+
     if (!assetName) {
-      throw new Error(`Could not determine asset name for token contract: ${args.ftContract}`);
+      throw new Error(
+        `Could not determine asset name for token contract: ${args.ftContract}`
+      );
     }
-    
+
     console.log(`Asset name from ABI: ${assetName}`);
 
     // Add post-conditions to ensure sender sends exact amount of FT

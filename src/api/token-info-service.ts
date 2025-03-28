@@ -43,7 +43,7 @@ export class TokenInfoService {
 
   /**
    * Get the asset name from a contract ABI
-   * 
+   *
    * @param contractId - The fully qualified contract ID
    * @param bustCache - Whether to bypass the cache
    * @returns The asset name from the contract ABI
@@ -62,7 +62,7 @@ export class TokenInfoService {
 
     // Get the contract ABI
     const abi = await this.client.getAbi<ContractAbi>(contractId, {
-      cacheControl: { bustCache }
+      cacheControl: { bustCache },
     });
 
     // Extract the fungible token name from the ABI
