@@ -99,6 +99,7 @@ async function main() {
   // get the proposal bond amount from the contract
   const bondAmountInfo = await getCurrentBondProposalAmount(
     args.daoActionProposalsExtensionContract,
+    args.daoTokenContract,
     address
   );
   // configure post conditions
