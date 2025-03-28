@@ -13,6 +13,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../utilities";
 import { ContractCallError } from "../../../api/contract-calls-client";
@@ -42,20 +43,17 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [walletAddress, walletName] = smartWalletContract.split(".");
-  const [ftAddress, ftName] = ftContract.split(".");
-  if (!walletAddress || !walletName || !ftAddress || !ftName) {
+  if (!isValidContractPrincipal(smartWalletContract)) {
     const errorMessage = [
-      `Invalid contract addresses: ${smartWalletContract} ${ftContract}`,
+      `Invalid contract address: ${smartWalletContract}`,
       usage,
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
-  // verify amount is positive
-  if (amount <= 0) {
+  if (!isValidContractPrincipal(ftContract)) {
     const errorMessage = [
-      `Invalid amount: ${amount}. Amount must be positive.`,
+      `Invalid contract address: ${ftContract}`,
       usage,
       usageExample,
     ].join("\n");
