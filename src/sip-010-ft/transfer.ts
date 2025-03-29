@@ -1,22 +1,22 @@
 import {
   makeContractCall,
-  broadcastTransaction,
   AnchorMode,
-  FungibleConditionCode,
-  createAssetInfo,
-  makeStandardFungiblePostCondition,
   uintCV,
   standardPrincipalCV,
   noneCV,
+  Pc,
 } from "@stacks/transactions";
 import {
   CONFIG,
   getNetwork,
   deriveChildAccount,
   getNextNonce,
-  getHiroTokenMetadata,
-  getAssetNameFromIdentifier,
+  broadcastTx,
+  sendToLLM,
+  createErrorResponse,
 } from "../utilities";
+import { TokenInfoService } from "../api/token-info-service";
+import { ContractCallError } from "../api/contract-calls-client";
 
 async function transfer(
   contractAddress: string,
@@ -24,7 +24,7 @@ async function transfer(
   recipient: string,
   amount: number
 ) {
-  const network = getNetwork(CONFIG.NETWORK);
+  const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
@@ -35,46 +35,55 @@ async function transfer(
   // Get token metadata to extract asset name
   const contractId = `${contractAddress}.${contractName}`;
 
-  let assetName: string;
-  const tokenMetadata = await getHiroTokenMetadata(contractId);
-  assetName = getAssetNameFromIdentifier(tokenMetadata.asset_identifier);
+  try {
+    // Get asset name from contract ABI
+    const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+    const assetName = await tokenInfoService.getAssetNameFromAbi(contractId);
 
-  const postConditionAddress = address;
-  const postConditionCode = FungibleConditionCode.Equal;
-  const postConditionAmount = amount;
-  const assetInfo = createAssetInfo(contractAddress, contractName, assetName);
+    if (!assetName) {
+      throw new Error(
+        `Could not determine asset name for token contract: ${contractId}`
+      );
+    }
 
-  const postConditions = [
-    makeStandardFungiblePostCondition(
-      postConditionAddress,
-      postConditionCode,
-      postConditionAmount,
-      assetInfo
-    ),
-  ];
+    console.log(`Asset name from ABI: ${assetName}`);
 
-  const txOptions = {
-    contractAddress,
-    contractName,
-    functionName: "transfer",
-    functionArgs: [
-      uintCV(amount),
-      standardPrincipalCV(address),
-      standardPrincipalCV(recipient),
-      noneCV(),
-    ],
-    senderKey: key,
-    validateWithAbi: true,
-    network,
-    anchorMode: AnchorMode.Any,
-    postConditions,
-    nonce,
-  };
+    // Add post-conditions to ensure sender sends exact amount of FT
+    const postConditions = [
+      Pc.principal(address)
+        .willSendEq(amount)
+        .ft(`${contractAddress}.${contractName}`, assetName),
+    ];
 
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTransaction(transaction, network);
+    const txOptions = {
+      contractAddress,
+      contractName,
+      functionName: "transfer",
+      functionArgs: [
+        uintCV(amount),
+        standardPrincipalCV(address),
+        standardPrincipalCV(recipient),
+        noneCV(),
+      ],
+      senderKey: key,
+      validateWithAbi: true,
+      network: networkObj,
+      anchorMode: AnchorMode.Any,
+      postConditions,
+      nonce,
+    };
 
-  return broadcastResponse;
+    // broadcast transaction and return response
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastTx(transaction, networkObj);
+    return broadcastResponse;
+  } catch (error) {
+    // Check if it's a ContractCallError
+    if (error instanceof ContractCallError) {
+      throw new Error(`Contract call failed: ${error.message} (${error.code})`);
+    }
+    throw error;
+  }
 }
 
 const [contractAddress, contractName] = process.argv[2]?.split(".") || [];
@@ -83,8 +92,11 @@ const amount = process.argv[4] ? parseInt(process.argv[4]) : null;
 
 if (contractAddress && contractName && recipient && amount) {
   transfer(contractAddress, contractName, recipient, amount)
-    .then(console.log)
-    .catch(console.error);
+    .then(sendToLLM)
+    .catch((error) => {
+      sendToLLM(createErrorResponse(error));
+      process.exit(1);
+    });
 } else {
   console.error(
     "Please provide: contract_address.contract_name recipient amount"

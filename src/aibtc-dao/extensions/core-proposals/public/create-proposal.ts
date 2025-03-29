@@ -99,13 +99,14 @@ async function main() {
   // get the proposal bond amount from the contract
   const bondAmountInfo = await getCurrentBondProposalAmount(
     args.daoCoreProposalsExtensionContract,
+    args.daoTokenContract,
     address
   );
   // configure post conditions
   const postConditions = [
     Pc.principal(address)
-      .willSendEq(bondAmountInfo.bond)
-      .ft(`${tokenAddress}.${tokenName}`, bondAmountInfo.tokenName),
+      .willSendEq(bondAmountInfo.bond.toString())
+      .ft(`${tokenAddress}.${tokenName}`, bondAmountInfo.assetName),
   ];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {

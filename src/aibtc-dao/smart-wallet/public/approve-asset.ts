@@ -11,6 +11,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../utilities";
 
@@ -36,11 +37,17 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [walletAddress, walletName] = smartWalletContract.split(".");
-  const [assetAddress, assetName] = assetContract.split(".");
-  if (!walletAddress || !walletName || !assetAddress || !assetName) {
+  if (!isValidContractPrincipal(smartWalletContract)) {
     const errorMessage = [
-      `Invalid contract addresses: ${smartWalletContract} ${assetContract}`,
+      `Invalid wallet contract address: ${smartWalletContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(assetContract)) {
+    const errorMessage = [
+      `Invalid contract address: ${assetContract}`,
       usage,
       usageExample,
     ].join("\n");

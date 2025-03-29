@@ -87,7 +87,7 @@ bun run src/aibtc-dao/deploy-smart-wallet.ts ST3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKQ
 ```
 Usage: bun run get-configuration.ts <smartWalletContract>
 
-bun run src/aibtc-dao/smart-wallet/read-only/get-configuration.ts ST3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKQ3H2FSP.aibtc-smart-wallet-ST3ZA-H2FSP
+bun run src/aibtc-dao/smart-wallet/read-only/get-configuration.ts ST3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKQ3H2FSP.smart-wallet-ST3ZA-H2FSP
 ```
 
 ## Contract Interaction
