@@ -91,7 +91,6 @@ function validateArgs(): ExpectedArgs {
 
 // concludes an action proposal through a smart wallet
 async function main() {
-  console.log("Script starting");
   // validate and store provided args
   const args = validateArgs();
   const [smartWalletAddress, smartWalletName] =
@@ -106,7 +105,7 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-  console.log(`next nonce set: ${nextPossibleNonce}`);
+
   // get the proposal info from the contract
   const proposalInfo = await getActionProposalInfo(
     args.daoActionProposalsExtensionContract,
@@ -114,9 +113,6 @@ async function main() {
     address,
     args.proposalId
   );
-  console.log("fails before here?");
-  console.log("Proposal Info:");
-  console.log(proposalInfo, replaceBigintWithString, 2);
 
   // configure post conditions
   const postConditions = [

@@ -428,14 +428,12 @@ export async function getActionProposalInfo(
   // create a contract calls client to use the cache API
   const client = new ContractCallsClient(CONFIG.NETWORK);
   // get the proposal data from the contract
-  console.log("Getting proposal info for proposal ID:", proposalId);
   const proposalInfo = await client.callContractFunction(
     proposalsExtensionContract,
     "get-proposal",
     [Cl.uint(proposalId)],
     { senderAddress: sender }
   );
-  console.log("done with that!");
   // create a token info service to get the asset name
   const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
   const assetName = await tokenInfoService.getAssetNameFromAbi(
