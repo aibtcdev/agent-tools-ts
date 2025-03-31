@@ -13,8 +13,11 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../utilities";
+import { ContractCallError } from "../../../api/contract-calls-client";
+import { TokenInfoService } from "../../../api/token-info-service";
 
 const usage =
   "Usage: bun run deposit-ft.ts <smartWalletContract> <ftContract> <amount>";
@@ -40,20 +43,17 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [walletAddress, walletName] = smartWalletContract.split(".");
-  const [ftAddress, ftName] = ftContract.split(".");
-  if (!walletAddress || !walletName || !ftAddress || !ftName) {
+  if (!isValidContractPrincipal(smartWalletContract)) {
     const errorMessage = [
-      `Invalid contract addresses: ${smartWalletContract} ${ftContract}`,
+      `Invalid contract address: ${smartWalletContract}`,
       usage,
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
-  // verify amount is positive
-  if (amount <= 0) {
+  if (!isValidContractPrincipal(ftContract)) {
     const errorMessage = [
-      `Invalid amount: ${amount}. Amount must be positive.`,
+      `Invalid contract address: ${ftContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -72,7 +72,7 @@ async function main() {
   const args = validateArgs();
   const [contractAddress, contractName] = args.smartWalletContract.split(".");
   const [ftAddress, ftName] = args.ftContract.split(".");
-  
+
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -82,32 +82,56 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // Add post-conditions to ensure sender sends exact amount of FT
-  const postConditions = [
-    Pc.principal(address)
-      .willSendEq(args.amount)
-      .ft(`${ftAddress}.${ftName}`, "token")
-  ];
+  try {
+    // Get asset name from contract ABI
+    const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+    const assetName = await tokenInfoService.getAssetNameFromAbi(
+      args.ftContract
+    );
 
-  // prepare function arguments
-  const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
-  // configure contract call options
-  const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
-    contractAddress,
-    contractName,
-    functionName: "deposit-ft",
-    functionArgs,
-    network: networkObj,
-    nonce: nextPossibleNonce,
-    senderKey: key,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions,
-  };
-  // broadcast transaction and return response
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+    if (!assetName) {
+      throw new Error(
+        `Could not determine asset name for token contract: ${args.ftContract}`
+      );
+    }
+
+    console.log(`Asset name from ABI: ${assetName}`);
+
+    // Add post-conditions to ensure sender sends exact amount of FT
+    const postConditions = [
+      Pc.principal(address)
+        .willSendEq(args.amount)
+        .ft(`${ftAddress}.${ftName}`, assetName),
+    ];
+
+    // prepare function arguments
+    const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
+
+    // configure contract call options
+    const txOptions: SignedContractCallOptions = {
+      anchorMode: AnchorMode.Any,
+      contractAddress,
+      contractName,
+      functionName: "deposit-ft",
+      functionArgs,
+      network: networkObj,
+      nonce: nextPossibleNonce,
+      senderKey: key,
+      postConditionMode: PostConditionMode.Deny,
+      postConditions,
+    };
+
+    // broadcast transaction and return response
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastTx(transaction, networkObj);
+    return broadcastResponse;
+  } catch (error) {
+    // Check if it's a ContractCallError
+    if (error instanceof ContractCallError) {
+      throw new Error(`Contract call failed: ${error.message} (${error.code})`);
+    }
+    throw error;
+  }
 }
 
 main()

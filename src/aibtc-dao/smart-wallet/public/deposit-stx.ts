@@ -13,6 +13,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../utilities";
 
@@ -38,8 +39,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = smartWalletContract.split(".");
-  if (!contractAddress || !contractName) {
+  if (!isValidContractPrincipal(smartWalletContract)) {
     const errorMessage = [
       `Invalid contract address: ${smartWalletContract}`,
       usage,
@@ -77,11 +77,7 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Add post-conditions to ensure sender sends exact amount of STX
-  const postConditions = [
-    Pc.principal(address)
-      .willSendEq(args.amount)
-      .ustx()
-  ];
+  const postConditions = [Pc.principal(address).willSendEq(args.amount).ustx()];
 
   // prepare function arguments
   const functionArgs = [Cl.uint(args.amount)];

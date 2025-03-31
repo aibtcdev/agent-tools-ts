@@ -9,23 +9,22 @@ import {
 } from "../../utilities";
 
 const usage =
-  "Usage: bun run deploy-smart-wallet.ts <ownerAddress> <agentAddress> <daoTokenContract> <daoTokenDexContract>";
+  "Usage: bun run deploy-my-smart-wallet.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract>";
 const usageExample =
-  "Example: bun run deploy-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token-dex";
+  "Example: bun run deploy-my-smart-wallet.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token-dex";
 
 interface ExpectedArgs {
   ownerAddress: string;
-  agentAddress: string;
   daoTokenContract: string;
   daoTokenDexContract: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [ownerAddress, agentAddress, daoTokenContract, daoTokenDexContract] =
+  const [ownerAddress, daoTokenContract, daoTokenDexContract] =
     process.argv.slice(2);
 
-  if (!ownerAddress || !agentAddress || !daoTokenContract || !daoTokenDexContract) {
+  if (!ownerAddress || !daoTokenContract || !daoTokenDexContract) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -35,9 +34,9 @@ function validateArgs(): ExpectedArgs {
   }
 
   // verify addresses are valid
-  if (!validateStacksAddress(ownerAddress) || !validateStacksAddress(agentAddress)) {
+  if (!validateStacksAddress(ownerAddress)) {
     const errorMessage = [
-      `Invalid addresses: Owner=${ownerAddress}, Agent=${agentAddress}`,
+      `Invalid addresses: Owner=${ownerAddress}`,
       "Addresses must be valid Stacks addresses",
       usage,
       usageExample,
@@ -71,7 +70,6 @@ function validateArgs(): ExpectedArgs {
   // return validated arguments
   return {
     ownerAddress,
-    agentAddress,
     daoTokenContract,
     daoTokenDexContract,
   };
@@ -91,13 +89,12 @@ async function main() {
 
     console.log(`Deploying smart wallet from account: ${address}`);
     console.log(`Owner: ${args.ownerAddress}`);
-    console.log(`Agent: ${args.agentAddress}`);
 
     // Generate smart wallet contract
     const generator = new SmartWalletGenerator(CONFIG.NETWORK, address);
     const smartWallet = generator.generateSmartWallet({
       ownerAddress: args.ownerAddress,
-      agentAddress: args.agentAddress,
+      agentAddress: address, // Use the derived address as the agent
       daoTokenContract: args.daoTokenContract,
       daoTokenDexContract: args.daoTokenDexContract,
     });
@@ -123,7 +120,7 @@ async function main() {
           smartWalletAddress: deployedWallet.address,
           txId: deployedWallet.txId,
           owner: args.ownerAddress,
-          agent: args.agentAddress,
+          agent: address,
         },
       };
     } else {
