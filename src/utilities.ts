@@ -470,22 +470,19 @@ export async function getCoreProposalInfo(
   // create a contract calls client to use the cache API
   const client = new ContractCallsClient(CONFIG.NETWORK);
   // get the proposal data from the contract
-  console.log({
-    proposalsExtensionContract: proposalsExtensionContract,
-    daoTokenContract: daoTokenContract,
-    sender: sender,
-    proposalContract: proposalContract,
-    proposalContractCV: Cl.principal(proposalContract),
-  });
-
   const proposalInfo = await client.callContractFunction(
     proposalsExtensionContract,
     "get-proposal",
-    [Cl.principal(proposalContract)],
+    // [Cl.principal(proposalContract)],
+    // 2025-03-31 workaround for v6 vs v7 stacks.js
+    [
+      {
+        type: "principal",
+        value: proposalContract,
+      },
+    ],
     { senderAddress: sender }
   );
-  console.log("not getting here");
-  console.log(proposalInfo);
   // create a token info service to get the asset name
   const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
   const assetName = await tokenInfoService.getAssetNameFromAbi(

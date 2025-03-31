@@ -1,4 +1,3 @@
-import { ClarityValue } from "@stacks/transactions";
 import { StacksNetworkName } from "@stacks/network";
 import { replaceBigintWithString } from "../utilities";
 
@@ -54,14 +53,14 @@ export class ContractCallsClient {
     contractAddress: string,
     contractName: string,
     functionName: string,
-    functionArgs: ClarityValue[],
+    functionArgs: unknown[],
     options: {
       senderAddress?: string;
       cacheControl?: CacheControlOptions;
     } = {}
   ): Promise<T> {
     const url = `${this.baseUrl}/contract-calls/read-only/${contractAddress}/${contractName}/${functionName}`;
-    console.log(`url: ${url}`);
+
     const body = {
       functionArgs,
       network: this.network,
@@ -69,7 +68,6 @@ export class ContractCallsClient {
       cacheControl: options.cacheControl || {},
     };
 
-    console.log(`body: ${JSON.stringify(body, replaceBigintWithString, 2)}`);
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -116,13 +114,12 @@ export class ContractCallsClient {
   async callContractFunction<T = any>(
     contractId: string,
     functionName: string,
-    functionArgs: ClarityValue[],
+    functionArgs: unknown[],
     options: {
       senderAddress?: string;
       cacheControl?: CacheControlOptions;
     } = {}
   ): Promise<T> {
-    console.log(`contractId: ${contractId}`);
     const [contractAddress, contractName] = contractId.split(".");
 
     if (!contractAddress || !contractName) {

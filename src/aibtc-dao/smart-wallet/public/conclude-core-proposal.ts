@@ -110,7 +110,6 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  console.log("getting core proposal info");
   // get the proposal info from the contract
   const proposalInfo = await getCoreProposalInfo(
     args.daoCoreProposalsExtensionContract,
@@ -135,7 +134,6 @@ async function main() {
     functionArgs: [
       Cl.principal(args.daoCoreProposalsExtensionContract),
       Cl.principal(args.daoProposalContract),
-      Cl.principal(args.daoTokenContract),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,
