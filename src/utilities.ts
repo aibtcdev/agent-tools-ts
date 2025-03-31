@@ -231,11 +231,15 @@ export async function logBroadCastResult(
   }
 }
 
+type TxBroadcastResultWithLink = TxBroadcastResult & {
+  link?: string;
+};
+
 // helper that wraps broadcastTransaction from stacks/transactions
 export function broadcastTx(
   transaction: StacksTransaction,
   network: StacksNetwork
-): Promise<ToolResponse<TxBroadcastResult>> {
+): Promise<ToolResponse<TxBroadcastResultWithLink>> {
   return new Promise(async (resolve, reject) => {
     try {
       const broadcastResponse = await broadcastTransaction(
@@ -245,10 +249,17 @@ export function broadcastTx(
       // check that error property is not present
       // (since we can't instanceof the union type)
       if (!("error" in broadcastResponse)) {
-        const response: ToolResponse<TxBroadcastResult> = {
+        const explorerUrl = getExplorerUrl(
+          CONFIG.NETWORK,
+          broadcastResponse.txid
+        );
+        const response: ToolResponse<TxBroadcastResultWithLink> = {
           success: true,
           message: `Transaction broadcasted successfully: 0x${broadcastResponse.txid}`,
-          data: broadcastResponse,
+          data: {
+            ...broadcastResponse,
+            link: explorerUrl,
+          },
         };
         resolve(response);
       } else {
@@ -459,12 +470,22 @@ export async function getCoreProposalInfo(
   // create a contract calls client to use the cache API
   const client = new ContractCallsClient(CONFIG.NETWORK);
   // get the proposal data from the contract
+  console.log({
+    proposalsExtensionContract: proposalsExtensionContract,
+    daoTokenContract: daoTokenContract,
+    sender: sender,
+    proposalContract: proposalContract,
+    proposalContractCV: Cl.principal(proposalContract),
+  });
+
   const proposalInfo = await client.callContractFunction(
     proposalsExtensionContract,
     "get-proposal",
     [Cl.principal(proposalContract)],
     { senderAddress: sender }
   );
+  console.log("not getting here");
+  console.log(proposalInfo);
   // create a token info service to get the asset name
   const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
   const assetName = await tokenInfoService.getAssetNameFromAbi(
@@ -519,6 +540,15 @@ export async function getCurrentBondProposalAmount(
 //////////////////////////////
 // HIRO
 //////////////////////////////
+
+export function getExplorerUrl(network: string, txId: string) {
+  // check if txid starts with 0x
+  if (!txId.startsWith("0x")) {
+    txId = `0x${txId}`;
+  }
+  // return formatted url
+  return `https://explorer.hiro.so/txid/${txId}?chain=${network}`;
+}
 
 export function getApiUrl(network: string) {
   switch (network) {

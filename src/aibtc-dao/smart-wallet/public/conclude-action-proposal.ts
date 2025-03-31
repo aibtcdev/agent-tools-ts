@@ -15,7 +15,6 @@ import {
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
-  replaceBigintWithString,
   sendToLLM,
 } from "../../../utilities";
 

@@ -61,7 +61,7 @@ export class ContractCallsClient {
     } = {}
   ): Promise<T> {
     const url = `${this.baseUrl}/contract-calls/read-only/${contractAddress}/${contractName}/${functionName}`;
-
+    console.log(`url: ${url}`);
     const body = {
       functionArgs,
       network: this.network,
@@ -69,6 +69,7 @@ export class ContractCallsClient {
       cacheControl: options.cacheControl || {},
     };
 
+    console.log(`body: ${JSON.stringify(body, replaceBigintWithString, 2)}`);
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -91,6 +92,9 @@ export class ContractCallsClient {
     if (result.success && result.data !== undefined) {
       return result.data;
     } else {
+      console.log(
+        `result: ${JSON.stringify(result, replaceBigintWithString, 2)}`
+      );
       throw new ContractCallError(
         result.error?.code || "UNKNOWN_ERROR",
         result.error?.message || "Unknown error occurred",
@@ -118,6 +122,7 @@ export class ContractCallsClient {
       cacheControl?: CacheControlOptions;
     } = {}
   ): Promise<T> {
+    console.log(`contractId: ${contractId}`);
     const [contractAddress, contractName] = contractId.split(".");
 
     if (!contractAddress || !contractName) {
