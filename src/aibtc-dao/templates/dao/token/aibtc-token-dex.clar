@@ -1,7 +1,7 @@
 ;; 99af7ff63e5e4bd7542e55d88bacc25a7a6f79004f9937ea0bab3ca4c2438061
 ;; aibtc.dev DAO faktory.fun DEX @version 1.0
 
-  (impl-trait .aibtc-dao-traits-v2.faktory-dex) ;; <%= it.token_faktory_dex_trait %>
+  (impl-trait .aibtc-dao-traits-v3.faktory-dex) ;; <%= it.token_faktory_dex_trait %>
   (impl-trait .faktory-dex-trait-v1-1.dex-trait) ;; <%= it.faktory_dex_trait %>
   (use-trait faktory-token .faktory-trait-v1.sip-010-trait) ;; <%= it.faktory_sip10_trait %>
   

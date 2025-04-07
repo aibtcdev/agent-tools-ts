@@ -2,7 +2,7 @@
 ;; <%= it.token_symbol %> Powered By Faktory.fun v1.0 
 
 (impl-trait .faktory-trait-v1.sip-010-trait) ;; 'SP3XXMS38VTAWTVPE5682XSBFXPTH7XCPEBTX8AN2
-(impl-trait .aibtc-dao-traits-v2.token) ;; 'SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC
+(impl-trait .aibtc-dao-traits-v3.token) ;; 'SP29CK9990DQGE9RGTT1VEQTTYH8KY4E3JE5XP4EC
 
 (define-constant ERR-NOT-AUTHORIZED u401)
 (define-constant ERR-NOT-OWNER u402)
