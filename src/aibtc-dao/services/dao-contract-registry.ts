@@ -112,12 +112,8 @@ export function getContractsBySubcategory<C extends ContractCategory>(
   );
 }
 
-/**
- * Central registry for each contract in the DAO.
- * Clone this object to generate and deploy contracts.
- */
-export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
-  // token contracts
+// Token contracts
+const TOKEN_CONTRACTS: BaseContractRegistryEntry[] = [
   {
     name: "aibtc-pre-faktory",
     type: "TOKEN",
@@ -262,7 +258,10 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       { key: "dex_contract", category: "TOKEN", subcategory: "DEX" },
     ],
   },
-  // base dao
+];
+
+// Base DAO contracts
+const BASE_CONTRACTS: BaseContractRegistryEntry[] = [
   {
     name: "aibtc-base-dao",
     type: "BASE",
@@ -285,7 +284,10 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       },
     ],
   },
-  // dao extensions
+];
+
+// Extension contracts
+const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
   {
     name: "aibtc-action-proposals-v2",
     type: "EXTENSIONS",
@@ -576,7 +578,10 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       },
     ],
   },
-  // dao action extensions
+];
+
+// Action contracts
+const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
   {
     name: "aibtc-action-add-resource",
     type: "ACTIONS",
@@ -820,7 +825,10 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       },
     ],
   },
-  // proposals
+];
+
+// Proposal contracts
+const PROPOSAL_CONTRACTS: BaseContractRegistryEntry[] = [
   {
     name: "aibtc-base-bootstrap-initialization-v2",
     type: "PROPOSALS",
@@ -935,4 +943,16 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
       { key: "dao_manifest_inscription_id" },
     ],
   },
+];
+
+/**
+ * Central registry for each contract in the DAO.
+ * Clone this object to generate and deploy contracts.
+ */
+export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
+  ...TOKEN_CONTRACTS,
+  ...BASE_CONTRACTS,
+  ...EXTENSION_CONTRACTS,
+  ...ACTION_CONTRACTS,
+  ...PROPOSAL_CONTRACTS,
 ] as const;

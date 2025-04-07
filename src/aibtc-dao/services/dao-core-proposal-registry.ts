@@ -73,13 +73,8 @@ type DeployedContractInfo = {
 export type DeployedCoreProposalRegistryEntry =
   GeneratedCoreProposalRegistryEntry & DeployedContractInfo;
 
-/**
- * Central registry for each core proposal in the DAO.
- * Core proposals can access any protected functions within the DAO.
- * Clone this object to generate and deploy core proposals.
- */
-export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
-  // Action Proposals
+// Action Proposals
+const ACTION_PROPOSAL_CONFIGS: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-action-proposals-set-proposal-bond",
     friendlyName: "Action Proposals: Set Proposal Bond",
@@ -99,8 +94,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       },
     ],
   },
+];
 
-  // Base DAO Proposals
+// Base DAO Proposals
+const BASE_DAO_CONFIGS: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-base-add-new-extension",
     friendlyName: "Base DAO: Add New Extension",
@@ -204,8 +201,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       },
     ],
   },
+];
 
-  // Core Proposals
+// Core Proposals
+const CORE_PROPOSAL_CONFIGS: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-core-proposals-set-proposal-bond",
     friendlyName: "Core Proposals: Set Proposal Bond",
@@ -225,8 +224,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       },
     ],
   },
+];
 
-  // DAO Charter Proposals
+// DAO Charter Proposals
+const DAO_CHARTER_CONFIGS: BaseCoreProposalRegistryEntry[] = [
+
   {
     name: "aibtc-dao-charter-set-dao-charter",
     friendlyName: "DAO Charter: Set DAO Charter",
@@ -249,8 +251,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       },
     ],
   },
+];
 
-  // Messaging Proposals
+// Messaging Proposals
+const MESSAGING_CONFIGS: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-onchain-messaging-send",
     friendlyName: "Onchain Messaging: Send Message",
@@ -265,8 +269,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       },
     ],
   },
+];
 
-  // Payments & Invoices Proposals
+// Payments & Invoices Proposals
+const PAYMENTS_INVOICE_CONFIGS: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-payments-invoices-add-resource",
     friendlyName: "Payments & Invoices: Add Resource",
@@ -349,8 +355,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       },
     ],
   },
+];
 
-  // Timed Vault Proposals
+// Timed Vault Proposals
+const TIMED_VAULT_CONFIGS: BaseCoreProposalRegistryEntry[] = [
+
   {
     name: "aibtc-timed-vault-initialize-new-account",
     friendlyName: "Timed Vault: Initialize New Account",
@@ -484,8 +493,10 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       },
     ],
   },
+];
 
-  // Token Owner Proposals
+// Token Owner Proposals
+const TOKEN_OWNER_CONFIGS: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-token-owner-set-token-uri",
     friendlyName: "Token Owner: Set Token URI",
@@ -524,8 +535,11 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       },
     ],
   },
+];
 
-  // Treasury Proposals
+// Treasury Proposals
+const TREASURY_CONFIGS: BaseCoreProposalRegistryEntry[] = [
+
   {
     name: "aibtc-treasury-allow-asset",
     friendlyName: "Treasury: Allow Asset",
@@ -673,6 +687,23 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
       },
     ],
   },
+];
+
+/**
+ * Central registry for each core proposal in the DAO.
+ * Core proposals can access any protected functions within the DAO.
+ * Clone this object to generate and deploy core proposals.
+ */
+export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
+  ...ACTION_PROPOSAL_CONFIGS,
+  ...BASE_DAO_CONFIGS,
+  ...CORE_PROPOSAL_CONFIGS,
+  ...DAO_CHARTER_CONFIGS,
+  ...MESSAGING_CONFIGS,
+  ...PAYMENTS_INVOICE_CONFIGS,
+  ...TIMED_VAULT_CONFIGS,
+  ...TOKEN_OWNER_CONFIGS,
+  ...TREASURY_CONFIGS,
   // Bootstrap Initialization Proposal
   // left out here, covered in dao-generator.ts
 ] as const;
