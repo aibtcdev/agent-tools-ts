@@ -1,4 +1,4 @@
-;; title: aibtc-payments-invoices
+;; title: aibtc-payment-processor-stx
 ;; version: 1.0.0
 ;; summary: An extension that provides payment processing for DAO services.
 
@@ -13,9 +13,10 @@
 
 ;; initially scoped to service provider deploying a contract
 (define-constant SELF (as-contract tx-sender))
+(define-constant CFG_PAYMENT_TOKEN "STX")
 
 ;; errors
-(define-constant ERR_UNAUTHORIZED (err u5000))
+(define-constant ERR_NOT_DAO_OR_EXTENSION (err u5000))
 (define-constant ERR_INVALID_PARAMS (err u5001))
 (define-constant ERR_NAME_ALREADY_USED (err u5002))
 (define-constant ERR_SAVING_RESOURCE_DATA (err u5003))
@@ -120,7 +121,7 @@
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
     ;; check that new address differs from current address
-    (asserts! (not (is-eq newAddress (var-get paymentAddress))) ERR_UNAUTHORIZED)   
+    (asserts! (not (is-eq newAddress (var-get paymentAddress))) ERR_NOT_DAO_OR_EXTENSION)   
     ;; print details
     (print {
       notification: "set-payment-address",
@@ -189,10 +190,10 @@
       (resourceData (unwrap! (get-resource resourceIndex) ERR_RESOURCE_NOT_FOUND))
       (newStatus (not (get enabled resourceData)))
     )
-    ;; verify resource > 0
-    (asserts! (> resourceIndex u0) ERR_INVALID_PARAMS)
     ;; check if caller is authorized
     (try! (is-dao-or-extension))
+    ;; verify resource > 0
+    (asserts! (> resourceIndex u0) ERR_INVALID_PARAMS)
     ;; update ResourceData map
     (map-set ResourceData
       resourceIndex
@@ -289,7 +290,7 @@
         userData: (unwrap! (get-user-data userIndex) ERR_USER_NOT_FOUND)
       }
     })
-    ;; make transfer
+    ;; make transfer - STX requires different functions for with/without memo
     (if (is-some memo)
       (try! (stx-transfer-memo? (get price resourceData) contract-caller (var-get paymentAddress) (unwrap-panic memo)))
       (try! (stx-transfer? (get price resourceData) contract-caller (var-get paymentAddress)))
@@ -388,7 +389,9 @@
 ;; returns aggregate contract data
 (define-read-only (get-contract-data)
   {
+    contractAddress: SELF,
     paymentAddress: (get-payment-address),
+    paymentToken: CFG_PAYMENT_TOKEN,
     totalInvoices: (get-total-invoices),
     totalResources: (get-total-resources),
     totalRevenue: (get-total-revenue),
@@ -401,7 +404,7 @@
 
 (define-private (is-dao-or-extension)
   (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
-    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )
 

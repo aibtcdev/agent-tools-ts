@@ -26,7 +26,7 @@
     ;; set account holder if present
     (and (is-some optAccountHolder)
       (let ((accountHolder (unwrap! optAccountHolder ERR_INVALID_PARAMS)))
-        (try! (contract-call? .aibtc-timed-vault-dao set-account-holder accountHolder))
+        (try! (contract-call? '<%= timed_vault_dao %> set-account-holder accountHolder))
       )
     )
     ;; set amounts if present and within limits
@@ -34,7 +34,7 @@
       (let ((amount (unwrap! optAmount ERR_INVALID_PARAMS)))
         (asserts! (>= amount u100000000) ERR_INVALID_PARAMS)
         (asserts! (<= amount u1000000000000) ERR_INVALID_PARAMS)
-        (try! (contract-call? .aibtc-timed-vault-dao set-withdrawal-amount amount))
+        (try! (contract-call? '<%= timed_vault_dao %> set-withdrawal-amount amount))
       )
     )
     ;; set period if present and within limits
@@ -42,7 +42,7 @@
       (let ((period (unwrap! optPeriod ERR_INVALID_PARAMS)))
         (asserts! (>= period u6) ERR_INVALID_PARAMS)
         (asserts! (<= period u8064) ERR_INVALID_PARAMS)
-        (try! (contract-call? .aibtc-timed-vault-dao set-withdrawal-period period))
+        (try! (contract-call? '<%= timed_vault_dao %> set-withdrawal-period period))
       )
     )
     (ok true)
