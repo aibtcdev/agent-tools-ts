@@ -4,7 +4,7 @@
 (define-constant ERR_UNAUTHORIZED (err u10001))
 (define-constant ERR_INVALID_PARAMS (err u10002))
 
-(define-constant CFG_MESSAGE "Executed Action Proposal: Toggled resource status by name in the payments/invoices extension")
+(define-constant CFG_MESSAGE "Executed Action Proposal: Toggled resource status by name in the BTC payment processor extension")
 
 (define-public (callback (sender principal) (memo (buff 34))) (ok true))
 
