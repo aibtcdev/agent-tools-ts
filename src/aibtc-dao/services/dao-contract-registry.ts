@@ -347,30 +347,6 @@ const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     ],
   },
   {
-    name: "aibtc-timed-vault",
-    type: "EXTENSIONS",
-    subtype: "TIMED_VAULT",
-    deploymentOrder: 6,
-    templatePath: `extensions/aibtc-timed-vault.clar`,
-    requiredTraits: [
-      {
-        ref: "DAO_EXTENSION",
-        key: "extension_trait",
-      },
-      {
-        ref: "DAO_TIMED_VAULT",
-        key: "timed_vault_trait",
-      },
-    ],
-    requiredContractAddresses: [
-      {
-        key: "base_dao_contract",
-        category: "BASE",
-        subcategory: "DAO",
-      },
-    ],
-  },
-  {
     name: "aibtc-core-proposals-v2",
     type: "EXTENSIONS",
     subtype: "CORE_PROPOSALS",
@@ -479,11 +455,11 @@ const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     ],
   },
   {
-    name: "aibtc-payments-invoices",
+    name: "aibtc-payment-processor-dao",
     type: "EXTENSIONS",
-    subtype: "PAYMENTS",
+    subtype: "PAYMENTS_DAO",
     deploymentOrder: 10,
-    templatePath: `extensions/aibtc-payments-invoices.clar`,
+    templatePath: `extensions/aibtc-payment-processor-dao.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
@@ -508,6 +484,144 @@ const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
         key: "treasury_contract",
         category: "EXTENSIONS",
         subcategory: "TREASURY",
+      },
+    ],
+  },
+  {
+    name: "aibtc-payment-processor-sbtc",
+    type: "EXTENSIONS",
+    subtype: "PAYMENTS_SBTC",
+    deploymentOrder: 10,
+    templatePath: `extensions/aibtc-payment-processor-sbtc.clar`,
+    requiredTraits: [
+      {
+        ref: "DAO_EXTENSION",
+        key: "extension_trait",
+      },
+      {
+        ref: "DAO_INVOICES",
+        key: "invoices_trait",
+      },
+      {
+        ref: "DAO_RESOURCES",
+        key: "resources_trait",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+      {
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
+      },
+    ],
+  },
+  {
+    name: "aibtc-payment-processor-stx",
+    type: "EXTENSIONS",
+    subtype: "PAYMENTS_STX",
+    deploymentOrder: 10,
+    templatePath: `extensions/aibtc-payment-processor-stx.clar`,
+    requiredTraits: [
+      {
+        ref: "DAO_EXTENSION",
+        key: "extension_trait",
+      },
+      {
+        ref: "DAO_INVOICES",
+        key: "invoices_trait",
+      },
+      {
+        ref: "DAO_RESOURCES",
+        key: "resources_trait",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+      {
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-dao",
+    type: "EXTENSIONS",
+    subtype: "TIMED_VAULT_DAO",
+    deploymentOrder: 6,
+    templatePath: `extensions/aibtc-timed-vault-dao.clar`,
+    requiredTraits: [
+      {
+        ref: "DAO_EXTENSION",
+        key: "extension_trait",
+      },
+      {
+        ref: "DAO_TIMED_VAULT",
+        key: "timed_vault_trait",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-sbtc",
+    type: "EXTENSIONS",
+    subtype: "TIMED_VAULT_SBTC",
+    deploymentOrder: 6,
+    templatePath: `extensions/aibtc-timed-vault-sbtc.clar`,
+    requiredTraits: [
+      {
+        ref: "DAO_EXTENSION",
+        key: "extension_trait",
+      },
+      {
+        ref: "DAO_TIMED_VAULT",
+        key: "timed_vault_trait",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-stx",
+    type: "EXTENSIONS",
+    subtype: "TIMED_VAULT_STX",
+    deploymentOrder: 6,
+    templatePath: `extensions/aibtc-timed-vault-stx.clar`,
+    requiredTraits: [
+      {
+        ref: "DAO_EXTENSION",
+        key: "extension_trait",
+      },
+      {
+        ref: "DAO_TIMED_VAULT",
+        key: "timed_vault_trait",
+      },
+    ],
+    requiredContractAddresses: [
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
       },
     ],
   },
