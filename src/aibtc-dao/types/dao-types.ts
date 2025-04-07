@@ -111,7 +111,6 @@ type DaoTraits = {
   DAO_EXTENSION: string;
   DAO_ACTION: string;
   DAO_ACTION_PROPOSALS: string;
-  DAO_TIMED_VAULT: string;
   DAO_CHARTER: string;
   DAO_CORE_PROPOSALS: string;
   DAO_INVOICES: string;
@@ -120,6 +119,7 @@ type DaoTraits = {
   DAO_SMART_WALLET_BASE: string;
   DAO_SMART_WALLET_PROPOSALS: string;
   DAO_SMART_WALLET_FAKTORY: string;
+  DAO_TIMED_VAULT: string;
   DAO_TOKEN: string;
   DAO_TOKEN_DEX: string;
   DAO_TOKEN_OWNER: string;
