@@ -1112,11 +1112,6 @@ const PROPOSAL_CONTRACTS: BaseContractRegistryEntry[] = [
         subcategory: "ACTION_PROPOSALS",
       },
       {
-        key: "timed_vault_contract",
-        category: "EXTENSIONS",
-        subcategory: "TIMED_VAULT",
-      },
-      {
         key: "core_proposals_contract",
         category: "EXTENSIONS",
         subcategory: "CORE_PROPOSALS",
@@ -1132,9 +1127,34 @@ const PROPOSAL_CONTRACTS: BaseContractRegistryEntry[] = [
         subcategory: "MESSAGING",
       },
       {
-        key: "payments_contract",
+        key: "payments_dao_contract",
         category: "EXTENSIONS",
-        subcategory: "PAYMENTS",
+        subcategory: "PAYMENTS_DAO",
+      },
+      {
+        key: "payments_sbtc_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_SBTC",
+      },
+      {
+        key: "payments_stx_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_STX",
+      },
+      {
+        key: "timed_vault_dao_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_DAO",
+      },
+      {
+        key: "timed_vault_sbtc_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+      {
+        key: "timed_vault_stx_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
       },
       {
         key: "token_owner_contract",
@@ -1148,14 +1168,49 @@ const PROPOSAL_CONTRACTS: BaseContractRegistryEntry[] = [
       },
       // action extensions
       {
-        key: "action_add_resource_contract",
+        key: "action_configure_timed_vault_dao_contract",
         category: "ACTIONS",
-        subcategory: "PAYMENTS_INVOICES_ADD_RESOURCE",
+        subcategory: "CONFIGURE_TIMED_VAULT_DAO",
       },
       {
-        key: "action_allow_asset_contract",
+        key: "action_configure_timed_vault_sbtc_contract",
         category: "ACTIONS",
-        subcategory: "TREASURY_ALLOW_ASSET",
+        subcategory: "CONFIGURE_TIMED_VAULT_SBTC",
+      },
+      {
+        key: "action_configure_timed_vault_stx_contract",
+        category: "ACTIONS",
+        subcategory: "CONFIGURE_TIMED_VAULT_STX",
+      },
+      {
+        key: "action_pmt_dao_add_resource_contract",
+        category: "ACTIONS",
+        subcategory: "PMT_DAO_ADD_RESOURCE",
+      },
+      {
+        key: "action_pmt_dao_toggle_resource_contract",
+        category: "ACTIONS",
+        subcategory: "PMT_DAO_TOGGLE_RESOURCE",
+      },
+      {
+        key: "action_pmt_sbtc_add_resource_contract",
+        category: "ACTIONS",
+        subcategory: "PMT_SBTC_ADD_RESOURCE",
+      },
+      {
+        key: "action_pmt_sbtc_toggle_resource_contract",
+        category: "ACTIONS",
+        subcategory: "PMT_SBTC_TOGGLE_RESOURCE",
+      },
+      {
+        key: "action_pmt_stx_add_resource_contract",
+        category: "ACTIONS",
+        subcategory: "PMT_STX_ADD_RESOURCE",
+      },
+      {
+        key: "action_pmt_stx_toggle_resource_contract",
+        category: "ACTIONS",
+        subcategory: "PMT_STX_TOGGLE_RESOURCE",
       },
       {
         key: "action_send_message_contract",
@@ -1163,24 +1218,9 @@ const PROPOSAL_CONTRACTS: BaseContractRegistryEntry[] = [
         subcategory: "MESSAGING_SEND_MESSAGE",
       },
       {
-        key: "action_set_account_holder_contract",
+        key: "action_treasury_allow_asset_contract",
         category: "ACTIONS",
-        subcategory: "TIMED_VAULT_SET_ACCOUNT_HOLDER",
-      },
-      {
-        key: "action_set_withdrawal_amount_contract",
-        category: "ACTIONS",
-        subcategory: "TIMED_VAULT_SET_WITHDRAWAL_AMOUNT",
-      },
-      {
-        key: "action_set_withdrawal_period_contract",
-        category: "ACTIONS",
-        subcategory: "TIMED_VAULT_SET_WITHDRAWAL_PERIOD",
-      },
-      {
-        key: "action_toggle_resource_by_name_contract",
-        category: "ACTIONS",
-        subcategory: "PAYMENTS_INVOICES_TOGGLE_RESOURCE",
+        subcategory: "TREASURY_ALLOW_ASSET",
       },
     ],
     requiredRuntimeValues: [
