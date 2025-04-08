@@ -228,7 +228,6 @@ const CORE_PROPOSAL_CONFIGS: BaseCoreProposalRegistryEntry[] = [
 
 // DAO Charter Proposals
 const DAO_CHARTER_CONFIGS: BaseCoreProposalRegistryEntry[] = [
-
   {
     name: "aibtc-dao-charter-set-dao-charter",
     friendlyName: "DAO Charter: Set DAO Charter",
@@ -271,12 +270,11 @@ const MESSAGING_CONFIGS: BaseCoreProposalRegistryEntry[] = [
   },
 ];
 
-// Payments & Invoices Proposals
-const PAYMENTS_INVOICE_CONFIGS: BaseCoreProposalRegistryEntry[] = [
+const PAYMENT_PROCESSOR_CONFIGS: BaseCoreProposalRegistryEntry[] = [
   {
-    name: "aibtc-payments-invoices-add-resource",
-    friendlyName: "Payments & Invoices: Add Resource",
-    templatePath: "proposals/aibtc-payments-invoices-add-resource.clar",
+    name: "aibtc-pmt-dao-add-resource",
+    friendlyName: "Payment Processor (DAO): Add Resource",
+    templatePath: "proposals/aibtc-pmt-dao-add-resource.clar",
     requiredRuntimeValues: [
       { key: "resource_name" },
       { key: "resource_description" },
@@ -291,16 +289,16 @@ const PAYMENTS_INVOICE_CONFIGS: BaseCoreProposalRegistryEntry[] = [
         subcategory: "MESSAGING",
       },
       {
-        key: "payments_contract",
+        key: "payment_processor_dao_contract",
         category: "EXTENSIONS",
-        subcategory: "PAYMENTS",
+        subcategory: "PAYMENTS_DAO",
       },
     ],
   },
   {
-    name: "aibtc-payments-invoices-set-payment-address",
-    friendlyName: "Payments & Invoices: Set Payment Address",
-    templatePath: "proposals/aibtc-payments-invoices-set-payment-address.clar",
+    name: "aibtc-pmt-dao-set-payment-address",
+    friendlyName: "Payment Processor (DAO): Set Payment Address",
+    templatePath: "proposals/aibtc-pmt-dao-set-payment-address.clar",
     requiredRuntimeValues: [{ key: "payout_address" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -310,17 +308,16 @@ const PAYMENTS_INVOICE_CONFIGS: BaseCoreProposalRegistryEntry[] = [
         subcategory: "MESSAGING",
       },
       {
-        key: "payments_contract",
+        key: "payment_processor_dao_contract",
         category: "EXTENSIONS",
-        subcategory: "PAYMENTS",
+        subcategory: "PAYMENTS_DAO",
       },
     ],
   },
   {
-    name: "aibtc-payments-invoices-toggle-resource-by-name",
-    friendlyName: "Payments & Invoices: Toggle Resource By Name",
-    templatePath:
-      "proposals/aibtc-payments-invoices-toggle-resource-by-name.clar",
+    name: "aibtc-pmt-dao-toggle-resource-by-name",
+    friendlyName: "Payment Processor (DAO): Toggle Resource By Name",
+    templatePath: "proposals/aibtc-pmt-dao-toggle-resource-by-name.clar",
     requiredRuntimeValues: [{ key: "resource_name" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -330,16 +327,16 @@ const PAYMENTS_INVOICE_CONFIGS: BaseCoreProposalRegistryEntry[] = [
         subcategory: "MESSAGING",
       },
       {
-        key: "payments_contract",
+        key: "payment_processor_dao_contract",
         category: "EXTENSIONS",
-        subcategory: "PAYMENTS",
+        subcategory: "PAYMENTS_DAO",
       },
     ],
   },
   {
-    name: "aibtc-payments-invoices-toggle-resource",
-    friendlyName: "Payments & Invoices: Toggle Resource",
-    templatePath: "proposals/aibtc-payments-invoices-toggle-resource.clar",
+    name: "aibtc-pmt-dao-toggle-resource",
+    friendlyName: "Payment Processor (DAO): Toggle Resource",
+    templatePath: "proposals/aibtc-pmt-dao-toggle-resource.clar",
     requiredRuntimeValues: [{ key: "resource_index" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -349,9 +346,190 @@ const PAYMENTS_INVOICE_CONFIGS: BaseCoreProposalRegistryEntry[] = [
         subcategory: "MESSAGING",
       },
       {
-        key: "payments_contract",
+        key: "payment_processor_dao_contract",
         category: "EXTENSIONS",
-        subcategory: "PAYMENTS",
+        subcategory: "PAYMENTS_DAO",
+      },
+    ],
+  },
+  {
+    name: "aibtc-pmt-dao-toggle-resource",
+    friendlyName: "Payment Processor (DAO): Toggle Resource",
+    templatePath: "proposals/aibtc-pmt-dao-toggle-resource.clar",
+    requiredRuntimeValues: [{ key: "resource_index" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payment_processor_dao_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_DAO",
+      },
+    ],
+  },
+  {
+    name: "aibtc-pmt-sbtc-add-resource",
+    friendlyName: "Payment Processor (SBTC): Add Resource",
+    templatePath: "proposals/aibtc-pmt-sbtc-add-resource.clar",
+    requiredRuntimeValues: [
+      { key: "resource_name" },
+      { key: "resource_description" },
+      { key: "resource_amount" },
+      { key: "resource_url" },
+    ],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payment_processor_sbtc_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_SBTC",
+      },
+    ],
+  },
+  {
+    name: "aibtc-pmt-sbtc-set-payment-address",
+    friendlyName: "Payment Processor (SBTC): Set Payment Address",
+    templatePath: "proposals/aibtc-pmt-sbtc-set-payment-address.clar",
+    requiredRuntimeValues: [{ key: "payout_address" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payment_processor_sbtc_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_SBTC",
+      },
+    ],
+  },
+  {
+    name: "aibtc-pmt-sbtc-toggle-resource-by-name",
+    friendlyName: "Payment Processor (SBTC): Toggle Resource By Name",
+    templatePath: "proposals/aibtc-pmt-sbtc-toggle-resource-by-name.clar",
+    requiredRuntimeValues: [{ key: "resource_name" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payment_processor_sbtc_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_SBTC",
+      },
+    ],
+  },
+  {
+    name: "aibtc-pmt-sbtc-toggle-resource",
+    friendlyName: "Payment Processor (SBTC): Toggle Resource",
+    templatePath: "proposals/aibtc-pmt-sbtc-toggle-resource.clar",
+    requiredRuntimeValues: [{ key: "resource_index" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payment_processor_sbtc_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_SBTC",
+      },
+    ],
+  },
+  {
+    name: "aibtc-pmt-stx-add-resource",
+    friendlyName: "Payment Processor (STX): Add Resource",
+    templatePath: "proposals/aibtc-pmt-stx-add-resource.clar",
+    requiredRuntimeValues: [
+      { key: "resource_name" },
+      { key: "resource_description" },
+      { key: "resource_amount" },
+      { key: "resource_url" },
+    ],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payment_processor_stx_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_STX",
+      },
+    ],
+  },
+  {
+    name: "aibtc-pmt-stx-set-payment-address",
+    friendlyName: "Payment Processor (STX): Set Payment Address",
+    templatePath: "proposals/aibtc-pmt-stx-set-payment-address.clar",
+    requiredRuntimeValues: [{ key: "payout_address" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payment_processor_stx_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_STX",
+      },
+    ],
+  },
+  {
+    name: "aibtc-pmt-stx-toggle-resource-by-name",
+    friendlyName: "Payment Processor (STX): Toggle Resource By Name",
+    templatePath: "proposals/aibtc-pmt-stx-toggle-resource-by-name.clar",
+    requiredRuntimeValues: [{ key: "resource_name" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payment_processor_stx_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_STX",
+      },
+    ],
+  },
+  {
+    name: "aibtc-pmt-stx-toggle-resource",
+    friendlyName: "Payment Processor (STX): Toggle Resource",
+    templatePath: "proposals/aibtc-pmt-stx-toggle-resource.clar",
+    requiredRuntimeValues: [{ key: "resource_index" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "payment_processor_stx_contract",
+        category: "EXTENSIONS",
+        subcategory: "PAYMENTS_STX",
       },
     ],
   },
@@ -359,11 +537,10 @@ const PAYMENTS_INVOICE_CONFIGS: BaseCoreProposalRegistryEntry[] = [
 
 // Timed Vault Proposals
 const TIMED_VAULT_CONFIGS: BaseCoreProposalRegistryEntry[] = [
-
   {
-    name: "aibtc-timed-vault-initialize-new-account",
-    friendlyName: "Timed Vault: Initialize New Account",
-    templatePath: "proposals/aibtc-timed-vault-initialize-new-account.clar",
+    name: "aibtc-timed-vault-dao-initialize-new-account",
+    friendlyName: "Timed Vault (DAO): Initialize New Account",
+    templatePath: "proposals/aibtc-timed-vault-dao-initialize-new-account.clar",
     requiredRuntimeValues: [
       { key: "account_holder" },
       { key: "amount_to_fund_stx" },
@@ -379,7 +556,7 @@ const TIMED_VAULT_CONFIGS: BaseCoreProposalRegistryEntry[] = [
       {
         key: "timed_vault_contract",
         category: "EXTENSIONS",
-        subcategory: "TIMED_VAULT",
+        subcategory: "TIMED_VAULT_DAO",
       },
       {
         key: "base_dao_contract",
@@ -399,10 +576,10 @@ const TIMED_VAULT_CONFIGS: BaseCoreProposalRegistryEntry[] = [
     ],
   },
   {
-    name: "aibtc-timed-vault-override-last-withdrawal-block",
-    friendlyName: "Timed Vault: Override Last Withdrawal Block",
+    name: "aibtc-timed-vault-dao-override-last-withdrawal-block",
+    friendlyName: "Timed Vault (DAO): Override Last Withdrawal Block",
     templatePath:
-      "proposals/aibtc-timed-vault-override-last-withdrawal-block.clar",
+      "proposals/aibtc-timed-vault-dao-override-last-withdrawal-block.clar",
     requiredRuntimeValues: [{ key: "last_withdrawal_block" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -414,14 +591,14 @@ const TIMED_VAULT_CONFIGS: BaseCoreProposalRegistryEntry[] = [
       {
         key: "timed_vault_contract",
         category: "EXTENSIONS",
-        subcategory: "TIMED_VAULT",
+        subcategory: "TIMED_VAULT_DAO",
       },
     ],
   },
   {
-    name: "aibtc-timed-vault-set-account-holder",
-    friendlyName: "Timed Vault: Set Account Holder",
-    templatePath: "proposals/aibtc-timed-vault-set-account-holder.clar",
+    name: "aibtc-timed-vault-dao-set-account-holder",
+    friendlyName: "Timed Vault (DAO): Set Account Holder",
+    templatePath: "proposals/aibtc-timed-dao-vault-set-account-holder.clar",
     requiredRuntimeValues: [{ key: "account_holder" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -433,14 +610,14 @@ const TIMED_VAULT_CONFIGS: BaseCoreProposalRegistryEntry[] = [
       {
         key: "timed_vault_contract",
         category: "EXTENSIONS",
-        subcategory: "TIMED_VAULT",
+        subcategory: "TIMED_VAULT_DAO",
       },
     ],
   },
   {
-    name: "aibtc-timed-vault-set-withdrawal-amount",
-    friendlyName: "Timed Vault: Set Withdrawal Amount",
-    templatePath: "proposals/aibtc-timed-vault-set-withdrawal-amount.clar",
+    name: "aibtc-timed-vault-dao-set-withdrawal-amount",
+    friendlyName: "Timed Vault (DAO): Set Withdrawal Amount",
+    templatePath: "proposals/aibtc-timed-vault-dao-set-withdrawal-amount.clar",
     requiredRuntimeValues: [{ key: "withdrawal_amount" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -452,14 +629,14 @@ const TIMED_VAULT_CONFIGS: BaseCoreProposalRegistryEntry[] = [
       {
         key: "timed_vault_contract",
         category: "EXTENSIONS",
-        subcategory: "TIMED_VAULT",
+        subcategory: "TIMED_VAULT_DAO",
       },
     ],
   },
   {
-    name: "aibtc-timed-vault-set-withdrawal-period",
-    friendlyName: "Timed Vault: Set Withdrawal Period",
-    templatePath: "proposals/aibtc-timed-vault-set-withdrawal-period.clar",
+    name: "aibtc-timed-vault-dao-set-withdrawal-period",
+    friendlyName: "Timed Vault (DAO): Set Withdrawal Period",
+    templatePath: "proposals/aibtc-timed-vault-dao-set-withdrawal-period.clar",
     requiredRuntimeValues: [{ key: "withdrawal_period" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -471,14 +648,14 @@ const TIMED_VAULT_CONFIGS: BaseCoreProposalRegistryEntry[] = [
       {
         key: "timed_vault_contract",
         category: "EXTENSIONS",
-        subcategory: "TIMED_VAULT",
+        subcategory: "TIMED_VAULT_DAO",
       },
     ],
   },
   {
-    name: "aibtc-timed-vault-withdraw-stx",
-    friendlyName: "Timed Vault: Withdraw STX",
-    templatePath: "proposals/aibtc-timed-vault-withdraw-stx.clar",
+    name: "aibtc-timed-vault-dao-withdraw",
+    friendlyName: "Timed Vault (DAO): Withdraw",
+    templatePath: "proposals/aibtc-timed-vault-dao-withdraw.clar",
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
       {
@@ -489,7 +666,274 @@ const TIMED_VAULT_CONFIGS: BaseCoreProposalRegistryEntry[] = [
       {
         key: "timed_vault_contract",
         category: "EXTENSIONS",
-        subcategory: "TIMED_VAULT",
+        subcategory: "TIMED_VAULT_DAO",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-sbtc-initialize-new-account",
+    friendlyName: "Timed Vault (SBTC): Initialize New Account",
+    templatePath:
+      "proposals/aibtc-timed-vault-sbtc-initialize-new-account.clar",
+    requiredRuntimeValues: [
+      { key: "account_holder" },
+      { key: "amount_to_fund_stx" },
+      { key: "amount_to_fund_ft" },
+    ],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+      {
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
+      },
+      {
+        key: "token_contract",
+        category: "TOKEN",
+        subcategory: "DAO",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-sbtc-override-last-withdrawal-block",
+    friendlyName: "Timed Vault (SBTC): Override Last Withdrawal Block",
+    templatePath:
+      "proposals/aibtc-timed-vault-sbtc-override-last-withdrawal-block.clar",
+    requiredRuntimeValues: [{ key: "last_withdrawal_block" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-sbtc-set-account-holder",
+    friendlyName: "Timed Vault (SBTC): Set Account Holder",
+    templatePath: "proposals/aibtc-timed-vault-sbtc-set-account-holder.clar",
+    requiredRuntimeValues: [{ key: "account_holder" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-sbtc-set-withdrawal-amount",
+    friendlyName: "Timed Vault (SBTC): Set Withdrawal Amount",
+    templatePath: "proposals/aibtc-timed-vault-sbtc-set-withdrawal-amount.clar",
+    requiredRuntimeValues: [{ key: "withdrawal_amount" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-sbtc-set-withdrawal-period",
+    friendlyName: "Timed Vault (SBTC): Set Withdrawal Period",
+    templatePath: "proposals/aibtc-timed-vault-sbtc-set-withdrawal-period.clar",
+    requiredRuntimeValues: [{ key: "withdrawal_period" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-sbtc-withdraw",
+    friendlyName: "Timed Vault (SBTC): Withdraw",
+    templatePath: "proposals/aibtc-timed-vault-sbtc-withdraw.clar",
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+    ],
+  },
+  {
+    name: " aibtc-timed-vault-stx-initialize-new-account",
+    friendlyName: "Timed Vault (STX): Initialize New Account",
+    templatePath: "proposals/aibtc-timed-vault-stx-initialize-new-account.clar",
+    requiredRuntimeValues: [
+      { key: "account_holder" },
+      { key: "amount_to_fund_stx" },
+      { key: "amount_to_fund_ft" },
+    ],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+      {
+        key: "base_dao_contract",
+        category: "BASE",
+        subcategory: "DAO",
+      },
+      {
+        key: "treasury_contract",
+        category: "EXTENSIONS",
+        subcategory: "TREASURY",
+      },
+      {
+        key: "token_contract",
+        category: "TOKEN",
+        subcategory: "DAO",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-stx-override-last-withdrawal-block",
+    friendlyName: "Timed Vault (STX): Override Last Withdrawal Block",
+    templatePath:
+      "proposals/aibtc-timed-vault-stx-override-last-withdrawal-block.clar",
+    requiredRuntimeValues: [{ key: "last_withdrawal_block" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-stx-set-account-holder",
+    friendlyName: "Timed Vault (STX): Set Account Holder",
+    templatePath: "proposals/aibtc-timed-vault-stx-set-account-holder.clar",
+    requiredRuntimeValues: [{ key: "account_holder" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-stx-set-withdrawal-amount",
+    friendlyName: "Timed Vault (STX): Set Withdrawal Amount",
+    templatePath: "proposals/aibtc-timed-vault-stx-set-withdrawal-amount.clar",
+    requiredRuntimeValues: [{ key: "withdrawal_amount" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+    ],
+  },
+  {
+    name: "aibtc-timed-vault-stx-set-withdrawal-period",
+    friendlyName: "Timed Vault (STX): Set Withdrawal Period",
+    templatePath: "proposals/aibtc-timed-vault-stx-set-withdrawal-period.clar",
+    requiredRuntimeValues: [{ key: "withdrawal_period" }],
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+    ],
+  },
+  {
+    name: " aibtc-timed-vault-stx-withdraw",
+    friendlyName: " Timed Vault (STX): Withdraw",
+    templatePath: " proposals/aibtc-timed-vault-stx-withdraw.clar",
+    requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
+    requiredContractAddresses: [
+      {
+        key: "message_contract",
+        category: "EXTENSIONS",
+        subcategory: "MESSAGING",
+      },
+      {
+        key: "timed_vault_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
       },
     ],
   },
@@ -539,7 +983,6 @@ const TOKEN_OWNER_CONFIGS: BaseCoreProposalRegistryEntry[] = [
 
 // Treasury Proposals
 const TREASURY_CONFIGS: BaseCoreProposalRegistryEntry[] = [
-
   {
     name: "aibtc-treasury-allow-asset",
     friendlyName: "Treasury: Allow Asset",
@@ -700,10 +1143,9 @@ export const CORE_PROPOSAL_REGISTRY: BaseCoreProposalRegistryEntry[] = [
   ...CORE_PROPOSAL_CONFIGS,
   ...DAO_CHARTER_CONFIGS,
   ...MESSAGING_CONFIGS,
-  ...PAYMENTS_INVOICE_CONFIGS,
+  ...PAYMENT_PROCESSOR_CONFIGS,
   ...TIMED_VAULT_CONFIGS,
   ...TOKEN_OWNER_CONFIGS,
   ...TREASURY_CONFIGS,
-  // Bootstrap Initialization Proposal
-  // left out here, covered in dao-generator.ts
+  // Bootstrap Initialization Proposal: left out here, covered in dao-generator.ts
 ] as const;
