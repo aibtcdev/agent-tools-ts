@@ -8,6 +8,7 @@ import {
 import { TOKEN_CONTRACTS } from "./dao-contract-registry/token";
 import { EXTENSION_CONTRACTS } from "./dao-contract-registry/extensions";
 import { ACTION_CONTRACTS } from "./dao-contract-registry/actions";
+import { DEPLOYMENT_ORDER, visualizeDeploymentOrder, validateDeploymentOrder } from "./deployment-order";
 
 // base contract info that persists through all stages
 type BaseContractInfo = {
@@ -121,7 +122,7 @@ const BASE_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-base-dao",
     type: "BASE",
     subtype: "DAO",
-    deploymentOrder: 4,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-base-dao"],
     clarityVersion: 3,
     templatePath: `aibtc-base-dao.clar`,
     requiredTraits: [
@@ -147,7 +148,7 @@ const BOOTSTRAP_PROPOSAL: BaseContractRegistryEntry[] = [
     name: "aibtc-base-bootstrap-initialization-v2",
     type: "PROPOSALS",
     subtype: "BOOTSTRAP_INIT",
-    deploymentOrder: 20,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-base-bootstrap-initialization-v2"],
     templatePath: `proposals/aibtc-base-bootstrap-initialization-v2.clar`,
     requiredTraits: [
       {
@@ -310,3 +311,18 @@ export const CONTRACT_REGISTRY: BaseContractRegistryEntry[] = [
   ...EXTENSION_CONTRACTS,
   ...ACTION_CONTRACTS,
 ] as const;
+
+/**
+ * Visualize the deployment order of all contracts in the registry
+ */
+export function visualizeContractDeploymentOrder() {
+  visualizeDeploymentOrder(CONTRACT_REGISTRY);
+}
+
+/**
+ * Validate that the deployment order respects all dependencies
+ * @returns Array of error messages, empty if no issues found
+ */
+export function validateContractDeploymentOrder() {
+  return validateDeploymentOrder(CONTRACT_REGISTRY);
+}

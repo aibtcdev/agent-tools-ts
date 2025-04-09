@@ -1,4 +1,5 @@
 import { BaseContractRegistryEntry } from "../dao-contract-registry";
+import { DEPLOYMENT_ORDER } from "../deployment-order";
 
 // Action contracts
 export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
@@ -6,7 +7,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-configure-timed-vault-dao",
     type: "ACTIONS",
     subtype: "CONFIGURE_TIMED_VAULT_DAO",
-    deploymentOrder: 15,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-configure-timed-vault-dao"],
     templatePath: `extensions/actions/aibtc-action-configure-timed-vault-dao.clar`,
     requiredTraits: [
       {
@@ -40,7 +41,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-configure-timed-vault-sbtc",
     type: "ACTIONS",
     subtype: "CONFIGURE_TIMED_VAULT_SBTC",
-    deploymentOrder: 15,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-configure-timed-vault-sbtc"],
     templatePath: `extensions/actions/aibtc-action-configure-timed-vault-sbtc.clar`,
     requiredTraits: [
       {
@@ -74,7 +75,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-configure-timed-vault-stx",
     type: "ACTIONS",
     subtype: "CONFIGURE_TIMED_VAULT_STX",
-    deploymentOrder: 15,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-configure-timed-vault-stx"],
     templatePath: `extensions/actions/aibtc-action-configure-timed-vault-stx.clar`,
     requiredTraits: [
       {
@@ -108,7 +109,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-pmt-dao-add-resource",
     type: "ACTIONS",
     subtype: "PMT_DAO_ADD_RESOURCE",
-    deploymentOrder: 13,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-pmt-dao-add-resource"],
     templatePath: `extensions/actions/aibtc-action-pmt-dao-add-resource.clar`,
     requiredTraits: [
       {
@@ -142,7 +143,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-pmt-dao-toggle-resource",
     type: "ACTIONS",
     subtype: "PMT_DAO_TOGGLE_RESOURCE",
-    deploymentOrder: 13,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-pmt-dao-toggle-resource"],
     templatePath: `extensions/actions/aibtc-action-pmt-dao-toggle-resource.clar`,
     requiredTraits: [
       {
@@ -176,7 +177,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-pmt-sbtc-add-resource",
     type: "ACTIONS",
     subtype: "PMT_SBTC_ADD_RESOURCE",
-    deploymentOrder: 13,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-pmt-sbtc-add-resource"],
     templatePath: `extensions/actions/aibtc-action-pmt-sbtc-add-resource.clar`,
     requiredTraits: [
       {
@@ -210,7 +211,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-pmt-sbtc-toggle-resource",
     type: "ACTIONS",
     subtype: "PMT_SBTC_TOGGLE_RESOURCE",
-    deploymentOrder: 13,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-pmt-sbtc-toggle-resource"],
     templatePath: `extensions/actions/aibtc-action-pmt-sbtc-toggle-resource.clar`,
     requiredTraits: [
       {
@@ -244,7 +245,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-pmt-stx-add-resource",
     type: "ACTIONS",
     subtype: "PMT_STX_ADD_RESOURCE",
-    deploymentOrder: 13,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-pmt-stx-add-resource"],
     templatePath: `extensions/actions/aibtc-action-pmt-stx-add-resource.clar`,
     requiredTraits: [
       {
@@ -278,7 +279,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-pmt-stx-toggle-resource",
     type: "ACTIONS",
     subtype: "PMT_STX_TOGGLE_RESOURCE",
-    deploymentOrder: 13,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-pmt-stx-toggle-resource"],
     templatePath: `extensions/actions/aibtc-action-pmt-stx-toggle-resource.clar`,
     requiredTraits: [
       {
@@ -312,7 +313,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-send-message",
     type: "ACTIONS",
     subtype: "MESSAGING_SEND_MESSAGE",
-    deploymentOrder: 15,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-send-message"],
     templatePath: `extensions/actions/aibtc-action-send-message.clar`,
     requiredTraits: [
       {
@@ -341,7 +342,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-treasury-allow-asset",
     type: "ACTIONS",
     subtype: "TREASURY_ALLOW_ASSET",
-    deploymentOrder: 14,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-treasury-allow-asset"],
     templatePath: `extensions/actions/aibtc-action-treasury-allow-asset.clar`,
     requiredTraits: [
       {

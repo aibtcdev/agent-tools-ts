@@ -1,4 +1,5 @@
 import { BaseContractRegistryEntry } from "../dao-contract-registry";
+import { DEPLOYMENT_ORDER } from "../deployment-order";
 
 // Token contracts
 export const TOKEN_CONTRACTS: BaseContractRegistryEntry[] = [
@@ -6,14 +7,14 @@ export const TOKEN_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-pre-faktory",
     type: "TOKEN",
     subtype: "PRELAUNCH",
-    deploymentOrder: 0,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-pre-faktory"],
     templatePath: `token/aibtc-pre-dex.clar`,
   },
   {
     name: "aibtc-faktory",
     type: "TOKEN",
     subtype: "DAO",
-    deploymentOrder: 1,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-faktory"],
     templatePath: `token/aibtc-token.clar`,
     requiredTraits: [
       {
@@ -32,7 +33,7 @@ export const TOKEN_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-faktory-dex",
     type: "TOKEN",
     subtype: "DEX",
-    deploymentOrder: 3,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-faktory-dex"],
     templatePath: `token/aibtc-token-dex.clar`,
     requiredTraits: [
       {
@@ -90,7 +91,7 @@ export const TOKEN_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "xyk-pool-sbtc-aibtc-v-1-1",
     type: "TOKEN",
     subtype: "POOL",
-    deploymentOrder: 2,
+    deploymentOrder: DEPLOYMENT_ORDER["xyk-pool-sbtc-aibtc-v-1-1"],
     templatePath: `token/aibtc-bitflow-pool.clar`,
     requiredTraits: [
       {
@@ -120,7 +121,7 @@ export const TOKEN_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "xyk-pool-stx-aibtc-v-1-1",
     type: "TOKEN",
     subtype: "POOL_STX",
-    deploymentOrder: 2,
+    deploymentOrder: DEPLOYMENT_ORDER["xyk-pool-stx-aibtc-v-1-1"],
     templatePath: `token/aibtc-bitflow-pool.clar`,
     requiredTraits: [
       {

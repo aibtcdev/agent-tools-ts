@@ -1,4 +1,5 @@
 import { BaseContractRegistryEntry } from "../dao-contract-registry";
+import { DEPLOYMENT_ORDER } from "../deployment-order";
 
 // Extension contracts
 export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
@@ -6,7 +7,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-proposals-v2",
     type: "EXTENSIONS",
     subtype: "ACTION_PROPOSALS",
-    deploymentOrder: 5,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-proposals-v2"],
     clarityVersion: 3,
     templatePath: `extensions/aibtc-action-proposals-v2.clar`,
     requiredTraits: [
@@ -64,7 +65,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-core-proposals-v2",
     type: "EXTENSIONS",
     subtype: "CORE_PROPOSALS",
-    deploymentOrder: 7,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-core-proposals-v2"],
     clarityVersion: 3,
     templatePath: `extensions/aibtc-core-proposals-v2.clar`,
     requiredTraits: [
@@ -122,7 +123,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-dao-charter",
     type: "EXTENSIONS",
     subtype: "CHARTER",
-    deploymentOrder: 8,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-dao-charter"],
     clarityVersion: 3,
     templatePath: `extensions/aibtc-dao-charter.clar`,
     requiredTraits: [
@@ -147,7 +148,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-onchain-messaging",
     type: "EXTENSIONS",
     subtype: "MESSAGING",
-    deploymentOrder: 9,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-onchain-messaging"],
     clarityVersion: 3,
     templatePath: `extensions/aibtc-onchain-messaging.clar`,
     requiredTraits: [
@@ -172,7 +173,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-payment-processor-dao",
     type: "EXTENSIONS",
     subtype: "PAYMENTS_DAO",
-    deploymentOrder: 10,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-payment-processor-dao"],
     templatePath: `extensions/aibtc-payment-processor-dao.clar`,
     requiredTraits: [
       {
@@ -210,7 +211,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-payment-processor-sbtc",
     type: "EXTENSIONS",
     subtype: "PAYMENTS_SBTC",
-    deploymentOrder: 10,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-payment-processor-sbtc"],
     templatePath: `extensions/aibtc-payment-processor-sbtc.clar`,
     requiredTraits: [
       {
@@ -243,7 +244,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-payment-processor-stx",
     type: "EXTENSIONS",
     subtype: "PAYMENTS_STX",
-    deploymentOrder: 10,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-payment-processor-stx"],
     templatePath: `extensions/aibtc-payment-processor-stx.clar`,
     requiredTraits: [
       {
@@ -276,7 +277,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-timed-vault-dao",
     type: "EXTENSIONS",
     subtype: "TIMED_VAULT_DAO",
-    deploymentOrder: 6,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-timed-vault-dao"],
     templatePath: `extensions/aibtc-timed-vault-dao.clar`,
     requiredTraits: [
       {
@@ -305,7 +306,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-timed-vault-sbtc",
     type: "EXTENSIONS",
     subtype: "TIMED_VAULT_SBTC",
-    deploymentOrder: 6,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-timed-vault-sbtc"],
     templatePath: `extensions/aibtc-timed-vault-sbtc.clar`,
     requiredTraits: [
       {
@@ -329,7 +330,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-timed-vault-stx",
     type: "EXTENSIONS",
     subtype: "TIMED_VAULT_STX",
-    deploymentOrder: 6,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-timed-vault-stx"],
     templatePath: `extensions/aibtc-timed-vault-stx.clar`,
     requiredTraits: [
       {
@@ -353,7 +354,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-token-owner",
     type: "EXTENSIONS",
     subtype: "TOKEN_OWNER",
-    deploymentOrder: 11,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-token-owner"],
     templatePath: `extensions/aibtc-token-owner.clar`,
     requiredTraits: [
       {
@@ -382,7 +383,7 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-treasury",
     type: "EXTENSIONS",
     subtype: "TREASURY",
-    deploymentOrder: 12,
+    deploymentOrder: DEPLOYMENT_ORDER["aibtc-treasury"],
     templatePath: `extensions/aibtc-treasury.clar`,
     requiredTraits: [
       {
