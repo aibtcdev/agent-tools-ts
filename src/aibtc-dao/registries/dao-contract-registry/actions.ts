@@ -335,11 +335,6 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
         category: "EXTENSIONS",
         subcategory: "MESSAGING",
       },
-      {
-        key: "messaging_contract",
-        category: "EXTENSIONS",
-        subcategory: "MESSAGING",
-      },
     ],
   },
   {
