@@ -30,7 +30,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
         subcategory: "MESSAGING",
       },
       {
-        key: "timed_vault_contract",
+        key: "timed_vault_dao",
         category: "EXTENSIONS",
         subcategory: "TIMED_VAULT_DAO",
       },
@@ -64,7 +64,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
         subcategory: "MESSAGING",
       },
       {
-        key: "timed_vault_contract",
+        key: "timed_vault_sbtc",
         category: "EXTENSIONS",
         subcategory: "TIMED_VAULT_SBTC",
       },
@@ -75,7 +75,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     type: "ACTIONS",
     subtype: "CONFIGURE_TIMED_VAULT_STX",
     deploymentOrder: 15,
-    templatePath: `extensions/actions/aibtc-action-configure-timed-vault-sbtc.clar`,
+    templatePath: `extensions/actions/aibtc-action-configure-timed-vault-stx.clar`,
     requiredTraits: [
       {
         ref: "DAO_EXTENSION",
@@ -98,7 +98,7 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
         subcategory: "MESSAGING",
       },
       {
-        key: "timed_vault_contract",
+        key: "timed_vault_stx",
         category: "EXTENSIONS",
         subcategory: "TIMED_VAULT_STX",
       },
