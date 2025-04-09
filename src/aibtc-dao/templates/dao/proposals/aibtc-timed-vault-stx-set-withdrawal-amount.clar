@@ -3,7 +3,7 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Set withdrawal amount in the STX timed vault extension")
-(define-constant CFG_WITHDRAWAL_AMOUNT u10000000) ;; 10 STX (6 decimals)
+(define-constant CFG_WITHDRAWAL_AMOUNT u<%= it.withdrawal_amount %>) ;; 10 STX (6 decimals)
 
 (define-public (execute (sender principal))
   (begin

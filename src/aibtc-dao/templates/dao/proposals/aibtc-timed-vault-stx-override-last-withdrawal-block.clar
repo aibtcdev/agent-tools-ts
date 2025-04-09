@@ -3,8 +3,7 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Overwrote last withdrawal block in the STX timed vault extension")
-;; add 5 to avoid matching deployed height of contracts for testing
-(define-constant CFG_LAST_WITHDRAWAL_BLOCK (+ burn-block-height u5))
+(define-constant CFG_LAST_WITHDRAWAL_BLOCK u<%= it.last_withdrawal_block %>) ;; the last withdrawal block to set
 
 (define-public (execute (sender principal))
   (begin

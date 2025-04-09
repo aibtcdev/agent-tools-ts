@@ -3,7 +3,7 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Set withdrawal amount in the DAO token timed vault extension")
-(define-constant CFG_WITHDRAWAL_AMOUNT u1000000000) ;; 10 DAO tokens (8 decimals)
+(define-constant CFG_WITHDRAWAL_AMOUNT u<%= it.withdrawal_amount %>)
 
 (define-public (execute (sender principal))
   (begin

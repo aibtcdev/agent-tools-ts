@@ -16,7 +16,7 @@
     (try! (contract-call? <%= it.base_dao_contract %> set-extension '<%= it.timed_vault_contract %> true))
     ;; fund the extension from the treasury
     (and (> CFG_AMOUNT_TO_FUND_DAO u0)
-      (try! (contract-call? <%= it.treasury_contract %> withdraw-ft '<%= it.token_contract %>-token CFG_AMOUNT_TO_FUND_DAO '<%= it.timed_vault_contract %>)))
+      (try! (contract-call? <%= it.treasury_contract %> withdraw-ft '<%= it.token_contract %> CFG_AMOUNT_TO_FUND_DAO '<%= it.timed_vault_contract %>)))
     (ok true)
   )
 )

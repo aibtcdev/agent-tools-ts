@@ -3,9 +3,7 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Set withdrawal period in the STX timed vault extension")
-(define-constant CFG_WITHDRAWAL_PERIOD u144)
-;; was CFG_MESSAGE_CONTRACT '<%= it.messaging_contract %>
-;; was CFG_TIMED_VAULT_EXTENSION '<%= it.timed_vault_contract %>
+(define-constant CFG_WITHDRAWAL_PERIOD u<%= it.withdrawal_period %>) ;; the withdrawal period to set
 
 (define-public (execute (sender principal))
   (begin

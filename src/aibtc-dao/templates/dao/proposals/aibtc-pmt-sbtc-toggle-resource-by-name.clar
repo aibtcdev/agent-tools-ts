@@ -3,7 +3,7 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Toggled a resource status by name in the BTC payment processor")
-(define-constant CFG_RESOURCE_NAME u"example-resource")
+(define-constant CFG_RESOURCE_NAME u"<%= it.resource_name %>") ;; name of the resource
 
 (define-public (execute (sender principal))
   (begin 

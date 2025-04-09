@@ -3,7 +3,7 @@
 ;; template vars
 ;;
 (define-constant CFG_MESSAGE "Executed Core Proposal: Toggled a resource status by index in the BTC payment processor")
-(define-constant CFG_RESOURCE_INDEX u1)
+(define-constant CFG_RESOURCE_INDEX u<%= it.resource_index %>) ;; index of the resource
 
 (define-public (execute (sender principal))
   (begin 
