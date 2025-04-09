@@ -12,47 +12,11 @@ import {
 import {
   ContractCategory,
   ContractSubCategory,
+  ContractCopyConfig,
   ExpectedContractGeneratorArgs,
   getKnownAddresses,
   getKnownTraits,
 } from "../types/dao-types";
-
-/**
- * Configuration for creating multiple copies of a contract
- */
-export interface ContractCopyConfig {
-  type: ContractCategory;
-  subtype: ContractSubCategory<ContractCategory>;
-  count: number;  // Number of copies to create
-  nameFormat?: string; // Optional format string (default: "{name}-{index}")
-  /**
-   * Generate bootstrap template code for multiple timed vault copies
-   * 
-   * @param baseContractName Base contract name
-   * @param count Number of copies
-   * @param tokenSymbol Token symbol to replace in contract names
-   * @returns String with Clarity code to initialize all timed vault copies
-   */
-  public generateTimedVaultBootstrapCode(
-    baseContractName: string,
-    count: number,
-    tokenSymbol: string
-  ): string {
-    let code = "";
-    
-    // Add the base contract
-    const baseName = getContractName(baseContractName, tokenSymbol);
-    code += `(try! (contract-call? .base-dao-contract add-extension .${baseName}-contract))\n`;
-    
-    // Add all the numbered copies
-    for (let i = 1; i <= count; i++) {
-      const numberedName = `${baseName}-${i}`;
-      code += `(try! (contract-call? .base-dao-contract add-extension .${numberedName}-contract))\n`;
-    }
-    
-    return code;
-  }
-}
 
 export class DaoContractGenerator {
   private eta: Eta;
@@ -281,5 +245,33 @@ export class DaoContractGenerator {
 
     // Add to results dictionary
     generatedContracts[contractName] = generatedContract;
+  }
+
+  /**
+   * Generate bootstrap template code for multiple timed vault copies
+   * 
+   * @param baseContractName Base contract name
+   * @param count Number of copies
+   * @param tokenSymbol Token symbol to replace in contract names
+   * @returns String with Clarity code to initialize all timed vault copies
+   */
+  public generateTimedVaultBootstrapCode(
+    baseContractName: string,
+    count: number,
+    tokenSymbol: string
+  ): string {
+    let code = "";
+    
+    // Add the base contract
+    const baseName = getContractName(baseContractName, tokenSymbol);
+    code += `(try! (contract-call? .base-dao-contract add-extension .${baseName}-contract))\n`;
+    
+    // Add all the numbered copies
+    for (let i = 1; i <= count; i++) {
+      const numberedName = `${baseName}-${i}`;
+      code += `(try! (contract-call? .base-dao-contract add-extension .${numberedName}-contract))\n`;
+    }
+    
+    return code;
   }
 }
