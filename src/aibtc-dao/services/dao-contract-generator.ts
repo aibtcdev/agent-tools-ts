@@ -8,7 +8,7 @@ import {
   GeneratedContractRegistryEntry,
   getContractName,
   getContractsBySubcategory,
-} from "./dao-contract-registry";
+} from "../registry/dao-contract-registry";
 import {
   ExpectedContractGeneratorArgs,
   getKnownAddresses,

@@ -8,7 +8,7 @@ import {
 import {
   GeneratedContractRegistryEntry,
   DeployedContractRegistryEntry,
-} from "./dao-contract-registry";
+} from "../registry/dao-contract-registry";
 import { getNextNonce } from "../../utilities";
 
 /**
