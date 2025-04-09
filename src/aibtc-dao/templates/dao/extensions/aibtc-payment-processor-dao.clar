@@ -14,6 +14,7 @@
 ;; initially scoped to service provider deploying a contract
 (define-constant SELF (as-contract tx-sender))
 (define-constant CFG_PAYMENT_TOKEN '<%= it.token_contract %>)
+(define-constant CFG_DEFAULT_PAYMENT_ADDRESS '<%= it.treasury_contract %>)
 
 ;; errors
 (define-constant ERR_NOT_DAO_OR_EXTENSION (err u5000))
@@ -43,7 +44,7 @@
 (define-data-var totalRevenue uint u0)
 
 ;; dao can update payment address
-(define-data-var paymentAddress principal '<%= it.treasury_contract %>)
+(define-data-var paymentAddress principal CFG_DEFAULT_PAYMENT_ADDRESS)
 
 ;; data maps
 ;;
