@@ -199,6 +199,11 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
         category: "EXTENSIONS",
         subcategory: "TREASURY",
       },
+      {
+        key: "token_contract",
+        category: "TOKEN",
+        subcategory: "DAO",
+      },
     ],
   },
   {
@@ -287,6 +292,11 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
       {
         key: "base_dao_contract",
         category: "BASE",
+        subcategory: "DAO",
+      },
+      {
+        key: "token_contract",
+        category: "TOKEN",
         subcategory: "DAO",
       },
     ],
