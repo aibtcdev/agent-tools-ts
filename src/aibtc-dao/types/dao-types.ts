@@ -33,6 +33,16 @@ export interface KnownAddresses {
   BITFLOW_FEE: string;
 }
 
+/**
+ * Configuration for creating multiple copies of a contract
+ */
+export interface ContractCopyConfig {
+  type: ContractCategory;
+  subtype: ContractSubCategory<ContractCategory>;
+  count: number;  // Number of copies to create
+  nameFormat?: string; // Optional format string (default: "{name}-{index}")
+}
+
 // define known addresses for each network
 
 const mainnetAddresses: KnownAddresses = {

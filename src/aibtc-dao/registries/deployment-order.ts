@@ -4,6 +4,37 @@
  * 
  * Lower numbers deploy first. Contracts with the same number can be deployed in any order.
  */
+
+/**
+ * Generate deployment orders for multiple copies of a contract
+ * 
+ * @param baseContractName The base contract name
+ * @param baseOrder The base deployment order
+ * @param count Number of copies
+ * @param nameFormat Optional format string (default: "{name}-{index}")
+ * @returns Record of contract names to deployment orders
+ */
+function generateCopiesDeploymentOrder(
+  baseContractName: string,
+  baseOrder: number,
+  count: number,
+  nameFormat: string = "{name}-{index}"
+): Record<string, number> {
+  const result: Record<string, number> = {};
+  
+  for (let i = 1; i <= count; i++) {
+    const name = nameFormat
+      .replace("{name}", baseContractName)
+      .replace("{index}", i.toString());
+    
+    // Each copy gets a slightly higher deployment order
+    // to ensure they deploy in sequence
+    result[name] = baseOrder + (i * 0.1);
+  }
+  
+  return result;
+}
+
 export const DEPLOYMENT_ORDER = {
   // Batch 2 - Token contracts
   "aibtc-pre-faktory": 10,
@@ -26,6 +57,11 @@ export const DEPLOYMENT_ORDER = {
   "aibtc-timed-vault-dao": 42,
   "aibtc-timed-vault-sbtc": 43,
   "aibtc-timed-vault-stx": 44,
+  
+  // Timed vault copies
+  ...generateCopiesDeploymentOrder("aibtc-timed-vault-dao", 42, 5),
+  ...generateCopiesDeploymentOrder("aibtc-timed-vault-sbtc", 43, 5),
+  ...generateCopiesDeploymentOrder("aibtc-timed-vault-stx", 44, 5),
   
   // Extensions - second wave
   "aibtc-dao-charter": 50,

@@ -217,12 +217,87 @@ const BOOTSTRAP_PROPOSAL: BaseContractRegistryEntry[] = [
         subcategory: "TIMED_VAULT_DAO",
       },
       {
+        key: "timed_vault_dao_1_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_DAO",
+      },
+      {
+        key: "timed_vault_dao_2_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_DAO",
+      },
+      {
+        key: "timed_vault_dao_3_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_DAO",
+      },
+      {
+        key: "timed_vault_dao_4_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_DAO",
+      },
+      {
+        key: "timed_vault_dao_5_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_DAO",
+      },
+      {
         key: "timed_vault_sbtc_contract",
         category: "EXTENSIONS",
         subcategory: "TIMED_VAULT_SBTC",
       },
       {
+        key: "timed_vault_sbtc_1_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+      {
+        key: "timed_vault_sbtc_2_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+      {
+        key: "timed_vault_sbtc_3_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+      {
+        key: "timed_vault_sbtc_4_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+      {
+        key: "timed_vault_sbtc_5_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_SBTC",
+      },
+      {
         key: "timed_vault_stx_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+      {
+        key: "timed_vault_stx_1_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+      {
+        key: "timed_vault_stx_2_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+      {
+        key: "timed_vault_stx_3_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+      {
+        key: "timed_vault_stx_4_contract",
+        category: "EXTENSIONS",
+        subcategory: "TIMED_VAULT_STX",
+      },
+      {
+        key: "timed_vault_stx_5_contract",
         category: "EXTENSIONS",
         subcategory: "TIMED_VAULT_STX",
       },
