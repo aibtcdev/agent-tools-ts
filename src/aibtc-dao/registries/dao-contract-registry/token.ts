@@ -1,5 +1,5 @@
 import { BaseContractRegistryEntry } from "../dao-contract-registry";
-import { DEPLOYMENT_ORDER } from "../deployment-order";
+import { DEPLOYMENT_ORDER } from "./deployment-order";
 
 // Token contracts
 export const TOKEN_CONTRACTS: BaseContractRegistryEntry[] = [

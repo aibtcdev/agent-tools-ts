@@ -1,5 +1,5 @@
 import { BaseContractRegistryEntry } from "../dao-contract-registry";
-import { DEPLOYMENT_ORDER } from "../deployment-order";
+import { DEPLOYMENT_ORDER } from "./deployment-order";
 
 // Action contracts
 export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
@@ -41,7 +41,8 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
     name: "aibtc-action-configure-timed-vault-sbtc",
     type: "ACTIONS",
     subtype: "CONFIGURE_TIMED_VAULT_SBTC",
-    deploymentOrder: DEPLOYMENT_ORDER["aibtc-action-configure-timed-vault-sbtc"],
+    deploymentOrder:
+      DEPLOYMENT_ORDER["aibtc-action-configure-timed-vault-sbtc"],
     templatePath: `extensions/actions/aibtc-action-configure-timed-vault-sbtc.clar`,
     requiredTraits: [
       {

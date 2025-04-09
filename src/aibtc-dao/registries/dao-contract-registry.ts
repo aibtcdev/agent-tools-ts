@@ -8,7 +8,11 @@ import {
 import { TOKEN_CONTRACTS } from "./dao-contract-registry/token";
 import { EXTENSION_CONTRACTS } from "./dao-contract-registry/extensions";
 import { ACTION_CONTRACTS } from "./dao-contract-registry/actions";
-import { DEPLOYMENT_ORDER, visualizeDeploymentOrder, validateDeploymentOrder } from "./deployment-order";
+import {
+  DEPLOYMENT_ORDER,
+  visualizeDeploymentOrder,
+  validateDeploymentOrder,
+} from "./dao-contract-registry/deployment-order";
 
 // base contract info that persists through all stages
 type BaseContractInfo = {
