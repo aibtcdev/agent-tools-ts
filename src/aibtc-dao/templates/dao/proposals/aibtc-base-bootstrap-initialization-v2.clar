@@ -15,7 +15,7 @@
         {extension: '<%= it.payments_contract %>, enabled: true}
         
         ;; Timed vault contracts - base and numbered copies
-        {extension: '<%= it.timed_vault_contract %>, enabled: true}
+        {extension: '<%= it.timed_vault_dao_contract %>, enabled: true}
         {extension: '<%= it.timed_vault_dao_1_contract %>, enabled: true}
         {extension: '<%= it.timed_vault_dao_2_contract %>, enabled: true}
         {extension: '<%= it.timed_vault_dao_3_contract %>, enabled: true}
