@@ -8,7 +8,7 @@ import {
 import {
   GeneratedCoreProposalRegistryEntry,
   DeployedCoreProposalRegistryEntry,
-} from "../registry/dao-core-proposal-registry";
+} from "../registries/dao-core-proposal-registry";
 import { getNextNonce } from "../../utilities";
 
 /**

@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
-import { GeneratedContractRegistryEntry } from "./registry/dao-contract-registry";
+import { GeneratedContractRegistryEntry } from "./registries/dao-contract-registry";
 import { ExpectedContractGeneratorArgs } from "./types/dao-types";
 import {
   CONFIG,

@@ -4,7 +4,7 @@ import { validateStacksAddress } from "@stacks/transactions";
 import {
   DeployedContractRegistryEntry,
   GeneratedContractRegistryEntry,
-} from "./registry/dao-contract-registry";
+} from "./registries/dao-contract-registry";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
 import { DaoContractDeployer } from "./services/dao-contract-deployer";
 import { ExpectedContractGeneratorArgs } from "./types/dao-types";

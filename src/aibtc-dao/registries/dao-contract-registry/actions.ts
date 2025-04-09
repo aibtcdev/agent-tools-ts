@@ -1,4 +1,4 @@
-import { BaseContractRegistryEntry } from "./dao-contract-registry";
+import { BaseContractRegistryEntry } from "../dao-contract-registry";
 
 // Action contracts
 export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [

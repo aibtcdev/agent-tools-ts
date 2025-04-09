@@ -5,9 +5,9 @@ import {
   KnownAddresses,
   KnownTraits,
 } from "../types/dao-types";
-import { TOKEN_CONTRACTS } from "./dao-contract-registry-token";
-import { EXTENSION_CONTRACTS } from "./dao-contract-registry-extensions";
-import { ACTION_CONTRACTS } from "./dao-contract-registry-actions";
+import { TOKEN_CONTRACTS } from "./dao-contract-registry/token";
+import { EXTENSION_CONTRACTS } from "./dao-contract-registry/extensions";
+import { ACTION_CONTRACTS } from "./dao-contract-registry/actions";
 
 // base contract info that persists through all stages
 type BaseContractInfo = {
