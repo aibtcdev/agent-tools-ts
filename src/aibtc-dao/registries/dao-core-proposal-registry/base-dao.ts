@@ -5,7 +5,7 @@ export const COREPROPOSALS_BASE_DAO: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-base-add-new-extension",
     friendlyName: "Base DAO: Add New Extension",
-    templatePath: "proposals/aibtc-base-add-new-extension.clar",
+    templatePath: "dao/proposals/aibtc-base-add-new-extension.clar",
     requiredRuntimeValues: [{ key: "new_extension_contract" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -24,7 +24,7 @@ export const COREPROPOSALS_BASE_DAO: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-base-disable-extension",
     friendlyName: "Base DAO: Disable Extension",
-    templatePath: "proposals/aibtc-base-disable-extension.clar",
+    templatePath: "dao/proposals/aibtc-base-disable-extension.clar",
     requiredRuntimeValues: [{ key: "extension_contract" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -43,7 +43,7 @@ export const COREPROPOSALS_BASE_DAO: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-base-enable-extension",
     friendlyName: "Base DAO: Enable Extension",
-    templatePath: "proposals/aibtc-base-enable-extension.clar",
+    templatePath: "dao/proposals/aibtc-base-enable-extension.clar",
     requiredRuntimeValues: [{ key: "extension_contract" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
@@ -62,7 +62,7 @@ export const COREPROPOSALS_BASE_DAO: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-base-replace-extension",
     friendlyName: "Base DAO: Replace Extension",
-    templatePath: "proposals/aibtc-base-replace-extension.clar",
+    templatePath: "dao/proposals/aibtc-base-replace-extension.clar",
     requiredRuntimeValues: [
       { key: "old_extension_contract" },
       { key: "new_extension_contract" },
@@ -84,7 +84,7 @@ export const COREPROPOSALS_BASE_DAO: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-base-replace-extension-proposal-voting",
     friendlyName: "Base DAO: Replace Extension Proposal Voting",
-    templatePath: "proposals/aibtc-base-replace-extension-proposal-voting.clar",
+    templatePath: "dao/proposals/aibtc-base-replace-extension-proposal-voting.clar",
     requiredRuntimeValues: [
       { key: "old_action_proposals_contract" },
       { key: "old_core_proposals_contract" },

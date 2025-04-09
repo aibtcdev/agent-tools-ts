@@ -5,15 +5,15 @@ import {
   KnownAddresses,
   KnownTraits,
 } from "../types/dao-types";
-import { COREPROPOSALS_ACTION_PROPOSALS } from "./core-proposals/action-proposals";
-import { COREPROPOSALS_BASE_DAO } from "./core-proposals/base-dao";
-import { COREPROPOSALS_CORE_PROPOSALS } from "./core-proposals/core-proposals";
-import { COREPROPOSALS_DAO_CHARTER } from "./core-proposals/dao-charter";
-import { COREPROPOSALS_ONCHAIN_MESSAGING } from "./core-proposals/onchain-messaging";
-import { COREPROPOSALS_PAYMENT_PROCESSOR } from "./core-proposals/payment-processor";
-import { COREPROPOSALS_TIMED_VAULT } from "./core-proposals/timed-vault";
-import { COREPROPOSALS_TOKEN_OWNER } from "./core-proposals/token-owner";
-import { COREPROPOSALS_TREASURY } from "./core-proposals/treasury";
+import { COREPROPOSALS_ACTION_PROPOSALS } from "./dao-core-proposal-registry/action-proposals";
+import { COREPROPOSALS_BASE_DAO } from "./dao-core-proposal-registry/base-dao";
+import { COREPROPOSALS_CORE_PROPOSALS } from "./dao-core-proposal-registry/core-proposals";
+import { COREPROPOSALS_DAO_CHARTER } from "./dao-core-proposal-registry/dao-charter";
+import { COREPROPOSALS_ONCHAIN_MESSAGING } from "./dao-core-proposal-registry/onchain-messaging";
+import { COREPROPOSALS_PAYMENT_PROCESSOR } from "./dao-core-proposal-registry/payment-processor";
+import { COREPROPOSALS_TIMED_VAULT } from "./dao-core-proposal-registry/timed-vault";
+import { COREPROPOSALS_TOKEN_OWNER } from "./dao-core-proposal-registry/token-owner";
+import { COREPROPOSALS_TREASURY } from "./dao-core-proposal-registry/treasury";
 
 // base contract info for a core proposal
 type BaseContractInfo = {

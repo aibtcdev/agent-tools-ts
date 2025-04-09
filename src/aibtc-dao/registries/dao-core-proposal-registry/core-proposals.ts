@@ -5,7 +5,7 @@ export const COREPROPOSALS_CORE_PROPOSALS: BaseCoreProposalRegistryEntry[] = [
   {
     name: "aibtc-core-proposals-set-proposal-bond",
     friendlyName: "Core Proposals: Set Proposal Bond",
-    templatePath: "proposals/aibtc-core-proposals-set-proposal-bond.clar",
+    templatePath: "dao/proposals/aibtc-core-proposals-set-proposal-bond.clar",
     requiredRuntimeValues: [{ key: "bond_amount" }],
     requiredTraits: [{ ref: "DAO_PROPOSAL", key: "dao_proposal_trait" }],
     requiredContractAddresses: [
