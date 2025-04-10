@@ -14,20 +14,20 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-resource.ts <paymentsInvoicesContract> <resourceIndex>";
+  "Usage: bun run get-resource.ts <paymentProcessorContract> <resourceIndex>";
 const usageExample =
-  "Example: bun run get-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices u1";
+  "Example: bun run get-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx 1";
 
 interface ExpectedArgs {
-  paymentsInvoicesContract: string;
+  paymentProcessorContract: string;
   resourceIndex: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentsInvoicesContract, resourceIndexStr] = process.argv.slice(2);
+  const [paymentProcessorContract, resourceIndexStr] = process.argv.slice(2);
   const resourceIndex = parseInt(resourceIndexStr);
-  if (!paymentsInvoicesContract || !resourceIndex) {
+  if (!paymentProcessorContract || !resourceIndex) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -36,10 +36,10 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
+  const [contractAddress, contractName] = paymentProcessorContract.split(".");
   if (!contractAddress || !contractName) {
     const errorMessage = [
-      `Invalid contract address: ${paymentsInvoicesContract}`,
+      `Invalid contract address: ${paymentProcessorContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -47,7 +47,7 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    paymentsInvoicesContract,
+    paymentProcessorContract,
     resourceIndex,
   };
 }
@@ -56,7 +56,7 @@ async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] =
-    args.paymentsInvoicesContract.split(".");
+    args.paymentProcessorContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(

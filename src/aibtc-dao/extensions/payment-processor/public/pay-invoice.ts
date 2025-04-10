@@ -4,7 +4,6 @@ import {
   makeContractCall,
   SignedContractCallOptions,
   PostConditionMode,
-  Pc,
   callReadOnlyFunction,
   ClarityType,
   cvToValue,
@@ -19,24 +18,28 @@ import {
   getNextNonce,
   sendToLLM,
 } from "../../../../utilities";
+import { 
+  getTokenTypeFromContractName, 
+  createPostConditions 
+} from "../utils/token-utils";
 
 const usage =
-  "Usage: bun run pay-invoice.ts <paymentsInvoicesContract> <resourceIndex> [memo]";
+  "Usage: bun run pay-invoice.ts <paymentProcessorContract> <resourceIndex> [memo]";
 const usageExample =
-  "Example: bun run pay-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices 1";
+  "Example: bun run pay-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx 1";
 
 interface ExpectedArgs {
-  paymentsInvoicesContract: string;
+  paymentProcessorContract: string;
   resourceIndex: number;
   memo?: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentsInvoicesContract, resourceIndexStr, memo] =
+  const [paymentProcessorContract, resourceIndexStr, memo] =
     process.argv.slice(2);
   const resourceIndex = parseInt(resourceIndexStr);
-  if (!paymentsInvoicesContract || !resourceIndex) {
+  if (!paymentProcessorContract || !resourceIndex) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -45,10 +48,10 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
+  const [contractAddress, contractName] = paymentProcessorContract.split(".");
   if (!contractAddress || !contractName) {
     const errorMessage = [
-      `Invalid contract address: ${paymentsInvoicesContract}`,
+      `Invalid contract address: ${paymentProcessorContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -56,7 +59,7 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    paymentsInvoicesContract,
+    paymentProcessorContract,
     resourceIndex,
     memo,
   };
@@ -65,8 +68,11 @@ function validateArgs(): ExpectedArgs {
 async function main() {
   // validate and store provided args
   const args = validateArgs();
-  const { paymentsInvoicesContract, resourceIndex, memo } = args;
-  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
+  const { paymentProcessorContract, resourceIndex, memo } = args;
+  const [contractAddress, contractName] = paymentProcessorContract.split(".");
+
+  // Determine token type from contract name
+  const tokenType = getTokenTypeFromContractName(contractName);
 
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
@@ -89,16 +95,22 @@ async function main() {
 
   if (resourceData.type !== ClarityType.OptionalSome) {
     throw new Error(
-      `Resource not found in ${paymentsInvoicesContract} for index ${resourceIndex}`
+      `Resource not found in ${paymentProcessorContract} for index ${resourceIndex}`
     );
   }
 
   const resource = cvToValue(resourceData.value, true) as ResourceData;
   const { price } = resource;
 
-  // Set post-conditions based on resource price
-  // Note: Contract only supports STX payments currently
-  const postConditions = [Pc.principal(address).willSendEq(price).ustx()];
+  // Set post-conditions based on token type and resource price
+  const postConditions = await createPostConditions(
+    tokenType,
+    contractAddress,
+    contractName,
+    address,
+    price,
+    networkObj
+  );
 
   // prepare function arguments
   const functionArgs = [
@@ -119,6 +131,8 @@ async function main() {
     postConditionMode: PostConditionMode.Deny,
     postConditions,
   };
+
+  console.log(`Paying invoice with ${tokenType} token for resource ${resourceIndex}`);
 
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

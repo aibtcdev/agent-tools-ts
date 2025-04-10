@@ -14,19 +14,19 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-user-data-by-address.ts <paymentsInvoicesContract> <userAddress>";
+  "Usage: bun run get-user-data-by-address.ts <paymentProcessorContract> <userAddress>";
 const usageExample =
-  "Example: bun run get-user-data-by-address.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
+  "Example: bun run get-user-data-by-address.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
 
 interface ExpectedArgs {
-  paymentsInvoicesContract: string;
+  paymentProcessorContract: string;
   userAddress: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentsInvoicesContract, userAddress] = process.argv.slice(2);
-  if (!paymentsInvoicesContract || !userAddress) {
+  const [paymentProcessorContract, userAddress] = process.argv.slice(2);
+  if (!paymentProcessorContract || !userAddress) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -35,10 +35,10 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
+  const [contractAddress, contractName] = paymentProcessorContract.split(".");
   if (!contractAddress || !contractName) {
     const errorMessage = [
-      `Invalid contract address: ${paymentsInvoicesContract}`,
+      `Invalid contract address: ${paymentProcessorContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -46,7 +46,7 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    paymentsInvoicesContract,
+    paymentProcessorContract,
     userAddress,
   };
 }
@@ -55,7 +55,7 @@ async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] =
-    args.paymentsInvoicesContract.split(".");
+    args.paymentProcessorContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(

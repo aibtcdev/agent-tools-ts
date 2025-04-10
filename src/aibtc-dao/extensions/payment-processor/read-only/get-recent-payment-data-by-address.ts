@@ -14,21 +14,21 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-recent-payment-data-by-address.ts <paymentsInvoicesContract> <resourceName> <userAddress>";
+  "Usage: bun run get-recent-payment-data-by-address.ts <paymentProcessorContract> <resourceName> <userAddress>";
 const usageExample =
-  "Example: bun run get-recent-payment-data-by-address.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices resource-name ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
+  "Example: bun run get-recent-payment-data-by-address.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx resource-name ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
 
 interface ExpectedArgs {
-  paymentsInvoicesContract: string;
+  paymentProcessorContract: string;
   resourceName: string;
   userAddress: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentsInvoicesContract, resourceName, userAddress] =
+  const [paymentProcessorContract, resourceName, userAddress] =
     process.argv.slice(2);
-  if (!paymentsInvoicesContract || !resourceName || !userAddress) {
+  if (!paymentProcessorContract || !resourceName || !userAddress) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -37,10 +37,10 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
+  const [contractAddress, contractName] = paymentProcessorContract.split(".");
   if (!contractAddress || !contractName) {
     const errorMessage = [
-      `Invalid contract address: ${paymentsInvoicesContract}`,
+      `Invalid contract address: ${paymentProcessorContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -48,7 +48,7 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    paymentsInvoicesContract,
+    paymentProcessorContract,
     resourceName,
     userAddress,
   };
@@ -58,7 +58,7 @@ async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] =
-    args.paymentsInvoicesContract.split(".");
+    args.paymentProcessorContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
