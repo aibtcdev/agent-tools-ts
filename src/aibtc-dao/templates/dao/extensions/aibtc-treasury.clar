@@ -48,7 +48,8 @@
 (define-public (allow-assets (allowList (list 100 {token: principal, enabled: bool})))
   (begin
     (try! (is-dao-or-extension))
-    (ok (map allow-assets-iter allowList))
+    (map allow-assets-iter allowList)
+    (ok true)
   )
 )
 
