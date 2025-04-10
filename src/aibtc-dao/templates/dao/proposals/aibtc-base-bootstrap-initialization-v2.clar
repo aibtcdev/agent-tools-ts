@@ -12,26 +12,21 @@
         {extension: '<%= it.core_proposals_contract %>, enabled: true}
         {extension: '<%= it.dao_charter_contract %>, enabled: true}
         {extension: '<%= it.messaging_contract %>, enabled: true}
-        {extension: '<%= it.payments_contract %>, enabled: true}
-        
-        ;; Timed vault contracts - base and numbered copies
-        {extension: '<%= it.timed_vault_dao_contract %>, enabled: true}
-        <% for(let i=1; i<=5; i++) { %>
+        {extension: '<%= it.payments_dao_contract %>, enabled: true}
+        {extension: '<%= it.payments_sbtc_contract %>, enabled: true}
+        {extension: '<%= it.payments_stx_contract %>, enabled: true}
+        ;; Timed vault DAO contracts
+<% for(let i=1; i<=5; i++) { %>
         {extension: '<%= it.getNumberedContract(it.timed_vault_dao_contract, i) %>, enabled: true}
-        <% } %>
-        
+<% } %>
         ;; Timed vault SBTC contracts
-        {extension: '<%= it.timed_vault_sbtc_contract %>, enabled: true}
-        <% for(let i=1; i<=5; i++) { %>
+<% for(let i=1; i<=5; i++) {%>
         {extension: '<%= it.getNumberedContract(it.timed_vault_sbtc_contract, i) %>, enabled: true}
-        <% } %>
-        
+<% } %>
         ;; Timed vault STX contracts
-        {extension: '<%= it.timed_vault_stx_contract %>, enabled: true}
-        <% for(let i=1; i<=5; i++) { %>
+<% for(let i=1; i<=5; i++) { %>
         {extension: '<%= it.getNumberedContract(it.timed_vault_stx_contract, i) %>, enabled: true}
-        <% } %>
-        
+<% } %>        
         {extension: '<%= it.token_owner_contract %>, enabled: true}
         {extension: '<%= it.treasury_contract %>, enabled: true}
       )

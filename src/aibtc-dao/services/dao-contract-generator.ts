@@ -55,7 +55,8 @@ export class DaoContractGenerator {
       : CONTRACT_REGISTRY;
 
     // Create a dictionary to hold the generated contracts
-    const generatedContracts: Record<string, GeneratedContractRegistryEntry> = {};
+    const generatedContracts: Record<string, GeneratedContractRegistryEntry> =
+      {};
 
     // Sort contracts by deployment order and generate each one
     const sortedContracts = [...contractsToGenerate].sort(
@@ -65,19 +66,20 @@ export class DaoContractGenerator {
     sortedContracts.forEach((contract) => {
       // Check if this contract needs multiple copies
       const copyConfig = contractCopies?.find(
-        config => config.type === contract.type && config.subtype === contract.subtype
+        (config) =>
+          config.type === contract.type && config.subtype === contract.subtype
       );
-      
+
       // If no copies needed, generate a single contract as before
       if (!copyConfig) {
         this.generateSingleContract(contract, args, generatedContracts);
         return;
       }
-      
+
       // Generate multiple copies with numbered suffixes
       const count = copyConfig.count || 1;
       const nameFormat = copyConfig.nameFormat || "{name}-{index}";
-      
+
       for (let i = 1; i <= count; i++) {
         // Create a copy of the contract with a modified name
         const contractCopy = { ...contract };
@@ -85,12 +87,12 @@ export class DaoContractGenerator {
         const numberedName = nameFormat
           .replace("{name}", baseName)
           .replace("{index}", i.toString());
-        
+
         // Generate the contract with the numbered name
         this.generateSingleContract(
-          contractCopy, 
-          args, 
-          generatedContracts, 
+          contractCopy,
+          args,
+          generatedContracts,
           numberedName
         );
       }
@@ -101,7 +103,7 @@ export class DaoContractGenerator {
 
   /**
    * Generate a single contract
-   * 
+   *
    * @param contract Contract registry entry
    * @param args Configuration arguments
    * @param generatedContracts Output dictionary to store the result
@@ -114,8 +116,9 @@ export class DaoContractGenerator {
     overrideName?: string
   ): void {
     // build contract name by replacing aibtc symbol (or use override)
-    const contractName = overrideName || getContractName(contract.name, args.tokenSymbol);
-    
+    const contractName =
+      overrideName || getContractName(contract.name, args.tokenSymbol);
+
     // these are generated through Faktory API URLs instead of templates
     if (contract.type === "TOKEN") {
       if (contract.subtype === "POOL_STX") return; // skip STX pool contract
@@ -128,10 +131,10 @@ export class DaoContractGenerator {
       generatedContracts[contractName] = faktoryContract;
       return;
     }
-    
+
     const traitRefs = getKnownTraits(this.network);
     const knownAddresses = getKnownAddresses(this.network);
-    
+
     // collect all traits into template variables
     const traitVars = Object.fromEntries(
       (contract.requiredTraits || []).map(({ ref, key }) => {
@@ -153,7 +156,7 @@ export class DaoContractGenerator {
         return [key, knownAddresses[ref]];
       })
     );
-    
+
     // Collect any required contract addresses
     const contractAddressVars = Object.fromEntries(
       (contract.requiredContractAddresses || []).map(
@@ -170,7 +173,8 @@ export class DaoContractGenerator {
     );
 
     // Collect all required runtime template variables
-    const runtimeVars: Record<string, string | number | boolean | undefined> = {};
+    const runtimeVars: Record<string, string | number | boolean | undefined> =
+      {};
     (contract.requiredRuntimeValues || []).forEach(({ key }) => {
       // Handle specific runtime values based on the key
       switch (key) {
@@ -230,7 +234,10 @@ export class DaoContractGenerator {
 
     // Add helper functions for bootstrap proposal template
     if (contract.subtype === "BOOTSTRAP_INIT") {
-      templateVars.getNumberedContract = (baseContract: string, index: number) => {
+      templateVars.getNumberedContract = (
+        baseContract: string,
+        index: number
+      ) => {
         return this.generateNumberedContractPrincipal(baseContract, index);
       };
     }
@@ -256,7 +263,7 @@ export class DaoContractGenerator {
 
   /**
    * Generate bootstrap template code for multiple timed vault copies
-   * 
+   *
    * @param baseContractName Base contract name
    * @param count Number of copies
    * @param tokenSymbol Token symbol to replace in contract names
@@ -268,29 +275,32 @@ export class DaoContractGenerator {
     tokenSymbol: string
   ): string {
     let code = "";
-    
+
     // Add the base contract
     const baseName = getContractName(baseContractName, tokenSymbol);
     code += `(try! (contract-call? .base-dao-contract add-extension .${baseName}-contract))\n`;
-    
+
     // Add all the numbered copies
     for (let i = 1; i <= count; i++) {
       const numberedName = `${baseName}-${i}`;
       code += `(try! (contract-call? .base-dao-contract add-extension .${numberedName}-contract))\n`;
     }
-    
+
     return code;
   }
 
   /**
    * Generate a numbered contract principal from a base contract principal
-   * 
+   *
    * @param baseContractPrincipal Base contract principal (e.g., "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.my-contract")
    * @param index Index to append to the contract name
    * @returns String with the numbered contract principal
    */
-  private generateNumberedContractPrincipal(baseContractPrincipal: string, index: number): string {
-    const [address, contractName] = baseContractPrincipal.split('.');
+  private generateNumberedContractPrincipal(
+    baseContractPrincipal: string,
+    index: number
+  ): string {
+    const [address, contractName] = baseContractPrincipal.split(".");
     return `${address}.${contractName}-${index}`;
   }
 }
