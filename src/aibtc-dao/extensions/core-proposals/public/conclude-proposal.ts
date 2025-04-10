@@ -11,7 +11,7 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getBondFromCoreProposal,
+  getCoreProposalInfo,
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
@@ -98,7 +98,7 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   // get the proposal info from the contract
-  const bondAmountInfo = await getBondFromCoreProposal(
+  const proposalInfo = await getCoreProposalInfo(
     args.daoCoreProposalsExtensionContract,
     args.daoTokenContract,
     address,
@@ -107,8 +107,8 @@ async function main() {
   // configure post conditions
   const postConditions = [
     Pc.principal(`${extensionAddress}.${extensionName}`)
-      .willSendEq(bondAmountInfo.bond.toString())
-      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.assetName),
+      .willSendEq(proposalInfo.bond)
+      .ft(`${daoTokenAddress}.${daoTokenName}`, proposalInfo.assetName),
   ];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
