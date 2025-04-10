@@ -228,6 +228,13 @@ export class DaoContractGenerator {
       ...runtimeVars,
     };
 
+    // Add helper functions for bootstrap proposal template
+    if (contract.subtype === "BOOTSTRAP_INIT") {
+      templateVars.getNumberedContract = (baseContract: string, index: number) => {
+        return this.generateNumberedContractPrincipal(baseContract, index);
+      };
+    }
+
     // render the template
     const source = this.eta.render(contract.templatePath, templateVars);
 
@@ -273,5 +280,17 @@ export class DaoContractGenerator {
     }
     
     return code;
+  }
+
+  /**
+   * Generate a numbered contract principal from a base contract principal
+   * 
+   * @param baseContractPrincipal Base contract principal (e.g., "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.my-contract")
+   * @param index Index to append to the contract name
+   * @returns String with the numbered contract principal
+   */
+  private generateNumberedContractPrincipal(baseContractPrincipal: string, index: number): string {
+    const [address, contractName] = baseContractPrincipal.split('.');
+    return `${address}.${contractName}-${index}`;
   }
 }
