@@ -15,17 +15,22 @@
         {extension: '<%= it.payments_dao_contract %>, enabled: true}
         {extension: '<%= it.payments_sbtc_contract %>, enabled: true}
         {extension: '<%= it.payments_stx_contract %>, enabled: true}
+        ;; using temporarily while we troubleshoot action config
+        {extension: '<%=it.timed_vault_dao_contract %>, enabled: true}
+        {extension: '<%= it.timed_vault_sbtc_contract %>, enabled: true}
+        {extension: '<%= it.timed_vault_stx_contract %>, enabled: true}
+        ;; removing temporarily while we troubleshoot action config
         ;; Timed vault DAO contracts
 <% for(let i=1; i<=5; i++) { %>
-        {extension: '<%= it.getNumberedContract(it.timed_vault_dao_contract, i) %>, enabled: true}
+        ;; {extension: '<%= it.getNumberedContract(it.timed_vault_dao_contract, i) %>, enabled: true}
 <% } %>
         ;; Timed vault SBTC contracts
 <% for(let i=1; i<=5; i++) {%>
-        {extension: '<%= it.getNumberedContract(it.timed_vault_sbtc_contract, i) %>, enabled: true}
+        ;; {extension: '<%= it.getNumberedContract(it.timed_vault_sbtc_contract, i) %>, enabled: true}
 <% } %>
         ;; Timed vault STX contracts
 <% for(let i=1; i<=5; i++) { %>
-        {extension: '<%= it.getNumberedContract(it.timed_vault_stx_contract, i) %>, enabled: true}
+        ;; {extension: '<%= it.getNumberedContract(it.timed_vault_stx_contract, i) %>, enabled: true}
 <% } %>        
         {extension: '<%= it.token_owner_contract %>, enabled: true}
         {extension: '<%= it.treasury_contract %>, enabled: true}
