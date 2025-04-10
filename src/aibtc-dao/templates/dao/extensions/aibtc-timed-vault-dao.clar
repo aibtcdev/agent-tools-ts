@@ -9,18 +9,26 @@
 
 ;; constants
 ;;
-(define-constant SELF (as-contract tx-sender))
 (define-constant DEPLOYED_BURN_BLOCK burn-block-height)
-(define-constant ERR_INVALID (err u2000))
-(define-constant ERR_UNAUTHORIZED (err u2001))
-(define-constant ERR_TOO_SOON (err u2002))
-(define-constant ERR_INVALID_AMOUNT (err u2003))
+(define-constant DEPLOYED_STACKS_BLOCK stacks-block-height)
+(define-constant SELF (as-contract tx-sender))
+
+;; template variables
+(define-constant CFG_VAULT_TOKEN '<%= it.token_contract %>)
+
+;; error messages
+(define-constant ERR_NOT_DAO_OR_EXTENSION (err u2000))
+(define-constant ERR_INVALID (err u2001))
+(define-constant ERR_NOT_ACCOUNT_HOLDER (err u2002))
+(define-constant ERR_TOO_SOON (err u2003))
+(define-constant ERR_INVALID_AMOUNT (err u2004))
+(define-constant ERR_FETCHING_BALANCE (err u2005))
 
 
 ;; data vars
 ;;
 (define-data-var withdrawalPeriod uint u144) ;; 144 Bitcoin blocks, ~1 day
-(define-data-var withdrawalAmount uint u10000000) ;; 10,000,000 microSTX, or 10 STX
+(define-data-var withdrawalAmount uint u100000000000) ;; 1,000 DAO token (8 decimals)
 (define-data-var lastWithdrawalBlock uint u0)
 (define-data-var accountHolder principal SELF)
 
@@ -64,22 +72,22 @@
   )
 )
 
-(define-public (deposit-stx (amount uint))
+(define-public (deposit (amount uint))
   (begin
     (asserts! (> amount u0) ERR_INVALID_AMOUNT)
     (print {
-      notification: "deposit-stx",
+      notification: "deposit",
       payload: {
         amount: amount,
         caller: contract-caller,
         recipient: SELF
       }
     })
-    (stx-transfer? amount contract-caller SELF)
+    (contract-call? '<%= it.token_contract %> transfer amount tx-sender SELF none)
   )
 )
 
-(define-public (withdraw-stx)
+(define-public (withdraw)
   (begin
     ;; verify user is enabled in the map
     (try! (is-account-holder))
@@ -89,52 +97,33 @@
     (var-set lastWithdrawalBlock burn-block-height)
     ;; print notification and transfer STX
     (print {
-      notification: "withdraw-stx",
+      notification: "withdraw",
       payload: {
         amount: (var-get withdrawalAmount),
         caller: contract-caller,
         recipient: (var-get accountHolder)
       }
     })
-    (as-contract (stx-transfer? (var-get withdrawalAmount) SELF (var-get accountHolder)))
+    (as-contract (contract-call? '<%= it.token_contract %> transfer (var-get withdrawalAmount) SELF (var-get accountHolder) none))
   )
 )
 
 ;; read only functions
 ;;
-(define-read-only (get-deployed-block)
-  DEPLOYED_BURN_BLOCK
-)
-
 (define-read-only (get-account-balance)
-  (stx-get-balance SELF)
-)
-
-(define-read-only (get-account-holder)
-  (var-get accountHolder)
-)
-
-(define-read-only (get-last-withdrawal-block)
-  (var-get lastWithdrawalBlock)
-)
-
-(define-read-only (get-withdrawal-period)
-  (var-get withdrawalPeriod)
-)
-
-(define-read-only (get-withdrawal-amount)
-  (var-get withdrawalAmount)
+  (contract-call? '<%= it.token_contract %> get-balance SELF)
 )
 
 (define-read-only (get-account-terms)
   {
-    accountBalance: (get-account-balance),
-    accountHolder: (get-account-holder),
+    accountHolder: (var-get accountHolder),
     contractName: SELF,
-    deployedAt: (get-deployed-block),
-    lastWithdrawalBlock: (get-last-withdrawal-block),
-    withdrawalAmount: (get-withdrawal-amount),
-    withdrawalPeriod: (get-withdrawal-period),
+    deployedBurnBlock: DEPLOYED_BURN_BLOCK,
+    deployedStacksBlock: DEPLOYED_STACKS_BLOCK,
+    lastWithdrawalBlock: (var-get lastWithdrawalBlock),
+    vaultToken: CFG_VAULT_TOKEN,
+    withdrawalAmount: (var-get withdrawalAmount),
+    withdrawalPeriod: (var-get withdrawalPeriod),
   }
 )
 
@@ -143,12 +132,12 @@
 
 (define-private (is-dao-or-extension)
   (ok (asserts! (or (is-eq tx-sender '<%= it.base_dao_contract %>)
-    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_UNAUTHORIZED
+    (contract-call? '<%= it.base_dao_contract %> is-extension contract-caller)) ERR_NOT_DAO_OR_EXTENSION
   ))
 )
 
 (define-private (is-account-holder)
-  (ok (asserts! (is-eq (var-get accountHolder) (get-standard-caller)) ERR_UNAUTHORIZED))
+  (ok (asserts! (is-eq (var-get accountHolder) (get-standard-caller)) ERR_NOT_ACCOUNT_HOLDER))
 )
 
 (define-private (get-standard-caller)

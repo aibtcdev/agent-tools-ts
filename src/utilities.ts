@@ -27,7 +27,7 @@ import {
   DeployedContractRegistryEntry,
   getContractName,
   getContractsBySubcategory,
-} from "./aibtc-dao/services/dao-contract-registry";
+} from "./aibtc-dao/registries/dao-contract-registry";
 import { ContractCallsClient } from "./api/contract-calls-client";
 import { TokenInfoService } from "./api/token-info-service";
 

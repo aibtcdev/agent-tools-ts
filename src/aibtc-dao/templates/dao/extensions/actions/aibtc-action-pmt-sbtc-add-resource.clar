@@ -3,23 +3,22 @@
 
 (define-constant ERR_UNAUTHORIZED (err u10001))
 (define-constant ERR_INVALID_PARAMS (err u10002))
-(define-constant ERR_PARAMS_OUT_OF_RANGE (err u10003))
 
-(define-constant CFG_MESSAGE "Executed Action Proposal: Set withdrawal period in timed vault extension")
+(define-constant CFG_MESSAGE "Executed Action Proposal: Added a resource in the BTC payment processor extension")
 
 (define-public (callback (sender principal) (memo (buff 34))) (ok true))
 
 (define-public (run (parameters (buff 2048)))
   (let
     (
-      (period (unwrap! (from-consensus-buff? uint parameters) ERR_INVALID_PARAMS))
+      (paramsTuple (unwrap! (from-consensus-buff?
+        { name: (string-utf8 50), description: (string-utf8 255), price: uint, url: (optional (string-utf8 255)) }
+        parameters) ERR_INVALID_PARAMS))
     )
     (try! (is-dao-or-extension))
-    ;; verify within limits for low quorum
-    ;; more than 6 blocks (1hr), less than 1008 blocks (~1 week)
-    (asserts! (and (> period u6) (< period u1008)) ERR_PARAMS_OUT_OF_RANGE)
     (try! (contract-call? '<%= it.messaging_contract %> send CFG_MESSAGE true))
-    (contract-call? '<%= it.timed_vault_contract %> set-withdrawal-period period)
+    (try! (contract-call? '<%= it.payments_contract %> add-resource (get name paramsTuple) (get description paramsTuple) (get price paramsTuple) (get url paramsTuple)))
+    (ok true)
   )
 )
 

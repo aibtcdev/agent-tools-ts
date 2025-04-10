@@ -2,8 +2,11 @@ import * as fs from "fs";
 import * as path from "path";
 import { validateStacksAddress } from "@stacks/transactions";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
-import { GeneratedContractRegistryEntry } from "./services/dao-contract-registry";
-import { ExpectedContractGeneratorArgs } from "./types/dao-types";
+import { GeneratedContractRegistryEntry } from "./registries/dao-contract-registry";
+import {
+  ContractCopyConfig,
+  ExpectedContractGeneratorArgs,
+} from "./types/dao-types";
 import {
   CONFIG,
   convertStringToBoolean,
@@ -99,6 +102,27 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
     : `Bitcoin DeFAI ${args.tokenSymbol} ${args.tokenName}`;
 
   // Step 1 - generate dao contracts
+
+  // Define which contracts need multiple copies
+  /* removing temporarily while we troubleshoot action config
+  const contractCopies: ContractCopyConfig[] = [
+    {
+      type: "EXTENSIONS",
+      subtype: "TIMED_VAULT_DAO",
+      count: 5,
+    },
+    {
+      type: "EXTENSIONS",
+      subtype: "TIMED_VAULT_SBTC",
+      count: 5,
+    },
+    {
+      type: "EXTENSIONS",
+      subtype: "TIMED_VAULT_STX",
+      count: 5,
+    },
+  ];
+  */
 
   const daoContracts = contractGenerator.generateContracts(args);
   generatedContracts.push(...Object.values(daoContracts));

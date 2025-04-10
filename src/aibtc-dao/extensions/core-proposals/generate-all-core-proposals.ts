@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { GeneratedCoreProposalRegistryEntry } from "../../services/dao-core-proposal-registry";
+import { GeneratedCoreProposalRegistryEntry } from "../../registries/dao-core-proposal-registry";
 import { DaoCoreProposalGenerator } from "../../services/dao-core-proposal-generator";
 import {
   CONFIG,

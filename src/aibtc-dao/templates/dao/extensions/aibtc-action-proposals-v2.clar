@@ -50,6 +50,8 @@
 ;; data vars
 ;;
 (define-data-var proposalCount uint u0) ;; total number of proposals
+(define-data-var concludedProposalCount uint u0) ;; total number of concluded proposals
+(define-data-var executedProposalCount uint u0) ;; total number of executed proposals
 (define-data-var lastProposalCreated uint u0) ;; block height of last proposal created
 (define-data-var proposalBond uint u100000000000) ;; proposal bond amount, starts at 1000 DAO tokens (8 decimals)
 
@@ -63,6 +65,7 @@
     createdAt: uint, ;; stacks block height for at-block calls
     caller: principal, ;; contract caller
     creator: principal, ;; proposal creator (tx-sender)
+    memo: (optional (string-ascii 1024)), ;; memo for the proposal
     bond: uint, ;; proposal bond amount
     startBlock: uint, ;; burn block height
     endBlock: uint, ;; burn block height
@@ -111,7 +114,7 @@
   )
 )
 
-(define-public (propose-action (action <action-trait>) (parameters (buff 2048)))
+(define-public (propose-action (action <action-trait>) (parameters (buff 2048)) (memo (optional (string-ascii 1024))))
   (let
     (
       (actionContract (contract-of action))
@@ -156,6 +159,7 @@
       parameters: parameters,
       caller: contract-caller,
       creator: tx-sender,
+      memo: (if (is-some memo) memo none),
       bond: bondAmount,
       createdAt: createdAt,
       startBlock: startBlock,
@@ -278,9 +282,12 @@
       (try! (as-contract (contract-call? '<%= it.token_contract %> transfer (get bond proposalRecord) SELF (get creator proposalRecord) none)))
       (try! (as-contract (contract-call? '<%= it.token_contract %> transfer (get bond proposalRecord) SELF VOTING_TREASURY none)))
     )
+    ;; increment the concluded proposal count
+    (var-set concludedProposalCount (+ (var-get concludedProposalCount) u1))
     ;; execute the action only if it passed, return false if err
     (ok (if (and votePassed validAction notExpired)
-      (match (contract-call? action run (get parameters proposalRecord)) ok_ true err_ (begin (print {err:err_}) false))
+      (and (var-set executedProposalCount (+ (var-get executedProposalCount) u1))
+        (match (contract-call? action run (get parameters proposalRecord)) ok_ true err_ (begin (print {err:err_}) false)))
       false
     ))
   )
@@ -311,7 +318,11 @@
 )
 
 (define-read-only (get-total-proposals)
-  (var-get proposalCount)
+  {
+    total: (var-get proposalCount),
+    concluded: (var-get concludedProposalCount),
+    executed: (var-get executedProposalCount),
+  }
 )
 
 (define-read-only (get-last-proposal-created)

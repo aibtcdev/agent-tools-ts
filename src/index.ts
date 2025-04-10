@@ -3,7 +3,7 @@ export * from "./aibtc-dao/generate-dao";
 export * from "./aibtc-dao/deploy-dao";
 
 // export services used in main scripts
-export * from "./aibtc-dao/services/dao-contract-registry";
+export * from "./aibtc-dao/registries/dao-contract-registry";
 export * from "./aibtc-dao/services/dao-contract-generator";
 export * from "./aibtc-dao/services/dao-contract-deployer";
 
