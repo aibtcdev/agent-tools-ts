@@ -54,7 +54,7 @@ function validateArgs(): ExpectedArgs {
   // verify contract addresses extracted from arguments
   const [extensionAddress, extensionName] = actionProposalsExtension.split(".");
   const [actionAddress, actionName] = actionContract.split(".");
-  const [tokenAddress, tokenName] = actionContract.split(".");
+  const [tokenAddress, tokenName] = tokenContract.split(".");
   if (
     !extensionAddress ||
     !extensionName ||
