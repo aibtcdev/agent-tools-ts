@@ -15,20 +15,23 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-invoice.ts <paymentProcessorContract> <invoiceIndex>";
+  "Usage: bun run get-recent-payment.ts <paymentProcessorContract> <resourceIndex> <userIndex>";
 const usageExample =
-  "Example: bun run get-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx 1";
+  "Example: bun run get-recent-payment.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx 1 1";
 
 interface ExpectedArgs {
   paymentProcessorContract: string;
-  invoiceIndex: number;
+  resourceIndex: number;
+  userIndex: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentProcessorContract, invoiceIndexStr] = process.argv.slice(2);
-  const invoiceIndex = parseInt(invoiceIndexStr);
-  if (!paymentProcessorContract || !invoiceIndex) {
+  const [paymentProcessorContract, resourceIndexStr, userIndexStr] =
+    process.argv.slice(2);
+  const resourceIndex = parseInt(resourceIndexStr);
+  const userIndex = parseInt(userIndexStr);
+  if (!paymentProcessorContract || !resourceIndex || !userIndex) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -48,7 +51,8 @@ function validateArgs(): ExpectedArgs {
   // return validated arguments
   return {
     paymentProcessorContract,
-    invoiceIndex,
+    resourceIndex,
+    userIndex,
   };
 }
 
@@ -64,25 +68,28 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // get invoice data
+  // get recent payment
   const result = await callReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: "get-invoice",
-    functionArgs: [Cl.uint(args.invoiceIndex)],
+    functionName: "get-recent-payment",
+    functionArgs: [
+      Cl.uint(args.resourceIndex),
+      Cl.uint(args.userIndex),
+    ],
     senderAddress: address,
     network: networkObj,
   });
-  // extract and return invoice data
+  // extract and return recent payment
   if (result.type === ClarityType.OptionalSome) {
-    const invoiceData = cvToValue(result.value, true);
+    const recentPayment = cvToValue(result.value);
     return {
       success: true,
-      message: "Invoice data retrieved successfully",
-      data: invoiceData,
+      message: "Recent payment retrieved successfully",
+      data: recentPayment,
     };
   } else {
-    const errorMessage = `Invoice not found: ${args.invoiceIndex}`;
+    const errorMessage = `No recent payment found for resource ${args.resourceIndex} and user ${args.userIndex}`;
     throw new Error(errorMessage);
   }
 }

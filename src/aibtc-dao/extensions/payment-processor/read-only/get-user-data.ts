@@ -15,20 +15,20 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-invoice.ts <paymentProcessorContract> <invoiceIndex>";
+  "Usage: bun run get-user-data.ts <paymentProcessorContract> <userIndex>";
 const usageExample =
-  "Example: bun run get-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx 1";
+  "Example: bun run get-user-data.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx 1";
 
 interface ExpectedArgs {
   paymentProcessorContract: string;
-  invoiceIndex: number;
+  userIndex: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentProcessorContract, invoiceIndexStr] = process.argv.slice(2);
-  const invoiceIndex = parseInt(invoiceIndexStr);
-  if (!paymentProcessorContract || !invoiceIndex) {
+  const [paymentProcessorContract, userIndexStr] = process.argv.slice(2);
+  const userIndex = parseInt(userIndexStr);
+  if (!paymentProcessorContract || !userIndex) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -48,7 +48,7 @@ function validateArgs(): ExpectedArgs {
   // return validated arguments
   return {
     paymentProcessorContract,
-    invoiceIndex,
+    userIndex,
   };
 }
 
@@ -64,25 +64,25 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // get invoice data
+  // get user data
   const result = await callReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: "get-invoice",
-    functionArgs: [Cl.uint(args.invoiceIndex)],
+    functionName: "get-user-data",
+    functionArgs: [Cl.uint(args.userIndex)],
     senderAddress: address,
     network: networkObj,
   });
-  // extract and return invoice data
+  // extract and return user data
   if (result.type === ClarityType.OptionalSome) {
-    const invoiceData = cvToValue(result.value, true);
+    const userData = cvToValue(result.value, true);
     return {
       success: true,
-      message: "Invoice data retrieved successfully",
-      data: invoiceData,
+      message: "User data retrieved successfully",
+      data: userData,
     };
   } else {
-    const errorMessage = `Invoice not found: ${args.invoiceIndex}`;
+    const errorMessage = `User not found for index: ${args.userIndex}`;
     throw new Error(errorMessage);
   }
 }

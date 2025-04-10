@@ -15,20 +15,19 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-invoice.ts <paymentProcessorContract> <invoiceIndex>";
+  "Usage: bun run get-resource-index.ts <paymentProcessorContract> <resourceName>";
 const usageExample =
-  "Example: bun run get-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx 1";
+  "Example: bun run get-resource-index.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx resource-name";
 
 interface ExpectedArgs {
   paymentProcessorContract: string;
-  invoiceIndex: number;
+  resourceName: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentProcessorContract, invoiceIndexStr] = process.argv.slice(2);
-  const invoiceIndex = parseInt(invoiceIndexStr);
-  if (!paymentProcessorContract || !invoiceIndex) {
+  const [paymentProcessorContract, resourceName] = process.argv.slice(2);
+  if (!paymentProcessorContract || !resourceName) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -48,7 +47,7 @@ function validateArgs(): ExpectedArgs {
   // return validated arguments
   return {
     paymentProcessorContract,
-    invoiceIndex,
+    resourceName,
   };
 }
 
@@ -64,25 +63,25 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // get invoice data
+  // get resource index
   const result = await callReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: "get-invoice",
-    functionArgs: [Cl.uint(args.invoiceIndex)],
+    functionName: "get-resource-index",
+    functionArgs: [Cl.stringUtf8(args.resourceName)],
     senderAddress: address,
     network: networkObj,
   });
-  // extract and return invoice data
+  // extract and return resource index
   if (result.type === ClarityType.OptionalSome) {
-    const invoiceData = cvToValue(result.value, true);
+    const resourceIndex = cvToValue(result.value);
     return {
       success: true,
-      message: "Invoice data retrieved successfully",
-      data: invoiceData,
+      message: "Resource index retrieved successfully",
+      data: resourceIndex,
     };
   } else {
-    const errorMessage = `Invoice not found: ${args.invoiceIndex}`;
+    const errorMessage = `Resource not found: ${args.resourceName}`;
     throw new Error(errorMessage);
   }
 }

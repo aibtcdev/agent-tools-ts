@@ -8,6 +8,7 @@ import {
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
+  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
 } from "../../../../utilities";
@@ -32,8 +33,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentProcessorContract.split(".");
-  if (!contractAddress || !contractName) {
+  if (!isValidContractPrincipal(paymentProcessorContract)) {
     const errorMessage = [
       `Invalid contract address: ${paymentProcessorContract}`,
       usage,
