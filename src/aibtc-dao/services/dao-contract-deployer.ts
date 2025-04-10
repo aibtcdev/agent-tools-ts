@@ -140,8 +140,8 @@ export class DaoContractDeployer {
         //  `Successfully deployed ${contract.name}: ${deployedContract.address}`
         //);
         nonce++;
-        // wait 0.5 seconds before deploying the next contract
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // wait 1 second before deploying the next contract
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 
