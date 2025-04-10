@@ -399,6 +399,10 @@ export function formatContractAddress(address: string): ContractAddress {
   return `${addr}.${name}` as ContractAddress;
 }
 
+//////////////////////////////
+// AIBTC DAO HELPERS
+//////////////////////////////
+
 type BondInfo = {
   bond: BigInt;
   assetName: string;
@@ -497,6 +501,73 @@ export async function getCoreProposalInfo(
     ...proposalInfo,
     assetName,
   };
+}
+
+export async function getPmtContractInfo(
+  paymentProcessorContract: string,
+  sender: string
+) {
+  // create a contract calls client to use the cache API
+  const client = new ContractCallsClient(CONFIG.NETWORK);
+  // get the contract info from the contract
+  const contractInfo = await client.callContractFunction(
+    paymentProcessorContract,
+    "get-contract-info",
+    [],
+    { senderAddress: sender }
+  );
+  return contractInfo;
+}
+
+export async function getPmtResourceByIndex(
+  paymentProcessorContract: string,
+  sender: string,
+  resourceIndex: number
+) {
+  // create a contract calls client to use the cache API
+  const client = new ContractCallsClient(CONFIG.NETWORK);
+  // get the resource info from the contract
+  const resourceInfo = await client.callContractFunction(
+    paymentProcessorContract,
+    "get-resource",
+    [{ type: "uint", value: resourceIndex }],
+    { senderAddress: sender }
+  );
+  return resourceInfo;
+}
+
+export async function getPmtResourceByName(
+  paymentProcessorContract: string,
+  sender: string,
+  resourceName: string
+) {
+  // create a contract calls client to use the cache API
+  const client = new ContractCallsClient(CONFIG.NETWORK);
+  // get the resource info from the contract
+  const resourceInfo = await client.callContractFunction(
+    paymentProcessorContract,
+    "get-resource-by-name",
+    [{ type: "string", value: resourceName }],
+    { senderAddress: sender }
+  );
+  return resourceInfo;
+}
+
+type SupportedPaymentTokens = "STX" | "BTC" | "DAO";
+
+/**
+ * Determines token type based on contract name
+ * @param contractName The name of the contract
+ * @returns The token type (STX, sBTC, or DAO)
+ */
+export function getTokenTypeFromContractName(
+  contractName: string
+): SupportedPaymentTokens {
+  if (contractName.includes("-stx")) return "STX";
+  if (contractName.includes("-sbtc")) return "BTC";
+  if (contractName.includes("-dao")) return "DAO";
+
+  throw new Error(`Unable to extract token type for contract: ${contractName}`);
 }
 
 // helper function to fetch the proposal bond amount from a core/action proposals voting contract
@@ -704,9 +775,25 @@ export function getFaktoryApiUrl(network: string) {
   }
 }
 
+// https://explorer.hiro.so/txid/SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token?chain=mainnet
+const mainnetSbtcContract =
+  "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token";
+
 // https://explorer.hiro.so/txid/STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token?chain=testnet
 const faktorySbtcContract =
   "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token";
+
+export function getSbtcContract(network: string) {
+  switch (network) {
+    case "mainnet":
+      return mainnetSbtcContract;
+    case "testnet":
+      return faktorySbtcContract;
+    default:
+      return faktorySbtcContract;
+  }
+}
+
 export function getFaktorySbtcContract(network: string) {
   if (network !== "testnet") {
     throw new Error("Faktory sBTC contract is only supported on testnet.");

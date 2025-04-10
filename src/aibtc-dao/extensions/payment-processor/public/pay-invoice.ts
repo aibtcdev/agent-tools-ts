@@ -4,9 +4,7 @@ import {
   makeContractCall,
   SignedContractCallOptions,
   PostConditionMode,
-  callReadOnlyFunction,
-  ClarityType,
-  cvToValue,
+  Pc,
 } from "@stacks/transactions";
 import { ResourceData } from "../../../types/dao-types";
 import {
@@ -14,14 +12,17 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
+  formatContractAddress,
   getNetwork,
   getNextNonce,
+  getPmtContractInfo,
+  getPmtResourceByIndex,
+  getSbtcContract,
+  getTokenTypeFromContractName,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../../utilities";
-import {
-  getTokenTypeFromContractName,
-  createPostConditions,
-} from "../utils/token-utils";
+import { TokenInfoService } from "../../../../api/token-info-service";
 
 const usage =
   "Usage: bun run pay-invoice.ts <paymentProcessorContract> <resourceIndex> [memo]";
@@ -48,8 +49,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentProcessorContract.split(".");
-  if (!contractAddress || !contractName) {
+  if (!isValidContractPrincipal(paymentProcessorContract)) {
     const errorMessage = [
       `Invalid contract address: ${paymentProcessorContract}`,
       usage,
@@ -84,33 +84,68 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Get resource details to set proper post-conditions
-  const resourceData = await callReadOnlyFunction({
-    contractAddress,
-    contractName,
-    functionName: "get-resource",
-    functionArgs: [Cl.uint(resourceIndex)],
-    senderAddress: address,
-    network: networkObj,
-  });
+  const resourceData = (await getPmtResourceByIndex(
+    paymentProcessorContract,
+    address,
+    args.resourceIndex
+  )) as ResourceData;
 
-  if (resourceData.type !== ClarityType.OptionalSome) {
-    throw new Error(
-      `Resource not found in ${paymentProcessorContract} for index ${resourceIndex}`
-    );
-  }
+  //console.log(JSON.stringify(resourceData, null, 2));
+  const { price } = resourceData;
+  //console.log(`Price: ${price}`);
 
-  const resource = cvToValue(resourceData.value, true) as ResourceData;
-  const { price } = resource;
+  const paymentProcessorContractData = await getPmtContractInfo(
+    args.paymentProcessorContract,
+    address
+  );
+  //console.log(JSON.stringify(paymentProcessorContractData, null, 2));
 
   // Set post-conditions based on token type and resource price
-  const postConditions = await createPostConditions(
-    tokenType,
-    contractAddress,
-    contractName,
-    address,
-    price,
-    networkObj
-  );
+  const postCondition = async () => {
+    switch (tokenType) {
+      case "STX":
+        return Pc.principal(address).willSendEq(price).ustx();
+      case "BTC":
+        const formattedSbtcContract = formatContractAddress(
+          getSbtcContract(CONFIG.NETWORK)
+        );
+        return Pc.principal(address)
+          .willSendEq(price)
+          .ft(formattedSbtcContract, "sbtc-token");
+      case "DAO":
+        const formattedDaoContract = formatContractAddress(
+          paymentProcessorContractData.daoTokenContract
+        );
+        if (!formattedDaoContract) {
+          throw new Error(
+            `DAO token contract not found in object ${JSON.stringify(
+              paymentProcessorContractData,
+              null,
+              2
+            )}`
+          );
+        }
+        const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+        const assetName = await tokenInfoService.getAssetNameFromAbi(
+          paymentProcessorContractData.daoTokenContract
+        );
+        if (!assetName) {
+          throw new Error(
+            `Asset name not found in object ${JSON.stringify(
+              paymentProcessorContractData,
+              null,
+              2
+            )}`
+          );
+        }
+        return Pc.principal(address)
+          .willSendEq(price)
+          .ft(formattedDaoContract, assetName);
+      default:
+        return Pc.principal(address).willSendEq(price).ustx();
+    }
+  };
+  //console.log(`Post conditions: ${JSON.stringify(postConditions, null, 2)}`);
 
   // prepare function arguments
   const functionArgs = [
@@ -129,7 +164,7 @@ async function main() {
     nonce: nextPossibleNonce,
     senderKey: key,
     postConditionMode: PostConditionMode.Deny,
-    postConditions,
+    postConditions: [postCondition],
   };
 
   console.log(

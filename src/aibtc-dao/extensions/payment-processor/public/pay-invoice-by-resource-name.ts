@@ -16,12 +16,10 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  getTokenTypeFromContractName,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../../utilities";
-import {
-  getTokenTypeFromContractName,
-  createPostConditions,
-} from "../utils/token-utils";
 
 const usage =
   "Usage: bun run pay-invoice-by-resource-name.ts <paymentProcessorContract> <resourceName> [memo]";
@@ -46,8 +44,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentProcessorContract.split(".");
-  if (!contractAddress || !contractName) {
+  if (!isValidContractPrincipal(paymentProcessorContract)) {
     const errorMessage = [
       `Invalid contract address: ${paymentProcessorContract}`,
       usage,
@@ -99,16 +96,6 @@ async function main() {
 
   const resource = cvToValue(resourceData.value, true) as ResourceData;
   const { price } = resource;
-
-  // Set post-conditions based on token type and resource price
-  const postConditions = await createPostConditions(
-    tokenType,
-    contractAddress,
-    contractName,
-    address,
-    price,
-    networkObj
-  );
 
   // prepare function arguments
   const functionArgs = [
