@@ -4,10 +4,11 @@ import { validateStacksAddress } from "@stacks/transactions";
 import {
   DeployedContractRegistryEntry,
   GeneratedContractRegistryEntry,
+  validateContractDeploymentOrder,
 } from "./registries/dao-contract-registry";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
 import { DaoContractDeployer } from "./services/dao-contract-deployer";
-import { ExpectedContractGeneratorArgs } from "./types/dao-types";
+import { ContractCopyConfig, ExpectedContractGeneratorArgs } from "./types/dao-types";
 import {
   aibtcCoreRequestBody,
   CONFIG,
@@ -106,8 +107,27 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
 
   // Step 1 - generate dao-related contracts
 
-  // generate dao contracts
-  const daoContracts = contractGenerator.generateContracts(args);
+  // Define which contracts need multiple copies
+  const contractCopies: ContractCopyConfig[] = [
+    {
+      type: "EXTENSIONS",
+      subtype: "TIMED_VAULT_DAO",
+      count: 5,
+    },
+    {
+      type: "EXTENSIONS",
+      subtype: "TIMED_VAULT_SBTC",
+      count: 5,
+    },
+    {
+      type: "EXTENSIONS",
+      subtype: "TIMED_VAULT_STX",
+      count: 5,
+    },
+  ];
+
+  // generate dao contracts with multiple copies
+  const daoContracts = contractGenerator.generateContracts(args, contractCopies);
   generatedContracts.push(...Object.values(daoContracts));
 
   // Step 2 - generate token-related contracts
@@ -163,7 +183,24 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
     });
   }
 
-  // Step 4 - deploy contracts
+  // Step 4 - validate and deploy contracts
+
+  // Validate deployment order
+  const isValidDeploymentOrder = validateContractDeploymentOrder();
+  if (!isValidDeploymentOrder) {
+    throw new Error("Invalid contract deployment order detected");
+  }
+
+  // Sort contracts by deployment order for logging
+  const sortedContracts = [...generatedContracts].sort(
+    (a, b) => a.deploymentOrder - b.deploymentOrder
+  );
+
+  // Log deployment order for debugging
+  console.log("Deployment order:");
+  sortedContracts.forEach((contract, index) => {
+    console.log(`${index + 1}. ${contract.name} (${contract.type}/${contract.subtype})`);
+  });
 
   //console.log(`Deploying ${generatedContracts.length} contracts...`);
   //console.log(`- address: ${address}`);

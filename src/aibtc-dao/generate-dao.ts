@@ -104,7 +104,6 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
   // Step 1 - generate dao contracts
 
   // Define which contracts need multiple copies
-  /* removing temporarily while we troubleshoot action config
   const contractCopies: ContractCopyConfig[] = [
     {
       type: "EXTENSIONS",
@@ -122,9 +121,8 @@ async function main(): Promise<ToolResponse<GeneratedContractRegistryEntry[]>> {
       count: 5,
     },
   ];
-  */
 
-  const daoContracts = contractGenerator.generateContracts(args);
+  const daoContracts = contractGenerator.generateContracts(args, contractCopies);
   generatedContracts.push(...Object.values(daoContracts));
 
   // Step 2 - generate token-related contracts
