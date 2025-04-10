@@ -13,7 +13,7 @@
 
 ;; initially scoped to service provider deploying a contract
 (define-constant SELF (as-contract tx-sender))
-(define-constant CFG_PAYMENT_TOKEN 'STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token)
+(define-constant CFG_PAYMENT_TOKEN '<%= it.sbtc_contract %>)
 (define-constant CFG_DEFAULT_PAYMENT_ADDRESS '<%= it.treasury_contract %>)
 
 ;; errors
@@ -292,7 +292,7 @@
       }
     })
     ;; make transfer - directly pass the memo parameter
-    (try! (contract-call? 'STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token transfer (get price resourceData) contract-caller (var-get paymentAddress) memo))
+    (try! (contract-call? '<%= it.sbtc_contract %> transfer (get price resourceData) contract-caller (var-get paymentAddress) memo))
     ;; return new count
     (ok newCount)
   )

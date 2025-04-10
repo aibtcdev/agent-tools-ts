@@ -239,6 +239,12 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
         subcategory: "TREASURY",
       },
     ],
+    requiredAddresses: [
+      {
+        ref: "SBTC",
+        key: "sbtc_contract",
+      },
+    ],
   },
   {
     name: "aibtc-payment-processor-stx",
@@ -323,6 +329,12 @@ export const EXTENSION_CONTRACTS: BaseContractRegistryEntry[] = [
         key: "base_dao_contract",
         category: "BASE",
         subcategory: "DAO",
+      },
+    ],
+    requiredAddresses: [
+      {
+        ref: "SBTC",
+        key: "sbtc_contract",
       },
     ],
   },
