@@ -13,7 +13,8 @@ import {
   ToolResponse,
 } from "../../../../utilities";
 
-const usage = "Usage: bun run get-payment-address.ts <paymentProcessorContract>";
+const usage =
+  "Usage: bun run get-payment-address.ts <paymentProcessorContract>";
 const usageExample =
   "Example: bun run get-payment-address.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx";
 

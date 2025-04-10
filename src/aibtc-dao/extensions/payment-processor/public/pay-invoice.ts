@@ -18,9 +18,9 @@ import {
   getNextNonce,
   sendToLLM,
 } from "../../../../utilities";
-import { 
-  getTokenTypeFromContractName, 
-  createPostConditions 
+import {
+  getTokenTypeFromContractName,
+  createPostConditions,
 } from "../utils/token-utils";
 
 const usage =
@@ -132,7 +132,9 @@ async function main() {
     postConditions,
   };
 
-  console.log(`Paying invoice with ${tokenType} token for resource ${resourceIndex}`);
+  console.log(
+    `Paying invoice with ${tokenType} token for resource ${resourceIndex}`
+  );
 
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

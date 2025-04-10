@@ -1,8 +1,4 @@
-import {
-  callReadOnlyFunction,
-  ClarityType,
-  cvToValue,
-} from "@stacks/transactions";
+import { callReadOnlyFunction, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,

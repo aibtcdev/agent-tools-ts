@@ -73,10 +73,7 @@ async function main(): Promise<ToolResponse<any>> {
     contractAddress,
     contractName,
     functionName: "get-recent-payment",
-    functionArgs: [
-      Cl.uint(args.resourceIndex),
-      Cl.uint(args.userIndex),
-    ],
+    functionArgs: [Cl.uint(args.resourceIndex), Cl.uint(args.userIndex)],
     senderAddress: address,
     network: networkObj,
   });
