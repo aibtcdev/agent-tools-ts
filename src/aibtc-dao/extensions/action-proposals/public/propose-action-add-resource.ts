@@ -18,9 +18,9 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run propose-action-add-resource.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenAddress> <resourceName> <resourceDescription> <resourcePrice> <resourceUrl>";
+  "Usage: bun run propose-action-add-resource.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenAddress> <resourceName> <resourceDescription> <resourcePrice> <resourceUrl> [memo]";
 const usageExample =
-  'Example: bun run propose-action-add-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-add-resource ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token "consultation" "consult with me for 1hr" 100000000 "https://aibtc.dev"';
+  'Example: bun run propose-action-add-resource.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-add-resource ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token "consultation" "consult with me for 1hr" 100000000 "https://aibtc.dev" "Add new consultation resource"';
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
@@ -30,6 +30,7 @@ interface ExpectedArgs {
   resourceDescription: string;
   resourcePrice: number;
   resourceUrl: string;
+  memo?: string;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -42,6 +43,7 @@ function validateArgs(): ExpectedArgs {
     resourceDescription,
     resourcePriceStr,
     resourceUrl,
+    memo,
   ] = process.argv.slice(2);
   const resourcePrice = parseInt(resourcePriceStr);
   if (
@@ -80,6 +82,7 @@ function validateArgs(): ExpectedArgs {
     resourceDescription,
     resourcePrice,
     resourceUrl,
+    memo: memo || undefined,
   };
 }
 
@@ -126,6 +129,7 @@ async function main() {
     functionArgs: [
       Cl.principal(args.daoActionProposalContract),
       Cl.buffer(Cl.serialize(paramsCV)),
+      args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,

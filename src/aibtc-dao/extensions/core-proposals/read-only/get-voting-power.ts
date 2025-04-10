@@ -85,7 +85,7 @@ async function main(): Promise<ToolResponse<unknown>> {
     functionName: "get-voting-power",
     functionArgs: [
       Cl.principal(args.voterAddress),
-      Cl.uint(args.daoProposalContract),
+      Cl.principal(args.daoProposalContract),
     ],
     senderAddress: address,
     network: networkObj,

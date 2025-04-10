@@ -18,15 +18,16 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenContract> <message>";
+  "Usage: bun run propose-action-send-message.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenContract> <message> [memo]";
 const usageExample =
-  'Example: bun run propose-action-send-message.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token "hello world"';
+  'Example: bun run propose-action-send-message.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token "hello world" "Send greeting message"';
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
   daoActionProposalContract: string;
   daoTokenContract: string;
   message: string;
+  memo?: string;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -36,6 +37,7 @@ function validateArgs(): ExpectedArgs {
     daoActionProposalContract,
     daoTokenContract,
     message,
+    memo,
   ] = process.argv.slice(2);
   if (
     !daoActionProposalsExtensionContract ||
@@ -76,6 +78,7 @@ function validateArgs(): ExpectedArgs {
     daoActionProposalContract,
     daoTokenContract,
     message,
+    memo: memo || undefined,
   };
 }
 
@@ -118,6 +121,7 @@ async function main() {
     functionArgs: [
       Cl.principal(args.daoActionProposalContract),
       Cl.buffer(Cl.serialize(paramsCV)),
+      args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,

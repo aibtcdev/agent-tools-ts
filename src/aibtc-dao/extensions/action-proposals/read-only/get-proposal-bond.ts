@@ -9,9 +9,9 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-total-proposals.ts <daoActionProposalExtensionContract>";
+  "Usage: bun run get-proposal-bond.ts <daoActionProposalsExtensionContract>";
 const usageExample =
-  "Example: bun run get-total-proposals.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2";
+  "Example: bun run get-proposal-bond.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
@@ -45,14 +45,7 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-interface TotalProposalsResponse {
-  total: number;
-  concluded: number;
-  executed: number;
-}
-
-// gets total proposals in action proposal contract
-async function main(): Promise<ToolResponse<TotalProposalsResponse>> {
+async function main(): Promise<ToolResponse<number>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =
@@ -64,27 +57,25 @@ async function main(): Promise<ToolResponse<TotalProposalsResponse>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // get total proposals
+  // call read-only function
   const result = await callReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
-    functionName: "get-total-proposals",
+    functionName: "get-proposal-bond",
     functionArgs: [],
     senderAddress: address,
     network: networkObj,
   });
-  // return total proposals
-  const totalProposals = cvToValue(result);
-  const response: ToolResponse<TotalProposalsResponse> = {
+  // extract and return response
+  const proposalBond = parseInt(cvToValue(result, true));
+  if (isNaN(proposalBond)) {
+    throw new Error(`Failed to retrieve proposal bond: ${result}`);
+  }
+  return {
     success: true,
-    message: "Retrieved total proposals successfully",
-    data: {
-      total: parseInt(totalProposals.total),
-      concluded: parseInt(totalProposals.concluded),
-      executed: parseInt(totalProposals.executed),
-    },
+    message: "Proposal bond successfully retrieved",
+    data: proposalBond,
   };
-  return response;
 }
 
 main()

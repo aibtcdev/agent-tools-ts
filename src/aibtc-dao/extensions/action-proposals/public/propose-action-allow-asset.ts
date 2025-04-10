@@ -18,15 +18,16 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run propose-action-allow-asset.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenContract> <tokenContractAddress>";
+  "Usage: bun run propose-action-allow-asset.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenContract> <tokenContractAddress> [memo]";
 const usageExample =
-  "Example: bun run propose-action-allow-asset.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-allow-asset ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.shiny-new-token";
+  'Example: bun run propose-action-allow-asset.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-allow-asset ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.shiny-new-token "Allow new token asset"';
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
   daoActionProposalContract: string;
   daoTokenContract: string;
   tokenContractAddress: string;
+  memo?: string;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -36,6 +37,7 @@ function validateArgs(): ExpectedArgs {
     daoActionProposalContract,
     daoTokenContract,
     tokenContractAddress,
+    memo,
   ] = process.argv.slice(2);
   if (
     !daoActionProposalsExtensionContract ||
@@ -78,6 +80,7 @@ function validateArgs(): ExpectedArgs {
     daoActionProposalContract: daoActionProposalContract,
     daoTokenContract: daoTokenContract,
     tokenContractAddress: tokenContractAddress,
+    memo: memo || undefined,
   };
 }
 
@@ -119,6 +122,7 @@ async function main() {
     functionArgs: [
       Cl.principal(args.daoActionProposalContract),
       Cl.buffer(Cl.serialize(paramsCV)),
+      args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,

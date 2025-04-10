@@ -5,6 +5,9 @@ import {
   PostConditionMode,
   principalCV,
   SignedContractCallOptions,
+  noneCV,
+  someCV,
+  stringAsciiCV,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -19,14 +22,15 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run create-proposal.ts <daoCoreProposalsExtensionContract> <daoCoreProposalContract> <daoTokenContract>";
+  "Usage: bun run create-proposal.ts <daoCoreProposalsExtensionContract> <daoCoreProposalContract> <daoTokenContract> [memo]";
 const usageExample =
-  "Example: bun run create-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-onchain-messaging-send ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token";
+  "Example: bun run create-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-onchain-messaging-send ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token \"This is a proposal to add messaging\"";
 
 interface ExpectedArgs {
   daoCoreProposalsExtensionContract: string;
   daoProposalContract: string;
   daoTokenContract: string;
+  memo?: string;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -35,6 +39,7 @@ function validateArgs(): ExpectedArgs {
     daoCoreProposalsExtensionContract,
     daoProposalContract,
     daoTokenContract,
+    memo,
   ] = process.argv.slice(2);
   if (
     !daoCoreProposalsExtensionContract ||
@@ -78,6 +83,7 @@ function validateArgs(): ExpectedArgs {
     daoCoreProposalsExtensionContract,
     daoProposalContract,
     daoTokenContract,
+    memo: memo || undefined,
   };
 }
 
@@ -114,7 +120,10 @@ async function main() {
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "create-proposal",
-    functionArgs: [principalCV(args.daoProposalContract)],
+    functionArgs: [
+      principalCV(args.daoProposalContract),
+      args.memo ? someCV(stringAsciiCV(args.memo)) : noneCV(),
+    ],
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
