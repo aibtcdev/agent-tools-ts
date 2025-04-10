@@ -35,6 +35,11 @@ export const ACTION_CONTRACTS: BaseContractRegistryEntry[] = [
         category: "EXTENSIONS",
         subcategory: "TIMED_VAULT_DAO",
       },
+      {
+        key: "dao_token_name",
+        category: "TOKEN",
+        subcategory: "DAO",
+      },
     ],
   },
   {
