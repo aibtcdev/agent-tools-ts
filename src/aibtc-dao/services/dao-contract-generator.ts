@@ -232,9 +232,12 @@ export class DaoContractGenerator {
       ...runtimeVars,
     };
 
+    // Create a separate object for template functions
+    const templateFunctions: Record<string, Function> = {};
+
     // Add helper functions for bootstrap proposal template
     if (contract.subtype === "BOOTSTRAP_INIT") {
-      templateVars.getNumberedContract = (
+      templateFunctions.getNumberedContract = (
         baseContract: string,
         index: number
       ) => {
@@ -242,8 +245,11 @@ export class DaoContractGenerator {
       };
     }
 
-    // render the template
-    const source = this.eta.render(contract.templatePath, templateVars);
+    // render the template with both variables and functions
+    const source = this.eta.render(contract.templatePath, {
+      ...templateVars,
+      ...templateFunctions
+    });
 
     // hash the contract
     const hash = crypto.createHash("sha256").update(source).digest("hex");
