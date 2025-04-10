@@ -20,7 +20,7 @@ import {
 const usage =
   "Usage: bun run propose-action-set-withdrawal-amount.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenContract> <withdrawalAmount> [memo]";
 const usageExample =
-  "Example: bun run propose-action-set-withdrawal-amount.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-set-withdrawal-amount ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token 50 \"Change withdrawal amount\"";
+  'Example: bun run propose-action-set-withdrawal-amount.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-set-withdrawal-amount ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token 50 "Change withdrawal amount"';
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
