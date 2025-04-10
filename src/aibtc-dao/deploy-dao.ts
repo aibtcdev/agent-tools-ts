@@ -8,7 +8,10 @@ import {
 } from "./registries/dao-contract-registry";
 import { DaoContractGenerator } from "./services/dao-contract-generator";
 import { DaoContractDeployer } from "./services/dao-contract-deployer";
-import { ContractCopyConfig, ExpectedContractGeneratorArgs } from "./types/dao-types";
+import {
+  ContractCopyConfig,
+  ExpectedContractGeneratorArgs,
+} from "./types/dao-types";
 import {
   aibtcCoreRequestBody,
   CONFIG,
@@ -108,6 +111,7 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   // Step 1 - generate dao-related contracts
 
   // Define which contracts need multiple copies
+  /* removing temporarily while we troubleshoot action config
   const contractCopies: ContractCopyConfig[] = [
     {
       type: "EXTENSIONS",
@@ -125,9 +129,10 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
       count: 5,
     },
   ];
+  */
 
   // generate dao contracts with multiple copies
-  const daoContracts = contractGenerator.generateContracts(args, contractCopies);
+  const daoContracts = contractGenerator.generateContracts(args);
   generatedContracts.push(...Object.values(daoContracts));
 
   // Step 2 - generate token-related contracts
@@ -199,7 +204,9 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   // Log deployment order for debugging
   console.log("Deployment order:");
   sortedContracts.forEach((contract, index) => {
-    console.log(`${index + 1}. ${contract.name} (${contract.type}/${contract.subtype})`);
+    console.log(
+      `${index + 1}. ${contract.name} (${contract.type}/${contract.subtype})`
+    );
   });
 
   //console.log(`Deploying ${generatedContracts.length} contracts...`);
