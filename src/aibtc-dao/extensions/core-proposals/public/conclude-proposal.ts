@@ -121,7 +121,7 @@ async function main() {
     nonce: nextPossibleNonce,
     senderKey: key,
     postConditionMode: PostConditionMode.Allow,
-    //postConditions: postConditions,
+    postConditions: postConditions,
   };
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
