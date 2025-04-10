@@ -9,22 +9,21 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-total-votes.ts <daoCoreProposalsExtensionContract> <proposalContract> <voterAddress>";
+  "Usage: bun run get-vote-record.ts <daoCoreProposalsExtensionContract> <proposalContract> <voterAddress>";
 const usageExample =
-  "Example: bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-onchain-messaging-send ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
+  "Example: bun run get-vote-record.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-onchain-messaging-send ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
 
 interface ExpectedArgs {
   daoCoreProposalsExtensionContract: string;
-  proposalId: number;
+  proposalContract: string;
   voterAddress: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [daoCoreProposalsExtensionContract, proposalIdStr, voterAddress] =
+  const [daoCoreProposalsExtensionContract, proposalContract, voterAddress] =
     process.argv.slice(2);
-  const proposalId = parseInt(proposalIdStr);
-  if (!daoCoreProposalsExtensionContract || !proposalId || !voterAddress) {
+  if (!daoCoreProposalsExtensionContract || !proposalContract || !voterAddress) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -43,10 +42,21 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
+  // verify contract addresses extracted from arguments
+  const [proposalAddress, proposalName] = proposalContract.split(".");
+  if (!proposalAddress || !proposalName) {
+    const errorMessage = [
+      `Invalid proposal contract address: ${proposalContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  
   // return validated arguments
   return {
     daoCoreProposalsExtensionContract,
-    proposalId,
+    proposalContract,
     voterAddress,
   };
 }
@@ -68,8 +78,8 @@ async function main(): Promise<ToolResponse<number>> {
   const result = await callReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
-    functionName: "get-total-votes",
-    functionArgs: [Cl.uint(args.proposalId), Cl.principal(args.voterAddress)],
+    functionName: "get-vote-record",
+    functionArgs: [Cl.principal(args.proposalContract), Cl.principal(args.voterAddress)],
     senderAddress: address,
     network: networkObj,
   });

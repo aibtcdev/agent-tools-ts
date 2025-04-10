@@ -19,7 +19,7 @@ const usageExample =
   "Example: bun run get-liquid-supply.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2 562120";
 
 interface ExpectedArgs {
-  daoActionProposalsExtensionContract: string;
+  daoCoreProposalsExtensionContract: string;
   stacksBlockHeight: number;
 }
 
@@ -58,7 +58,7 @@ async function main(): Promise<ToolResponse<number>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =
-    args.daoActionProposalsExtensionContract.split(".");
+    args.daoCoreProposalsExtensionContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
