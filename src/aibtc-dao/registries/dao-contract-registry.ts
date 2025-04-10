@@ -157,7 +157,7 @@ const BOOTSTRAP_PROPOSAL: BaseContractRegistryEntry[] = [
     requiredTraits: [
       {
         ref: "DAO_PROPOSAL",
-        key: "proposal_trait",
+        key: "dao_proposal_trait",
       },
     ],
     requiredAddresses: [

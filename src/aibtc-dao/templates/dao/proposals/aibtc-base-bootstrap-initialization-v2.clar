@@ -12,7 +12,9 @@
         {extension: '<%= it.core_proposals_contract %>, enabled: true}
         {extension: '<%= it.dao_charter_contract %>, enabled: true}
         {extension: '<%= it.messaging_contract %>, enabled: true}
-        {extension: '<%= it.payments_contract %>, enabled: true}
+        {extension: '<%= it.payments_dao_contract %>, enabled: true}
+        {extension: '<%= it.payments_sbtc_contract %>, enabled: true}
+        {extension: '<%= it.payments_stx_contract %>, enabled: true}
         
         ;; Timed vault contracts - base and numbered copies
         {extension: '<%= it.timed_vault_dao_contract %>, enabled: true}
@@ -45,13 +47,17 @@
     ;; set initial action proposals list
     (try! (contract-call? '<%= it.base_dao_contract %> set-extensions
       (list
-        {extension: '<%= it.action_add_resource_contract %>, enabled: true}
-        {extension: '<%= it.action_allow_asset_contract %>, enabled: true}
+        {extension: '<%= it.action_configure_timed_vault_dao_contract %>, enabled: true}
+        {extension: '<%= it.action_configure_timed_vault_sbtc_contract %>, enabled: true}
+        {extension: '<%= it.action_configure_timed_vault_stx_contract %>, enabled: true}
+        {extension: '<%= it.action_pmt_dao_add_resource_contract %>, enabled: true}
+        {extension: '<%= it.action_pmt_dao_toggle_resource_contract %>, enabled: true}
+        {extension: '<%= it.action_pmt_sbtc_add_resource_contract %>, enabled: true}
+        {extension: '<%= it.action_pmt_sbtc_toggle_resource_contract %>, enabled: true}
+        {extension: '<%= it.action_pmt_stx_add_resource_contract %>, enabled: true}
+        {extension: '<%= it.action_pmt_stx_toggle_resource_contract %>, enabled: true}
         {extension: '<%= it.action_send_message_contract %>, enabled: true}
-        {extension: '<%= it.action_set_account_holder_contract %>, enabled: true}
-        {extension: '<%= it.action_set_withdrawal_amount_contract %>, enabled: true}
-        {extension: '<%= it.action_set_withdrawal_period_contract %>, enabled: true}
-        {extension: '<%= it.action_toggle_resource_by_name_contract %>, enabled: true}
+        {extension: '<%= it.action_treasury_allow_asset_contract %>, enabled: true}
       )
     ))
     ;; set DAO manifest in dao-charter extension
