@@ -74,6 +74,7 @@ export type DeployedContractRegistryEntry = GeneratedContractRegistryEntry & {
   success: boolean; // deployment success status
   txId?: string; // transaction ID if successful
   address: string; // contract address after deployment
+  error?: string; // error message if failed
 };
 
 /**

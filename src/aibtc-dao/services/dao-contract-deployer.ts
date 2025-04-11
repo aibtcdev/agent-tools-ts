@@ -107,6 +107,7 @@ export class DaoContractDeployer {
         sender: this.senderAddress,
         success: false,
         address: `${this.senderAddress}.${contract.name}`,
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -123,8 +124,22 @@ export class DaoContractDeployer {
     const deployedContracts: DeployedContractRegistryEntry[] = [];
     let nonce = await getNextNonce(this.network, this.senderAddress);
 
+    const alreadyDeployedContractNames: string[] = [
+      // e.g.
+      //"fac35-pre-faktory",
+      //"fac35-faktory",
+      //"fac35-base-dao",
+    ];
+
     for (const contract of contracts) {
-      //console.log(`Deploying ${contract.name}...`);
+      // Check if contract is already deployed
+      if (alreadyDeployedContractNames.includes(contract.name)) {
+        console.log(`Skipping ${contract.name}, already deployed`);
+        continue;
+      }
+
+      console.log(`Deploying ${contract.name}...`);
+
       const deployedContract = await this.deployContract(contract, nonce);
       deployedContracts.push(deployedContract);
 
@@ -140,8 +155,8 @@ export class DaoContractDeployer {
         //  `Successfully deployed ${contract.name}: ${deployedContract.address}`
         //);
         nonce++;
-        // wait 1 second before deploying the next contract
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // wait 2 second before deploying the next contract
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
 
