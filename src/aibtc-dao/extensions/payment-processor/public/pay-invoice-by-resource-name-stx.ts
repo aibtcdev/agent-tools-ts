@@ -4,10 +4,10 @@ import {
   makeContractCall,
   SignedContractCallOptions,
   PostConditionMode,
-  Pc,
   callReadOnlyFunction,
   ClarityType,
   cvToValue,
+  Pc,
 } from "@stacks/transactions";
 import { ResourceData } from "../../../types/dao-types";
 import {
@@ -17,24 +17,25 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
   sendToLLM,
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run pay-invoice-by-resource-name.ts <paymentsInvoicesContract> <resourceName> [memo]";
+  "Usage: bun run pay-invoice-by-resource-name-stx.ts <paymentProcessorContract> <resourceName> [memo]";
 const usageExample =
-  "Example: bun run pay-invoice-by-resource-name.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices resource-name";
+  "Example: bun run pay-invoice-by-resource-name-stx.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx resource-name";
 
 interface ExpectedArgs {
-  paymentsInvoicesContract: string;
+  paymentProcessorContract: string;
   resourceName: string;
   memo?: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentsInvoicesContract, resourceName, memo] = process.argv.slice(2);
-  if (!paymentsInvoicesContract || !resourceName) {
+  const [paymentProcessorContract, resourceName, memo] = process.argv.slice(2);
+  if (!paymentProcessorContract || !resourceName) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -43,18 +44,29 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
-  if (!contractAddress || !contractName) {
+  if (!isValidContractPrincipal(paymentProcessorContract)) {
     const errorMessage = [
-      `Invalid contract address: ${paymentsInvoicesContract}`,
+      `Invalid contract address: ${paymentProcessorContract}`,
       usage,
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
+  
+  // Verify this is an STX payment processor contract
+  const [_, contractName] = paymentProcessorContract.split(".");
+  if (!contractName.includes("-stx")) {
+    const errorMessage = [
+      `Expected STX payment processor contract, got: ${contractName}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  
   // return validated arguments
   return {
-    paymentsInvoicesContract,
+    paymentProcessorContract,
     resourceName,
     memo,
   };
@@ -64,7 +76,7 @@ async function main() {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] =
-    args.paymentsInvoicesContract.split(".");
+    args.paymentProcessorContract.split(".");
 
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
@@ -80,23 +92,24 @@ async function main() {
     contractAddress,
     contractName,
     functionName: "get-resource-by-name",
-    functionArgs: [Cl.stringAscii(args.resourceName)],
+    functionArgs: [Cl.stringUtf8(args.resourceName)],
     senderAddress: address,
     network: networkObj,
   });
 
   if (resourceData.type !== ClarityType.OptionalSome) {
     throw new Error(
-      `Resource not found in ${args.paymentsInvoicesContract} for name ${args.resourceName}`
+      `Resource not found in ${args.paymentProcessorContract} for name ${args.resourceName}`
     );
   }
 
   const resource = cvToValue(resourceData.value, true) as ResourceData;
   const { price } = resource;
 
-  // Set post-conditions for STX transfer
-  // Note: The contract only handles STX payments currently
-  const postConditions = [Pc.principal(address).willSendEq(price).ustx()];
+  // Set STX-specific post condition
+  const postConditions = [
+    Pc.principal(address).willSendEq(price).ustx()
+  ];
 
   // prepare function arguments
   const functionArgs = [
@@ -114,9 +127,13 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Deny, // Strictly enforce post-conditions
+    postConditionMode: PostConditionMode.Deny,
     postConditions,
   };
+
+  console.log(
+    `Paying invoice with STX for resource ${args.resourceName}`
+  );
 
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

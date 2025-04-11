@@ -9,9 +9,9 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-total-votes.ts <daoActionProposalsExtensionContract> <proposalId> <voterAddress>";
+  "Usage: bun run get-vote-record.ts <daoActionProposalsExtensionContract> <proposalId> <voterAddress>";
 const usageExample =
-  "Example: bun run get-total-votes.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
+  "Example: bun run get-vote-record.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 1 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
@@ -68,7 +68,7 @@ async function main(): Promise<ToolResponse<number>> {
   const result = await callReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
-    functionName: "get-total-votes",
+    functionName: "get-vote-record",
     functionArgs: [Cl.uint(args.proposalId), Cl.principal(args.voterAddress)],
     senderAddress: address,
     network: networkObj,

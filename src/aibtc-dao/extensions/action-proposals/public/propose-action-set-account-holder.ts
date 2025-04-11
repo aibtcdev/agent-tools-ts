@@ -18,15 +18,16 @@ import {
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run propose-action-set-account-holder.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenContract> <accountHolderAddress>";
+  "Usage: bun run propose-action-set-account-holder.ts <daoActionProposalsExtensionContract> <daoActionProposalContract> <daoTokenContract> <accountHolderAddress> [memo]";
 const usageExample =
-  "Example: bun run propose-action-set-account-holder.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-set-account-holder ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
+  'Example: bun run propose-action-set-account-holder.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-set-account-holder ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA "Set new account holder"';
 
 interface ExpectedArgs {
   daoActionProposalsExtensionContract: string;
   daoActionProposalContract: string;
   daoTokenContract: string;
   accountHolderAddress: string;
+  memo?: string;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -36,6 +37,7 @@ function validateArgs(): ExpectedArgs {
     daoActionProposalContract,
     daoTokenContract,
     accountHolderAddress,
+    memo,
   ] = process.argv.slice(2);
   if (
     !daoActionProposalsExtensionContract ||
@@ -76,6 +78,7 @@ function validateArgs(): ExpectedArgs {
     daoActionProposalContract,
     daoTokenContract,
     accountHolderAddress,
+    memo: memo || undefined,
   };
 }
 
@@ -117,6 +120,7 @@ async function main() {
     functionArgs: [
       Cl.principal(args.daoActionProposalContract),
       Cl.buffer(Cl.serialize(paramsCV)),
+      args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,

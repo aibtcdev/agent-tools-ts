@@ -19,16 +19,16 @@ const usageExample =
   "Example: bun run get-liquid-supply.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2 562120";
 
 interface ExpectedArgs {
-  daoActionProposalsExtensionContract: string;
+  daoCoreProposalsExtensionContract: string;
   stacksBlockHeight: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [daoActionProposalsExtensionContract, stacksBlockHeightStr] =
+  const [daoCoreProposalsExtensionContract, stacksBlockHeightStr] =
     process.argv.slice(2);
   const stacksBlockHeight = parseInt(stacksBlockHeightStr);
-  if (!daoActionProposalsExtensionContract || !stacksBlockHeight) {
+  if (!daoCoreProposalsExtensionContract || !stacksBlockHeight) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -38,10 +38,10 @@ function validateArgs(): ExpectedArgs {
   }
   // verify contract addresses extracted from arguments
   const [extensionAddress, extensionName] =
-    daoActionProposalsExtensionContract.split(".");
+    daoCoreProposalsExtensionContract.split(".");
   if (!extensionAddress || !extensionName) {
     const errorMessage = [
-      `Invalid contract address: ${daoActionProposalsExtensionContract}`,
+      `Invalid contract address: ${daoCoreProposalsExtensionContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -49,7 +49,7 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    daoActionProposalsExtensionContract,
+    daoCoreProposalsExtensionContract,
     stacksBlockHeight,
   };
 }
@@ -58,7 +58,7 @@ async function main(): Promise<ToolResponse<number>> {
   // validate and store provided args
   const args = validateArgs();
   const [extensionAddress, extensionName] =
-    args.daoActionProposalsExtensionContract.split(".");
+    args.daoCoreProposalsExtensionContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(

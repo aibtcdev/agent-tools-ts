@@ -9,24 +9,26 @@ import {
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
+  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-resource-by-name.ts <paymentsInvoicesContract> <resourceName>";
+  "Usage: bun run get-invoice.ts <paymentProcessorContract> <invoiceIndex>";
 const usageExample =
-  "Example: bun run get-resource-by-name.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices resource-name";
+  "Example: bun run get-invoice.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx 1";
 
 interface ExpectedArgs {
-  paymentsInvoicesContract: string;
-  resourceName: string;
+  paymentProcessorContract: string;
+  invoiceIndex: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentsInvoicesContract, resourceName] = process.argv.slice(2);
-  if (!paymentsInvoicesContract || !resourceName) {
+  const [paymentProcessorContract, invoiceIndexStr] = process.argv.slice(2);
+  const invoiceIndex = parseInt(invoiceIndexStr);
+  if (!paymentProcessorContract || !invoiceIndex) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -35,10 +37,9 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
-  if (!contractAddress || !contractName) {
+  if (!isValidContractPrincipal(paymentProcessorContract)) {
     const errorMessage = [
-      `Invalid contract address: ${paymentsInvoicesContract}`,
+      `Invalid contract address: ${paymentProcessorContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -46,8 +47,8 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    paymentsInvoicesContract,
-    resourceName,
+    paymentProcessorContract,
+    invoiceIndex,
   };
 }
 
@@ -55,7 +56,7 @@ async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] =
-    args.paymentsInvoicesContract.split(".");
+    args.paymentProcessorContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
@@ -63,25 +64,25 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // get resource data
+  // get invoice data
   const result = await callReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: "get-resource-by-name",
-    functionArgs: [Cl.stringUtf8(args.resourceName)],
+    functionName: "get-invoice",
+    functionArgs: [Cl.uint(args.invoiceIndex)],
     senderAddress: address,
     network: networkObj,
   });
-  // extract and return resource data
+  // extract and return invoice data
   if (result.type === ClarityType.OptionalSome) {
-    const resourceData = cvToValue(result.value, true);
+    const invoiceData = cvToValue(result.value, true);
     return {
       success: true,
-      message: "Resource data retrieved successfully",
-      data: resourceData,
+      message: "Invoice data retrieved successfully",
+      data: invoiceData,
     };
   } else {
-    const errorMessage = `Resource not found: ${args.resourceName}`;
+    const errorMessage = `Invoice not found: ${args.invoiceIndex}`;
     throw new Error(errorMessage);
   }
 }

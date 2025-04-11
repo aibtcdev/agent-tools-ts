@@ -9,26 +9,25 @@ import {
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
+  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
 } from "../../../../utilities";
 
 const usage =
-  "Usage: bun run get-recent-payment-data-by-address.ts <paymentsInvoicesContract> <resourceName> <userAddress>";
+  "Usage: bun run get-user-index.ts <paymentProcessorContract> <userAddress>";
 const usageExample =
-  "Example: bun run get-recent-payment-data-by-address.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices resource-name ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
+  "Example: bun run get-user-index.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA";
 
 interface ExpectedArgs {
-  paymentsInvoicesContract: string;
-  resourceName: string;
+  paymentProcessorContract: string;
   userAddress: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentsInvoicesContract, resourceName, userAddress] =
-    process.argv.slice(2);
-  if (!paymentsInvoicesContract || !resourceName || !userAddress) {
+  const [paymentProcessorContract, userAddress] = process.argv.slice(2);
+  if (!paymentProcessorContract || !userAddress) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -37,10 +36,9 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
-  if (!contractAddress || !contractName) {
+  if (!isValidContractPrincipal(paymentProcessorContract)) {
     const errorMessage = [
-      `Invalid contract address: ${paymentsInvoicesContract}`,
+      `Invalid contract address: ${paymentProcessorContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -48,8 +46,7 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    paymentsInvoicesContract,
-    resourceName,
+    paymentProcessorContract,
     userAddress,
   };
 }
@@ -58,7 +55,7 @@ async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] =
-    args.paymentsInvoicesContract.split(".");
+    args.paymentProcessorContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
@@ -66,28 +63,25 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // get recent payment data
+  // get user index
   const result = await callReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: "get-recent-payment-data-by-address",
-    functionArgs: [
-      Cl.stringUtf8(args.resourceName),
-      Cl.principal(args.userAddress),
-    ],
+    functionName: "get-user-index",
+    functionArgs: [Cl.principal(args.userAddress)],
     senderAddress: address,
     network: networkObj,
   });
-  // extract and return payment data
+  // extract and return user index
   if (result.type === ClarityType.OptionalSome) {
-    const paymentData = cvToValue(result.value, true);
+    const userIndex = cvToValue(result.value);
     return {
       success: true,
-      message: "Recent payment data retrieved successfully",
-      data: paymentData,
+      message: "User index retrieved successfully",
+      data: userIndex,
     };
   } else {
-    const errorMessage = `No recent payment found for resource ${args.resourceName} and user ${args.userAddress}`;
+    const errorMessage = `User not found: ${args.userAddress}`;
     throw new Error(errorMessage);
   }
 }

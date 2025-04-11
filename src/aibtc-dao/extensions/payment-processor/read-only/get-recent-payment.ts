@@ -1,5 +1,6 @@
 import {
   callReadOnlyFunction,
+  Cl,
   ClarityType,
   cvToValue,
 } from "@stacks/transactions";
@@ -8,22 +9,29 @@ import {
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
+  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
 } from "../../../../utilities";
 
-const usage = "Usage: bun run get-contract-data.ts <paymentsInvoicesContract>";
+const usage =
+  "Usage: bun run get-recent-payment.ts <paymentProcessorContract> <resourceIndex> <userIndex>";
 const usageExample =
-  "Example: bun run get-contract-data.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payments-invoices";
+  "Example: bun run get-recent-payment.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx 1 1";
 
 interface ExpectedArgs {
-  paymentsInvoicesContract: string;
+  paymentProcessorContract: string;
+  resourceIndex: number;
+  userIndex: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [paymentsInvoicesContract] = process.argv.slice(2);
-  if (!paymentsInvoicesContract) {
+  const [paymentProcessorContract, resourceIndexStr, userIndexStr] =
+    process.argv.slice(2);
+  const resourceIndex = parseInt(resourceIndexStr);
+  const userIndex = parseInt(userIndexStr);
+  if (!paymentProcessorContract || !resourceIndex || !userIndex) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -32,10 +40,9 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [contractAddress, contractName] = paymentsInvoicesContract.split(".");
-  if (!contractAddress || !contractName) {
+  if (!isValidContractPrincipal(paymentProcessorContract)) {
     const errorMessage = [
-      `Invalid contract address: ${paymentsInvoicesContract}`,
+      `Invalid contract address: ${paymentProcessorContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -43,7 +50,9 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    paymentsInvoicesContract,
+    paymentProcessorContract,
+    resourceIndex,
+    userIndex,
   };
 }
 
@@ -51,7 +60,7 @@ async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] =
-    args.paymentsInvoicesContract.split(".");
+    args.paymentProcessorContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
@@ -59,27 +68,25 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // get contract data
+  // get recent payment
   const result = await callReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: "get-contract-data",
-    functionArgs: [],
+    functionName: "get-recent-payment",
+    functionArgs: [Cl.uint(args.resourceIndex), Cl.uint(args.userIndex)],
     senderAddress: address,
     network: networkObj,
   });
-  // extract and return contract data
-  if (result.type === ClarityType.ResponseOk) {
-    const contractData = cvToValue(result.value, true);
+  // extract and return recent payment
+  if (result.type === ClarityType.OptionalSome) {
+    const recentPayment = cvToValue(result.value);
     return {
       success: true,
-      message: "Contract data retrieved successfully",
-      data: contractData,
+      message: "Recent payment retrieved successfully",
+      data: recentPayment,
     };
   } else {
-    const errorMessage = `Failed to retrieve contract data: ${JSON.stringify(
-      result
-    )}`;
+    const errorMessage = `No recent payment found for resource ${args.resourceIndex} and user ${args.userIndex}`;
     throw new Error(errorMessage);
   }
 }

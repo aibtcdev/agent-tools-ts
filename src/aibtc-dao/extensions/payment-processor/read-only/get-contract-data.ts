@@ -1,30 +1,30 @@
 import {
   callReadOnlyFunction,
+  ClarityType,
   cvToValue,
-  principalCV,
 } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
+  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
 } from "../../../../utilities";
 
-const usage =
-  "Usage: bun run get-total-proposals.ts <daoCoreProposalsExtensionContract>";
+const usage = "Usage: bun run get-contract-data.ts <paymentProcessorContract>";
 const usageExample =
-  "Example: bun run get-total-proposals.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2";
+  "Example: bun run get-contract-data.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-payment-processor-stx";
 
 interface ExpectedArgs {
-  daoCoreProposalsExtensionContract: string;
+  paymentProcessorContract: string;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [daoCoreProposalsExtensionContract] = process.argv.slice(2);
-  if (!daoCoreProposalsExtensionContract) {
+  const [paymentProcessorContract] = process.argv.slice(2);
+  if (!paymentProcessorContract) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -33,11 +33,9 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
   // verify contract addresses extracted from arguments
-  const [coreExtensionAddress, coreExtensionName] =
-    daoCoreProposalsExtensionContract.split(".");
-  if (!coreExtensionAddress || !coreExtensionName) {
+  if (!isValidContractPrincipal(paymentProcessorContract)) {
     const errorMessage = [
-      `Invalid contract address: ${daoCoreProposalsExtensionContract}`,
+      `Invalid contract address: ${paymentProcessorContract}`,
       usage,
       usageExample,
     ].join("\n");
@@ -45,16 +43,15 @@ function validateArgs(): ExpectedArgs {
   }
   // return validated arguments
   return {
-    daoCoreProposalsExtensionContract,
+    paymentProcessorContract,
   };
 }
 
-// gets total proposals information from core proposal contract
-async function main(): Promise<ToolResponse<object>> {
+async function main(): Promise<ToolResponse<any>> {
   // validate and store provided args
   const args = validateArgs();
-  const [extensionAddress, extensionName] =
-    args.daoCoreProposalsExtensionContract.split(".");
+  const [contractAddress, contractName] =
+    args.paymentProcessorContract.split(".");
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
@@ -62,23 +59,29 @@ async function main(): Promise<ToolResponse<object>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  // get total proposals
+  // get contract data
   const result = await callReadOnlyFunction({
-    contractAddress: extensionAddress,
-    contractName: extensionName,
-    functionName: "get-total-proposals",
+    contractAddress,
+    contractName,
+    functionName: "get-contract-data",
     functionArgs: [],
     senderAddress: address,
     network: networkObj,
   });
-  // return total proposals
-  const totalProposals = JSON.parse(cvToValue(result));
-  const response: ToolResponse<object> = {
-    success: true,
-    message: "Retrieved total proposals successfully",
-    data: totalProposals,
-  };
-  return response;
+  // extract and return contract data
+  if (result.type === ClarityType.ResponseOk) {
+    const contractData = cvToValue(result.value, true);
+    return {
+      success: true,
+      message: "Contract data retrieved successfully",
+      data: contractData,
+    };
+  } else {
+    const errorMessage = `Failed to retrieve contract data: ${JSON.stringify(
+      result
+    )}`;
+    throw new Error(errorMessage);
+  }
 }
 
 main()
