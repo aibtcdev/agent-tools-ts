@@ -446,7 +446,8 @@ export async function getActionProposalInfo(
   const proposalInfo = await client.callContractFunction(
     proposalsExtensionContract,
     "get-proposal",
-    [Cl.uint(proposalId)],
+    // 2025-04-16 workaround for v6 vs v7 stacks.js
+    [{ type: "uint", value: proposalId }],
     { senderAddress: sender }
   );
   // create a token info service to get the asset name
