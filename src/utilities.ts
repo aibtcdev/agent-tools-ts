@@ -44,7 +44,8 @@ export type ToolResponse<T> = {
 export function createErrorResponse(
   error: any
 ): ToolResponse<Error | undefined> {
-  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorMessage =
+    error instanceof Error ? JSON.stringify(error.message) : String(error);
   const errorData = error instanceof Error ? error : undefined;
   const response: ToolResponse<Error | undefined> = {
     success: false,
