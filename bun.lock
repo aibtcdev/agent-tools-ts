@@ -5,7 +5,7 @@
       "name": "@aibtc/agent-tools",
       "dependencies": {
         "@bitflowlabs/core-sdk": "^1.1.0",
-        "@faktoryfun/core-sdk": "^0.2.22",
+        "@faktoryfun/core-sdk": "^0.2.23",
         "@jingcash/core-sdk": "^0.1.10",
         "@stacks/blockchain-api-client": "^8.7.0",
         "@stacks/bns": "^6.17.0",
@@ -86,7 +86,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.0", "", { "os": "win32", "cpu": "x64" }, "sha512-ZENoHJBxA20C2zFzh6AI4fT6RraMzjYw4xKWemRTRmRVtN9c5DcH9r/f2ihEkMjOW5eGgrwCslG/+Y/3bL+DHQ=="],
 
-    "@faktoryfun/core-sdk": ["@faktoryfun/core-sdk@0.2.22", "", { "dependencies": { "@stacks/network": "^6.17.0", "@stacks/stacks-blockchain-api-types": "^7.14.1", "@stacks/transactions": "^6.17.0", "@stacks/wallet-sdk": "^7.0.0" } }, "sha512-yGsVN7dN4kIkDcNarldFcI7hchD12KkQ8KPaAqBf2yC9lRlgsnV7vdDflhfdDOqu1aXpdcgHiSOnL+y34TYBkg=="],
+    "@faktoryfun/core-sdk": ["@faktoryfun/core-sdk@0.2.23", "", { "dependencies": { "@stacks/network": "^6.17.0", "@stacks/stacks-blockchain-api-types": "^7.14.1", "@stacks/transactions": "^6.17.0", "@stacks/wallet-sdk": "^7.0.0" } }, "sha512-d5W+73rY1cSymR5zrrt8DmjXst+/bqKe5wIuEknXpcsg+b33wJNVAxWqWEktWrendNKzbmrPqNaYZy+p3ON7Vw=="],
 
     "@isaacs/cliui": ["@isaacs/cliui@8.0.2", "", { "dependencies": { "string-width": "^5.1.2", "string-width-cjs": "npm:string-width@^4.2.0", "strip-ansi": "^7.0.1", "strip-ansi-cjs": "npm:strip-ansi@^6.0.1", "wrap-ansi": "^8.1.0", "wrap-ansi-cjs": "npm:wrap-ansi@^7.0.0" } }, ""],
 
@@ -514,11 +514,7 @@
 
     "@stacks/storage/@stacks/auth": ["@stacks/auth@6.17.0", "", { "dependencies": { "@stacks/common": "^6.16.0", "@stacks/encryption": "^6.17.0", "@stacks/network": "^6.17.0", "@stacks/profile": "^6.17.0", "cross-fetch": "^3.1.5", "jsontokens": "^4.0.1" } }, ""],
 
-    "@stacks/storage/@stacks/encryption": ["@stacks/encryption@6.17.0", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@scure/bip39": "1.1.0", "@stacks/common": "^6.16.0", "@types/node": "^18.0.4", "base64-js": "^1.5.1", "bs58": "^5.0.0", "ripemd160-min": "^0.0.6", "varuint-bitcoin": "^1.1.2" } }, ""],
-
     "@stacks/wallet-sdk/@stacks/auth": ["@stacks/auth@6.17.0", "", { "dependencies": { "@stacks/common": "^6.16.0", "@stacks/encryption": "^6.17.0", "@stacks/network": "^6.17.0", "@stacks/profile": "^6.17.0", "cross-fetch": "^3.1.5", "jsontokens": "^4.0.1" } }, ""],
-
-    "@stacks/wallet-sdk/@stacks/encryption": ["@stacks/encryption@6.17.0", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@scure/bip39": "1.1.0", "@stacks/common": "^6.16.0", "@types/node": "^18.0.4", "base64-js": "^1.5.1", "bs58": "^5.0.0", "ripemd160-min": "^0.0.6", "varuint-bitcoin": "^1.1.2" } }, ""],
 
     "@stacks/wallet-sdk/@stacks/profile": ["@stacks/profile@6.17.0", "", { "dependencies": { "@stacks/common": "^6.16.0", "@stacks/network": "^6.17.0", "@stacks/transactions": "^6.17.0", "jsontokens": "^4.0.1", "schema-inspector": "^2.0.2", "zone-file": "^2.0.0-beta.3" } }, ""],
 
@@ -588,8 +584,6 @@
 
     "@isaacs/cliui/string-width/emoji-regex": ["emoji-regex@9.2.2", "", {}, ""],
 
-    "@jingcash/core-sdk/@stacks/network/@stacks/common": ["@stacks/common@6.16.0", "", { "dependencies": { "@types/bn.js": "^5.1.0", "@types/node": "^18.0.4" } }, "sha512-PnzvhrdGRMVZvxTulitlYafSK4l02gPCBBoI9QEoTqgSnv62oaOXhYAUUkTMFKxdHW1seVEwZsrahuXiZPIAwg=="],
-
     "@jingcash/core-sdk/@stacks/wallet-sdk/@stacks/common": ["@stacks/common@7.0.2", "", {}, ""],
 
     "@jingcash/core-sdk/@stacks/wallet-sdk/@stacks/encryption": ["@stacks/encryption@7.0.2", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@scure/bip39": "1.1.0", "@stacks/common": "^7.0.2", "base64-js": "^1.5.1", "bs58": "^5.0.0", "ripemd160-min": "^0.0.6", "varuint-bitcoin": "^1.1.2" } }, ""],
@@ -607,10 +601,6 @@
     "@stacks/encryption/@types/node/undici-types": ["undici-types@5.26.5", "", {}, ""],
 
     "@stacks/storage/@stacks/auth/@stacks/profile": ["@stacks/profile@6.17.0", "", { "dependencies": { "@stacks/common": "^6.16.0", "@stacks/network": "^6.17.0", "@stacks/transactions": "^6.17.0", "jsontokens": "^4.0.1", "schema-inspector": "^2.0.2", "zone-file": "^2.0.0-beta.3" } }, ""],
-
-    "@stacks/storage/@stacks/encryption/@types/node": ["@types/node@18.19.68", "", { "dependencies": { "undici-types": "~5.26.4" } }, ""],
-
-    "@stacks/wallet-sdk/@stacks/encryption/@types/node": ["@types/node@18.19.68", "", { "dependencies": { "undici-types": "~5.26.4" } }, ""],
 
     "dexterity-sdk/@stacks/blockchain-api-client/@types/node": ["@types/node@20.14.14", "", { "dependencies": { "undici-types": "~5.26.4" } }, ""],
 
@@ -642,12 +632,6 @@
 
     "wrap-ansi/string-width/emoji-regex": ["emoji-regex@9.2.2", "", {}, ""],
 
-    "@jingcash/core-sdk/@stacks/network/@stacks/common/@types/node": ["@types/node@18.19.78", "", { "dependencies": { "undici-types": "~5.26.4" } }, "sha512-m1ilZCTwKLkk9rruBJXFeYN0Bc5SbjirwYX/Td3MqPfioYbgun3IvK/m8dQxMCnrPGZPg1kvXjp3SIekCN/ynw=="],
-
-    "@stacks/storage/@stacks/encryption/@types/node/undici-types": ["undici-types@5.26.5", "", {}, ""],
-
-    "@stacks/wallet-sdk/@stacks/encryption/@types/node/undici-types": ["undici-types@5.26.5", "", {}, ""],
-
     "dexterity-sdk/@stacks/blockchain-api-client/@types/node/undici-types": ["undici-types@5.26.5", "", {}, ""],
 
     "stxcity-sdk/@stacks/connect/@stacks/network-v6/@stacks/common": ["@stacks/common@6.16.0", "", { "dependencies": { "@types/bn.js": "^5.1.0", "@types/node": "^18.0.4" } }, ""],
@@ -655,8 +639,6 @@
     "stxcity-sdk/@stacks/connect/@stacks/transactions-v6/@stacks/common": ["@stacks/common@6.16.0", "", { "dependencies": { "@types/bn.js": "^5.1.0", "@types/node": "^18.0.4" } }, ""],
 
     "stxcity-sdk/@stacks/connect/@stacks/transactions-v6/@stacks/network": ["@stacks/network@6.16.0", "", { "dependencies": { "@stacks/common": "^6.16.0", "cross-fetch": "^3.1.5" } }, ""],
-
-    "@jingcash/core-sdk/@stacks/network/@stacks/common/@types/node/undici-types": ["undici-types@5.26.5", "", {}, "sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA=="],
 
     "stxcity-sdk/@stacks/connect/@stacks/network-v6/@stacks/common/@types/node": ["@types/node@18.19.10", "", { "dependencies": { "undici-types": "~5.26.4" } }, ""],
 
