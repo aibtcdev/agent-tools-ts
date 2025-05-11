@@ -63,19 +63,20 @@ export class ContractDeployer {
       senderKey: this.senderKey,
       nonce: nonce === 0 ? 0 : nonce ? nonce : undefined,
       network: this.network,
-      anchorMode: AnchorMode.Any,
       postConditions: [], // empty, no transfers expected
       postConditionMode: PostConditionMode.Deny,
     });
 
     // Broadcast the transaction
-    const broadcastResponse = await broadcastTransaction(
+    const broadcastResponse = await broadcastTransaction({
       transaction,
-      this.network
-    );
+      network: this.network,
+    });
 
-    if (broadcastResponse.error) {
-      throw new Error(`Failed to deploy contract: ${broadcastResponse.reason}`);
+    if ("error" in broadcastResponse) {
+      throw new Error(
+        `Failed to deploy contract: ${(broadcastResponse as any).reason}`
+      );
     }
     // Return the deployed contract details
     return {

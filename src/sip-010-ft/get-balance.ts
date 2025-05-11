@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   cvToJSON,
   standardPrincipalCV,
 } from "@stacks/transactions";
@@ -18,7 +18,7 @@ async function getBalance(
   );
 
   try {
-    const result = await callReadOnlyFunction({
+    const result = await fetchCallReadOnlyFunction({
       contractAddress,
       contractName,
       functionName: "get-balance",

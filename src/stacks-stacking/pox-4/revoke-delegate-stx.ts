@@ -29,7 +29,10 @@ async function revokeDelegate(): Promise<DelegateResponse | null> {
       accountIndex
     );
 
-    const client = new StackingClient(address, networkObj);
+    const client = new StackingClient({
+      address,
+      network: networkObj,
+    });
     const delegetateResponse = await client.revokeDelegateStx(key);
     return {
       from: address,

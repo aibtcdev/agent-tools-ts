@@ -1,4 +1,4 @@
-import { callReadOnlyFunction, cvToValue } from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -58,7 +58,7 @@ async function main(): Promise<ToolResponse<number>> {
     CONFIG.ACCOUNT_INDEX
   );
   // call read-only function
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-proposal-bond",

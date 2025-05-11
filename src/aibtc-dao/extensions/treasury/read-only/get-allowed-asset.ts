@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   Cl,
   ClarityType,
   cvToValue,
@@ -64,7 +64,7 @@ async function main(): Promise<ToolResponse<boolean | null>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get allowed asset status
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-allowed-asset",

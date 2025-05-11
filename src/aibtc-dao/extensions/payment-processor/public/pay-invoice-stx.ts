@@ -52,7 +52,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // Verify this is an STX payment processor contract
   const [_, contractName] = paymentProcessorContract.split(".");
   if (!contractName.includes("-stx")) {
@@ -63,7 +63,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // return validated arguments
   return {
     paymentProcessorContract,
@@ -97,9 +97,7 @@ async function main() {
   const { price } = resourceData;
 
   // Set STX-specific post condition
-  const postConditions = [
-    Pc.principal(address).willSendEq(price).ustx()
-  ];
+  const postConditions = [Pc.principal(address).willSendEq(price).ustx()];
 
   // prepare function arguments
   const functionArgs = [
@@ -109,7 +107,6 @@ async function main() {
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "pay-invoice",
@@ -121,9 +118,7 @@ async function main() {
     postConditions,
   };
 
-  console.log(
-    `Paying invoice with STX for resource ${resourceIndex}`
-  );
+  console.log(`Paying invoice with STX for resource ${resourceIndex}`);
 
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

@@ -1,10 +1,11 @@
 import {
-  createStacksPrivateKey,
   signStructuredData,
   stringAsciiCV,
   tupleCV,
   uintCV,
 } from "@stacks/transactions";
+import { generateSecretKey } from "@stacks/wallet-sdk";
+
 import {
   CONFIG,
   deriveChildAccount,
@@ -43,7 +44,7 @@ async function main() {
   // SIGNING THE MESSAGE
 
   // create private key obj for signature function
-  const privateKey = createStacksPrivateKey(privateKeyString);
+  const privateKey = privateKeyString;
   // create a domain object as a clarity value
   // based on @stacks.js/transactions signature test
   // https://github.com/hirosystems/stacks.js/blob/fc7e50cb1dca6402677451be06534f0a8f1346b3/packages/transactions/tests/structuredDataSignature.test.ts#L214-L242
@@ -62,7 +63,7 @@ async function main() {
     privateKey,
   });
   // output signed message data
-  console.log(signedMessage.data);
+  console.log(signedMessage);
 }
 
 main();

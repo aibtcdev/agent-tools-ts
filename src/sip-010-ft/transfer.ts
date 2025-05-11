@@ -68,7 +68,6 @@ async function transfer(
       senderKey: key,
       validateWithAbi: true,
       network: networkObj,
-      anchorMode: AnchorMode.Any,
       postConditions,
       nonce,
     };

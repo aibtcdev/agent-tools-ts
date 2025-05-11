@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   Cl,
   ClarityType,
   cvToValue,
@@ -67,7 +67,7 @@ async function main(): Promise<ToolResponse<number>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get the liquid supply
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-liquid-supply",

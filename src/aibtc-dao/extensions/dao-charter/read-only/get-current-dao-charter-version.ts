@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   ClarityType,
   cvToValue,
 } from "@stacks/transactions";
@@ -60,7 +60,7 @@ async function main(): Promise<ToolResponse<number | null>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get current version
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-current-dao-charter-version",

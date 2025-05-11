@@ -135,14 +135,13 @@ async function main() {
   const paramsCV = Cl.principal(args.tokenContractAddress);
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress: walletAddress,
     contractName: walletName,
     functionName: "proxy-propose-action",
     functionArgs: [
       Cl.principal(args.daoActionProposalsExtensionContract),
       Cl.principal(args.daoActionProposalContract),
-      Cl.buffer(Cl.serialize(paramsCV)),
+      Cl.bufferFromHex(Cl.serialize(paramsCV)),
     ],
     network: networkObj,
     nonce: nextPossibleNonce,

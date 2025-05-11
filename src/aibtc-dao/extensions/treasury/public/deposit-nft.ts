@@ -101,7 +101,6 @@ async function main() {
   const functionArgs = [Cl.principal(args.nftContract), Cl.uint(args.tokenId)];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "deposit-nft",

@@ -6,7 +6,10 @@ import { getNetwork, getNetworkByPrincipal } from "../utilities";
 async function getAddressBalanceDetailed(address: string) {
   const networkFromAddress = getNetworkByPrincipal(address);
   const stacksNetwork = getNetwork(networkFromAddress);
-  const client = new StackingClient(address, stacksNetwork);
+  const client = new StackingClient({
+    address,
+    network: stacksNetwork,
+  });
 
   try {
     const detailedBalance = await client.getAccountExtendedBalances();

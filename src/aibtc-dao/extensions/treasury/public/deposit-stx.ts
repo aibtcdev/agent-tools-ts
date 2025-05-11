@@ -37,7 +37,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // verify contract addresses extracted from arguments
   const [contractAddress, contractName] = treasuryContractArg.split(".");
   if (!contractAddress || !contractName) {
@@ -48,7 +48,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // verify amount is positive
   if (amount <= 0) {
     const errorMessage = [
@@ -58,7 +58,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // return validated arguments
   return {
     treasuryContract: treasuryContractArg,
@@ -70,7 +70,7 @@ async function main() {
   // validate and store provided args
   const { treasuryContract, amount } = validateArgs();
   const [contractAddress, contractName] = treasuryContract.split(".");
-  
+
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -81,18 +81,13 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Set post-conditions to ensure exact STX amount is sent
-  const postConditions = [
-    Pc.principal(address)
-      .willSendEq(amount)
-      .ustx()
-  ];
+  const postConditions = [Pc.principal(address).willSendEq(amount).ustx()];
 
   // prepare function arguments
   const functionArgs = [Cl.uint(amount)];
-  
+
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "deposit-stx",
@@ -103,7 +98,7 @@ async function main() {
     postConditionMode: PostConditionMode.Deny,
     postConditions,
   };
-  
+
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);
   const broadcastResponse = await broadcastTx(transaction, networkObj);

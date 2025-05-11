@@ -4,7 +4,7 @@ import {
   makeContractCall,
   SignedContractCallOptions,
   PostConditionMode,
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   ClarityType,
   cvToValue,
   Pc,
@@ -54,7 +54,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // Verify this is an sBTC payment processor contract
   const [_, contractName] = paymentProcessorContract.split(".");
   if (!contractName.includes("-sbtc")) {
@@ -65,7 +65,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // return validated arguments
   return {
     paymentProcessorContract,
@@ -90,7 +90,7 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Get resource details to set proper post-conditions
-  const resourceData = await callReadOnlyFunction({
+  const resourceData = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-resource-by-name",
@@ -114,7 +114,7 @@ async function main() {
   const postConditions = [
     Pc.principal(address)
       .willSendEq(price)
-      .ft(formattedSbtcContract, "sbtc-token")
+      .ft(formattedSbtcContract, "sbtc-token"),
   ];
 
   // prepare function arguments
@@ -125,7 +125,6 @@ async function main() {
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "pay-invoice-by-resource-name",
@@ -137,9 +136,7 @@ async function main() {
     postConditions,
   };
 
-  console.log(
-    `Paying invoice with sBTC for resource ${args.resourceName}`
-  );
+  console.log(`Paying invoice with sBTC for resource ${args.resourceName}`);
 
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

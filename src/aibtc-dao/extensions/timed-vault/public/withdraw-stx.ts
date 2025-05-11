@@ -63,7 +63,6 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "withdraw-stx",

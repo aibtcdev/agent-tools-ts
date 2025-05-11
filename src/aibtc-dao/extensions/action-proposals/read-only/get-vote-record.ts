@@ -1,4 +1,4 @@
-import { Cl, callReadOnlyFunction, cvToValue } from "@stacks/transactions";
+import { Cl, fetchCallReadOnlyFunction, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -65,7 +65,7 @@ async function main(): Promise<ToolResponse<number>> {
     CONFIG.ACCOUNT_INDEX
   );
   // configure read-only function call
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-vote-record",

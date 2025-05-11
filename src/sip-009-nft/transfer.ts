@@ -44,7 +44,6 @@ async function transferNft(
     senderKey: key,
     validateWithAbi: true,
     network,
-    anchorMode: AnchorMode.Any,
     postConditionMode: PostConditionMode.Allow,
     nonce,
   };
@@ -53,7 +52,10 @@ async function transferNft(
     console.log("Creating contract call...");
     const transaction = await makeContractCall(txOptions);
     console.log("Broadcasting transaction...");
-    const broadcastResponse = await broadcastTransaction(transaction, network);
+    const broadcastResponse = await broadcastTransaction({
+      transaction,
+      network,
+    });
     console.log("Transaction broadcast successfully!");
     console.log("Transaction ID:", broadcastResponse.txid);
     console.log(

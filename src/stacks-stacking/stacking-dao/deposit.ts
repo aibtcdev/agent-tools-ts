@@ -64,7 +64,6 @@ async function deposit(stxAmount: Number, referrer: string | null) {
       senderKey: key,
       validateWithAbi: true,
       network,
-      anchorMode: AnchorMode.Any,
     });
 
     // To see the raw serialized transaction

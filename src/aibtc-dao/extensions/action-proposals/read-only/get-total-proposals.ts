@@ -1,4 +1,4 @@
-import { callReadOnlyFunction, cvToValue } from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -65,7 +65,7 @@ async function main(): Promise<ToolResponse<TotalProposalsResponse>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get total proposals
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-total-proposals",

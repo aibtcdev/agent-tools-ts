@@ -1,4 +1,4 @@
-import { callReadOnlyFunction, Cl, cvToValue } from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, Cl, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -66,7 +66,7 @@ async function main(): Promise<ToolResponse<boolean>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get approved asset status
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "is-approved-asset",

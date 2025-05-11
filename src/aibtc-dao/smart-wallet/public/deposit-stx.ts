@@ -83,7 +83,6 @@ async function main() {
   const functionArgs = [Cl.uint(args.amount)];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "deposit-stx",

@@ -49,7 +49,7 @@ export class ContractCallsClient {
    * @param options - Additional options including cache control
    * @returns The function result
    */
-  async callReadOnlyFunction<T = any>(
+  async fetchCallReadOnlyFunction<T = any>(
     contractAddress: string,
     contractName: string,
     functionName: string,
@@ -128,7 +128,7 @@ export class ContractCallsClient {
       );
     }
 
-    return this.callReadOnlyFunction<T>(
+    return this.fetchCallReadOnlyFunction<T>(
       contractAddress,
       contractName,
       functionName,

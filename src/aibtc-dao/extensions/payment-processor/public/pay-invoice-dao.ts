@@ -55,7 +55,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // Verify this is a DAO payment processor contract
   const [_, contractName] = paymentProcessorContract.split(".");
   if (!contractName.includes("-dao")) {
@@ -66,7 +66,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // return validated arguments
   return {
     paymentProcessorContract,
@@ -109,22 +109,20 @@ async function main() {
   const formattedDaoContract = formatContractAddress(
     paymentProcessorContractData.daoTokenContract
   );
-  
+
   const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
   const assetName = await tokenInfoService.getAssetNameFromAbi(
     paymentProcessorContractData.daoTokenContract
   );
-  
+
   if (!assetName) {
     throw new Error(
       `Asset name not found for token contract: ${paymentProcessorContractData.daoTokenContract}`
     );
   }
-  
+
   const postConditions = [
-    Pc.principal(address)
-      .willSendEq(price)
-      .ft(formattedDaoContract, assetName)
+    Pc.principal(address).willSendEq(price).ft(formattedDaoContract, assetName),
   ];
 
   // prepare function arguments
@@ -135,7 +133,6 @@ async function main() {
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "pay-invoice",

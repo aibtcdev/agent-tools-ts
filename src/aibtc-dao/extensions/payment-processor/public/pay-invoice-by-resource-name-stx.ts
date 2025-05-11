@@ -4,7 +4,7 @@ import {
   makeContractCall,
   SignedContractCallOptions,
   PostConditionMode,
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   ClarityType,
   cvToValue,
   Pc,
@@ -52,7 +52,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // Verify this is an STX payment processor contract
   const [_, contractName] = paymentProcessorContract.split(".");
   if (!contractName.includes("-stx")) {
@@ -63,7 +63,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // return validated arguments
   return {
     paymentProcessorContract,
@@ -88,7 +88,7 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Get resource details to set proper post-conditions
-  const resourceData = await callReadOnlyFunction({
+  const resourceData = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-resource-by-name",
@@ -107,9 +107,7 @@ async function main() {
   const { price } = resource;
 
   // Set STX-specific post condition
-  const postConditions = [
-    Pc.principal(address).willSendEq(price).ustx()
-  ];
+  const postConditions = [Pc.principal(address).willSendEq(price).ustx()];
 
   // prepare function arguments
   const functionArgs = [
@@ -119,7 +117,6 @@ async function main() {
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "pay-invoice-by-resource-name",
@@ -131,9 +128,7 @@ async function main() {
     postConditions,
   };
 
-  console.log(
-    `Paying invoice with STX for resource ${args.resourceName}`
-  );
+  console.log(`Paying invoice with STX for resource ${args.resourceName}`);
 
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

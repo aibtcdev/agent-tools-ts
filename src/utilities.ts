@@ -1,9 +1,9 @@
-import { TransactionVersion } from "@stacks/common";
 import {
-  StacksMainnet,
+  STACKS_MAINNET,
   StacksNetwork,
   StacksNetworkName,
-  StacksTestnet,
+  STACKS_TESTNET,
+  TransactionVersion,
 } from "@stacks/network";
 import {
   generateNewAccount,
@@ -16,10 +16,10 @@ import type {
 } from "@stacks/stacks-blockchain-api-types";
 import {
   broadcastTransaction,
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   Cl,
   cvToValue,
-  StacksTransaction,
+  StacksTransactionWire,
   TxBroadcastResult,
   validateStacksAddress,
 } from "@stacks/transactions";
@@ -88,7 +88,10 @@ export const MICROSTX_IN_STX = 1_000_000;
  * Convert μSTX (micro-STX) to STX denomination.
  * `1 STX = 1,000,000 μSTX`
  */
-export function microStxToStx(amountInMicroStx: number): number {
+export function microStxToStx(amountInMicroStx: number | bigint): number {
+  if (typeof amountInMicroStx === "bigint") {
+    return Number(amountInMicroStx) / MICROSTX_IN_STX;
+  }
   return amountInMicroStx / MICROSTX_IN_STX;
 }
 
@@ -174,11 +177,11 @@ export function getNetworkByPrincipal(principal: string): StacksNetworkName {
 export function getNetwork(network: string) {
   switch (network) {
     case "mainnet":
-      return new StacksMainnet();
+      return STACKS_MAINNET;
     case "testnet":
-      return new StacksTestnet();
+      return STACKS_TESTNET;
     default:
-      return new StacksTestnet();
+      return STACKS_TESTNET;
   }
 }
 
@@ -220,9 +223,9 @@ export async function logBroadCastResult(
     if (broadcastResponse.reason) {
       console.error(`Reason: ${broadcastResponse.reason}`);
     }
-    if (broadcastResponse.reason_data) {
+    if (broadcastResponse.reason) {
       console.error(
-        `Reason Data: ${JSON.stringify(broadcastResponse.reason_data, null, 2)}`
+        `Reason Data: ${JSON.stringify(broadcastResponse.reason, null, 2)}`
       );
     }
   } else {
@@ -238,15 +241,15 @@ type TxBroadcastResultWithLink = TxBroadcastResult & {
 
 // helper that wraps broadcastTransaction from stacks/transactions
 export function broadcastTx(
-  transaction: StacksTransaction,
+  transaction: StacksTransactionWire,
   network: StacksNetwork
 ): Promise<ToolResponse<TxBroadcastResultWithLink>> {
   return new Promise(async (resolve, reject) => {
     try {
-      const broadcastResponse = await broadcastTransaction(
+      const broadcastResponse = await broadcastTransaction({
         transaction,
-        network
-      );
+        network,
+      });
       // check that error property is not present
       // (since we can't instanceof the union type)
       if (!("error" in broadcastResponse)) {
@@ -266,13 +269,8 @@ export function broadcastTx(
       } else {
         // create error message from broadcast response
         let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
-        if (broadcastResponse.reason_data) {
-          if ("message" in broadcastResponse.reason_data) {
-            errorMessage += ` - Reason: ${broadcastResponse.reason_data.message}`;
-          }
-          if ("expected" in broadcastResponse.reason_data) {
-            errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
-          }
+        if (broadcastResponse.reason) {
+          errorMessage += ` - Reason: ${String(broadcastResponse.reason)}`;
         }
         // create response object
         const response: ToolResponse<TxBroadcastResult> = {
@@ -329,7 +327,7 @@ export async function deriveChildAccount(
   return {
     address: getStxAddress({
       account: wallet.accounts[index],
-      transactionVersion: getTxVersion(network),
+      network: network as StacksNetworkName,
     }),
     key: wallet.accounts[index].stxPrivateKey,
   };
@@ -354,10 +352,9 @@ export async function deriveChildAccounts(
 
   // use Promise.all to handle the asynchronous operation inside map
   const addresses = wallet.accounts.map((account) => {
-    const transactionVersion = getTxVersion(network);
     return getStxAddress({
       account: account,
-      transactionVersion: transactionVersion,
+      network: network as StacksNetworkName,
     });
   });
 
@@ -591,7 +588,7 @@ export async function getCurrentBondProposalAmount(
   // get the proposal bond amount from the contract
   const [extensionAddress, extensionName] =
     proposalsExtensionContract.split(".");
-  const proposalBond = await callReadOnlyFunction({
+  const proposalBond = await fetchCallReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-proposal-bond",

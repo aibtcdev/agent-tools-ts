@@ -1,4 +1,8 @@
-import { callReadOnlyFunction, cvToJSON, uintCV } from "@stacks/transactions";
+import {
+  fetchCallReadOnlyFunction,
+  cvToJSON,
+  uintCV,
+} from "@stacks/transactions";
 import { CONFIG, getNetwork, deriveChildAccount } from "../utilities";
 
 async function getLastTokenId(
@@ -9,7 +13,7 @@ async function getLastTokenId(
   const network = getNetwork(CONFIG.NETWORK);
 
   try {
-    const result = await callReadOnlyFunction({
+    const result = await fetchCallReadOnlyFunction({
       contractAddress,
       contractName,
       functionName: "get-last-token-id",
@@ -51,7 +55,7 @@ async function getTokenUri(
   }
 
   try {
-    const result = await callReadOnlyFunction({
+    const result = await fetchCallReadOnlyFunction({
       contractAddress,
       contractName,
       functionName: "get-token-uri",

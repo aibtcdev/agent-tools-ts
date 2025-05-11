@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   Cl,
   ClarityType,
   cvToValue,
@@ -64,7 +64,7 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get user data
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-user-data-by-address",

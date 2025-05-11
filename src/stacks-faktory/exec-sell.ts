@@ -86,7 +86,7 @@ async function main() {
   });
   // add required properties for signing
   const txOptions: SignedContractCallOptions = {
-    ...sellParams,
+    ...(sellParams as any),
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
