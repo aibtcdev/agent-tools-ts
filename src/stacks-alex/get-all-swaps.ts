@@ -41,3 +41,6 @@ for (const swap of swaps) {
   console.log(`lastQuotePriceInUSD: ${swap.lastQuotePriceInUSD}`);
   console.log("---"); // Separator for readability
 }
+
+// Make this file a module so top-level await works
+export {};

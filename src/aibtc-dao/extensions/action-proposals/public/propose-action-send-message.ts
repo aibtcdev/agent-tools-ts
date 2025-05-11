@@ -114,13 +114,12 @@ async function main() {
   const paramsCV = Cl.stringAscii(args.message);
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "propose-action",
     functionArgs: [
       Cl.principal(args.daoActionProposalContract),
-      Cl.buffer(Cl.serialize(paramsCV)),
+      Cl.bufferFromHex(Cl.serialize(paramsCV)),
       args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
     ],
     network: networkObj,

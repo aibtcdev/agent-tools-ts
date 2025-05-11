@@ -11,6 +11,12 @@ import {
 } from "../registries/dao-core-proposal-registry";
 import { getNextNonce } from "../../utilities";
 
+// Extended interface to include error field
+interface DeployedCoreProposalWithError
+  extends DeployedCoreProposalRegistryEntry {
+  error?: string;
+}
+
 /**
  * Contract deployment service for DAO core proposals
  */
@@ -46,7 +52,7 @@ export class DaoCoreProposalDeployer {
     proposalName: string,
     proposal: GeneratedCoreProposalRegistryEntry,
     nonce?: number
-  ): Promise<DeployedCoreProposalRegistryEntry> {
+  ): Promise<DeployedCoreProposalWithError> {
     try {
       console.log(`Deploy proposal called for: ${proposalName}`);
 
@@ -62,7 +68,6 @@ export class DaoCoreProposalDeployer {
         senderKey: this.senderKey,
         nonce: nonce,
         network: this.network,
-        anchorMode: AnchorMode.Any,
         //postConditions: [], // empty, no transfers expected
         postConditionMode: PostConditionMode.Allow,
       }).catch((error) => {
@@ -71,15 +76,15 @@ export class DaoCoreProposalDeployer {
       });
 
       // Broadcast the transaction
-      const broadcastResponse = await broadcastTransaction(
+      const broadcastResponse = await broadcastTransaction({
         transaction,
-        this.network
-      ).catch((error) => {
+        network: this.network,
+      }).catch((error) => {
         console.error(`Error broadcasting transaction: ${error}`);
         throw error;
       });
 
-      if (!broadcastResponse.error) {
+      if (broadcastResponse.txid) {
         // If successful, return the deployed proposal info
         return {
           ...proposal,
@@ -91,13 +96,21 @@ export class DaoCoreProposalDeployer {
       } else {
         // If failed, return error info
         // create error message from broadcast response
-        let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
-        if (broadcastResponse.reason_data) {
-          if ("message" in broadcastResponse.reason_data) {
-            errorMessage += ` - Reason: ${broadcastResponse.reason_data.message}`;
-          }
-          if ("expected" in broadcastResponse.reason_data) {
-            errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
+        let errorMessage = `Failed to broadcast transaction`;
+        if ("error" in broadcastResponse) {
+          errorMessage += `: ${(broadcastResponse as any).error}`;
+
+          if ((broadcastResponse as any).reason_data) {
+            if ("message" in (broadcastResponse as any).reason_data) {
+              errorMessage += ` - Reason: ${
+                (broadcastResponse as any).reason_data.message
+              }`;
+            }
+            if ("expected" in (broadcastResponse as any).reason_data) {
+              errorMessage += ` - Expected: ${
+                (broadcastResponse as any).reason_data.expected
+              }, Actual: ${(broadcastResponse as any).reason_data.actual}`;
+            }
           }
         }
         return {
@@ -105,6 +118,7 @@ export class DaoCoreProposalDeployer {
           contractAddress: `${this.senderAddress}.${proposal.name}`,
           sender: this.senderAddress,
           success: false,
+          error: errorMessage,
         };
       }
     } catch (error) {
@@ -114,6 +128,7 @@ export class DaoCoreProposalDeployer {
         contractAddress: `${this.senderAddress}.${proposal.name}`,
         sender: this.senderAddress,
         success: false,
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -127,7 +142,7 @@ export class DaoCoreProposalDeployer {
   async deployProposals(
     proposals: GeneratedCoreProposalRegistryEntry[]
   ): Promise<DeployedCoreProposalRegistryEntry[]> {
-    const deployedProposals: DeployedCoreProposalRegistryEntry[] = [];
+    const deployedProposals: DeployedCoreProposalWithError[] = [];
     let nonce = await getNextNonce(this.network, this.senderAddress);
 
     for (const proposal of proposals) {
@@ -140,7 +155,11 @@ export class DaoCoreProposalDeployer {
 
       // If deployment failed, throw an error
       if (!deployedProposal.success) {
-        throw new Error(`Failed to deploy proposal ${proposal.name}`);
+        throw new Error(
+          `Failed to deploy proposal ${proposal.name}: ${
+            deployedProposal.error || "Unknown error"
+          }`
+        );
       } else {
         nonce++;
         // wait 0.5 seconds before deploying the next proposal

@@ -4,7 +4,7 @@ import {
   makeContractCall,
   SignedContractCallOptions,
   PostConditionMode,
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   ClarityType,
   cvToValue,
 } from "@stacks/transactions";
@@ -79,7 +79,7 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Get resource details to set proper post-conditions
-  const resourceData = await callReadOnlyFunction({
+  const resourceData = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-resource-by-name",
@@ -105,7 +105,6 @@ async function main() {
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "pay-invoice-by-resource-name",

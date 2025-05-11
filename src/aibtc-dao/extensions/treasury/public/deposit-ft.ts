@@ -110,7 +110,6 @@ async function main() {
     const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
     // configure contract call options
     const txOptions: SignedContractCallOptions = {
-      anchorMode: AnchorMode.Any,
       contractAddress,
       contractName,
       functionName: "deposit-ft",

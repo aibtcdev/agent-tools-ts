@@ -45,13 +45,13 @@ async function verifyMessage(signedMessageData: string, address: string) {
     const messageHash = sha256(encodedMessage);
 
     // Recover the public key from the signature and hashed message
-    const publicKey = publicKeyFromSignatureRsv(bytesToHex(messageHash), {
-      type: 10, // Signature type (RSV format)
-      data: signedMessageData, // Signed data input
-    });
+    const publicKey = publicKeyFromSignatureRsv(
+      bytesToHex(messageHash),
+      signedMessageData
+    );
 
     // Derive the address from the recovered public key
-    const derivedAddress = getAddressFromPublicKey(publicKey, txVersion);
+    const derivedAddress = getAddressFromPublicKey(publicKey, networkObj);
 
     // Ensure the derived address matches the expected address
     if (address !== derivedAddress) {

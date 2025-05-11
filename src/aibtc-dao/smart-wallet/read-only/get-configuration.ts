@@ -1,4 +1,4 @@
-import { callReadOnlyFunction, cvToValue } from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -63,7 +63,7 @@ async function main(): Promise<ToolResponse<WalletConfiguration>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get wallet configuration
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-configuration",

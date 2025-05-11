@@ -1,4 +1,8 @@
-import { callReadOnlyFunction, cvToJSON, uintCV } from "@stacks/transactions";
+import {
+  fetchCallReadOnlyFunction,
+  cvToJSON,
+  uintCV,
+} from "@stacks/transactions";
 import { CONFIG, getNetwork, deriveChildAccount } from "../utilities";
 
 async function getOwner(
@@ -14,7 +18,7 @@ async function getOwner(
   );
 
   try {
-    const result = await callReadOnlyFunction({
+    const result = await fetchCallReadOnlyFunction({
       contractAddress,
       contractName,
       functionName: "get-owner",

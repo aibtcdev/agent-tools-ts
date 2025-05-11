@@ -54,7 +54,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // Verify this is an sBTC payment processor contract
   const [_, contractName] = paymentProcessorContract.split(".");
   if (!contractName.includes("-sbtc")) {
@@ -65,7 +65,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // return validated arguments
   return {
     paymentProcessorContract,
@@ -104,7 +104,7 @@ async function main() {
   const postConditions = [
     Pc.principal(address)
       .willSendEq(price)
-      .ft(formattedSbtcContract, "sbtc-token")
+      .ft(formattedSbtcContract, "sbtc-token"),
   ];
 
   // prepare function arguments
@@ -115,7 +115,6 @@ async function main() {
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "pay-invoice",
@@ -127,9 +126,7 @@ async function main() {
     postConditions,
   };
 
-  console.log(
-    `Paying invoice with sBTC for resource ${resourceIndex}`
-  );
+  console.log(`Paying invoice with sBTC for resource ${resourceIndex}`);
 
   // broadcast transaction and return response
   const transaction = await makeContractCall(txOptions);

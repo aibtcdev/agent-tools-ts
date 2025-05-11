@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   cvToValue,
   contractPrincipalCV,
 } from "@stacks/transactions";
@@ -64,7 +64,7 @@ async function main(): Promise<ToolResponse<number | null>> {
     CONFIG.ACCOUNT_INDEX
   );
   // call read-only function
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress: daoAddress,
     contractName: daoName,
     functionName: "executed-at",

@@ -69,18 +69,17 @@ export class SmartWalletDeployer {
         senderKey: this.senderKey,
         nonce: nonce === 0 ? 0 : nonce ? nonce : undefined,
         network: this.network,
-        anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow,
         clarityVersion: ClarityVersion.Clarity3,
       });
 
       // Broadcast the transaction
-      const broadcastResponse = await broadcastTransaction(
+      const broadcastResponse = await broadcastTransaction({
         transaction,
-        this.network
-      );
+        network: this.network,
+      });
 
-      if (!broadcastResponse.error) {
+      if (broadcastResponse.txid) {
         // If successful, return the deployed contract info
         return {
           ...smartWallet,
@@ -91,13 +90,21 @@ export class SmartWalletDeployer {
         };
       } else {
         // If failed, return error info
-        let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
-        if (broadcastResponse.reason_data) {
-          if ("message" in broadcastResponse.reason_data) {
-            errorMessage += ` - Reason: ${broadcastResponse.reason_data.message}`;
-          }
-          if ("expected" in broadcastResponse.reason_data) {
-            errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
+        let errorMessage = `Failed to broadcast transaction`;
+        if ("error" in broadcastResponse) {
+          errorMessage += `: ${(broadcastResponse as any).error}`;
+
+          if ((broadcastResponse as any).reason_data) {
+            if ("message" in (broadcastResponse as any).reason_data) {
+              errorMessage += ` - Reason: ${
+                (broadcastResponse as any).reason_data.message
+              }`;
+            }
+            if ("expected" in (broadcastResponse as any).reason_data) {
+              errorMessage += ` - Expected: ${
+                (broadcastResponse as any).reason_data.expected
+              }, Actual: ${(broadcastResponse as any).reason_data.actual}`;
+            }
           }
         }
         console.error(errorMessage);
@@ -106,6 +113,7 @@ export class SmartWalletDeployer {
           sender: this.senderAddress,
           success: false,
           address: `${this.senderAddress}.${smartWallet.name}`,
+          error: errorMessage,
         };
       }
     } catch (error) {

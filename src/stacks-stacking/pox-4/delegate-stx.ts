@@ -35,7 +35,10 @@ async function delegateSTX(
 
     // convert amount to microSTX
     const amountInMicroStx = stxToMicroStx(Number(amountSTX));
-    const client = new StackingClient(address, networkObj);
+    const client = new StackingClient({
+      address,
+      network: networkObj,
+    });
     const delegetateResponse = await client.delegateStx({
       amountMicroStx: amountInMicroStx,
       delegateTo,

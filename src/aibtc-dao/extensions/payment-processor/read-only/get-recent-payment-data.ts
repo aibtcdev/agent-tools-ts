@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   Cl,
   ClarityType,
   cvToValue,
@@ -69,7 +69,7 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get recent payment data
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-recent-payment-data",

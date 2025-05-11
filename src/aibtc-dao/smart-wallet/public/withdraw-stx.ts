@@ -67,7 +67,7 @@ async function main() {
   // validate and store provided args
   const args = validateArgs();
   const [contractAddress, contractName] = args.smartWalletContract.split(".");
-  
+
   // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -81,14 +81,13 @@ async function main() {
   const postConditions = [
     Pc.principal(`${contractAddress}.${contractName}`)
       .willSendEq(args.amount)
-      .ustx()
+      .ustx(),
   ];
 
   // prepare function arguments
   const functionArgs = [Cl.uint(args.amount)];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "withdraw-stx",

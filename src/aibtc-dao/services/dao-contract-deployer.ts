@@ -54,23 +54,19 @@ export class DaoContractDeployer {
         senderKey: this.senderKey,
         nonce: nonce === 0 ? 0 : nonce ? nonce : undefined,
         network: this.network,
-        anchorMode: AnchorMode.Any,
         postConditions: [], // empty, no transfers expected
         postConditionMode: PostConditionMode.Deny,
         clarityVersion: contract.clarityVersion,
       });
 
       // Broadcast the transaction
-      const broadcastResponse = await broadcastTransaction(
+      const broadcastResponse = await broadcastTransaction({
         transaction,
-        this.network
-      );
+        network: this.network,
+      });
 
-      if (!broadcastResponse.error) {
+      if (broadcastResponse.txid) {
         // If successful, return the deployed contract info
-        //console.log(
-        //  `https://explorer.hiro.so/txid/0x${broadcastResponse.txid}?chain=testnet`
-        //);
         return {
           ...contract,
           sender: this.senderAddress,
@@ -81,26 +77,33 @@ export class DaoContractDeployer {
       } else {
         // If failed, return error info
         // create error message from broadcast response
-        let errorMessage = `Failed to broadcast transaction: ${broadcastResponse.error}`;
-        if (broadcastResponse.reason_data) {
-          if ("message" in broadcastResponse.reason_data) {
-            errorMessage += ` - Reason: ${broadcastResponse.reason_data.message}`;
-          }
-          if ("expected" in broadcastResponse.reason_data) {
-            errorMessage += ` - Expected: ${broadcastResponse.reason_data.expected}, Actual: ${broadcastResponse.reason_data.actual}`;
+        let errorMessage = `Failed to broadcast transaction`;
+        if ("error" in broadcastResponse) {
+          errorMessage += `: ${(broadcastResponse as any).error}`;
+
+          if ((broadcastResponse as any).reason_data) {
+            if ("message" in (broadcastResponse as any).reason_data) {
+              errorMessage += ` - Reason: ${
+                (broadcastResponse as any).reason_data.message
+              }`;
+            }
+            if ("expected" in (broadcastResponse as any).reason_data) {
+              errorMessage += ` - Expected: ${
+                (broadcastResponse as any).reason_data.expected
+              }, Actual: ${(broadcastResponse as any).reason_data.actual}`;
+            }
           }
         }
-        //console.error(errorMessage);
+
         return {
           ...contract,
           sender: this.senderAddress,
           success: false,
           address: `${this.senderAddress}.${contract.name}`,
+          error: errorMessage,
         };
       }
     } catch (error) {
-      //console.error(`Failed to deploy contract ${contract.name}:`, error);
-
       // Return failure status
       return {
         ...contract,
@@ -151,9 +154,6 @@ export class DaoContractDeployer {
           )}`
         );
       } else {
-        //console.log(
-        //  `Successfully deployed ${contract.name}: ${deployedContract.address}`
-        //);
         nonce++;
         // wait 2 second before deploying the next contract
         await new Promise((resolve) => setTimeout(resolve, 2000));

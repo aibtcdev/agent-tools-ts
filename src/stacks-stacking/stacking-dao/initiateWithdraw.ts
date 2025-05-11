@@ -55,7 +55,6 @@ async function initiateWithdraw(stxAmount: Number) {
       senderKey: key,
       validateWithAbi: true,
       network,
-      anchorMode: AnchorMode.Any,
     });
 
     // To see the raw serialized transaction

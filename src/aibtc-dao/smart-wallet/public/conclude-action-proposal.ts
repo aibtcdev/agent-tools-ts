@@ -122,7 +122,6 @@ async function main() {
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress: smartWalletAddress,
     contractName: smartWalletName,
     functionName: "conclude-action-proposal",

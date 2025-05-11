@@ -16,7 +16,6 @@ async function main() {
     throw new Error("No mnemonic provided in environment variables");
   }
 
-
   // get account address
   const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
 

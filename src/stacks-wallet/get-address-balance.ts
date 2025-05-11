@@ -6,7 +6,10 @@ import { CONFIG, getNetwork } from "../utilities";
 // Function to get the balance of an address
 async function getAddressBalance(network: string, address: string) {
   const stacksNetwork = getNetwork(network);
-  const client = new StackingClient(address, stacksNetwork);
+  const client = new StackingClient({
+    address,
+    network: stacksNetwork,
+  });
 
   try {
     const balance = await client.getAccountBalance();

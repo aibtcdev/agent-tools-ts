@@ -3,11 +3,13 @@ import {
   getApiUrl,
   getNetworkByPrincipal,
   sendToLLM,
-  ToolResponse
+  ToolResponse,
 } from "../utilities";
 
-const usage = "Usage: bun run get-transactions-by-address.ts <address> [limit] [offset]";
-const usageExample = "Example: bun run get-transactions-by-address.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM 20 0";
+const usage =
+  "Usage: bun run get-transactions-by-address.ts <address> [limit] [offset]";
+const usageExample =
+  "Example: bun run get-transactions-by-address.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM 20 0";
 
 interface ExpectedArgs {
   address: string;
@@ -114,20 +116,40 @@ interface TransactionResponse {
   }>;
 }
 
+// Extended response with formatted transactions
+interface EnhancedTransactionResponse extends TransactionResponse {
+  formattedTransactions: Array<{
+    status: string;
+    senderAddress: string;
+    blockTimeIso: string;
+    type: string;
+    contractInfo?: {
+      contractId: string;
+      functionName: string;
+    };
+    smartContractInfo?: {
+      contractId: string;
+    };
+    tokenTransferInfo?: {
+      recipientAddress: string;
+    };
+    stxSent: string;
+    stxReceived: string;
+  }>;
+}
+
 function validateArgs(): ExpectedArgs {
   const [address, limitStr, offsetStr] = process.argv.slice(2);
   if (!address) {
-    const errorMessage = [
-      "No address provided",
-      usage,
-      usageExample
-    ].join("\n");
+    const errorMessage = ["No address provided", usage, usageExample].join(
+      "\n"
+    );
     throw new Error(errorMessage);
   }
-  
+
   const limit = limitStr ? Number(limitStr) : 20;
   const offset = offsetStr ? Number(offsetStr) : 0;
-  
+
   return { address, limit, offset };
 }
 
@@ -153,50 +175,53 @@ async function getTransactionsByAddress(
   return data;
 }
 
-async function main(): Promise<ToolResponse<TransactionResponse>> {
+async function main(): Promise<ToolResponse<EnhancedTransactionResponse>> {
   // validate and store provided args
   const args = validateArgs();
-  
+
   // get transaction info from API
   const response = await getTransactionsByAddress(
-    args.address, 
-    args.limit || 20, 
+    args.address,
+    args.limit || 20,
     args.offset || 0
   );
-  
+
   // Format the transactions for better readability in the response
-  const formattedTransactions = response.results.map(result => ({
+  const formattedTransactions = response.results.map((result) => ({
     status: result.tx.tx_status,
     senderAddress: result.tx.sender_address,
     blockTimeIso: result.tx.block_time_iso,
     type: result.tx.tx_type,
-    contractInfo: result.tx.tx_type === "contract_call" 
-      ? {
-          contractId: result.tx.contract_call.contract_id,
-          functionName: result.tx.contract_call.function_name
-        } 
-      : undefined,
-    smartContractInfo: result.tx.tx_type === "smart_contract"
-      ? {
-          contractId: result.tx.smart_contract.contract_id
-        }
-      : undefined,
-    tokenTransferInfo: result.tx.tx_type === "token_transfer"
-      ? {
-          recipientAddress: result.tx.token_transfer.recipient_address
-        }
-      : undefined,
+    contractInfo:
+      result.tx.tx_type === "contract_call"
+        ? {
+            contractId: result.tx.contract_call.contract_id,
+            functionName: result.tx.contract_call.function_name,
+          }
+        : undefined,
+    smartContractInfo:
+      result.tx.tx_type === "smart_contract"
+        ? {
+            contractId: result.tx.smart_contract.contract_id,
+          }
+        : undefined,
+    tokenTransferInfo:
+      result.tx.tx_type === "token_transfer"
+        ? {
+            recipientAddress: result.tx.token_transfer.recipient_address,
+          }
+        : undefined,
     stxSent: result.stx_sent,
-    stxReceived: result.stx_received
+    stxReceived: result.stx_received,
   }));
-  
+
   return {
     success: true,
     message: `Retrieved ${response.results.length} transactions for address ${args.address}`,
     data: {
       ...response,
-      formattedTransactions
-    }
+      formattedTransactions,
+    },
   };
 }
 

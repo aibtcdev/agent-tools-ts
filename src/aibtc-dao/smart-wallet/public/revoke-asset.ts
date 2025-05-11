@@ -76,7 +76,6 @@ async function main() {
   const functionArgs = [Cl.principal(args.assetContract)];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: "revoke-asset",

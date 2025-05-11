@@ -1,4 +1,4 @@
-import { callReadOnlyFunction, cvToValue } from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -57,7 +57,7 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get total resources
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-total-resources",

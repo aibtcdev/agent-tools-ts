@@ -10,11 +10,13 @@ interface TransactionsResponse {
 
 async function getWalletTransactions(network: string, address: string) {
   const apiUrl = getApiUrl(network);
-  const response = await fetch(`${apiUrl}/extended/v2/addresses/${address}/transactions`);
+  const response = await fetch(
+    `${apiUrl}/extended/v2/addresses/${address}/transactions`
+  );
   if (!response.ok) {
     throw new Error(`Failed to get transactions: ${response.statusText}`);
   }
-  const data = await response.json() as TransactionsResponse;
+  const data = (await response.json()) as TransactionsResponse;
   return data.results;
 }
 
@@ -36,7 +38,11 @@ async function main() {
 
   try {
     // Get wallet address
-    const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
+    const { address } = await deriveChildAccount(
+      network,
+      mnemonic,
+      accountIndex
+    );
 
     // Get transactions for the address
     const txResponse = await getWalletTransactions(network, address);

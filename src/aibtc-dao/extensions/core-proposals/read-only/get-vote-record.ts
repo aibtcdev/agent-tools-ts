@@ -1,4 +1,4 @@
-import { Cl, callReadOnlyFunction, cvToValue } from "@stacks/transactions";
+import { Cl, fetchCallReadOnlyFunction, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -23,7 +23,11 @@ function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
   const [daoCoreProposalsExtensionContract, proposalContract, voterAddress] =
     process.argv.slice(2);
-  if (!daoCoreProposalsExtensionContract || !proposalContract || !voterAddress) {
+  if (
+    !daoCoreProposalsExtensionContract ||
+    !proposalContract ||
+    !voterAddress
+  ) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -52,7 +56,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // return validated arguments
   return {
     daoCoreProposalsExtensionContract,
@@ -75,11 +79,14 @@ async function main(): Promise<ToolResponse<number>> {
     CONFIG.ACCOUNT_INDEX
   );
   // configure read-only function call
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-vote-record",
-    functionArgs: [Cl.principal(args.proposalContract), Cl.principal(args.voterAddress)],
+    functionArgs: [
+      Cl.principal(args.proposalContract),
+      Cl.principal(args.voterAddress),
+    ],
     senderAddress: address,
     network: networkObj,
   });

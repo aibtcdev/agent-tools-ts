@@ -121,7 +121,6 @@ async function main() {
   ];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress: walletAddress,
     contractName: walletName,
     functionName: "proxy-create-proposal",

@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   Cl,
   ClarityType,
   cvToJSON,
@@ -69,7 +69,7 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get the proposal
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-proposal",

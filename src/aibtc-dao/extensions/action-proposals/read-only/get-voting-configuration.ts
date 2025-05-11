@@ -1,4 +1,4 @@
-import { callReadOnlyFunction, cvToJSON } from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, cvToJSON } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
@@ -59,7 +59,7 @@ async function main(): Promise<ToolResponse<any>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get voting configuration
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-voting-configuration",

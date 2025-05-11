@@ -1,5 +1,4 @@
 import {
-  createStacksPrivateKey,
   signStructuredData,
   stringAsciiCV,
   tupleCV,
@@ -28,7 +27,8 @@ async function signMessage() {
     ACCOUNT_INDEX
   );
 
-  const privateKey = createStacksPrivateKey(privateKeyString);
+  // Use privateKeyString directly instead of createStacksPrivateKey
+  const privateKey = privateKeyString;
 
   // Domain and message values
   const domain = tupleCV({
@@ -50,7 +50,7 @@ async function signMessage() {
 
 signMessage()
   .then(({ signedMessage, address }) => {
-    console.log(`Signed Message: ${signedMessage.data}`);
+    console.log(`Signed Message: ${signedMessage}`);
     console.log(`Signed By: ${address}`);
   })
   .catch(console.error);

@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   Cl,
   ClarityType,
   cvToValue,
@@ -73,7 +73,7 @@ async function main(): Promise<ToolResponse<any | null>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get charter version data
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-dao-charter",

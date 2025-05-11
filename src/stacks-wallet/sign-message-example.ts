@@ -3,9 +3,9 @@ import { bytesToHex } from "@stacks/common";
 import {
   getPublicKeyFromPrivate,
   verifyMessageSignatureRsv,
+  makeECPrivateKey,
 } from "@stacks/encryption";
 import {
-  createStacksPrivateKey,
   cvToJSON,
   cvToValue,
   encodeStructuredData,
@@ -16,6 +16,7 @@ import {
   tupleCV,
   uintCV,
 } from "@stacks/transactions";
+
 import {
   CONFIG,
   deriveChildAccount,
@@ -62,7 +63,8 @@ async function main() {
   // SIGNING THE MESSAGE
 
   // create private key obj for signature function
-  const privateKey = createStacksPrivateKey(privateKeyString);
+  // Note: Using makeECPrivateKey instead of createStacksPrivateKey
+  const privateKey = privateKeyString;
 
   // create a domain object as a clarity value
   // based on @stacks.js/transactions signature test
@@ -87,8 +89,8 @@ async function main() {
   console.log(`===== SIGNATURE INFO =====`);
   console.log(`Message: ${cvToValue(message)}`);
   console.log(`Domain: ${JSON.stringify(cvToJSON(domain), null, 2)}`);
-  console.log(`Signed message type: ${signedMessage.type}`);
-  console.log(`Signed message data: ${signedMessage.data}`);
+  // Updated to handle signedMessage as a string
+  console.log(`Signed message: ${signedMessage}`);
 
   // GETTING THE PUBLIC KEY FROM TYPE 10 SIGNATURE (SIP-018)
 
@@ -108,14 +110,14 @@ async function main() {
 
   const addressFromSignature = getAddressFromPublicKey(
     publicKeyFromSignature,
-    txVersion
+    networkObj // Using networkObj instead of txVersion
   );
 
   // VALIDATING THE EXPECTED SIGNED MESSAGE
 
   // test if signature is verified
   const isTestSignatureVerified = verifyMessageSignatureRsv({
-    signature: signedMessage.data,
+    signature: signedMessage,
     message: expectedMessageHashed,
     publicKey: publicKeyFromSignature,
   });

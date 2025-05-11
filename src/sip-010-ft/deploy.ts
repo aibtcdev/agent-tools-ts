@@ -11,6 +11,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  getTxVersion,
 } from "../utilities";
 
 export function GenerateTokenBasicContract(
@@ -48,7 +49,9 @@ async function deployContract(sourceCode: string, contractName: string) {
       .replace(/([a-z])([A-Z])/g, "$1-$2")
       .replace(/\s+/g, "-")
       .toLowerCase();
-    const senderAddress = getAddressFromPrivateKey(key, networkObj.version);
+
+    // Use the network string directly for address generation
+    const senderAddress = getAddressFromPrivateKey(key, CONFIG.NETWORK);
     const nextPossibleNonce = await getNextNonce(network, senderAddress);
 
     const txOptions: SignedContractDeployOptions = {
@@ -58,30 +61,31 @@ async function deployContract(sourceCode: string, contractName: string) {
       network: networkObj,
       senderKey: key,
       nonce: nextPossibleNonce,
-      anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Allow,
       fee: BigInt(1_000_000), // 1 STX
     };
 
     const transaction = await makeContractDeploy(txOptions);
-    const broadcastResponse = await broadcastTransaction(
+    const broadcastResponse = await broadcastTransaction({
       transaction,
-      networkObj
-    );
+      network: networkObj,
+    });
 
-    if ("error" in broadcastResponse) {
+    // Check if broadcast was successful
+    if (!broadcastResponse.txid) {
       console.log("Transaction failed to broadcast");
-      console.log(`Error: ${broadcastResponse.error}`);
-      if (broadcastResponse.reason) {
-        console.log(`Reason: ${broadcastResponse.reason}`);
+      const errorResponse = broadcastResponse as any;
+
+      if (errorResponse.error) {
+        console.log(`Error: ${errorResponse.error}`);
       }
-      if (broadcastResponse.reason_data) {
+      if (errorResponse.reason) {
+        console.log(`Reason: ${errorResponse.reason}`);
+      }
+
+      if (errorResponse.reason_data) {
         console.log(
-          `Reason Data: ${JSON.stringify(
-            broadcastResponse.reason_data,
-            null,
-            2
-          )}`
+          `Reason Data: ${JSON.stringify(errorResponse.reason_data, null, 2)}`
         );
       }
     } else {

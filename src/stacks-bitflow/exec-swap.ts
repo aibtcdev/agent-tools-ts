@@ -68,7 +68,6 @@ if (!bestRoute) {
       address,
       networkObj,
       nonce: nonce,
-      anchorMode: AnchorMode.Any,
       postConditionMode: PostConditionMode.Deny,
       postConditions: swapParams.postConditions,
       fee: BigInt(100_000),
@@ -82,10 +81,10 @@ if (!bestRoute) {
 
     const transaction = await makeContractCall(txOptions);
 
-    const broadcastResponse = await broadcastTransaction(
+    const broadcastResponse = await broadcastTransaction({
       transaction,
-      networkObj
-    );
+      network: networkObj,
+    });
     console.log("===== BROADCAST RESPONSE =====");
     console.log(broadcastResponse);
 

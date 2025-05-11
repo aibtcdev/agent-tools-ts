@@ -71,7 +71,6 @@ async function main(): Promise<ToolResponse<TxBroadcastResult>> {
 
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress: baseDaoAddress,
     contractName: baseDaoName,
     functionName: "construct",

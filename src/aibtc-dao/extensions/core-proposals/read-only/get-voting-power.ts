@@ -1,5 +1,5 @@
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   Cl,
   ClarityType,
   cvToValue,
@@ -79,7 +79,7 @@ async function main(): Promise<ToolResponse<unknown>> {
     CONFIG.ACCOUNT_INDEX
   );
   // get voting power
-  const result = await callReadOnlyFunction({
+  const result = await fetchCallReadOnlyFunction({
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "get-voting-power",

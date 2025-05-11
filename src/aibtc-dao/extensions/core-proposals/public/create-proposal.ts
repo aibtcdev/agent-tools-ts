@@ -24,7 +24,7 @@ import {
 const usage =
   "Usage: bun run create-proposal.ts <daoCoreProposalsExtensionContract> <daoCoreProposalContract> <daoTokenContract> [memo]";
 const usageExample =
-  "Example: bun run create-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-onchain-messaging-send ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token \"This is a proposal to add messaging\"";
+  'Example: bun run create-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-core-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-onchain-messaging-send ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token "This is a proposal to add messaging"';
 
 interface ExpectedArgs {
   daoCoreProposalsExtensionContract: string;
@@ -116,7 +116,6 @@ async function main() {
   ];
   // configure contract call options
   const txOptions: SignedContractCallOptions = {
-    anchorMode: AnchorMode.Any,
     contractAddress: extensionAddress,
     contractName: extensionName,
     functionName: "create-proposal",

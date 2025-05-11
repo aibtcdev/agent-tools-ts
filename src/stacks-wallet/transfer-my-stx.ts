@@ -49,7 +49,6 @@ async function transferToken(
       memo,
       nonce,
       fee,
-      anchorMode: AnchorMode.Any,
     };
 
     const transaction = await makeSTXTokenTransfer(txOptions);
