@@ -1,16 +1,23 @@
 import {
   Cl,
   cvToValue,
+  fetchCallReadOnlyFunction,
   ReadOnlyFunctionOptions,
-  ReadOnlyFunctionResponse,
 } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
+  deriveChildAccount,
   getNetwork,
+  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
 } from "../../../../utilities";
+
+const usage =
+  "Usage: bun run executed-at.ts <baseDaoContract> <proposalContract>";
+const usageExample =
+  "Example: bun run executed-at.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-base-dao ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-bootstrap-initialization";
 
 interface ExpectedArgs {
   baseDaoContract: string;
@@ -19,11 +26,19 @@ interface ExpectedArgs {
 
 function validateArgs(): ExpectedArgs {
   const [baseDaoContract, proposalContract] = process.argv.slice(2);
-  if (!baseDaoContract || !proposalContract) {
+  if (!isValidContractPrincipal(baseDaoContract)) {
     const errorMessage = [
-      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
-      "Usage: bun run executed-at.ts <baseDaoContract> <proposalContract>",
-      "Example: bun run executed-at.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-base-dao ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-bootstrap-initialization",
+      `Invalid base DAO contract address: ${baseDaoContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  if (!isValidContractPrincipal(proposalContract)) {
+    const errorMessage = [
+      `Invalid proposal contract address: ${proposalContract}`,
+      usage,
+      usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
@@ -39,25 +54,37 @@ async function main(): Promise<ToolResponse<number | null>> {
 
   const networkObj = getNetwork(CONFIG.NETWORK);
 
+  const { address } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+
   const functionOptions: ReadOnlyFunctionOptions = {
     contractAddress: baseDaoAddress,
     contractName: baseDaoName,
     functionName: "executed-at",
     functionArgs: [Cl.principal(args.proposalContract)],
     network: networkObj,
+    senderAddress: address,
   };
 
   try {
-    const result: ReadOnlyFunctionResponse = await networkObj.callReadOnlyFunction(
-      functionOptions
-    );
-    const executedAt = cvToValue(result.value);
+    const result = await fetchCallReadOnlyFunction(functionOptions);
+    const executedAt = cvToValue(result);
     return {
-      status: "success",
-      result: executedAt,
+      success: true,
+      data: executedAt,
+      message: `Proposal ${args.proposalContract} was executed at block ${executedAt === null ? 'never' : executedAt}`,
     };
   } catch (error) {
-    return createErrorResponse(error);
+    const errorMessage = [
+      `Error fetching execution status:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
 }
 

@@ -12,6 +12,7 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
 } from "../../../../utilities";
@@ -27,28 +28,23 @@ interface ExpectedArgs {
 }
 
 function validateArgs(): ExpectedArgs {
-  // verify all required arguments are provided
   const [baseDaoContract, proposalContract] = process.argv.slice(2);
-  if (!baseDaoContract || !proposalContract) {
+  if (!isValidContractPrincipal(baseDaoContract)) {
     const errorMessage = [
-      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      `Invalid base DAO contract address: ${baseDaoContract}`,
       usage,
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
-  // verify contract addresses extracted from arguments
-  const [daoAddress, daoName] = baseDaoContract.split(".");
-  const [proposalAddress, proposalName] = proposalContract.split(".");
-  if (!daoAddress || !daoName || !proposalAddress || !proposalName) {
+  if (!isValidContractPrincipal(proposalContract)) {
     const errorMessage = [
-      `Invalid contract addresses: ${baseDaoContract} ${proposalContract}`,
+      `Invalid proposal contract address: ${proposalContract}`,
       usage,
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
-  // return validated arguments
   return {
     baseDaoContract,
     proposalContract,
@@ -56,11 +52,9 @@ function validateArgs(): ExpectedArgs {
 }
 
 async function main(): Promise<ToolResponse<TxBroadcastResult>> {
-  // validate and store provided args
   const args = validateArgs();
   const [baseDaoAddress, baseDaoName] = args.baseDaoContract.split(".");
 
-  // setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -69,7 +63,6 @@ async function main(): Promise<ToolResponse<TxBroadcastResult>> {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // configure contract call options
   const txOptions: SignedContractCallOptions = {
     contractAddress: baseDaoAddress,
     contractName: baseDaoName,
@@ -79,10 +72,24 @@ async function main(): Promise<ToolResponse<TxBroadcastResult>> {
     nonce: nextPossibleNonce,
     senderKey: key,
   };
-  // broadcast transaction and return response
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+  
+  try {
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastTx(transaction, networkObj);
+    return {
+      success: true,
+      data: broadcastResponse,
+      message: `Successfully constructed DAO with proposal ${args.proposalContract}`,
+    };
+  } catch (error) {
+    const errorMessage = [
+      `Error constructing DAO:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
 }
 
 main()
