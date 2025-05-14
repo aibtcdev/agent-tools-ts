@@ -1,5 +1,14 @@
 import { fetch } from "bun";
 import { CONFIG } from "../../utilities";
+import { 
+  ApiResponse, 
+  ContractsListResponse, 
+  ContractDetailResponse, 
+  ContractSourceResponse, 
+  GeneratedContractResponse,
+  ContractType,
+  ContractInfo
+} from "@aibtc/types";
 
 export class ContractApiClient {
   private baseUrl: string;
@@ -10,32 +19,35 @@ export class ContractApiClient {
       : "https://daos-staging.aibtc.dev";
   }
 
-  async getAllContracts() {
+  async getAllContracts(): Promise<ApiResponse<ContractsListResponse>> {
     const response = await fetch(`${this.baseUrl}/contracts`);
     return await response.json();
   }
 
-  async getDaoNames() {
+  async getDaoNames(): Promise<ApiResponse<string[]>> {
     const response = await fetch(`${this.baseUrl}/dao-names`);
     return await response.json();
   }
 
-  async getContractsByType(type: string) {
+  async getContractsByType(type: ContractType): Promise<ApiResponse<ContractsListResponse>> {
     const response = await fetch(`${this.baseUrl}/by-type/${type}`);
     return await response.json();
   }
 
-  async getContract(name: string) {
+  async getContract(name: string): Promise<ApiResponse<ContractDetailResponse>> {
     const response = await fetch(`${this.baseUrl}/contract/${name}`);
     return await response.json();
   }
 
-  async getContractByTypeAndSubtype(type: string, subtype: string) {
+  async getContractByTypeAndSubtype(type: ContractType, subtype: string): Promise<ApiResponse<ContractInfo>> {
     const response = await fetch(`${this.baseUrl}/by-type-subtype/${type}/${subtype}`);
     return await response.json();
   }
 
-  async generateContract(contractName: string, replacements: Record<string, any> = {}) {
+  async generateContract(
+    contractName: string, 
+    replacements: Record<string, any> = {}
+  ): Promise<ApiResponse<GeneratedContractResponse>> {
     const response = await fetch(`${this.baseUrl}/generate-contract`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -52,7 +64,7 @@ export class ContractApiClient {
     network: string = "devnet", 
     tokenSymbol: string = "aibtc",
     customReplacements: Record<string, any> = {}
-  ) {
+  ): Promise<ApiResponse<GeneratedContractResponse>> {
     const response = await fetch(`${this.baseUrl}/generate-contract-for-network`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -70,7 +82,7 @@ export class ContractApiClient {
     network: string = "devnet",
     tokenSymbol: string = "aibtc",
     customReplacements: Record<string, any> = {}
-  ) {
+  ): Promise<ApiResponse<Record<string, GeneratedContractResponse>>> {
     const response = await fetch(`${this.baseUrl}/generate-dao-contracts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
