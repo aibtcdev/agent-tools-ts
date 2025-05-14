@@ -1,9 +1,7 @@
 import {
-  AnchorMode,
   Cl,
   makeContractCall,
   SignedContractCallOptions,
-  TxBroadcastResult,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -15,6 +13,7 @@ import {
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
+  TxBroadcastResultWithLink,
 } from "../../../../utilities";
 
 const usage =
@@ -51,7 +50,7 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<TxBroadcastResult>> {
+async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
   const args = validateArgs();
   const [baseDaoAddress, baseDaoName] = args.baseDaoContract.split(".");
 
@@ -72,15 +71,11 @@ async function main(): Promise<ToolResponse<TxBroadcastResult>> {
     nonce: nextPossibleNonce,
     senderKey: key,
   };
-  
+
   try {
     const transaction = await makeContractCall(txOptions);
     const broadcastResponse = await broadcastTx(transaction, networkObj);
-    return {
-      success: true,
-      data: broadcastResponse,
-      message: `Successfully constructed DAO with proposal ${args.proposalContract}`,
-    };
+    return broadcastResponse;
   } catch (error) {
     const errorMessage = [
       `Error constructing DAO:`,
