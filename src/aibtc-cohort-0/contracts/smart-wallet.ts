@@ -1,7 +1,7 @@
 import { ContractApiClient } from "../api/client";
 import { CONFIG } from "../../utilities";
 
-export interface SmartWalletParams {
+export interface AgentAccountParams {
   ownerAddress: string;
   agentAddress?: string;
   daoTokenContract: string;
@@ -9,7 +9,7 @@ export interface SmartWalletParams {
   network?: string;
 }
 
-export async function generateSmartWallet(params: SmartWalletParams) {
+export async function generateAgentAccount(params: AgentAccountParams) {
   const {
     ownerAddress,
     agentAddress = ownerAddress,
@@ -21,11 +21,11 @@ export async function generateSmartWallet(params: SmartWalletParams) {
   const apiClient = new ContractApiClient();
   
   try {
-    // First get the smart wallet contract template
+    // First get the agent account contract template
     const contractResponse = await apiClient.getContractByTypeAndSubtype("SMART_WALLET", "BASE");
     
     if (!contractResponse.contract) {
-      throw new Error("Failed to retrieve smart wallet contract template");
+      throw new Error("Failed to retrieve agent account contract template");
     }
     
     const contractName = contractResponse.contract.name;
@@ -47,7 +47,7 @@ export async function generateSmartWallet(params: SmartWalletParams) {
     
     return generatedContract;
   } catch (error) {
-    console.error("Error generating smart wallet:", error);
+    console.error("Error generating agent account:", error);
     throw error;
   }
 }

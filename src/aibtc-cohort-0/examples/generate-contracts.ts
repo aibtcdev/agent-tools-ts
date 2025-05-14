@@ -2,7 +2,7 @@
 
 import { ContractApiClient } from "../api/client";
 import { generateDaoContracts } from "../contracts/dao";
-import { generateSmartWallet } from "../contracts/smart-wallet";
+import { generateAgentAccount } from "../contracts/smart-wallet";
 import { generateToken } from "../contracts/token";
 
 async function main() {
@@ -39,15 +39,15 @@ async function main() {
   
   console.log("Generated token contract:", tokenContract.contract.name);
   
-  // 4. Generate a smart wallet
-  console.log("\nGenerating a smart wallet...");
-  const smartWallet = await generateSmartWallet({
+  // 4. Generate an agent account
+  console.log("\nGenerating an agent account...");
+  const agentAccount = await generateAgentAccount({
     ownerAddress: "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS",
     daoTokenContract: "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtc-token",
     daoTokenDexContract: "SP2ZNGJ85ENDY6QRHQ5P2D4FXKGZWCKTB2T0Z55KS.aibtc-token-dex"
   });
   
-  console.log("Generated smart wallet contract");
+  console.log("Generated agent account contract");
 }
 
 main().catch(error => {
