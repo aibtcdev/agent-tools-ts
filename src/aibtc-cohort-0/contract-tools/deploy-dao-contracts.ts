@@ -183,13 +183,15 @@ async function main(): Promise<
     // Check if contracts are in data.contracts or directly in data
     const contracts = generatedContractsResponse.data.contracts || generatedContractsResponse.data;
 
-    for (const [contractName, contractData] of Object.entries(contracts)) {
+    for (const [key, contractData] of Object.entries(contracts)) {
+      // Use the contract's name property if available, otherwise use the key
+      const contractName = contractData.name || key;
       console.log(`Deploying contract: ${contractName}`);
 
       // Deploy the contract
       const deployResult = await deployContract({
         contractName: contractName,
-        sourceCode: contractData.source,
+        sourceCode: contractData.source || contractData.content || contractData.code,
         clarityVersion: contractData.clarityVersion,
       });
 

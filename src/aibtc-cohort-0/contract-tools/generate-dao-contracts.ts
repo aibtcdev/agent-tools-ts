@@ -83,6 +83,23 @@ async function main(): Promise<ToolResponse<any>> {
       await saveContractsToFiles(contracts, args.tokenSymbol, args.network);
     }
     
+    // Create a truncated version of the contracts for the response
+    const truncatedContracts = {};
+    for (const [key, contractData] of Object.entries(contracts)) {
+      const contractName = contractData.name || key;
+      const sourceCode = contractData.source || contractData.content || contractData.code || "";
+      const truncatedSource = sourceCode.length > 150 
+        ? sourceCode.substring(0, 147) + "..." 
+        : sourceCode;
+      
+      truncatedContracts[contractName] = {
+        ...contractData,
+        source: truncatedSource,
+        content: undefined,
+        code: undefined
+      };
+    }
+    
     return {
       success: true,
       message: `Successfully generated ${
@@ -90,7 +107,10 @@ async function main(): Promise<ToolResponse<any>> {
       } DAO contracts for token ${args.tokenSymbol} on ${args.network}${
         args.saveToFile ? " (saved to files)" : ""
       }`,
-      data: result,
+      data: {
+        ...result.data,
+        contracts: truncatedContracts
+      },
     };
   } catch (error) {
     const errorMessage = [
@@ -158,10 +178,13 @@ async function saveContractsToFiles(
   fs.mkdirSync(outputDir, { recursive: true });
   
   // Save each contract to a file
-  for (const [contractName, contractData] of Object.entries(contracts)) {
+  for (const [key, contractData] of Object.entries(contracts)) {
+    // Use the contract's name property if available, otherwise use the key
+    const contractName = contractData.name || key;
     const filePath = path.join(outputDir, `${contractName}.clar`);
-    fs.writeFileSync(filePath, contractData.source || contractData.content || contractData.code || "");
-    console.log(`Saved contract to ${filePath}`);
+    const sourceCode = contractData.source || contractData.content || contractData.code || "";
+    fs.writeFileSync(filePath, sourceCode);
+    console.log(`Saved contract ${contractName} to ${filePath}`);
   }
   
   // Save the full response as JSON for reference
