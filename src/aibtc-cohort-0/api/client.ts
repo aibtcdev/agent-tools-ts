@@ -57,15 +57,53 @@ export class ContractApiClient {
     contractName: string,
     replacements: Record<string, any> = {}
   ): Promise<ApiResponse<GeneratedContractResponse>> {
-    const response = await fetch(`${this.baseUrl}/generate-contract`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contractName,
-        replacements,
-      }),
-    });
-    return await response.json();
+    try {
+      const response = await fetch(`${this.baseUrl}/generate-contract`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contractName,
+          replacements,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response body:", errorText);
+        return {
+          success: false,
+          message: `API request failed with status ${response.status}: ${errorText}`,
+          data: null
+        };
+      }
+      
+      const jsonResponse = await response.json();
+      
+      if (jsonResponse && typeof jsonResponse === 'object') {
+        if ('success' in jsonResponse) {
+          return jsonResponse;
+        } else {
+          return {
+            success: true,
+            message: "Successfully generated contract",
+            data: jsonResponse
+          };
+        }
+      } else {
+        return {
+          success: false,
+          message: "Invalid response format from API",
+          data: null
+        };
+      }
+    } catch (error) {
+      console.error("Error generating contract:", error);
+      return {
+        success: false,
+        message: `Failed to generate contract: ${error instanceof Error ? error.message : "Unknown error"}`,
+        data: null
+      };
+    }
   }
 
   async generateContractForNetwork(
@@ -74,20 +112,58 @@ export class ContractApiClient {
     tokenSymbol: string = "aibtc",
     customReplacements: Record<string, any> = {}
   ): Promise<ApiResponse<GeneratedContractResponse>> {
-    const response = await fetch(
-      `${this.baseUrl}/generate-contract-for-network`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contractName,
-          network,
-          tokenSymbol,
-          customReplacements,
-        }),
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/generate-contract-for-network`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contractName,
+            network,
+            tokenSymbol,
+            customReplacements,
+          }),
+        }
+      );
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response body:", errorText);
+        return {
+          success: false,
+          message: `API request failed with status ${response.status}: ${errorText}`,
+          data: null
+        };
       }
-    );
-    return await response.json();
+      
+      const jsonResponse = await response.json();
+      
+      if (jsonResponse && typeof jsonResponse === 'object') {
+        if ('success' in jsonResponse) {
+          return jsonResponse;
+        } else {
+          return {
+            success: true,
+            message: "Successfully generated contract for network",
+            data: jsonResponse
+          };
+        }
+      } else {
+        return {
+          success: false,
+          message: "Invalid response format from API",
+          data: null
+        };
+      }
+    } catch (error) {
+      console.error("Error generating contract for network:", error);
+      return {
+        success: false,
+        message: `Failed to generate contract for network: ${error instanceof Error ? error.message : "Unknown error"}`,
+        data: null
+      };
+    }
   }
 
   async generateDaoContracts(
@@ -101,18 +177,60 @@ export class ContractApiClient {
     );
     console.log("Request URL:", requestUrl);
     console.log("Custom replacements:", customReplacements);
-    const response = await fetch(requestUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        network,
-        tokenSymbol,
-        customReplacements,
-      }),
-    });
-    console.log("Response status:", response.status);
-    const reponseClone = response.clone();
-    console.log("Response body:", await reponseClone.text());
-    return await response.json();
+    
+    try {
+      const response = await fetch(requestUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          network,
+          tokenSymbol,
+          customReplacements,
+        }),
+      });
+      
+      console.log("Response status:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response body:", errorText);
+        return {
+          success: false,
+          message: `API request failed with status ${response.status}: ${errorText}`,
+          data: null
+        };
+      }
+      
+      // Parse the JSON response
+      const jsonResponse = await response.json();
+      
+      // Check if the response has the expected structure
+      if (jsonResponse && typeof jsonResponse === 'object') {
+        if ('success' in jsonResponse) {
+          // It's already in our expected format
+          return jsonResponse;
+        } else {
+          // Wrap the response in our expected format
+          return {
+            success: true,
+            message: "Successfully generated DAO contracts",
+            data: jsonResponse
+          };
+        }
+      } else {
+        return {
+          success: false,
+          message: "Invalid response format from API",
+          data: null
+        };
+      }
+    } catch (error) {
+      console.error("Error generating DAO contracts:", error);
+      return {
+        success: false,
+        message: `Failed to generate DAO contracts: ${error instanceof Error ? error.message : "Unknown error"}`,
+        data: null
+      };
+    }
   }
 }
