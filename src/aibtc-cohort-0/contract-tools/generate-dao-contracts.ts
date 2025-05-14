@@ -20,21 +20,25 @@ export async function generateDaoContracts(
   customReplacements: Record<string, any> = {}
 ) {
   const apiClient = new ContractApiClient();
-  
-  console.log(`Generating DAO contracts for network: ${network}, token: ${tokenSymbol}`);
-  
+
+  console.log(
+    `Generating DAO contracts for network: ${network}, token: ${tokenSymbol}`
+  );
+
   try {
     const result = await apiClient.generateDaoContracts(
       network,
       tokenSymbol,
       customReplacements
     );
-    
+
     if (!result.contracts) {
       throw new Error(`Failed to generate DAO contracts`);
     }
-    
-    console.log(`Successfully generated ${result.contracts.length} DAO contracts`);
+
+    console.log(
+      `Successfully generated ${result.contracts.length} DAO contracts`
+    );
     return result;
   } catch (error) {
     console.error("Error generating DAO contracts:", error);
@@ -43,17 +47,17 @@ export async function generateDaoContracts(
 }
 
 export async function deployDaoContracts(params: DeployDaoParams) {
-  const { 
-    tokenSymbol, 
-    tokenName, 
-    tokenMaxSupply, 
-    tokenUri, 
-    logoUrl, 
-    originAddress, 
-    daoManifest, 
+  const {
+    tokenSymbol,
+    tokenName,
+    tokenMaxSupply,
+    tokenUri,
+    logoUrl,
+    originAddress,
+    daoManifest,
     tweetOrigin,
     daoManifestInscriptionId,
-    network = CONFIG.NETWORK
+    network = CONFIG.NETWORK,
   } = params;
 
   // Generate contracts using the API
@@ -67,7 +71,7 @@ export async function deployDaoContracts(params: DeployDaoParams) {
     origin_address: originAddress,
     dao_manifest: daoManifest,
     tweet_origin: tweetOrigin,
-    dao_manifest_inscription_id: daoManifestInscriptionId || ""
+    dao_manifest_inscription_id: daoManifestInscriptionId || "",
   };
 
   // Generate all DAO contracts
