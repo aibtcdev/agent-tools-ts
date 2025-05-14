@@ -8,6 +8,7 @@ import {
   TxBroadcastResultWithLink,
 } from "../../utilities";
 import { deployContract } from "../utils/deploy-contract";
+import { validateStacksAddress } from "@stacks/transactions";
 
 const usage =
   "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> [daoManifestInscriptionId] [network]";
@@ -97,7 +98,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!isValidContractPrincipal(originAddress)) {
+  if (!validateStacksAddress(originAddress)) {
     const errorMessage = [
       `Invalid origin address: ${originAddress}`,
       usage,
@@ -165,6 +166,8 @@ async function main(): Promise<
       !generatedContractsResponse.success ||
       !generatedContractsResponse.contracts
     ) {
+      console.error("Failed to generate DAO contracts:");
+      console.error(JSON.stringify(generatedContractsResponse, null, 2));
       return {
         success: false,
         message: `Failed to generate DAO contracts: ${

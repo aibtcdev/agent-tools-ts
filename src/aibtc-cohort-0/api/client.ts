@@ -15,8 +15,8 @@ export class ContractApiClient {
   constructor() {
     this.baseUrl =
       CONFIG.NETWORK === "mainnet"
-        ? "https://daos.aibtc.dev"
-        : "https://daos-staging.aibtc.dev";
+        ? "https://daos.aibtc.dev/api"
+        : "https://daos-staging.aibtc.dev/api";
   }
 
   async getAllContracts(): Promise<ApiResponse<ContractsListResponse>> {
@@ -95,7 +95,13 @@ export class ContractApiClient {
     tokenSymbol: string = "aibtc",
     customReplacements: Record<string, any> = {}
   ): Promise<ApiResponse<Record<string, GeneratedContractResponse>>> {
-    const response = await fetch(`${this.baseUrl}/generate-dao-contracts`, {
+    const requestUrl = `${this.baseUrl}/generate-dao-contracts`;
+    console.log(
+      `Generating DAO contracts for network: ${network}, tokenSymbol: ${tokenSymbol}`
+    );
+    console.log("Request URL:", requestUrl);
+    console.log("Custom replacements:", customReplacements);
+    const response = await fetch(requestUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -104,6 +110,9 @@ export class ContractApiClient {
         customReplacements,
       }),
     });
+    console.log("Response status:", response.status);
+    const reponseClone = response.clone();
+    console.log("Response body:", await reponseClone.text());
     return await response.json();
   }
 }
