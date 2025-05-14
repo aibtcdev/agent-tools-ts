@@ -9,3 +9,6 @@ export * from "./aibtc-dao/services/dao-contract-deployer";
 
 // export types
 export * from "./aibtc-dao/types/dao-types";
+
+// export cohort-0 modules
+export * from "./aibtc-cohort-0";
