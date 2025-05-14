@@ -2,7 +2,7 @@
 
 import { ContractApiClient } from "../api/client";
 import { generateDaoContracts } from "../contracts/dao";
-import { generateAgentAccount } from "../contracts/smart-wallet";
+import { generateAgentAccount } from "../contracts/agent-account";
 import { generateToken } from "../contracts/token";
 
 async function main() {

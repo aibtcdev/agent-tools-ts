@@ -2,7 +2,7 @@
 export { ContractApiClient } from "./api/client";
 export * from "./contracts/dao";
 export * from "./contracts/token";
-export * from "./contracts/smart-wallet";
+export * from "./contracts/agent-account";
 
 // Main entry point for the package
 if (import.meta.main) {
