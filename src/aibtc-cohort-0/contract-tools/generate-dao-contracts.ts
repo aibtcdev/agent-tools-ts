@@ -7,18 +7,19 @@ import {
 } from "../../utilities";
 
 const usage =
-  "Usage: bun run generate-dao-contracts.ts <tokenSymbol> [network] [customReplacements]";
+  "Usage: bun run generate-dao-contracts.ts <tokenSymbol> [network] [customReplacements] [saveToFile]";
 const usageExample =
-  'Example: bun run generate-dao-contracts.ts MYTOKEN devnet \'{"token_name":"My Token"}\'';
+  'Example: bun run generate-dao-contracts.ts MYTOKEN devnet \'{"token_name":"My Token"}\' true';
 
 interface ExpectedArgs {
   tokenSymbol: string;
   network?: string;
   customReplacements?: Record<string, any>;
+  saveToFile?: boolean;
 }
 
 function validateArgs(): ExpectedArgs {
-  const [tokenSymbol, network = CONFIG.NETWORK, customReplacementsStr] =
+  const [tokenSymbol, network = CONFIG.NETWORK, customReplacementsStr, saveToFileStr = "false"] =
     process.argv.slice(2);
 
   if (!tokenSymbol) {
@@ -42,10 +43,14 @@ function validateArgs(): ExpectedArgs {
     }
   }
 
+  // Parse saveToFile parameter
+  const saveToFile = saveToFileStr.toLowerCase() === "true";
+
   return {
     tokenSymbol,
     network,
     customReplacements,
+    saveToFile,
   };
 }
 
@@ -73,11 +78,18 @@ async function main(): Promise<ToolResponse<any>> {
     // Check if contracts are in data.contracts or directly in data
     const contracts = result.data.contracts || result.data;
     
+    // Save contracts to files if requested
+    if (args.saveToFile) {
+      await saveContractsToFiles(contracts, args.tokenSymbol, args.network);
+    }
+    
     return {
       success: true,
       message: `Successfully generated ${
         Array.isArray(contracts) ? contracts.length : Object.keys(contracts).length
-      } DAO contracts for token ${args.tokenSymbol} on ${args.network}`,
+      } DAO contracts for token ${args.tokenSymbol} on ${args.network}${
+        args.saveToFile ? " (saved to files)" : ""
+      }`,
       data: result,
     };
   } catch (error) {
@@ -128,6 +140,34 @@ export async function generateDaoContracts(
     console.error("Error generating DAO contracts:", error);
     throw error;
   }
+}
+
+/**
+ * Save generated contracts to files in the contract-tools/generated directory
+ */
+async function saveContractsToFiles(
+  contracts: any,
+  tokenSymbol: string,
+  network: string
+) {
+  const fs = require("fs");
+  const path = require("path");
+  
+  // Create the directory if it doesn't exist
+  const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
+  fs.mkdirSync(outputDir, { recursive: true });
+  
+  // Save each contract to a file
+  for (const [contractName, contractData] of Object.entries(contracts)) {
+    const filePath = path.join(outputDir, `${contractName}.clar`);
+    fs.writeFileSync(filePath, contractData.source || contractData.content || contractData.code || "");
+    console.log(`Saved contract to ${filePath}`);
+  }
+  
+  // Save the full response as JSON for reference
+  const jsonPath = path.join(outputDir, `_full_response.json`);
+  fs.writeFileSync(jsonPath, JSON.stringify(contracts, null, 2));
+  console.log(`Saved full response to ${jsonPath}`);
 }
 
 // Run the main function if this file is executed directly
