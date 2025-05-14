@@ -2,12 +2,12 @@ import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
   createErrorResponse,
-  deriveChildAccount,
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
   TxBroadcastResultWithLink,
 } from "../../utilities";
+import { deployContract } from "../utils/deploy-contract";
 
 const usage =
   "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [network]";
@@ -40,7 +40,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!isValidPrincipal(ownerAddress)) {
+  if (!isValidContractPrincipal(ownerAddress)) {
     const errorMessage = [
       `Invalid owner address: ${ownerAddress}`,
       usage,
@@ -86,7 +86,7 @@ function validateArgs(): ExpectedArgs {
   }
 
   // If agent address is provided, validate it
-  if (agentAddress && !isValidPrincipal(agentAddress)) {
+  if (agentAddress && !isValidContractPrincipal(agentAddress)) {
     const errorMessage = [
       `Invalid agent address: ${agentAddress}`,
       usage,
@@ -150,14 +150,7 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
       };
     }
 
-    // Get account info for deployment
-    const { address } = await deriveChildAccount(
-      args.network,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
-
-    console.log(`Deploying agent account contract from address: ${address}`);
+    // Prepare for deployment
 
     // Deploy the contract
     const deployResult = await deployContract({

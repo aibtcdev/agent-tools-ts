@@ -2,12 +2,12 @@ import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
   createErrorResponse,
-  deriveChildAccount,
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
   TxBroadcastResultWithLink,
 } from "../../utilities";
+import { deployContract } from "../utils/deploy-contract";
 
 const usage =
   "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> [daoManifestInscriptionId] [network]";
@@ -173,14 +173,7 @@ async function main(): Promise<
       };
     }
 
-    // Get account info for deployment
-    const { address } = await deriveChildAccount(
-      args.network ?? CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
-
-    console.log(`Deploying DAO contracts from address: ${address}`);
+    // Prepare for deployment
 
     // Deploy each contract
     const deploymentResults: Record<string, TxBroadcastResultWithLink> = {};
