@@ -4,10 +4,12 @@ import {
   createErrorResponse,
   sendToLLM,
   ToolResponse,
-} from "../../../utilities";
+} from "../../utilities";
 
-const usage = "Usage: bun run generate-dao-contracts.ts <tokenSymbol> [network] [customReplacements]";
-const usageExample = "Example: bun run generate-dao-contracts.ts MYTOKEN devnet '{\"token_name\":\"My Token\"}'";
+const usage =
+  "Usage: bun run generate-dao-contracts.ts <tokenSymbol> [network] [customReplacements]";
+const usageExample =
+  'Example: bun run generate-dao-contracts.ts MYTOKEN devnet \'{"token_name":"My Token"}\'';
 
 interface ExpectedArgs {
   tokenSymbol: string;
@@ -16,14 +18,13 @@ interface ExpectedArgs {
 }
 
 function validateArgs(): ExpectedArgs {
-  const [tokenSymbol, network = CONFIG.NETWORK, customReplacementsStr] = process.argv.slice(2);
-  
+  const [tokenSymbol, network = CONFIG.NETWORK, customReplacementsStr] =
+    process.argv.slice(2);
+
   if (!tokenSymbol) {
-    const errorMessage = [
-      "Token symbol is required",
-      usage,
-      usageExample,
-    ].join("\n");
+    const errorMessage = ["Token symbol is required", usage, usageExample].join(
+      "\n"
+    );
     throw new Error(errorMessage);
   }
 
@@ -62,14 +63,18 @@ async function main(): Promise<ToolResponse<any>> {
     if (!result.success || !result.contracts) {
       return {
         success: false,
-        message: `Failed to generate DAO contracts: ${result.message || "Unknown error"}`,
+        message: `Failed to generate DAO contracts: ${
+          result.message || "Unknown error"
+        }`,
         data: null,
       };
     }
 
     return {
       success: true,
-      message: `Successfully generated ${Object.keys(result.contracts).length} DAO contracts for token ${args.tokenSymbol} on ${args.network}`,
+      message: `Successfully generated ${
+        Object.keys(result.contracts).length
+      } DAO contracts for token ${args.tokenSymbol} on ${args.network}`,
       data: result,
     };
   } catch (error) {

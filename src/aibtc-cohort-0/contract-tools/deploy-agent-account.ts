@@ -3,17 +3,16 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getNetwork,
-  isValidPrincipal,
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
   TxBroadcastResultWithLink,
-} from "../../../utilities";
-import { deployContract } from "../../stacks-contracts/deploy-contract";
+} from "../../utilities";
 
-const usage = "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [network]";
-const usageExample = "Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex";
+const usage =
+  "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [network]";
+const usageExample =
+  "Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex";
 
 interface ExpectedArgs {
   ownerAddress: string;
@@ -24,8 +23,14 @@ interface ExpectedArgs {
 }
 
 function validateArgs(): ExpectedArgs {
-  const [ownerAddress, daoTokenContract, daoTokenDexContract, agentAddress, network = CONFIG.NETWORK] = process.argv.slice(2);
-  
+  const [
+    ownerAddress,
+    daoTokenContract,
+    daoTokenDexContract,
+    agentAddress,
+    network = CONFIG.NETWORK,
+  ] = process.argv.slice(2);
+
   if (!ownerAddress) {
     const errorMessage = [
       "Owner address is required",
@@ -34,7 +39,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   if (!isValidPrincipal(ownerAddress)) {
     const errorMessage = [
       `Invalid owner address: ${ownerAddress}`,
@@ -43,7 +48,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   if (!daoTokenContract) {
     const errorMessage = [
       "DAO token contract is required",
@@ -52,7 +57,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   if (!isValidContractPrincipal(daoTokenContract)) {
     const errorMessage = [
       `Invalid DAO token contract: ${daoTokenContract}`,
@@ -61,7 +66,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   if (!daoTokenDexContract) {
     const errorMessage = [
       "DAO token DEX contract is required",
@@ -70,7 +75,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   if (!isValidContractPrincipal(daoTokenDexContract)) {
     const errorMessage = [
       `Invalid DAO token DEX contract: ${daoTokenDexContract}`,
@@ -79,7 +84,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   // If agent address is provided, validate it
   if (agentAddress && !isValidPrincipal(agentAddress)) {
     const errorMessage = [
@@ -138,7 +143,9 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
     if (!generatedContract.success || !generatedContract.contract) {
       return {
         success: false,
-        message: `Failed to generate agent account: ${generatedContract.message || "Unknown error"}`,
+        message: `Failed to generate agent account: ${
+          generatedContract.message || "Unknown error"
+        }`,
         data: null,
       };
     }

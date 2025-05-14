@@ -3,17 +3,16 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getNetwork,
-  isValidPrincipal,
+  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
   TxBroadcastResultWithLink,
-} from "../../../utilities";
-import { SingleContract } from "../../stacks-contracts/services/contract-deployer";
-import { deployContract } from "../../stacks-contracts/deploy-contract";
+} from "../../utilities";
 
-const usage = "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> [daoManifestInscriptionId] [network]";
-const usageExample = "Example: bun run deploy-dao-contracts.ts MYTOKEN \"My Token\" 1000000 \"https://example.com/token.json\" \"https://example.com/logo.png\" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM \"This is my DAO\" \"https://twitter.com/mytweet\"";
+const usage =
+  "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> [daoManifestInscriptionId] [network]";
+const usageExample =
+  'Example: bun run deploy-dao-contracts.ts MYTOKEN "My Token" 1000000 "https://example.com/token.json" "https://example.com/logo.png" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "This is my DAO" "https://twitter.com/mytweet"';
 
 interface ExpectedArgs {
   tokenSymbol: string;
@@ -41,25 +40,21 @@ function validateArgs(): ExpectedArgs {
     daoManifestInscriptionId,
     network = CONFIG.NETWORK,
   ] = process.argv.slice(2);
-  
+
   if (!tokenSymbol) {
-    const errorMessage = [
-      "Token symbol is required",
-      usage,
-      usageExample,
-    ].join("\n");
+    const errorMessage = ["Token symbol is required", usage, usageExample].join(
+      "\n"
+    );
     throw new Error(errorMessage);
   }
-  
+
   if (!tokenName) {
-    const errorMessage = [
-      "Token name is required",
-      usage,
-      usageExample,
-    ].join("\n");
+    const errorMessage = ["Token name is required", usage, usageExample].join(
+      "\n"
+    );
     throw new Error(errorMessage);
   }
-  
+
   if (!tokenMaxSupplyStr) {
     const errorMessage = [
       "Token max supply is required",
@@ -68,7 +63,7 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   const tokenMaxSupply = parseInt(tokenMaxSupplyStr);
   if (isNaN(tokenMaxSupply) || tokenMaxSupply <= 0) {
     const errorMessage = [
@@ -78,25 +73,21 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   if (!tokenUri) {
-    const errorMessage = [
-      "Token URI is required",
-      usage,
-      usageExample,
-    ].join("\n");
+    const errorMessage = ["Token URI is required", usage, usageExample].join(
+      "\n"
+    );
     throw new Error(errorMessage);
   }
-  
+
   if (!logoUrl) {
-    const errorMessage = [
-      "Logo URL is required",
-      usage,
-      usageExample,
-    ].join("\n");
+    const errorMessage = ["Logo URL is required", usage, usageExample].join(
+      "\n"
+    );
     throw new Error(errorMessage);
   }
-  
+
   if (!originAddress) {
     const errorMessage = [
       "Origin address is required",
@@ -105,8 +96,8 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
-  if (!isValidPrincipal(originAddress)) {
+
+  if (!isValidContractPrincipal(originAddress)) {
     const errorMessage = [
       `Invalid origin address: ${originAddress}`,
       usage,
@@ -114,22 +105,18 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  
+
   if (!daoManifest) {
-    const errorMessage = [
-      "DAO manifest is required",
-      usage,
-      usageExample,
-    ].join("\n");
+    const errorMessage = ["DAO manifest is required", usage, usageExample].join(
+      "\n"
+    );
     throw new Error(errorMessage);
   }
-  
+
   if (!tweetOrigin) {
-    const errorMessage = [
-      "Tweet origin is required",
-      usage,
-      usageExample,
-    ].join("\n");
+    const errorMessage = ["Tweet origin is required", usage, usageExample].join(
+      "\n"
+    );
     throw new Error(errorMessage);
   }
 
@@ -147,10 +134,12 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<Record<string, TxBroadcastResultWithLink>>> {
+async function main(): Promise<
+  ToolResponse<Record<string, TxBroadcastResultWithLink>>
+> {
   const args = validateArgs();
   const apiClient = new ContractApiClient();
-  
+
   try {
     // Prepare custom replacements for contract generation
     const customReplacements = {
@@ -172,17 +161,21 @@ async function main(): Promise<ToolResponse<Record<string, TxBroadcastResultWith
       customReplacements
     );
 
-    if (!generatedContractsResponse.success || !generatedContractsResponse.contracts) {
+    if (
+      !generatedContractsResponse.success ||
+      !generatedContractsResponse.contracts
+    ) {
       return {
         success: false,
-        message: `Failed to generate DAO contracts: ${generatedContractsResponse.message || "Unknown error"}`,
-        data: null,
+        message: `Failed to generate DAO contracts: ${
+          generatedContractsResponse.message || "Unknown error"
+        }`,
       };
     }
 
     // Get account info for deployment
     const { address } = await deriveChildAccount(
-      args.network,
+      args.network ?? CONFIG.NETWORK,
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
     );
@@ -195,7 +188,7 @@ async function main(): Promise<ToolResponse<Record<string, TxBroadcastResultWith
 
     for (const [contractName, contractData] of Object.entries(contracts)) {
       console.log(`Deploying contract: ${contractName}`);
-      
+
       // Deploy the contract
       const deployResult = await deployContract({
         contractName: contractName,
@@ -208,7 +201,9 @@ async function main(): Promise<ToolResponse<Record<string, TxBroadcastResultWith
 
     return {
       success: true,
-      message: `Successfully deployed ${Object.keys(deploymentResults).length} DAO contracts for token ${args.tokenSymbol}`,
+      message: `Successfully deployed ${
+        Object.keys(deploymentResults).length
+      } DAO contracts for token ${args.tokenSymbol}`,
       data: deploymentResults,
     };
   } catch (error) {
