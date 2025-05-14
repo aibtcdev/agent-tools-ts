@@ -60,7 +60,7 @@ async function main(): Promise<ToolResponse<any>> {
       args.customReplacements
     );
 
-    if (!result.success || !result.contracts) {
+    if (!result.success || !result.data) {
       return {
         success: false,
         message: `Failed to generate DAO contracts: ${
@@ -70,10 +70,13 @@ async function main(): Promise<ToolResponse<any>> {
       };
     }
 
+    // Check if contracts are in data.contracts or directly in data
+    const contracts = result.data.contracts || result.data;
+    
     return {
       success: true,
       message: `Successfully generated ${
-        Object.keys(result.contracts).length
+        Array.isArray(contracts) ? contracts.length : Object.keys(contracts).length
       } DAO contracts for token ${args.tokenSymbol} on ${args.network}`,
       data: result,
     };
@@ -116,8 +119,8 @@ export async function generateDaoContracts(
       customReplacements
     );
 
-    if (!result.contracts) {
-      throw new Error(`Failed to generate DAO contracts`);
+    if (!result.success || !result.data) {
+      throw new Error(`Failed to generate DAO contracts: ${result.message || "Unknown error"}`);
     }
 
     return result;
