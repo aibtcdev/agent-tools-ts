@@ -1,10 +1,13 @@
 import { fetch } from "bun";
+import { CONFIG } from "../../utilities";
 
 export class ContractApiClient {
   private baseUrl: string;
 
-  constructor(baseUrl: string = "https://api.aibtc.dev") {
-    this.baseUrl = baseUrl;
+  constructor() {
+    this.baseUrl = CONFIG.NETWORK === "mainnet" 
+      ? "https://daos.aibtc.dev" 
+      : "https://daos-staging.aibtc.dev";
   }
 
   async getAllContracts() {
