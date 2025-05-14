@@ -64,7 +64,8 @@ export class ContractDeployer {
       nonce: nonce === 0 ? 0 : nonce ? nonce : undefined,
       network: this.network,
       postConditions: [], // empty, no transfers expected
-      postConditionMode: PostConditionMode.Deny,
+      postConditionMode: PostConditionMode.Allow, // Use Allow mode for token minting in contracts
+      clarityVersion: contract.clarityVersion, // Use the provided clarity version
     });
 
     // Broadcast the transaction
