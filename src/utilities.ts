@@ -235,7 +235,7 @@ export async function logBroadCastResult(
   }
 }
 
-type TxBroadcastResultWithLink = TxBroadcastResult & {
+export type TxBroadcastResultWithLink = TxBroadcastResult & {
   link?: string;
 };
 
