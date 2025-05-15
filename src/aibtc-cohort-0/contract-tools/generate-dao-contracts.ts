@@ -86,9 +86,33 @@ async function main(): Promise<ToolResponse<any>> {
     }
 
     // Check if contracts are in data.contracts or directly in data
-    console.log("Result data:", result.data);
-    console.log("Result contracts:", result.data.contracts);
-    const contracts = result.data.contracts || result.data;
+    // console.log("Result data:", Object.keys(result.data));
+
+    // 2025-05-15 defining types here temporarily
+    // this should propagate from the @aibtc/types package
+
+    const displayName = (symbol: string, name: string) =>
+      name.replace("aibtc", symbol).toLowerCase();
+
+    interface ResultData {
+      network: string;
+      tokenSymbol: string;
+      contracts: Record<string, ResultContracts>;
+    }
+
+    interface ResultContracts {
+      name: string;
+      type: string;
+      subtype: string;
+      content: string;
+    }
+
+    const resultData = result.data as ResultData;
+
+    const { network, tokenSymbol, contracts } = resultData;
+    console.log("Result network:", network);
+    console.log("Result tokenSymbol:", tokenSymbol);
+    console.log("Result contracts:", Object.keys(contracts));
 
     // Save contracts to files if requested
     if (args.saveToFile) {
@@ -96,11 +120,10 @@ async function main(): Promise<ToolResponse<any>> {
     }
 
     // Create a truncated version of the contracts for the response
-    const truncatedContracts = {};
+    const truncatedContracts: Record<string, any> = {};
     for (const [key, contractData] of Object.entries(contracts)) {
-      const contractName = contractData.name || key;
-      const sourceCode =
-        contractData.source || contractData.content || contractData.code || "";
+      const contractName = displayName(tokenSymbol, contractData.name);
+      const sourceCode = contractData.content;
       const truncatedSource =
         sourceCode.length > 150
           ? sourceCode.substring(0, 147) + "..."
@@ -108,9 +131,7 @@ async function main(): Promise<ToolResponse<any>> {
 
       truncatedContracts[contractName] = {
         ...contractData,
-        source: truncatedSource,
-        content: undefined,
-        code: undefined,
+        content: truncatedSource,
       };
     }
 

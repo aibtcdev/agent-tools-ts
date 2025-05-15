@@ -267,7 +267,7 @@ export class ContractApiClient {
     console.log("Custom replacements:", customReplacements);
 
     try {
-      console.log("Sending request to generate DAO contracts...");
+      //console.log("Sending request to generate DAO contracts...");
       const response = await fetch(requestUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -278,85 +278,39 @@ export class ContractApiClient {
         }),
       });
 
-      console.log("Response status:", response.status);
-      console.log(
-        "Response headers:",
-        Object.fromEntries(response.headers.entries())
-      );
+      //console.log("Response status:", response.status);
+      //console.log(
+      //  "Response headers:",
+      //  Object.fromEntries(response.headers.entries())
+      //);
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`API request failed with status ${response.status}`);
         console.error("Error response body:", errorText);
         return {
           success: false,
-          message: `API request failed with status ${response.status}: ${errorText}`,
-          data: null,
+          message: `API request failed with status ${response.status}`,
+          data: errorText,
         };
       }
 
-      // Clone the response so we can inspect the raw text
-      const responseClone = response.clone();
-      const rawResponseText = await responseClone.text();
-      console.log(
-        "Raw response text (first 500 chars):",
-        rawResponseText.substring(0, 500) +
-          (rawResponseText.length > 500 ? "..." : "")
-      );
-
       try {
         // Try to parse the JSON response
-        const jsonResponse = JSON.parse(rawResponseText);
-        console.log("Response structure:", Object.keys(jsonResponse));
-        // Check if the response has the expected structure
-        if (jsonResponse && typeof jsonResponse === "object") {
-          if ("success" in jsonResponse) {
-            // It's already in our expected format
-            console.log("Response is in expected format with 'success' field");
-            return jsonResponse;
-          } else if ("data" in jsonResponse || "contracts" in jsonResponse) {
-            // It has data or contracts field
-            const dataField = jsonResponse.data || jsonResponse.contracts;
-            console.log(
-              "Response has data/contracts field:",
-              Object.keys(dataField || {})
-            );
-            return {
-              success: true,
-              message: "Successfully generated DAO contracts",
-              data: dataField || jsonResponse,
-            };
-          } else {
-            // Assume the entire response is the data
-            console.log("Treating entire response as data");
-            return {
-              success: true,
-              message: "Successfully generated DAO contracts",
-              data: jsonResponse,
-            };
-          }
-        } else {
-          console.error(
-            "Invalid response format - not an object:",
-            typeof jsonResponse
-          );
-          return {
-            success: false,
-            message: "Invalid response format from API - not an object",
-            data: null,
-          };
-        }
+        const jsonResponse =
+          (await response.json()) as ApiResponse<GeneratedContractResponse>;
+        // console.log("Response structure:", Object.keys(jsonResponse));
+        return jsonResponse;
       } catch (parseError) {
         console.error("Failed to parse JSON response:", parseError);
-        console.error(
-          "Raw response excerpt:",
-          rawResponseText.substring(0, 1000)
-        );
         return {
           success: false,
           message: `Failed to parse JSON response: ${
-            parseError instanceof Error ? parseError.message : "Unknown error"
+            parseError instanceof Error
+              ? parseError.message
+              : String(parseError)
           }`,
-          data: null,
+          data: parseError,
         };
       }
     } catch (error) {
@@ -364,9 +318,9 @@ export class ContractApiClient {
       return {
         success: false,
         message: `Failed to generate DAO contracts: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : String(error)
         }`,
-        data: null,
+        data: error,
       };
     }
   }
