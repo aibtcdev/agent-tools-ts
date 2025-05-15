@@ -16,7 +16,8 @@ export class ContractApiClient {
     this.baseUrl =
       CONFIG.NETWORK === "mainnet"
         ? "https://daos.aibtc.dev/api"
-        : "https://daos-staging.aibtc.dev/api";
+        : // : "https://daos-staging.aibtc.dev/api";
+          "https://aibtcdev-daos-preview.hosting-962.workers.dev/api";
   }
 
   async getAllContracts(): Promise<ApiResponse<ContractsListResponse>> {
