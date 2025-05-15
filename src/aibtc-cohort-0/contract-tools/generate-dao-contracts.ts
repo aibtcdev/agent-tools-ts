@@ -1,6 +1,7 @@
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
+  convertStringToBoolean,
   createErrorResponse,
   sendToLLM,
   ToolResponse,
@@ -48,7 +49,7 @@ function validateArgs(): ExpectedArgs {
   }
 
   // Parse saveToFile parameter
-  const saveToFile = saveToFileStr.toLowerCase() === "true";
+  const saveToFile = convertStringToBoolean(saveToFileStr);
 
   return {
     tokenSymbol,
@@ -70,16 +71,23 @@ async function main(): Promise<ToolResponse<any>> {
     );
 
     if (!result.success || !result.data) {
+      if (result.error) {
+        return {
+          success: false,
+          message: `Failed to generate DAO contracts: ${result.error.message}`,
+          data: result.error,
+        };
+      }
       return {
         success: false,
-        message: `Failed to generate DAO contracts: ${
-          result.message || "Unknown error"
-        }`,
-        data: null,
+        message: `Failed to generate DAO contracts: ${JSON.stringify(result)}`,
+        data: result,
       };
     }
 
     // Check if contracts are in data.contracts or directly in data
+    console.log("Result data:", result.data);
+    console.log("Result contracts:", result.data.contracts);
     const contracts = result.data.contracts || result.data;
 
     // Save contracts to files if requested
@@ -143,33 +151,6 @@ export interface DeployDaoParams {
   tweetOrigin: string;
   daoManifestInscriptionId?: string;
   network?: string;
-}
-
-export async function generateDaoContracts(
-  tokenSymbol: string,
-  network: string = "devnet",
-  customReplacements: Record<string, any> = {}
-) {
-  const apiClient = new ContractApiClient();
-
-  try {
-    const result = await apiClient.generateDaoContracts(
-      network,
-      tokenSymbol,
-      customReplacements
-    );
-
-    if (!result.success || !result.data) {
-      throw new Error(
-        `Failed to generate DAO contracts: ${result.message || "Unknown error"}`
-      );
-    }
-
-    return result;
-  } catch (error) {
-    console.error("Error generating DAO contracts:", error);
-    throw error;
-  }
 }
 
 /**
