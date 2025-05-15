@@ -13,14 +13,18 @@ const usageExample =
 
 interface ExpectedArgs {
   tokenSymbol: string;
-  network?: string;
+  network: string;
   customReplacements?: Record<string, any>;
   saveToFile?: boolean;
 }
 
 function validateArgs(): ExpectedArgs {
-  const [tokenSymbol, network = CONFIG.NETWORK, customReplacementsStr, saveToFileStr = "false"] =
-    process.argv.slice(2);
+  const [
+    tokenSymbol,
+    network = CONFIG.NETWORK,
+    customReplacementsStr,
+    saveToFileStr = "false",
+  ] = process.argv.slice(2);
 
   if (!tokenSymbol) {
     const errorMessage = ["Token symbol is required", usage, usageExample].join(
@@ -77,39 +81,43 @@ async function main(): Promise<ToolResponse<any>> {
 
     // Check if contracts are in data.contracts or directly in data
     const contracts = result.data.contracts || result.data;
-    
+
     // Save contracts to files if requested
     if (args.saveToFile) {
       await saveContractsToFiles(contracts, args.tokenSymbol, args.network);
     }
-    
+
     // Create a truncated version of the contracts for the response
     const truncatedContracts = {};
     for (const [key, contractData] of Object.entries(contracts)) {
       const contractName = contractData.name || key;
-      const sourceCode = contractData.source || contractData.content || contractData.code || "";
-      const truncatedSource = sourceCode.length > 150 
-        ? sourceCode.substring(0, 147) + "..." 
-        : sourceCode;
-      
+      const sourceCode =
+        contractData.source || contractData.content || contractData.code || "";
+      const truncatedSource =
+        sourceCode.length > 150
+          ? sourceCode.substring(0, 147) + "..."
+          : sourceCode;
+
       truncatedContracts[contractName] = {
         ...contractData,
         source: truncatedSource,
         content: undefined,
-        code: undefined
+        code: undefined,
       };
     }
-    
+
     return {
       success: true,
       message: `Successfully generated ${
-        Array.isArray(contracts) ? contracts.length : Object.keys(contracts).length
+        Array.isArray(contracts)
+          ? contracts.length
+          : Object.keys(contracts).length
       } DAO contracts for token ${args.tokenSymbol} on ${args.network}${
         args.saveToFile ? " (saved to files)" : ""
       }`,
       data: {
         ...result.data,
-        contracts: truncatedContracts
+        contracts: truncatedContracts,
       },
     };
   } catch (error) {
@@ -152,7 +160,9 @@ export async function generateDaoContracts(
     );
 
     if (!result.success || !result.data) {
-      throw new Error(`Failed to generate DAO contracts: ${result.message || "Unknown error"}`);
+      throw new Error(
+        `Failed to generate DAO contracts: ${result.message || "Unknown error"}`
+      );
     }
 
     return result;
@@ -172,21 +182,22 @@ async function saveContractsToFiles(
 ) {
   const fs = require("fs");
   const path = require("path");
-  
+
   // Create the directory if it doesn't exist
   const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
   fs.mkdirSync(outputDir, { recursive: true });
-  
+
   // Save each contract to a file
   for (const [key, contractData] of Object.entries(contracts)) {
     // Use the contract's name property if available, otherwise use the key
     const contractName = contractData.name || key;
     const filePath = path.join(outputDir, `${contractName}.clar`);
-    const sourceCode = contractData.source || contractData.content || contractData.code || "";
+    const sourceCode =
+      contractData.source || contractData.content || contractData.code || "";
     fs.writeFileSync(filePath, sourceCode);
     console.log(`Saved contract ${contractName} to ${filePath}`);
   }
-  
+
   // Save the full response as JSON for reference
   const jsonPath = path.join(outputDir, `_full_response.json`);
   fs.writeFileSync(jsonPath, JSON.stringify(contracts, null, 2));

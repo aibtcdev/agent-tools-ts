@@ -181,7 +181,9 @@ async function main(): Promise<
     // Deploy each contract
     const deploymentResults: Record<string, TxBroadcastResultWithLink> = {};
     // Check if contracts are in data.contracts or directly in data
-    const contracts = generatedContractsResponse.data.contracts || generatedContractsResponse.data;
+    const contracts =
+      generatedContractsResponse.data.contracts ||
+      generatedContractsResponse.data;
 
     for (const [key, contractData] of Object.entries(contracts)) {
       // Use the contract's name property if available, otherwise use the key
@@ -191,7 +193,8 @@ async function main(): Promise<
       // Deploy the contract
       const deployResult = await deployContract({
         contractName: contractName,
-        sourceCode: contractData.source || contractData.content || contractData.code,
+        sourceCode:
+          contractData.source || contractData.content || contractData.code,
         clarityVersion: contractData.clarityVersion,
       });
 
@@ -268,9 +271,11 @@ export async function deployDaoContracts(params: DeployDaoParams) {
   if (!generatedContractsResponse.success || !generatedContractsResponse.data) {
     console.error("Failed to generate DAO contracts:");
     console.error(JSON.stringify(generatedContractsResponse, null, 2));
-    throw new Error(`Failed to generate DAO contracts: ${
-      generatedContractsResponse.message || "Unknown error"
-    }`);
+    throw new Error(
+      `Failed to generate DAO contracts: ${
+        generatedContractsResponse.message || "Unknown error"
+      }`
+    );
   }
 
   // Here you would typically deploy these contracts
