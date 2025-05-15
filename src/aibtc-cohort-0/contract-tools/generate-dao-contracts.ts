@@ -7,6 +7,25 @@ import {
   ToolResponse,
 } from "../../utilities";
 
+// 2025-05-15 defining types here temporarily
+// this should propagate from the @aibtc/types package
+
+const displayName = (symbol: string, name: string) =>
+  name.replace("aibtc", symbol).toLowerCase();
+
+interface ResultData {
+  network: string;
+  tokenSymbol: string;
+  contracts: Record<string, ResultContracts>;
+}
+
+interface ResultContracts {
+  name: string;
+  type: string;
+  subtype: string;
+  content: string;
+}
+
 const usage =
   "Usage: bun run generate-dao-contracts.ts <tokenSymbol> [network] [customReplacements] [saveToFile]";
 const usageExample =
@@ -88,31 +107,12 @@ async function main(): Promise<ToolResponse<any>> {
     // Check if contracts are in data.contracts or directly in data
     // console.log("Result data:", Object.keys(result.data));
 
-    // 2025-05-15 defining types here temporarily
-    // this should propagate from the @aibtc/types package
-
-    const displayName = (symbol: string, name: string) =>
-      name.replace("aibtc", symbol).toLowerCase();
-
-    interface ResultData {
-      network: string;
-      tokenSymbol: string;
-      contracts: Record<string, ResultContracts>;
-    }
-
-    interface ResultContracts {
-      name: string;
-      type: string;
-      subtype: string;
-      content: string;
-    }
-
     const resultData = result.data as ResultData;
 
     const { network, tokenSymbol, contracts } = resultData;
-    console.log("Result network:", network);
-    console.log("Result tokenSymbol:", tokenSymbol);
-    console.log("Result contracts:", Object.keys(contracts));
+    //console.log("Result network:", network);
+    //console.log("Result tokenSymbol:", tokenSymbol);
+    //console.log("Result contracts:", Object.keys(contracts));
 
     // Save contracts to files if requested
     if (args.saveToFile) {
@@ -120,13 +120,13 @@ async function main(): Promise<ToolResponse<any>> {
     }
 
     // Create a truncated version of the contracts for the response
-    const truncatedContracts: Record<string, any> = {};
-    for (const [key, contractData] of Object.entries(contracts)) {
+    const truncatedContracts: Record<string, ResultContracts> = {};
+    for (const contractData of Object.values(contracts)) {
       const contractName = displayName(tokenSymbol, contractData.name);
       const sourceCode = contractData.content;
       const truncatedSource =
-        sourceCode.length > 150
-          ? sourceCode.substring(0, 147) + "..."
+        sourceCode.length > 100
+          ? sourceCode.substring(0, 97) + "..."
           : sourceCode;
 
       truncatedContracts[contractName] = {
@@ -178,7 +178,7 @@ export interface DeployDaoParams {
  * Save generated contracts to files in the contract-tools/generated directory
  */
 async function saveContractsToFiles(
-  contracts: any,
+  contracts: Record<string, ResultContracts>,
   tokenSymbol: string,
   network: string
 ) {
@@ -190,16 +190,14 @@ async function saveContractsToFiles(
   fs.mkdirSync(outputDir, { recursive: true });
 
   // Save each contract to a file
-  for (const [key, contractData] of Object.entries(contracts)) {
-    // Use the contract's name property if available, otherwise use the key
-    const contractName = contractData.name || key;
+  for (const contractData of Object.values(contracts)) {
+    // Use the contract's name property if available
+    const contractName = displayName(tokenSymbol, contractData.name);
     const filePath = path.join(outputDir, `${contractName}.clar`);
-    const sourceCode =
-      contractData.source || contractData.content || contractData.code || "";
+    const sourceCode = contractData.content;
     fs.writeFileSync(filePath, sourceCode);
     console.log(`Saved contract ${contractName} to ${filePath}`);
   }
-
   // Save the full response as JSON for reference
   const jsonPath = path.join(outputDir, `_full_response.json`);
   fs.writeFileSync(jsonPath, JSON.stringify(contracts, null, 2));
