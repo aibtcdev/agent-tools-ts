@@ -3,6 +3,8 @@ import {
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
+  deriveChildAccount,
+  getNextNonce,
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
@@ -135,6 +137,16 @@ async function main(): Promise<
 
     const network = args.network || CONFIG.NETWORK;
 
+    // Get deployment credentials
+    const { address, key } = await deriveChildAccount(
+      network,
+      CONFIG.MNEMONIC,
+      CONFIG.ACCOUNT_INDEX
+    );
+    
+    // Get the current nonce for the account
+    let currentNonce = await getNextNonce(network, address);
+    
     // Deploy each contract
     const deploymentResults: Record<string, TxBroadcastResultWithLink> = {};
 
@@ -146,21 +158,29 @@ async function main(): Promise<
       await saveContractsToFiles(contracts, args.tokenSymbol, network);
     }
 
-    
-    for (const [key, contractData] of Object.entries(contracts)) {
-      // Use the contract's name property if available, otherwise use the key
-      const contractName = contractData.name || key;
-      console.log(`Deploying contract: ${contractName}`);
+    for (const contractData of Object.values(contracts)) {
+      const contractName = contractData.name;
+      console.log(`Deploying contract: ${contractName} with nonce ${currentNonce}`);
 
-      // Deploy the contract
-      const deployResult = await deployContract({
-        contractName: contractName,
-        sourceCode:
-          contractData.source
-        clarityVersion: contractData.clarityVersion,
-      });
+      try {
+        // Deploy the contract using our utility
+        const deployResult = await deployContract(contractData, {
+          address,
+          key,
+          network,
+          nonce: currentNonce
+        });
 
-      deploymentResults[contractName] = deployResult;
+        if (!deployResult.success) {
+          throw new Error(`Failed to deploy ${contractName}: ${deployResult.message}`);
+        }
+
+        deploymentResults[contractName] = deployResult.data;
+        currentNonce++;
+      } catch (error) {
+        console.error(`Error deploying ${contractName}:`, error);
+        throw error; // Stop the process if any deployment fails
+      }
     }
 
     return {
