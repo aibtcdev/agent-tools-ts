@@ -8,7 +8,6 @@ import {
 } from "../../utilities";
 import { validateStacksAddress } from "@stacks/transactions";
 import {
-  ContractBase,
   GeneratedDaoContractsResponse,
   SimpleContractResponse,
 } from "@aibtc/types";
@@ -189,7 +188,7 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
  * Save generated contracts to files in the contract-tools/generated directory
  */
 async function saveContractsToFiles(
-  contracts: Record<string, ResultContracts>,
+  contracts: SimpleContractResponse[],
   tokenSymbol: string,
   network: string
 ) {
@@ -201,11 +200,11 @@ async function saveContractsToFiles(
   fs.mkdirSync(outputDir, { recursive: true });
 
   // Save each contract to a file
-  for (const contractData of Object.values(contracts)) {
+  for (const contractData of contracts) {
     // Use the contract's name property if available
     const contractName = displayName(tokenSymbol, contractData.name);
     const filePath = path.join(outputDir, `${contractName}.clar`);
-    const sourceCode = contractData.content;
+    const sourceCode = contractData.source;
     fs.writeFileSync(filePath, sourceCode);
     console.log(`Saved contract ${contractName} to ${filePath}`);
   }
