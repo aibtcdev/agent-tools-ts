@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
@@ -162,9 +164,7 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
     return {
       success: true,
       message: `Successfully generated ${
-        Array.isArray(contracts)
-          ? contracts.length
-          : Object.keys(contracts).length
+        contracts.length
       } DAO contracts for token ${args.tokenSymbol} on ${args.network}${
         args.saveToFile ? " (saved to files)" : ""
       }`,
@@ -192,8 +192,6 @@ async function saveContractsToFiles(
   tokenSymbol: string,
   network: string
 ) {
-  const fs = require("fs");
-  const path = require("path");
 
   // Create the directory if it doesn't exist
   const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
@@ -204,7 +202,12 @@ async function saveContractsToFiles(
     // Use the contract's name property if available
     const contractName = displayName(tokenSymbol, contractData.name);
     const filePath = path.join(outputDir, `${contractName}.clar`);
-    const sourceCode = contractData.source;
+    if (!contractData.source) {
+      throw new Error(
+        `Contract ${contractName} does not have source code available`
+      );
+    }
+    const sourceCode = contractData.source!;
     fs.writeFileSync(filePath, sourceCode);
     console.log(`Saved contract ${contractName} to ${filePath}`);
   }
