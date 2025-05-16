@@ -17,19 +17,6 @@ import {
 const displayName = (symbol: string, name: string) =>
   name.replace("aibtc", symbol).toLowerCase();
 
-// copy of expectedArgs below
-// keeping for deploy dao script?
-interface GenerateDaoParams {
-  tokenSymbol: string;
-  tokenUri: string;
-  originAddress: string;
-  daoManifest: string;
-  tweetOrigin?: string;
-  network?: string;
-  customReplacements?: Record<string, string>;
-  saveTofile?: boolean;
-}
-
 const usage =
   "Usage: bun run generate-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> [tweetOrigin] [network] [saveToFile]";
 const usageExample =
@@ -132,9 +119,7 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
 
     const network = args.network || CONFIG.NETWORK;
 
-    // Check if contracts are in data.contracts or directly in data
-    console.log("Result data:", Object.keys(result.data));
-
+    //console.log("Result data:", Object.keys(result.data));
     const contracts = result.data.contracts;
 
     // Save contracts to files if requested
@@ -187,7 +172,7 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
 /**
  * Save generated contracts to files in the contract-tools/generated directory
  */
-async function saveContractsToFiles(
+export async function saveContractsToFiles(
   contracts: ContractResponse[],
   tokenSymbol: string,
   network: string

@@ -1,58 +1,64 @@
-import { ClarityVersion } from "@stacks/transactions";
+import { ClarityVersion, makeContractDeploy, PostConditionMode } from "@stacks/transactions";
 import {
-  CONFIG,
-  deriveChildAccount,
-  getNextNonce,
+  broadcastTx,
+  getNetwork,
+  ToolResponse,
   TxBroadcastResultWithLink,
 } from "../../utilities";
-import {
-  ContractDeployer,
-  SingleContract,
-} from "../../stacks-contracts/services/contract-deployer";
+import { ContractResponse } from "@aibtc/types";
+import { validateNetwork } from "@faktoryfun/core-sdk";
 
-/**
- * Deploys a Clarity contract to the blockchain
- * @param params Contract deployment parameters
- * @returns Promise with the broadcast result
- */
-export async function deployContract({
-  contractName,
-  sourceCode,
-  clarityVersion = ClarityVersion.Clarity3,
-  network = CONFIG.NETWORK,
-}: {
-  contractName: string;
-  sourceCode: string;
-  clarityVersion?: ClarityVersion;
-  network?: string;
-}): Promise<TxBroadcastResultWithLink> {
-  // Get account info for deployment
-  const { address, key } = await deriveChildAccount(
-    network,
-    CONFIG.MNEMONIC,
-    CONFIG.ACCOUNT_INDEX
-  );
+type BroadcastedContractResponse = ContractResponse & TxBroadcastResultWithLink
 
-  console.log(`Deploying contract ${contractName} from address: ${address}`);
+type DeploymentOptions = {
+  address: string;
+  key: string;
+  network: string;
+  nonce: number;
+}
 
-  // Get the next nonce for the account
-  const nextPossibleNonce = await getNextNonce(network, address);
+function validateClarityVersion(version: number | ClarityVersion): ClarityVersion {
+  const validVersions = Object.values(ClarityVersion);
+  if (!validVersions.includes(version)) {
+    throw new Error(`Invalid Clarity version: ${version}. Valid versions are: ${validVersions.join(", ")}`);
+  }
+  return version as ClarityVersion;
+}
+
+export async function deployContract(contract: ContractResponse, deploymentOptions: DeploymentOptions): Promise<ToolResponse<BroadcastedContractResponse>> {
+  const { name, source } = contract;
+  const { address, key, network, nonce } = deploymentOptions;
+  console.log(`Deploying contract ${name} from address: ${address}`);
 
   // Setup the contract deployer
-  const contractDeployer = new ContractDeployer(network, address, key);
-  
-  // Prepare the contract for deployment
-  const contract: SingleContract = {
-    name: contractName,
-    source: sourceCode,
-    clarityVersion,
-  };
+  const validNetwork = validateNetwork(network);  
+  const networkObj = getNetwork(validNetwork);
+  const validClarityVersion = validateClarityVersion(contract.clarityVersion ?? 1);
+  if (!source) {
+    throw new Error(`Contract source code is empty`);
+  }
 
-  // Deploy the contract
-  const deploymentDetails = await contractDeployer.deployContract(
-    contract,
-    nextPossibleNonce
-  );
+  const transaction = await makeContractDeploy({
+    contractName: name,
+    codeBody: source,
+    senderKey: key,
+    nonce: nonce ?? 0,
+    network: validNetwork,
+    clarityVersion: validClarityVersion,
+    postConditions: [], // empty, no transfers expected
+    postConditionMode: PostConditionMode.Deny,
+  })
 
-  return deploymentDetails;
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+
+  const fullResponse: BroadcastedContractResponse = {
+    ...contract,
+    ...broadcastResponse.data!,
+  }
+
+  return {
+    success: broadcastResponse.success,
+    message: broadcastResponse.message,
+    data: fullResponse
+  }
 }
