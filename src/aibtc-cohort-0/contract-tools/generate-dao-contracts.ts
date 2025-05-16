@@ -155,6 +155,8 @@ async function main(): Promise<ToolResponse<ResultData>> {
     // Check if contracts are in data.contracts or directly in data
     console.log("Result data:", Object.keys(result.data));
 
+    const contracts = result.data.contracts;
+
     process.exit(1);
 
     // Save contracts to files if requested
