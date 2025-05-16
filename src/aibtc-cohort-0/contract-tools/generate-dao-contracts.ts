@@ -7,7 +7,11 @@ import {
   ToolResponse,
 } from "../../utilities";
 import { validateStacksAddress } from "@stacks/transactions";
-import { ContractBase, GeneratedDaoContractsResponse } from "@aibtc/types";
+import {
+  ContractBase,
+  GeneratedDaoContractsResponse,
+  SimpleContractResponse,
+} from "@aibtc/types";
 
 const displayName = (symbol: string, name: string) =>
   name.replace("aibtc", symbol).toLowerCase();
@@ -137,53 +141,22 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
       await saveContractsToFiles(contracts, args.tokenSymbol, network);
     }
 
-    type SimpleContract = Pick<
-      ContractBase,
-      "name" | "type" | "subtype" | "source"
-    >;
-
-    const truncatedContracts: Record<string, SimpleContract> = {};
+    const truncatedContracts: Record<string, SimpleContractResponse> = {};
     for (const contractData of Object.values(contracts)) {
       const contractName = displayName(args.tokenSymbol, contractData.name);
-      const sourceCode = contractData.source;
+      if (!contractData.source) {
+        throw new Error(
+          `Contract ${contractName} does not have source code available`
+        );
+      }
       const truncatedSource =
-        sourceCode.length > 100
-          ? sourceCode.substring(0, 97) + "..."
-          : sourceCode;
+        contractData.source.length > 100
+          ? contractData.source.substring(0, 97) + "..."
+          : contractData.source;
 
       truncatedContracts[contractName] = {
         ...contractData,
         source: truncatedSource,
-      };
-    }
-
-    /*
-    bject.values(contracts).map((contractData) => ({
-        name: displayName(args.tokenSymbol, contractData.name),
-        type: contractData.type,
-        subtype: contractData.subtype,
-        source:
-          contractData.source.length > 100
-            ? contractData.source.substring(0, 97) + "..."
-            : contractData.source,
-      })),
-      */
-
-    process.exit(1);
-
-    // Create a truncated version of the contracts for the response
-    const truncatedContracts2: Record<string, ResultContracts> = {};
-    for (const contractData of Object.values(contracts)) {
-      const contractName = displayName(tokenSymbol, contractData.name);
-      const sourceCode = contractData.content;
-      const truncatedSource =
-        sourceCode.length > 100
-          ? sourceCode.substring(0, 97) + "..."
-          : sourceCode;
-
-      truncatedContracts2[contractName] = {
-        ...contractData,
-        content: truncatedSource,
       };
     }
 
@@ -198,7 +171,7 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
       }`,
       data: {
         ...result.data,
-        contracts: truncatedContracts,
+        contracts: Object.values(truncatedContracts),
       },
     };
   } catch (error) {
