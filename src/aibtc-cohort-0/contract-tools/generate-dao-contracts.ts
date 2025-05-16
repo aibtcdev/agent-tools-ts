@@ -9,7 +9,7 @@ import {
 import { validateStacksAddress } from "@stacks/transactions";
 import {
   GeneratedDaoContractsResponse,
-  SimpleContractResponse,
+  ContractResponse
 } from "@aibtc/types";
 
 const displayName = (symbol: string, name: string) =>
@@ -140,7 +140,7 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
       await saveContractsToFiles(contracts, args.tokenSymbol, network);
     }
 
-    const truncatedContracts: Record<string, SimpleContractResponse> = {};
+    const truncatedContracts: Record<string, ContractResponse> = {};
     for (const contractData of Object.values(contracts)) {
       const contractName = displayName(args.tokenSymbol, contractData.name);
       if (!contractData.source) {
@@ -188,7 +188,7 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
  * Save generated contracts to files in the contract-tools/generated directory
  */
 async function saveContractsToFiles(
-  contracts: SimpleContractResponse[],
+  contracts: ContractResponse[],
   tokenSymbol: string,
   network: string
 ) {
