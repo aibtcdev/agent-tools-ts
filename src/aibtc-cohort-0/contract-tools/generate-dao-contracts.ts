@@ -6,18 +6,15 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../../utilities";
-
-// 2025-05-15 defining types here temporarily
-// this should propagate from the @aibtc/types package
+import { validateStacksAddress } from "@stacks/transactions";
+import { ContractBase, DaoConfig } from "@aibtc/types";
 
 const displayName = (symbol: string, name: string) =>
   name.replace("aibtc", symbol).toLowerCase();
 
-interface ResultData {
-  network: string;
-  tokenSymbol: string;
-  contracts: Record<string, ResultContracts>;
-}
+type ResultData = DaoConfig & {
+  contracts: Record<string, ContractBase>;
+};
 
 interface ResultContracts {
   name: string;
@@ -26,23 +23,55 @@ interface ResultContracts {
   content: string;
 }
 
+interface GenerateDaoParams {
+  tokenSymbol: string;
+  tokenUri: string;
+  originAddress: string;
+  daoManifest: string;
+  tweetOrigin?: string;
+  network?: string;
+  customReplacements?: Record<string, string>;
+  saveTofile?: boolean;
+}
+
+// Export for use in other modules
+export interface DeployDaoParams {
+  tokenSymbol: string;
+  tokenName: string;
+  tokenMaxSupply: number;
+  tokenUri: string;
+  logoUrl: string;
+  originAddress: string;
+  daoManifest: string;
+  tweetOrigin: string;
+  daoManifestInscriptionId?: string;
+  network?: string;
+}
+
 const usage =
-  "Usage: bun run generate-dao-contracts.ts <tokenSymbol> [network] [customReplacements] [saveToFile]";
+  "Usage: bun run generate-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> [tweetOrigin] [network] [saveToFile]";
 const usageExample =
-  'Example: bun run generate-dao-contracts.ts MYTOKEN devnet \'{"token_name":"My Token"}\' true';
+  'Example: bun run generate-dao-contracts.ts MYTOKEN "https://example.com/token.json" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "This is my DAO" "1894855072556912681" "testnet" true';
 
 interface ExpectedArgs {
   tokenSymbol: string;
-  network: string;
-  customReplacements?: Record<string, any>;
+  tokenUri: string;
+  originAddress: string;
+  daoManifest: string;
+  tweetOrigin?: string;
+  network?: string;
+  customReplacements?: Record<string, string>;
   saveToFile?: boolean;
 }
 
 function validateArgs(): ExpectedArgs {
   const [
     tokenSymbol,
+    tokenUri,
+    originAddress,
+    daoManifest,
+    tweetOrigin = "",
     network = CONFIG.NETWORK,
-    customReplacementsStr,
     saveToFileStr = "false",
   ] = process.argv.slice(2);
 
@@ -53,18 +82,29 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  let customReplacements = {};
-  if (customReplacementsStr) {
-    try {
-      customReplacements = JSON.parse(customReplacementsStr);
-    } catch (error) {
-      const errorMessage = [
-        "Invalid JSON format for customReplacements",
-        usage,
-        usageExample,
-      ].join("\n");
-      throw new Error(errorMessage);
-    }
+  if (!tokenUri) {
+    const errorMessage = ["Token URI is required", usage, usageExample].join(
+      "\n"
+    );
+    throw new Error(errorMessage);
+  }
+
+  if (!originAddress || !validateStacksAddress(originAddress)) {
+    const errorMessage = [
+      "Origin address is required and must be a valid Stacks address",
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
+  if (!daoManifest) {
+    const errorMessage = [
+      "DAO manifest / mission is required",
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
 
   // Parse saveToFile parameter
@@ -72,13 +112,23 @@ function validateArgs(): ExpectedArgs {
 
   return {
     tokenSymbol,
-    network,
-    customReplacements,
+    tokenUri,
+    originAddress,
+    daoManifest,
+    tweetOrigin: tweetOrigin || undefined,
+    network: network || CONFIG.NETWORK,
+    customReplacements: {
+      dao_manifest: daoManifest,
+      tweet_origin: tweetOrigin || "",
+      origin_address: originAddress,
+      dao_token_metadata: tokenUri,
+      dao_token_symbol: tokenSymbol,
+    },
     saveToFile,
   };
 }
 
-async function main(): Promise<ToolResponse<any>> {
+async function main(): Promise<ToolResponse<ResultData>> {
   const args = validateArgs();
   const apiClient = new ContractApiClient();
 
@@ -94,29 +144,22 @@ async function main(): Promise<ToolResponse<any>> {
         return {
           success: false,
           message: `Failed to generate DAO contracts: ${result.error.message}`,
-          data: result.error,
         };
       }
       return {
         success: false,
         message: `Failed to generate DAO contracts: ${JSON.stringify(result)}`,
-        data: result,
       };
     }
 
     // Check if contracts are in data.contracts or directly in data
-    // console.log("Result data:", Object.keys(result.data));
+    console.log("Result data:", Object.keys(result.data));
 
-    const resultData = result.data as ResultData;
-
-    const { network, tokenSymbol, contracts } = resultData;
-    //console.log("Result network:", network);
-    //console.log("Result tokenSymbol:", tokenSymbol);
-    //console.log("Result contracts:", Object.keys(contracts));
+    process.exit(1);
 
     // Save contracts to files if requested
     if (args.saveToFile) {
-      await saveContractsToFiles(contracts, args.tokenSymbol, args.network);
+      await saveContractsToFiles(contracts, args.tokenSymbol, network);
     }
 
     // Create a truncated version of the contracts for the response
@@ -158,20 +201,6 @@ async function main(): Promise<ToolResponse<any>> {
     ].join("\n");
     throw new Error(errorMessage);
   }
-}
-
-// Export for use in other modules
-export interface DeployDaoParams {
-  tokenSymbol: string;
-  tokenName: string;
-  tokenMaxSupply: number;
-  tokenUri: string;
-  logoUrl: string;
-  originAddress: string;
-  daoManifest: string;
-  tweetOrigin: string;
-  daoManifestInscriptionId?: string;
-  network?: string;
 }
 
 /**
