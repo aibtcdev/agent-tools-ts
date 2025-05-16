@@ -7,22 +7,13 @@ import {
   ToolResponse,
 } from "../../utilities";
 import { validateStacksAddress } from "@stacks/transactions";
-import { ContractBase, DaoConfig } from "@aibtc/types";
+import { ContractBase, GeneratedDaoContractsResponse } from "@aibtc/types";
 
 const displayName = (symbol: string, name: string) =>
   name.replace("aibtc", symbol).toLowerCase();
 
-type ResultData = DaoConfig & {
-  contracts: Record<string, ContractBase>;
-};
-
-interface ResultContracts {
-  name: string;
-  type: string;
-  subtype: string;
-  content: string;
-}
-
+// copy of expectedArgs below
+// keeping for deploy dao script?
 interface GenerateDaoParams {
   tokenSymbol: string;
   tokenUri: string;
@@ -32,20 +23,6 @@ interface GenerateDaoParams {
   network?: string;
   customReplacements?: Record<string, string>;
   saveTofile?: boolean;
-}
-
-// Export for use in other modules
-export interface DeployDaoParams {
-  tokenSymbol: string;
-  tokenName: string;
-  tokenMaxSupply: number;
-  tokenUri: string;
-  logoUrl: string;
-  originAddress: string;
-  daoManifest: string;
-  tweetOrigin: string;
-  daoManifestInscriptionId?: string;
-  network?: string;
 }
 
 const usage =
@@ -128,7 +105,7 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<ResultData>> {
+async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
   const args = validateArgs();
   const apiClient = new ContractApiClient();
 
@@ -141,31 +118,61 @@ async function main(): Promise<ToolResponse<ResultData>> {
 
     if (!result.success || !result.data) {
       if (result.error) {
-        return {
-          success: false,
-          message: `Failed to generate DAO contracts: ${result.error.message}`,
-        };
+        throw new Error(result.error.message);
       }
-      return {
-        success: false,
-        message: `Failed to generate DAO contracts: ${JSON.stringify(result)}`,
-      };
+      throw new Error(
+        `Failed to generate DAO contracts: ${JSON.stringify(result)}`
+      );
     }
+
+    const network = args.network || CONFIG.NETWORK;
 
     // Check if contracts are in data.contracts or directly in data
     console.log("Result data:", Object.keys(result.data));
 
     const contracts = result.data.contracts;
 
-    process.exit(1);
-
     // Save contracts to files if requested
     if (args.saveToFile) {
       await saveContractsToFiles(contracts, args.tokenSymbol, network);
     }
 
+    type SimpleContract = Pick<
+      ContractBase,
+      "name" | "type" | "subtype" | "source"
+    >;
+
+    const truncatedContracts: Record<string, SimpleContract> = {};
+    for (const contractData of Object.values(contracts)) {
+      const contractName = displayName(args.tokenSymbol, contractData.name);
+      const sourceCode = contractData.source;
+      const truncatedSource =
+        sourceCode.length > 100
+          ? sourceCode.substring(0, 97) + "..."
+          : sourceCode;
+
+      truncatedContracts[contractName] = {
+        ...contractData,
+        source: truncatedSource,
+      };
+    }
+
+    /*
+    bject.values(contracts).map((contractData) => ({
+        name: displayName(args.tokenSymbol, contractData.name),
+        type: contractData.type,
+        subtype: contractData.subtype,
+        source:
+          contractData.source.length > 100
+            ? contractData.source.substring(0, 97) + "..."
+            : contractData.source,
+      })),
+      */
+
+    process.exit(1);
+
     // Create a truncated version of the contracts for the response
-    const truncatedContracts: Record<string, ResultContracts> = {};
+    const truncatedContracts2: Record<string, ResultContracts> = {};
     for (const contractData of Object.values(contracts)) {
       const contractName = displayName(tokenSymbol, contractData.name);
       const sourceCode = contractData.content;
@@ -174,7 +181,7 @@ async function main(): Promise<ToolResponse<ResultData>> {
           ? sourceCode.substring(0, 97) + "..."
           : sourceCode;
 
-      truncatedContracts[contractName] = {
+      truncatedContracts2[contractName] = {
         ...contractData,
         content: truncatedSource,
       };
