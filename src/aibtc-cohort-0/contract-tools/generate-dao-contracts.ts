@@ -1,10 +1,30 @@
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
+  convertStringToBoolean,
   createErrorResponse,
   sendToLLM,
   ToolResponse,
 } from "../../utilities";
+
+// 2025-05-15 defining types here temporarily
+// this should propagate from the @aibtc/types package
+
+const displayName = (symbol: string, name: string) =>
+  name.replace("aibtc", symbol).toLowerCase();
+
+interface ResultData {
+  network: string;
+  tokenSymbol: string;
+  contracts: Record<string, ResultContracts>;
+}
+
+interface ResultContracts {
+  name: string;
+  type: string;
+  subtype: string;
+  content: string;
+}
 
 const usage =
   "Usage: bun run generate-dao-contracts.ts <tokenSymbol> [network] [customReplacements] [saveToFile]";
@@ -48,7 +68,7 @@ function validateArgs(): ExpectedArgs {
   }
 
   // Parse saveToFile parameter
-  const saveToFile = saveToFileStr.toLowerCase() === "true";
+  const saveToFile = convertStringToBoolean(saveToFileStr);
 
   return {
     tokenSymbol,
@@ -70,17 +90,29 @@ async function main(): Promise<ToolResponse<any>> {
     );
 
     if (!result.success || !result.data) {
+      if (result.error) {
+        return {
+          success: false,
+          message: `Failed to generate DAO contracts: ${result.error.message}`,
+          data: result.error,
+        };
+      }
       return {
         success: false,
-        message: `Failed to generate DAO contracts: ${
-          result.message || "Unknown error"
-        }`,
-        data: null,
+        message: `Failed to generate DAO contracts: ${JSON.stringify(result)}`,
+        data: result,
       };
     }
 
     // Check if contracts are in data.contracts or directly in data
-    const contracts = result.data.contracts || result.data;
+    // console.log("Result data:", Object.keys(result.data));
+
+    const resultData = result.data as ResultData;
+
+    const { network, tokenSymbol, contracts } = resultData;
+    //console.log("Result network:", network);
+    //console.log("Result tokenSymbol:", tokenSymbol);
+    //console.log("Result contracts:", Object.keys(contracts));
 
     // Save contracts to files if requested
     if (args.saveToFile) {
@@ -88,21 +120,18 @@ async function main(): Promise<ToolResponse<any>> {
     }
 
     // Create a truncated version of the contracts for the response
-    const truncatedContracts = {};
-    for (const [key, contractData] of Object.entries(contracts)) {
-      const contractName = contractData.name || key;
-      const sourceCode =
-        contractData.source || contractData.content || contractData.code || "";
+    const truncatedContracts: Record<string, ResultContracts> = {};
+    for (const contractData of Object.values(contracts)) {
+      const contractName = displayName(tokenSymbol, contractData.name);
+      const sourceCode = contractData.content;
       const truncatedSource =
-        sourceCode.length > 150
-          ? sourceCode.substring(0, 147) + "..."
+        sourceCode.length > 100
+          ? sourceCode.substring(0, 97) + "..."
           : sourceCode;
 
       truncatedContracts[contractName] = {
         ...contractData,
-        source: truncatedSource,
-        content: undefined,
-        code: undefined,
+        content: truncatedSource,
       };
     }
 
@@ -145,38 +174,11 @@ export interface DeployDaoParams {
   network?: string;
 }
 
-export async function generateDaoContracts(
-  tokenSymbol: string,
-  network: string = "devnet",
-  customReplacements: Record<string, any> = {}
-) {
-  const apiClient = new ContractApiClient();
-
-  try {
-    const result = await apiClient.generateDaoContracts(
-      network,
-      tokenSymbol,
-      customReplacements
-    );
-
-    if (!result.success || !result.data) {
-      throw new Error(
-        `Failed to generate DAO contracts: ${result.message || "Unknown error"}`
-      );
-    }
-
-    return result;
-  } catch (error) {
-    console.error("Error generating DAO contracts:", error);
-    throw error;
-  }
-}
-
 /**
  * Save generated contracts to files in the contract-tools/generated directory
  */
 async function saveContractsToFiles(
-  contracts: any,
+  contracts: Record<string, ResultContracts>,
   tokenSymbol: string,
   network: string
 ) {
@@ -188,16 +190,14 @@ async function saveContractsToFiles(
   fs.mkdirSync(outputDir, { recursive: true });
 
   // Save each contract to a file
-  for (const [key, contractData] of Object.entries(contracts)) {
-    // Use the contract's name property if available, otherwise use the key
-    const contractName = contractData.name || key;
+  for (const contractData of Object.values(contracts)) {
+    // Use the contract's name property if available
+    const contractName = displayName(tokenSymbol, contractData.name);
     const filePath = path.join(outputDir, `${contractName}.clar`);
-    const sourceCode =
-      contractData.source || contractData.content || contractData.code || "";
+    const sourceCode = contractData.content;
     fs.writeFileSync(filePath, sourceCode);
     console.log(`Saved contract ${contractName} to ${filePath}`);
   }
-
   // Save the full response as JSON for reference
   const jsonPath = path.join(outputDir, `_full_response.json`);
   fs.writeFileSync(jsonPath, JSON.stringify(contracts, null, 2));

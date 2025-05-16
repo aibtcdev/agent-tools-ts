@@ -16,7 +16,8 @@ export class ContractApiClient {
     this.baseUrl =
       CONFIG.NETWORK === "mainnet"
         ? "https://daos.aibtc.dev/api"
-        : "https://daos-staging.aibtc.dev/api";
+        : // : "https://daos-staging.aibtc.dev/api";
+          "https://aibtcdev-daos-preview.hosting-962.workers.dev/api";
   }
 
   async getAllContracts(): Promise<ApiResponse<ContractsListResponse>> {
@@ -129,23 +130,6 @@ export class ContractApiClient {
           rawResponseText.substring(0, 1000)
         );
 
-        // Check if the response looks like it contains search/replace blocks
-        if (
-          rawResponseText.includes("<<<<<<< SEARCH") &&
-          rawResponseText.includes(">>>>>>> REPLACE")
-        ) {
-          console.warn(
-            "Response appears to contain search/replace blocks - might be AI assistant output"
-          );
-
-          return {
-            success: false,
-            message:
-              "API returned search/replace blocks instead of valid JSON. The API might be returning AI assistant output directly.",
-            data: null,
-          };
-        }
-
         return {
           success: false,
           message: `Failed to parse JSON response: ${
@@ -251,23 +235,6 @@ export class ContractApiClient {
           rawResponseText.substring(0, 1000)
         );
 
-        // Check if the response looks like it contains search/replace blocks
-        if (
-          rawResponseText.includes("<<<<<<< SEARCH") &&
-          rawResponseText.includes(">>>>>>> REPLACE")
-        ) {
-          console.warn(
-            "Response appears to contain search/replace blocks - might be AI assistant output"
-          );
-
-          return {
-            success: false,
-            message:
-              "API returned search/replace blocks instead of valid JSON. The API might be returning AI assistant output directly.",
-            data: null,
-          };
-        }
-
         return {
           success: false,
           message: `Failed to parse JSON response: ${
@@ -301,7 +268,7 @@ export class ContractApiClient {
     console.log("Custom replacements:", customReplacements);
 
     try {
-      console.log("Sending request to generate DAO contracts...");
+      //console.log("Sending request to generate DAO contracts...");
       const response = await fetch(requestUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -312,106 +279,39 @@ export class ContractApiClient {
         }),
       });
 
-      console.log("Response status:", response.status);
-      console.log(
-        "Response headers:",
-        Object.fromEntries(response.headers.entries())
-      );
+      //console.log("Response status:", response.status);
+      //console.log(
+      //  "Response headers:",
+      //  Object.fromEntries(response.headers.entries())
+      //);
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`API request failed with status ${response.status}`);
         console.error("Error response body:", errorText);
         return {
           success: false,
-          message: `API request failed with status ${response.status}: ${errorText}`,
-          data: null,
+          message: `API request failed with status ${response.status}`,
+          data: errorText,
         };
       }
 
-      // Clone the response so we can inspect the raw text
-      const responseClone = response.clone();
-      const rawResponseText = await responseClone.text();
-      console.log(
-        "Raw response text (first 500 chars):",
-        rawResponseText.substring(0, 500) +
-          (rawResponseText.length > 500 ? "..." : "")
-      );
-
       try {
         // Try to parse the JSON response
-        const jsonResponse = JSON.parse(rawResponseText);
-        console.log("Response structure:", Object.keys(jsonResponse));
-
-        // Check if the response has the expected structure
-        if (jsonResponse && typeof jsonResponse === "object") {
-          if ("success" in jsonResponse) {
-            // It's already in our expected format
-            console.log("Response is in expected format with 'success' field");
-            return jsonResponse;
-          } else if ("data" in jsonResponse || "contracts" in jsonResponse) {
-            // It has data or contracts field
-            const dataField = jsonResponse.data || jsonResponse.contracts;
-            console.log(
-              "Response has data/contracts field:",
-              Object.keys(dataField || {})
-            );
-
-            return {
-              success: true,
-              message: "Successfully generated DAO contracts",
-              data: dataField || jsonResponse,
-            };
-          } else {
-            // Assume the entire response is the data
-            console.log("Treating entire response as data");
-            return {
-              success: true,
-              message: "Successfully generated DAO contracts",
-              data: jsonResponse,
-            };
-          }
-        } else {
-          console.error(
-            "Invalid response format - not an object:",
-            typeof jsonResponse
-          );
-          return {
-            success: false,
-            message: "Invalid response format from API - not an object",
-            data: null,
-          };
-        }
+        const jsonResponse =
+          (await response.json()) as ApiResponse<GeneratedContractResponse>;
+        // console.log("Response structure:", Object.keys(jsonResponse));
+        return jsonResponse;
       } catch (parseError) {
         console.error("Failed to parse JSON response:", parseError);
-        console.error(
-          "Raw response excerpt:",
-          rawResponseText.substring(0, 1000)
-        );
-
-        // Check if the response looks like it contains search/replace blocks
-        if (
-          rawResponseText.includes("<<<<<<< SEARCH") &&
-          rawResponseText.includes(">>>>>>> REPLACE")
-        ) {
-          console.warn(
-            "Response appears to contain search/replace blocks - might be AI assistant output"
-          );
-
-          // Try to extract useful content
-          return {
-            success: false,
-            message:
-              "API returned search/replace blocks instead of valid JSON. The API might be returning AI assistant output directly.",
-            data: null,
-          };
-        }
-
         return {
           success: false,
           message: `Failed to parse JSON response: ${
-            parseError instanceof Error ? parseError.message : "Unknown error"
+            parseError instanceof Error
+              ? parseError.message
+              : String(parseError)
           }`,
-          data: null,
+          data: parseError,
         };
       }
     } catch (error) {
@@ -419,9 +319,9 @@ export class ContractApiClient {
       return {
         success: false,
         message: `Failed to generate DAO contracts: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : String(error)
         }`,
-        data: null,
+        data: error,
       };
     }
   }
@@ -436,7 +336,6 @@ export class ContractApiClient {
     try {
       // First try to parse as JSON
       const jsonResponse = JSON.parse(rawResponse);
-
       if (jsonResponse && typeof jsonResponse === "object") {
         if ("success" in jsonResponse) {
           return jsonResponse;
@@ -454,47 +353,13 @@ export class ContractApiClient {
           };
         }
       }
-
       return {
         success: false,
         message: "Could not extract contract code from response",
         data: null,
       };
     } catch (error) {
-      console.log(
-        "Response is not valid JSON, attempting to extract contract code..."
-      );
-
-      // Check if it contains search/replace blocks
-      if (
-        rawResponse.includes("<<<<<<< SEARCH") &&
-        rawResponse.includes(">>>>>>> REPLACE")
-      ) {
-        console.log("Response contains search/replace blocks");
-
-        // Try to extract the contract code from the REPLACE section
-        const replacePattern = /=======\s*([\s\S]*?)\s*>>>>>>> REPLACE/g;
-        const matches = [...rawResponse.matchAll(replacePattern)];
-
-        if (matches.length > 0) {
-          // Combine all the REPLACE sections
-          const extractedCode = matches
-            .map((match) => match[1].trim())
-            .join("\n\n");
-
-          return {
-            success: true,
-            message:
-              "Successfully extracted contract code from search/replace blocks",
-            data: {
-              name: "extracted-contract",
-              source: extractedCode,
-              hash: "",
-            },
-          };
-        }
-      }
-
+      console.error("Failed to parse JSON response:", error);
       // If we can't extract anything useful, return an error
       return {
         success: false,
