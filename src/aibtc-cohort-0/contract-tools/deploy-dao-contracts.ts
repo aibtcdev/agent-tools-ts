@@ -1,7 +1,10 @@
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
+  convertStringToBoolean,
   createErrorResponse,
+  deriveChildAccount,
+  getNextNonce,
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
@@ -9,37 +12,33 @@ import {
 } from "../../utilities";
 import { deployContract } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
+import { saveContractsToFiles } from "./generate-dao-contracts";
 
 const usage =
-  "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenName> <tokenMaxSupply> <tokenUri> <logoUrl> <originAddress> <daoManifest> <tweetOrigin> [daoManifestInscriptionId] [network]";
+  "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> [tweetOrigin] [network] [saveToFile]";
 const usageExample =
-  'Example: bun run deploy-dao-contracts.ts MYTOKEN "My Token" 1000000 "https://example.com/token.json" "https://example.com/logo.png" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "This is my DAO" "https://twitter.com/mytweet"';
+  'Example: bun run deploy-dao-contracts.ts MYTOKEN "https://example.com/token.json" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "This is my DAO" "1894855072556912681" "testnet" true';
 
 interface ExpectedArgs {
   tokenSymbol: string;
-  tokenName: string;
-  tokenMaxSupply: number;
   tokenUri: string;
-  logoUrl: string;
   originAddress: string;
   daoManifest: string;
-  tweetOrigin: string;
-  daoManifestInscriptionId?: string;
+  tweetOrigin?: string;
   network?: string;
+  customReplacements?: Record<string, string>;
+  saveToFile?: boolean;
 }
 
 function validateArgs(): ExpectedArgs {
   const [
     tokenSymbol,
-    tokenName,
-    tokenMaxSupplyStr,
     tokenUri,
-    logoUrl,
     originAddress,
     daoManifest,
-    tweetOrigin,
-    daoManifestInscriptionId,
+    tweetOrigin = "",
     network = CONFIG.NETWORK,
+    saveToFileStr = "false",
   ] = process.argv.slice(2);
 
   if (!tokenSymbol) {
@@ -49,41 +48,8 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!tokenName) {
-    const errorMessage = ["Token name is required", usage, usageExample].join(
-      "\n"
-    );
-    throw new Error(errorMessage);
-  }
-
-  if (!tokenMaxSupplyStr) {
-    const errorMessage = [
-      "Token max supply is required",
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
-  const tokenMaxSupply = parseInt(tokenMaxSupplyStr);
-  if (isNaN(tokenMaxSupply) || tokenMaxSupply <= 0) {
-    const errorMessage = [
-      `Invalid token max supply: ${tokenMaxSupplyStr}. Must be a positive number.`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
   if (!tokenUri) {
     const errorMessage = ["Token URI is required", usage, usageExample].join(
-      "\n"
-    );
-    throw new Error(errorMessage);
-  }
-
-  if (!logoUrl) {
-    const errorMessage = ["Logo URL is required", usage, usageExample].join(
       "\n"
     );
     throw new Error(errorMessage);
@@ -121,17 +87,23 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
+  const saveToFile = convertStringToBoolean(saveToFileStr);
+
   return {
     tokenSymbol,
-    tokenName,
-    tokenMaxSupply,
     tokenUri,
-    logoUrl,
     originAddress,
     daoManifest,
     tweetOrigin,
-    daoManifestInscriptionId,
     network,
+    customReplacements: {
+      dao_manifest: daoManifest,
+      tweet_origin: tweetOrigin || "",
+      origin_address: originAddress,
+      dao_token_metadata: tokenUri,
+      dao_token_symbol: tokenSymbol,
+    },
+    saveToFile,
   };
 }
 
@@ -142,63 +114,73 @@ async function main(): Promise<
   const apiClient = new ContractApiClient();
 
   try {
-    // Prepare custom replacements for contract generation
-    const customReplacements = {
-      token_symbol: args.tokenSymbol,
-      token_name: args.tokenName,
-      token_max_supply: args.tokenMaxSupply.toString(),
-      token_uri: args.tokenUri,
-      logo_url: args.logoUrl,
-      origin_address: args.originAddress,
-      dao_manifest: args.daoManifest,
-      tweet_origin: args.tweetOrigin,
-      dao_manifest_inscription_id: args.daoManifestInscriptionId || "",
-    };
-
     // Generate all DAO contracts
     const generatedContractsResponse = await apiClient.generateDaoContracts(
       args.network,
       args.tokenSymbol,
-      customReplacements
+      args.customReplacements
     );
 
     if (
       !generatedContractsResponse.success ||
       !generatedContractsResponse.data
     ) {
-      console.error("Failed to generate DAO contracts:");
-      console.error(JSON.stringify(generatedContractsResponse, null, 2));
-      return {
-        success: false,
-        message: `Failed to generate DAO contracts: ${
-          generatedContractsResponse.message || "Unknown error"
-        }`,
-      };
+      if (generatedContractsResponse.error) {
+        throw new Error(generatedContractsResponse.error.message);
+      }
+      throw new Error(
+        `Failed to generate DAO contracts: ${JSON.stringify(generatedContractsResponse)}`
+      );
     }
 
     // Prepare for deployment
 
+    const network = args.network || CONFIG.NETWORK;
+
+    // Get deployment credentials
+    const { address, key } = await deriveChildAccount(
+      network,
+      CONFIG.MNEMONIC,
+      CONFIG.ACCOUNT_INDEX
+    );
+    
+    // Get the current nonce for the account
+    let currentNonce = await getNextNonce(network, address);
+    
     // Deploy each contract
     const deploymentResults: Record<string, TxBroadcastResultWithLink> = {};
-    // Check if contracts are in data.contracts or directly in data
-    const contracts =
-      generatedContractsResponse.data.contracts ||
-      generatedContractsResponse.data;
 
-    for (const [key, contractData] of Object.entries(contracts)) {
-      // Use the contract's name property if available, otherwise use the key
-      const contractName = contractData.name || key;
-      console.log(`Deploying contract: ${contractName}`);
+    //console.log("Generated contracts:", generatedContractsResponse.data);
+    const contracts = generatedContractsResponse.data.contracts;
 
-      // Deploy the contract
-      const deployResult = await deployContract({
-        contractName: contractName,
-        sourceCode:
-          contractData.source || contractData.content || contractData.code,
-        clarityVersion: contractData.clarityVersion,
-      });
+    // Save contracts to files if requested
+    if (args.saveToFile) {
+      await saveContractsToFiles(contracts, args.tokenSymbol, network);
+    }
 
-      deploymentResults[contractName] = deployResult;
+    for (const contractData of Object.values(contracts)) {
+      const contractName = contractData.name;
+      console.log(`Deploying contract: ${contractName} with nonce ${currentNonce}`);
+
+      try {
+        // Deploy the contract using our utility
+        const deployResult = await deployContract(contractData, {
+          address,
+          key,
+          network,
+          nonce: currentNonce
+        });
+
+        if (!deployResult.success) {
+          throw new Error(`Failed to deploy ${contractName}: ${deployResult.message}`);
+        }
+
+        deploymentResults[contractName] = deployResult.data;
+        currentNonce++;
+      } catch (error) {
+        console.error(`Error deploying ${contractName}:`, error);
+        throw error; // Stop the process if any deployment fails
+      }
     }
 
     return {

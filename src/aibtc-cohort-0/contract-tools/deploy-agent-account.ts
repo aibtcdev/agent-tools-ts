@@ -133,7 +133,7 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
       dao_token_dex_contract: args.daoTokenDexContract,
     };
 
-    const generatedContract = await apiClient.generateContractForNetwork(
+    const generatedContract = await apiClient.generateContract(
       contractName,
       args.network,
       "aibtc", // Default token symbol
@@ -216,7 +216,7 @@ export async function deployAgentAccount(params: DeployAgentAccountParams) {
       dao_token_dex_contract: daoTokenDexContract,
     };
 
-    const generatedContract = await apiClient.generateContractForNetwork(
+    const generatedContract = await apiClient.generateContract(
       contractName,
       network,
       "aibtc", // Default token symbol

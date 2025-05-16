@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
@@ -6,43 +8,39 @@ import {
   sendToLLM,
   ToolResponse,
 } from "../../utilities";
-
-// 2025-05-15 defining types here temporarily
-// this should propagate from the @aibtc/types package
+import { validateStacksAddress } from "@stacks/transactions";
+import {
+  GeneratedDaoContractsResponse,
+  ContractResponse
+} from "@aibtc/types";
 
 const displayName = (symbol: string, name: string) =>
   name.replace("aibtc", symbol).toLowerCase();
 
-interface ResultData {
-  network: string;
-  tokenSymbol: string;
-  contracts: Record<string, ResultContracts>;
-}
-
-interface ResultContracts {
-  name: string;
-  type: string;
-  subtype: string;
-  content: string;
-}
-
 const usage =
-  "Usage: bun run generate-dao-contracts.ts <tokenSymbol> [network] [customReplacements] [saveToFile]";
+  "Usage: bun run generate-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> [tweetOrigin] [network] [saveToFile]";
 const usageExample =
-  'Example: bun run generate-dao-contracts.ts MYTOKEN devnet \'{"token_name":"My Token"}\' true';
+  'Example: bun run generate-dao-contracts.ts MYTOKEN "https://example.com/token.json" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "This is my DAO" "1894855072556912681" "testnet" true';
 
 interface ExpectedArgs {
   tokenSymbol: string;
-  network: string;
-  customReplacements?: Record<string, any>;
+  tokenUri: string;
+  originAddress: string;
+  daoManifest: string;
+  tweetOrigin?: string;
+  network?: string;
+  customReplacements?: Record<string, string>;
   saveToFile?: boolean;
 }
 
 function validateArgs(): ExpectedArgs {
   const [
     tokenSymbol,
+    tokenUri,
+    originAddress,
+    daoManifest,
+    tweetOrigin = "",
     network = CONFIG.NETWORK,
-    customReplacementsStr,
     saveToFileStr = "false",
   ] = process.argv.slice(2);
 
@@ -53,18 +51,29 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  let customReplacements = {};
-  if (customReplacementsStr) {
-    try {
-      customReplacements = JSON.parse(customReplacementsStr);
-    } catch (error) {
-      const errorMessage = [
-        "Invalid JSON format for customReplacements",
-        usage,
-        usageExample,
-      ].join("\n");
-      throw new Error(errorMessage);
-    }
+  if (!tokenUri) {
+    const errorMessage = ["Token URI is required", usage, usageExample].join(
+      "\n"
+    );
+    throw new Error(errorMessage);
+  }
+
+  if (!originAddress || !validateStacksAddress(originAddress)) {
+    const errorMessage = [
+      "Origin address is required and must be a valid Stacks address",
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
+  if (!daoManifest) {
+    const errorMessage = [
+      "DAO manifest / mission is required",
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
 
   // Parse saveToFile parameter
@@ -72,13 +81,23 @@ function validateArgs(): ExpectedArgs {
 
   return {
     tokenSymbol,
-    network,
-    customReplacements,
+    tokenUri,
+    originAddress,
+    daoManifest,
+    tweetOrigin: tweetOrigin || undefined,
+    network: network || CONFIG.NETWORK,
+    customReplacements: {
+      dao_manifest: daoManifest,
+      tweet_origin: tweetOrigin || "",
+      origin_address: originAddress,
+      dao_token_metadata: tokenUri,
+      dao_token_symbol: tokenSymbol,
+    },
     saveToFile,
   };
 }
 
-async function main(): Promise<ToolResponse<any>> {
+async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
   const args = validateArgs();
   const apiClient = new ContractApiClient();
 
@@ -91,62 +110,52 @@ async function main(): Promise<ToolResponse<any>> {
 
     if (!result.success || !result.data) {
       if (result.error) {
-        return {
-          success: false,
-          message: `Failed to generate DAO contracts: ${result.error.message}`,
-          data: result.error,
-        };
+        throw new Error(result.error.message);
       }
-      return {
-        success: false,
-        message: `Failed to generate DAO contracts: ${JSON.stringify(result)}`,
-        data: result,
-      };
+      throw new Error(
+        `Failed to generate DAO contracts: ${JSON.stringify(result)}`
+      );
     }
 
-    // Check if contracts are in data.contracts or directly in data
-    // console.log("Result data:", Object.keys(result.data));
+    const network = args.network || CONFIG.NETWORK;
 
-    const resultData = result.data as ResultData;
-
-    const { network, tokenSymbol, contracts } = resultData;
-    //console.log("Result network:", network);
-    //console.log("Result tokenSymbol:", tokenSymbol);
-    //console.log("Result contracts:", Object.keys(contracts));
+    //console.log("Result data:", Object.keys(result.data));
+    const contracts = result.data.contracts;
 
     // Save contracts to files if requested
     if (args.saveToFile) {
-      await saveContractsToFiles(contracts, args.tokenSymbol, args.network);
+      await saveContractsToFiles(contracts, args.tokenSymbol, network);
     }
 
-    // Create a truncated version of the contracts for the response
-    const truncatedContracts: Record<string, ResultContracts> = {};
+    const truncatedContracts: Record<string, ContractResponse> = {};
     for (const contractData of Object.values(contracts)) {
-      const contractName = displayName(tokenSymbol, contractData.name);
-      const sourceCode = contractData.content;
+      const contractName = displayName(args.tokenSymbol, contractData.name);
+      if (!contractData.source) {
+        throw new Error(
+          `Contract ${contractName} does not have source code available`
+        );
+      }
       const truncatedSource =
-        sourceCode.length > 100
-          ? sourceCode.substring(0, 97) + "..."
-          : sourceCode;
+        contractData.source.length > 100
+          ? contractData.source.substring(0, 97) + "..."
+          : contractData.source;
 
       truncatedContracts[contractName] = {
         ...contractData,
-        content: truncatedSource,
+        source: truncatedSource,
       };
     }
 
     return {
       success: true,
       message: `Successfully generated ${
-        Array.isArray(contracts)
-          ? contracts.length
-          : Object.keys(contracts).length
+        contracts.length
       } DAO contracts for token ${args.tokenSymbol} on ${args.network}${
         args.saveToFile ? " (saved to files)" : ""
       }`,
       data: {
         ...result.data,
-        contracts: truncatedContracts,
+        contracts: Object.values(truncatedContracts),
       },
     };
   } catch (error) {
@@ -160,41 +169,30 @@ async function main(): Promise<ToolResponse<any>> {
   }
 }
 
-// Export for use in other modules
-export interface DeployDaoParams {
-  tokenSymbol: string;
-  tokenName: string;
-  tokenMaxSupply: number;
-  tokenUri: string;
-  logoUrl: string;
-  originAddress: string;
-  daoManifest: string;
-  tweetOrigin: string;
-  daoManifestInscriptionId?: string;
-  network?: string;
-}
-
 /**
  * Save generated contracts to files in the contract-tools/generated directory
  */
-async function saveContractsToFiles(
-  contracts: Record<string, ResultContracts>,
+export async function saveContractsToFiles(
+  contracts: ContractResponse[],
   tokenSymbol: string,
   network: string
 ) {
-  const fs = require("fs");
-  const path = require("path");
 
   // Create the directory if it doesn't exist
   const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
   fs.mkdirSync(outputDir, { recursive: true });
 
   // Save each contract to a file
-  for (const contractData of Object.values(contracts)) {
+  for (const contractData of contracts) {
     // Use the contract's name property if available
     const contractName = displayName(tokenSymbol, contractData.name);
     const filePath = path.join(outputDir, `${contractName}.clar`);
-    const sourceCode = contractData.content;
+    if (!contractData.source) {
+      throw new Error(
+        `Contract ${contractName} does not have source code available`
+      );
+    }
+    const sourceCode = contractData.source!;
     fs.writeFileSync(filePath, sourceCode);
     console.log(`Saved contract ${contractName} to ${filePath}`);
   }

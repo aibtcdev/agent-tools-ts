@@ -25,7 +25,7 @@ export type DeployedSingleContract = SingleContract & {
  * Contract deployment service for single contracts
  */
 export class ContractDeployer {
-  private network: StacksNetworkName;
+  private network: string;
   private senderAddress: string;
   private senderKey: string;
 
@@ -37,7 +37,7 @@ export class ContractDeployer {
    * @param senderKey Private key for the sender address
    */
   constructor(
-    network: StacksNetworkName,
+    network: string,
     senderAddress: string,
     senderKey: string
   ) {
