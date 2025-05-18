@@ -26,8 +26,9 @@ interface ExpectedArgs {
   daoManifest: string;
   tweetOrigin?: string;
   network?: string;
-  customReplacements?: Record<string, string>;
   saveToFile?: boolean;
+  // buld replacements from params
+  customReplacements?: Record<string, string>;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -83,6 +84,8 @@ function validateArgs(): ExpectedArgs {
     daoManifest,
     tweetOrigin: tweetOrigin || undefined,
     network: network || CONFIG.NETWORK,
+    saveToFile,
+    // buld replacements from params
     customReplacements: {
       dao_manifest: daoManifest,
       tweet_origin: tweetOrigin || "",
@@ -90,7 +93,6 @@ function validateArgs(): ExpectedArgs {
       dao_token_metadata: tokenUri,
       dao_token_symbol: tokenSymbol,
     },
-    saveToFile,
   };
 }
 

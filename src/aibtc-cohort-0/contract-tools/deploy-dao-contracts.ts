@@ -5,7 +5,6 @@ import {
   createErrorResponse,
   deriveChildAccount,
   getNextNonce,
-  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
   TxBroadcastResultWithLink,
@@ -26,8 +25,9 @@ interface ExpectedArgs {
   daoManifest: string;
   tweetOrigin?: string;
   network?: string;
-  customReplacements?: Record<string, string>;
   saveToFile?: boolean;
+  // buld replacements from params
+  customReplacements?: Record<string, string>;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -96,6 +96,7 @@ function validateArgs(): ExpectedArgs {
     daoManifest,
     tweetOrigin,
     network,
+    saveToFile,
     customReplacements: {
       dao_manifest: daoManifest,
       tweet_origin: tweetOrigin || "",
@@ -103,7 +104,6 @@ function validateArgs(): ExpectedArgs {
       dao_token_metadata: tokenUri,
       dao_token_symbol: tokenSymbol,
     },
-    saveToFile,
   };
 }
 
@@ -160,20 +160,29 @@ async function main(): Promise<
       await saveContractsToFiles(contracts, args.tokenSymbol, network);
     }
 
+    const deploymentOptions = {
+      address,
+      key,
+      network,
+      nonce: currentNonce,
+    };
+
     for (const contractData of Object.values(contracts)) {
-      const contractName = contractData.name;
+      const contractName = contractData.displayName
+        ? contractData.displayName
+        : contractData.name;
+
+      console.log("==========================");
       console.log(
         `Deploying contract: ${contractName} with nonce ${currentNonce}`
       );
 
       try {
         // Deploy the contract using our utility
-        const deployResult = await deployContract(contractData, {
-          address,
-          key,
-          network,
-          nonce: currentNonce,
-        });
+        const deployResult = await deployContract(
+          contractData,
+          deploymentOptions
+        );
 
         if (!deployResult.success) {
           throw new Error(
@@ -209,70 +218,6 @@ async function main(): Promise<
     ].join("\n");
     throw new Error(errorMessage);
   }
-}
-
-// Export for use in other modules
-export interface DeployDaoParams {
-  tokenSymbol: string;
-  tokenName: string;
-  tokenMaxSupply: number;
-  tokenUri: string;
-  logoUrl: string;
-  originAddress: string;
-  daoManifest: string;
-  tweetOrigin: string;
-  daoManifestInscriptionId?: string;
-  network?: string;
-}
-
-export async function deployDaoContracts(params: DeployDaoParams) {
-  const {
-    tokenSymbol,
-    tokenName,
-    tokenMaxSupply,
-    tokenUri,
-    logoUrl,
-    originAddress,
-    daoManifest,
-    tweetOrigin,
-    daoManifestInscriptionId,
-    network = CONFIG.NETWORK,
-  } = params;
-
-  // Generate contracts using the API
-  const apiClient = new ContractApiClient();
-  const customReplacements = {
-    token_symbol: tokenSymbol,
-    token_name: tokenName,
-    token_max_supply: tokenMaxSupply.toString(),
-    token_uri: tokenUri,
-    logo_url: logoUrl,
-    origin_address: originAddress,
-    dao_manifest: daoManifest,
-    tweet_origin: tweetOrigin,
-    dao_manifest_inscription_id: daoManifestInscriptionId || "",
-  };
-
-  // Generate all DAO contracts
-  const generatedContractsResponse = await apiClient.generateDaoContracts(
-    network,
-    tokenSymbol,
-    customReplacements
-  );
-
-  if (!generatedContractsResponse.success || !generatedContractsResponse.data) {
-    console.error("Failed to generate DAO contracts:");
-    console.error(JSON.stringify(generatedContractsResponse, null, 2));
-    throw new Error(
-      `Failed to generate DAO contracts: ${
-        generatedContractsResponse.error || "Unknown error"
-      }`
-    );
-  }
-
-  // Here you would typically deploy these contracts
-  // For now, we'll just return the generated contracts
-  return generatedContractsResponse;
 }
 
 // Run the main function if this file is executed directly
