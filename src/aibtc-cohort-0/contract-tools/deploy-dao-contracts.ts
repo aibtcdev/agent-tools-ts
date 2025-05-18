@@ -9,7 +9,7 @@ import {
   ToolResponse,
   TxBroadcastResultWithLink,
 } from "../../utilities";
-import { deployContract } from "../utils/deploy-contract";
+import { deployContract, DeploymentOptions } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
 import { saveContractsToFiles } from "./generate-dao-contracts";
 
@@ -160,7 +160,7 @@ async function main(): Promise<
       await saveContractsToFiles(contracts, args.tokenSymbol, network);
     }
 
-    const deploymentOptions = {
+    const deploymentOptions: DeploymentOptions = {
       address,
       key,
       network,

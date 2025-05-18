@@ -1,4 +1,8 @@
-import { ClarityVersion, makeContractDeploy, PostConditionMode } from "@stacks/transactions";
+import {
+  ClarityVersion,
+  makeContractDeploy,
+  PostConditionMode,
+} from "@stacks/transactions";
 import {
   broadcastTx,
   getNetwork,
@@ -8,32 +12,43 @@ import {
 import { ContractResponse } from "@aibtc/types";
 import { validateNetwork } from "@faktoryfun/core-sdk";
 
-type BroadcastedContractResponse = ContractResponse & TxBroadcastResultWithLink
+type BroadcastedContractResponse = ContractResponse & TxBroadcastResultWithLink;
 
-type DeploymentOptions = {
+export type DeploymentOptions = {
   address: string;
   key: string;
   network: string;
   nonce: number;
-}
+};
 
-function validateClarityVersion(version: number | ClarityVersion): ClarityVersion {
+function validateClarityVersion(
+  version: number | ClarityVersion
+): ClarityVersion {
   const validVersions = Object.values(ClarityVersion);
   if (!validVersions.includes(version)) {
-    throw new Error(`Invalid Clarity version: ${version}. Valid versions are: ${validVersions.join(", ")}`);
+    throw new Error(
+      `Invalid Clarity version: ${version}. Valid versions are: ${validVersions.join(
+        ", "
+      )}`
+    );
   }
   return version as ClarityVersion;
 }
 
-export async function deployContract(contract: ContractResponse, deploymentOptions: DeploymentOptions): Promise<ToolResponse<BroadcastedContractResponse>> {
+export async function deployContract(
+  contract: ContractResponse,
+  deploymentOptions: DeploymentOptions
+): Promise<ToolResponse<BroadcastedContractResponse>> {
   const { name, source } = contract;
   const { address, key, network, nonce } = deploymentOptions;
   console.log(`Deploying contract ${name} from address: ${address}`);
 
   // Setup the contract deployer
-  const validNetwork = validateNetwork(network);  
+  const validNetwork = validateNetwork(network);
   const networkObj = getNetwork(validNetwork);
-  const validClarityVersion = validateClarityVersion(contract.clarityVersion ?? 1);
+  const validClarityVersion = validateClarityVersion(
+    contract.clarityVersion ?? 1
+  );
   if (!source) {
     throw new Error(`Contract source code is empty`);
   }
@@ -47,18 +62,18 @@ export async function deployContract(contract: ContractResponse, deploymentOptio
     clarityVersion: validClarityVersion,
     postConditions: [], // empty, no transfers expected
     postConditionMode: PostConditionMode.Deny,
-  })
+  });
 
   const broadcastResponse = await broadcastTx(transaction, networkObj);
 
   const fullResponse: BroadcastedContractResponse = {
     ...contract,
     ...broadcastResponse.data!,
-  }
+  };
 
   return {
     success: broadcastResponse.success,
     message: broadcastResponse.message,
-    data: fullResponse
-  }
+    data: fullResponse,
+  };
 }
