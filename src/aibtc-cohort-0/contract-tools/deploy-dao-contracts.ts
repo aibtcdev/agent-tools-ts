@@ -129,7 +129,9 @@ async function main(): Promise<
         throw new Error(generatedContractsResponse.error.message);
       }
       throw new Error(
-        `Failed to generate DAO contracts: ${JSON.stringify(generatedContractsResponse)}`
+        `Failed to generate DAO contracts: ${JSON.stringify(
+          generatedContractsResponse
+        )}`
       );
     }
 
@@ -143,10 +145,10 @@ async function main(): Promise<
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
     );
-    
+
     // Get the current nonce for the account
     let currentNonce = await getNextNonce(network, address);
-    
+
     // Deploy each contract
     const deploymentResults: Record<string, TxBroadcastResultWithLink> = {};
 
@@ -160,7 +162,9 @@ async function main(): Promise<
 
     for (const contractData of Object.values(contracts)) {
       const contractName = contractData.name;
-      console.log(`Deploying contract: ${contractName} with nonce ${currentNonce}`);
+      console.log(
+        `Deploying contract: ${contractName} with nonce ${currentNonce}`
+      );
 
       try {
         // Deploy the contract using our utility
@@ -168,11 +172,17 @@ async function main(): Promise<
           address,
           key,
           network,
-          nonce: currentNonce
+          nonce: currentNonce,
         });
 
         if (!deployResult.success) {
-          throw new Error(`Failed to deploy ${contractName}: ${deployResult.message}`);
+          throw new Error(
+            `Failed to deploy ${contractName}: ${deployResult.message}`
+          );
+        }
+
+        if (!deployResult.data) {
+          throw new Error(`No data returned for ${contractName}`);
         }
 
         deploymentResults[contractName] = deployResult.data;
@@ -255,7 +265,7 @@ export async function deployDaoContracts(params: DeployDaoParams) {
     console.error(JSON.stringify(generatedContractsResponse, null, 2));
     throw new Error(
       `Failed to generate DAO contracts: ${
-        generatedContractsResponse.message || "Unknown error"
+        generatedContractsResponse.error || "Unknown error"
       }`
     );
   }

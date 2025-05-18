@@ -9,10 +9,7 @@ import {
   ToolResponse,
 } from "../../utilities";
 import { validateStacksAddress } from "@stacks/transactions";
-import {
-  GeneratedDaoContractsResponse,
-  ContractResponse
-} from "@aibtc/types";
+import { GeneratedDaoContractsResponse, ContractResponse } from "@aibtc/types";
 
 const displayName = (symbol: string, name: string) =>
   name.replace("aibtc", symbol).toLowerCase();
@@ -177,7 +174,6 @@ export async function saveContractsToFiles(
   tokenSymbol: string,
   network: string
 ) {
-
   // Create the directory if it doesn't exist
   const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
   fs.mkdirSync(outputDir, { recursive: true });
