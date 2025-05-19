@@ -210,8 +210,7 @@ async function main(): Promise<
     }
 
     // find the token contract deployment entry
-    const tokenContractName = "aibtc-faktory";
-    const tokenContractDisplayName = `${args.tokenSymbol}-faktory`;
+    const tokenContractName = `${args.tokenSymbol}-faktory`;
     const tokenDeploymentResult = deploymentResults[tokenContractName];
     if (!tokenDeploymentResult) {
       throw new Error(
@@ -236,7 +235,7 @@ async function main(): Promise<
         max_supply: "1000000000", // 1 billion
         uri: args.tokenUri,
         tx_id: tokenDeploymentResult.txid,
-        contract_principal: `${address}.${tokenContractDisplayName}`,
+        contract_principal: `${address}.${tokenContractName}`,
         image_url: imageUrl,
       },
     };
