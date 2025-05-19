@@ -12,7 +12,8 @@ import {
 import { ContractResponse } from "@aibtc/types";
 import { validateNetwork } from "@faktoryfun/core-sdk";
 
-type BroadcastedContractResponse = ContractResponse & TxBroadcastResultWithLink;
+export type BroadcastedContractResponse = ContractResponse &
+  TxBroadcastResultWithLink;
 
 export type DeploymentOptions = {
   address: string;
@@ -41,7 +42,7 @@ export async function deployContract(
 ): Promise<ToolResponse<BroadcastedContractResponse>> {
   const { name, displayName, source } = contract;
   const { address, key, network, nonce } = deploymentOptions;
-  console.log(`Deploying contract ${name} from address: ${address}`);
+  //console.log(`Deploying contract ${name} from address: ${address}`);
 
   // Setup the contract deployer
   const validNetwork = validateNetwork(network);

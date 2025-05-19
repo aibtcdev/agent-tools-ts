@@ -14,7 +14,11 @@ import {
   TxBroadcastResultWithLink,
   validateNetwork,
 } from "../../utilities";
-import { deployContract, DeploymentOptions } from "../utils/deploy-contract";
+import {
+  BroadcastedContractResponse,
+  deployContract,
+  DeploymentOptions,
+} from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
 import { saveContractsToFiles } from "./generate-dao-contracts";
 
@@ -118,7 +122,7 @@ function validateArgs(): ExpectedArgs {
 }
 
 async function main(): Promise<
-  ToolResponse<Record<string, TxBroadcastResultWithLink>>
+  ToolResponse<Record<string, BroadcastedContractResponse>>
 > {
   const args = validateArgs();
   const apiClient = new ContractApiClient();
@@ -161,7 +165,7 @@ async function main(): Promise<
     let currentNonce = await getNextNonce(network, address);
 
     // Deploy each contract
-    const deploymentResults: Record<string, TxBroadcastResultWithLink> = {};
+    const deploymentResults: Record<string, BroadcastedContractResponse> = {};
 
     //console.log("Generated contracts:", generatedContractsResponse.data);
     // sort them by deployment order
@@ -184,10 +188,10 @@ async function main(): Promise<
     for (const contractData of Object.values(contracts)) {
       const contractName = contractData.displayName ?? contractData.name;
 
-      console.log("==========================");
-      console.log(
-        `Deploying contract: ${contractName} with nonce ${currentNonce}`
-      );
+      //console.log("==========================");
+      //console.log(
+      //  `Deploying contract: ${contractName} with nonce ${currentNonce}`
+      //);
 
       try {
         // Deploy the contract using our utility
@@ -206,10 +210,20 @@ async function main(): Promise<
           throw new Error(`No data returned for ${contractName}`);
         }
 
-        deploymentResults[contractName] = deployResult.data;
+        const deployResultData = deployResult.data;
+        const contractSource = deployResultData.source ?? "";
+        const truncatedSource =
+          contractSource.length > 100
+            ? contractSource.substring(0, 97) + "..."
+            : contractSource;
+
+        deploymentResults[contractName] = {
+          ...deployResultData,
+          source: truncatedSource,
+        };
         currentNonce++;
       } catch (error) {
-        console.error(`Error deploying ${contractName}:`, error);
+        //console.error(`Error deploying ${contractName}:`, error);
         throw error; // Stop the process if any deployment fails
       }
     }
@@ -244,7 +258,7 @@ async function main(): Promise<
         image_url: imageUrl,
       },
     };
-    const postResult = postToAibtcCore(validNetwork, aibtcRequestBody);
+    const postResult = await postToAibtcCore(validNetwork, aibtcRequestBody);
 
     console.log(`Posted to AIBTC core: ${JSON.stringify(postResult, null, 2)}`);
 

@@ -192,12 +192,12 @@ export async function saveContractsToFiles(
     }
     const sourceCode = contractData.source!;
     fs.writeFileSync(filePath, sourceCode);
-    console.log(`Saved contract ${contractName} to ${filePath}`);
+    //console.log(`Saved contract ${contractName} to ${filePath}`);
   }
   // Save the full response as JSON for reference
   const jsonPath = path.join(outputDir, `_full_response.json`);
   fs.writeFileSync(jsonPath, JSON.stringify(contracts, null, 2));
-  console.log(`Saved full response to ${jsonPath}`);
+  //console.log(`Saved full response to ${jsonPath}`);
 }
 
 // Run the main function if this file is executed directly
