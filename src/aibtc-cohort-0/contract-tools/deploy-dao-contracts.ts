@@ -4,6 +4,7 @@ import {
   convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
+  getExplorerUrl,
   getNextNonce,
   sendToLLM,
   ToolResponse,
@@ -153,7 +154,10 @@ async function main(): Promise<
     const deploymentResults: Record<string, TxBroadcastResultWithLink> = {};
 
     //console.log("Generated contracts:", generatedContractsResponse.data);
-    const contracts = generatedContractsResponse.data.contracts;
+    // sort them by deployment order
+    const contracts = generatedContractsResponse.data.contracts.sort(
+      (a, b) => a.deploymentOrder - b.deploymentOrder
+    );
 
     // Save contracts to files if requested
     if (args.saveToFile) {
@@ -202,11 +206,19 @@ async function main(): Promise<
       }
     }
 
-    return {
-      success: true,
-      message: `Successfully deployed ${
+    const successMessage = [
+      `Successfully deployed ${
         Object.keys(deploymentResults).length
       } DAO contracts for token ${args.tokenSymbol}`,
+      `Deployment results:`,
+      ...Object.entries(deploymentResults).map(
+        ([name, result]) => `${name}: ${getExplorerUrl(network, result.txid)}`
+      ),
+    ].join("\n");
+
+    return {
+      success: true,
+      message: successMessage,
       data: deploymentResults,
     };
   } catch (error) {
