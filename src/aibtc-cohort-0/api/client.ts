@@ -148,7 +148,7 @@ export class ContractApiClient {
     tokenSymbol: string = "aibtc",
     customReplacements: Record<string, string> = {}
   ): Promise<ApiResponse<GeneratedContractResponse>> {
-    const requestUrl = `${this.baseUrl}/generate-agent-contract`;
+    const requestUrl = `${this.baseUrl}/generate-agent-account`;
     try {
       console.log(
         `Generating agent contract on ${network} with token ${tokenSymbol}`
