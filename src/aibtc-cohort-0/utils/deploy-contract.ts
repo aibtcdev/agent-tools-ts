@@ -47,7 +47,7 @@ export async function deployContract(
   const validNetwork = validateNetwork(network);
   const networkObj = getNetwork(validNetwork);
   const validClarityVersion = validateClarityVersion(
-    contract.clarityVersion ?? 1
+    contract.clarityVersion ?? 3 // default to latest
   );
   if (!source) {
     throw new Error(`Contract source code is empty`);
