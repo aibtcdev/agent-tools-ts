@@ -153,14 +153,17 @@ export class ContractApiClient {
       console.log(
         `Generating agent contract on ${network} with token ${tokenSymbol}`
       );
+      console.log(`Url: ${requestUrl}`);
+      const requestBody = {
+        network,
+        tokenSymbol,
+        customReplacements,
+      };
+      console.log("Request body:", JSON.stringify(requestBody, null, 2));
       const response = await fetch(requestUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          network,
-          tokenSymbol,
-          customReplacements,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       console.log("Response status:", response.status);
