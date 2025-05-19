@@ -1,16 +1,21 @@
+import fs from "node:fs";
+import path from "node:path";
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
+  convertStringToBoolean,
   createErrorResponse,
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
+  validateNetwork,
 } from "../../utilities";
+import { validateStacksAddress } from "@stacks/transactions";
 
 const usage =
-  "Usage: bun run generate-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [network]";
+  "Usage: bun run generate-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [network] [saveToFile]";
 const usageExample =
-  "Example: bun run generate-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex";
+  "Example: bun run generate-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM \"testnet\" true";
 
 interface ExpectedArgs {
   ownerAddress: string;
@@ -18,6 +23,9 @@ interface ExpectedArgs {
   daoTokenDexContract: string;
   agentAddress?: string;
   network?: string;
+  saveToFile?: boolean;
+  // build replacements from params
+  customReplacements?: Record<string, string>;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -27,6 +35,7 @@ function validateArgs(): ExpectedArgs {
     daoTokenDexContract,
     agentAddress,
     network = CONFIG.NETWORK,
+    saveToFileStr = "false",
   ] = process.argv.slice(2);
 
   if (!ownerAddress) {
@@ -38,7 +47,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!isValidContractPrincipal(ownerAddress)) {
+  if (!validateStacksAddress(ownerAddress)) {
     const errorMessage = [
       `Invalid owner address: ${ownerAddress}`,
       usage,
@@ -84,7 +93,7 @@ function validateArgs(): ExpectedArgs {
   }
 
   // If agent address is provided, validate it
-  if (agentAddress && !isValidContractPrincipal(agentAddress)) {
+  if (agentAddress && !validateStacksAddress(agentAddress)) {
     const errorMessage = [
       `Invalid agent address: ${agentAddress}`,
       usage,
@@ -93,12 +102,58 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
+  // Parse saveToFile parameter
+  const saveToFile = convertStringToBoolean(saveToFileStr);
+
   return {
     ownerAddress,
     daoTokenContract,
     daoTokenDexContract,
     agentAddress,
-    network,
+    network: validateNetwork(network),
+    saveToFile,
+    // build replacements from params
+    customReplacements: {
+      owner_address: ownerAddress,
+      agent_address: agentAddress || ownerAddress,
+      dao_token_contract: daoTokenContract,
+      dao_token_dex_contract: daoTokenDexContract,
+    },
+  };
+}
+
+/**
+ * Save generated agent account contract to a file in the contract-tools/generated directory
+ */
+export async function saveContractToFile(
+  contractData: any,
+  ownerAddress: string,
+  network: string
+) {
+  // Create the directory if it doesn't exist
+  const outputDir = path.join(__dirname, "generated", "agent-accounts", network);
+  fs.mkdirSync(outputDir, { recursive: true });
+
+  // Use the contract's name property if available
+  const contractName = `${ownerAddress.split(".")[0]}-agent-account`;
+  const filePath = path.join(outputDir, `${contractName}.clar`);
+  
+  if (!contractData.source) {
+    throw new Error(
+      `Contract ${contractName} does not have source code available`
+    );
+  }
+  
+  const sourceCode = contractData.source;
+  fs.writeFileSync(filePath, sourceCode);
+  
+  // Save the full response as JSON for reference
+  const jsonPath = path.join(outputDir, `${contractName}.json`);
+  fs.writeFileSync(jsonPath, JSON.stringify(contractData, null, 2));
+  
+  return {
+    contractPath: filePath,
+    jsonPath: jsonPath
   };
 }
 
@@ -124,21 +179,14 @@ async function main(): Promise<ToolResponse<any>> {
     const contractName = contractResponse.contract.name;
 
     // Generate the contract with replacements
-    const customReplacements = {
-      owner_address: args.ownerAddress,
-      agent_address: args.agentAddress || args.ownerAddress,
-      dao_token_contract: args.daoTokenContract,
-      dao_token_dex_contract: args.daoTokenDexContract,
-    };
-
     const generatedContract = await apiClient.generateContract(
       contractName,
       args.network,
       "aibtc", // Default token symbol
-      customReplacements
+      args.customReplacements
     );
 
-    if (!generatedContract.success) {
+    if (!generatedContract.success || !generatedContract.contract) {
       return {
         success: false,
         message: `Failed to generate agent account: ${
@@ -148,10 +196,25 @@ async function main(): Promise<ToolResponse<any>> {
       };
     }
 
+    // Save contract to file if requested
+    let filePaths = null;
+    if (args.saveToFile) {
+      filePaths = await saveContractToFile(
+        generatedContract.contract,
+        args.ownerAddress,
+        args.network
+      );
+    }
+
     return {
       success: true,
-      message: `Successfully generated agent account contract for owner ${args.ownerAddress}`,
-      data: generatedContract,
+      message: `Successfully generated agent account contract for owner ${args.ownerAddress}${
+        args.saveToFile ? " (saved to file)" : ""
+      }`,
+      data: {
+        ...generatedContract,
+        filePaths
+      },
     };
   } catch (error) {
     const errorMessage = [
@@ -171,6 +234,7 @@ export interface AgentAccountParams {
   daoTokenContract: string;
   daoTokenDexContract: string;
   network?: string;
+  saveToFile?: boolean;
 }
 
 export async function generateAgentAccount(params: AgentAccountParams) {
@@ -180,8 +244,10 @@ export async function generateAgentAccount(params: AgentAccountParams) {
     daoTokenContract,
     daoTokenDexContract,
     network = CONFIG.NETWORK,
+    saveToFile = false,
   } = params;
 
+  const validNetwork = validateNetwork(network);
   const apiClient = new ContractApiClient();
 
   try {
@@ -207,12 +273,25 @@ export async function generateAgentAccount(params: AgentAccountParams) {
 
     const generatedContract = await apiClient.generateContract(
       contractName,
-      network,
+      validNetwork,
       "aibtc", // Default token symbol
       customReplacements
     );
 
-    return generatedContract;
+    // Save contract to file if requested
+    let filePaths = null;
+    if (saveToFile && generatedContract.contract) {
+      filePaths = await saveContractToFile(
+        generatedContract.contract,
+        ownerAddress,
+        validNetwork
+      );
+    }
+
+    return {
+      ...generatedContract,
+      filePaths
+    };
   } catch (error) {
     console.error("Error generating agent account:", error);
     throw error;

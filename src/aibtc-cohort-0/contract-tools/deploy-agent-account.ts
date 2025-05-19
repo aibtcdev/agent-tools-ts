@@ -1,18 +1,25 @@
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
+  convertStringToBoolean,
   createErrorResponse,
+  deriveChildAccount,
+  getExplorerUrl,
+  getNextNonce,
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
   TxBroadcastResultWithLink,
+  validateNetwork,
 } from "../../utilities";
-import { deployContract } from "../utils/deploy-contract";
+import { deployContract, DeploymentOptions } from "../utils/deploy-contract";
+import { validateStacksAddress } from "@stacks/transactions";
+import { generateAgentAccount, saveContractToFile } from "./generate-agent-account";
 
 const usage =
-  "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [network]";
+  "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [network] [saveToFile]";
 const usageExample =
-  "Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex";
+  "Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM \"testnet\" true";
 
 interface ExpectedArgs {
   ownerAddress: string;
@@ -20,6 +27,9 @@ interface ExpectedArgs {
   daoTokenDexContract: string;
   agentAddress?: string;
   network?: string;
+  saveToFile?: boolean;
+  // build replacements from params
+  customReplacements?: Record<string, string>;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -29,6 +39,7 @@ function validateArgs(): ExpectedArgs {
     daoTokenDexContract,
     agentAddress,
     network = CONFIG.NETWORK,
+    saveToFileStr = "false",
   ] = process.argv.slice(2);
 
   if (!ownerAddress) {
@@ -40,7 +51,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!isValidContractPrincipal(ownerAddress)) {
+  if (!validateStacksAddress(ownerAddress)) {
     const errorMessage = [
       `Invalid owner address: ${ownerAddress}`,
       usage,
@@ -86,7 +97,7 @@ function validateArgs(): ExpectedArgs {
   }
 
   // If agent address is provided, validate it
-  if (agentAddress && !isValidContractPrincipal(agentAddress)) {
+  if (agentAddress && !validateStacksAddress(agentAddress)) {
     const errorMessage = [
       `Invalid agent address: ${agentAddress}`,
       usage,
@@ -95,74 +106,98 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
+  // Parse saveToFile parameter
+  const saveToFile = convertStringToBoolean(saveToFileStr);
+
   return {
     ownerAddress,
     daoTokenContract,
     daoTokenDexContract,
     agentAddress,
-    network,
+    network: validateNetwork(network),
+    saveToFile,
+    // build replacements from params
+    customReplacements: {
+      owner_address: ownerAddress,
+      agent_address: agentAddress || ownerAddress,
+      dao_token_contract: daoTokenContract,
+      dao_token_dex_contract: daoTokenDexContract,
+    },
   };
 }
 
 async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
   const args = validateArgs();
-  const apiClient = new ContractApiClient();
 
   try {
-    // First get the agent account contract template
-    const contractResponse = await apiClient.getContractByTypeAndSubtype(
-      "SMART_WALLET",
-      "BASE"
-    );
+    // Generate the agent account contract
+    const generatedContractResponse = await generateAgentAccount({
+      ownerAddress: args.ownerAddress,
+      agentAddress: args.agentAddress,
+      daoTokenContract: args.daoTokenContract,
+      daoTokenDexContract: args.daoTokenDexContract,
+      network: args.network,
+      saveToFile: args.saveToFile,
+    });
 
-    if (!contractResponse.success || !contractResponse.contract) {
-      return {
-        success: false,
-        message: "Failed to retrieve agent account contract template",
-        data: null,
-      };
-    }
-
-    const contractName = contractResponse.contract.name;
-
-    // Generate the contract with replacements
-    const customReplacements = {
-      owner_address: args.ownerAddress,
-      agent_address: args.agentAddress || args.ownerAddress,
-      dao_token_contract: args.daoTokenContract,
-      dao_token_dex_contract: args.daoTokenDexContract,
-    };
-
-    const generatedContract = await apiClient.generateContract(
-      contractName,
-      args.network,
-      "aibtc", // Default token symbol
-      customReplacements
-    );
-
-    if (!generatedContract.success || !generatedContract.contract) {
+    if (!generatedContractResponse.success || !generatedContractResponse.contract) {
       return {
         success: false,
         message: `Failed to generate agent account: ${
-          generatedContract.message || "Unknown error"
+          generatedContractResponse.message || "Unknown error"
         }`,
         data: null,
       };
     }
 
     // Prepare for deployment
+    const network = args.network || CONFIG.NETWORK;
+    const validNetwork = validateNetwork(network);
+
+    // Get deployment credentials
+    const { address, key } = await deriveChildAccount(
+      network,
+      CONFIG.MNEMONIC,
+      CONFIG.ACCOUNT_INDEX
+    );
+
+    // Get the current nonce for the account
+    const currentNonce = await getNextNonce(network, address);
+
+    const deploymentOptions: DeploymentOptions = {
+      address,
+      key,
+      network,
+      nonce: currentNonce,
+    };
 
     // Deploy the contract
+    const contractName = `${args.ownerAddress.split(".")[0]}-agent-account`;
     const deployResult = await deployContract({
-      contractName: `${args.ownerAddress.split(".")[0]}-agent-account`,
-      sourceCode: generatedContract.contract.source,
-      clarityVersion: generatedContract.contract.clarityVersion,
-    });
+      name: contractName,
+      source: generatedContractResponse.contract.source,
+      clarityVersion: generatedContractResponse.contract.clarityVersion,
+      hash: generatedContractResponse.contract.hash,
+      deploymentOrder: 0, // Not used for agent accounts
+    }, deploymentOptions);
+
+    if (!deployResult.success) {
+      return {
+        success: false,
+        message: `Failed to deploy agent account: ${deployResult.message}`,
+        data: null,
+      };
+    }
+
+    const explorerUrl = getExplorerUrl(validNetwork, deployResult.data.txid);
 
     return {
       success: true,
       message: `Successfully deployed agent account contract for owner ${args.ownerAddress}`,
-      data: deployResult,
+      data: {
+        ...deployResult.data,
+        link: explorerUrl,
+      },
     };
   } catch (error) {
     const errorMessage = [
@@ -182,6 +217,7 @@ export interface DeployAgentAccountParams {
   daoTokenContract: string;
   daoTokenDexContract: string;
   network?: string;
+  saveToFile?: boolean;
 }
 
 export async function deployAgentAccount(params: DeployAgentAccountParams) {
@@ -191,50 +227,66 @@ export async function deployAgentAccount(params: DeployAgentAccountParams) {
     daoTokenContract,
     daoTokenDexContract,
     network = CONFIG.NETWORK,
+    saveToFile = false,
   } = params;
 
-  const apiClient = new ContractApiClient();
+  const validNetwork = validateNetwork(network);
 
   try {
-    // First get the agent account contract template
-    const contractResponse = await apiClient.getContractByTypeAndSubtype(
-      "SMART_WALLET",
-      "BASE"
-    );
+    // Generate the agent account contract
+    const generatedContractResponse = await generateAgentAccount({
+      ownerAddress,
+      agentAddress,
+      daoTokenContract,
+      daoTokenDexContract,
+      network: validNetwork,
+      saveToFile,
+    });
 
-    if (!contractResponse.contract) {
-      throw new Error("Failed to retrieve agent account contract template");
-    }
-
-    const contractName = contractResponse.contract.name;
-
-    // Generate the contract with replacements
-    const customReplacements = {
-      owner_address: ownerAddress,
-      agent_address: agentAddress,
-      dao_token_contract: daoTokenContract,
-      dao_token_dex_contract: daoTokenDexContract,
-    };
-
-    const generatedContract = await apiClient.generateContract(
-      contractName,
-      network,
-      "aibtc", // Default token symbol
-      customReplacements
-    );
-
-    if (!generatedContract.contract) {
+    if (!generatedContractResponse.contract) {
       throw new Error("Failed to generate agent account contract");
     }
 
-    // Deploy the contract
-    const deployResult = await deployContract({
-      contractName: `${ownerAddress.split(".")[0]}-agent-account`,
-      sourceCode: generatedContract.contract.source,
-      clarityVersion: generatedContract.contract.clarityVersion,
-    });
+    // Get deployment credentials
+    const { address, key } = await deriveChildAccount(
+      validNetwork,
+      CONFIG.MNEMONIC,
+      CONFIG.ACCOUNT_INDEX
+    );
 
-    return deployResult;
+    // Get the current nonce for the account
+    const currentNonce = await getNextNonce(validNetwork, address);
+
+    const deploymentOptions: DeploymentOptions = {
+      address,
+      key,
+      network: validNetwork,
+      nonce: currentNonce,
+    };
+
+    // Deploy the contract
+    const contractName = `${ownerAddress.split(".")[0]}-agent-account`;
+    const deployResult = await deployContract({
+      name: contractName,
+      source: generatedContractResponse.contract.source,
+      clarityVersion: generatedContractResponse.contract.clarityVersion,
+      hash: generatedContractResponse.contract.hash,
+      deploymentOrder: 0, // Not used for agent accounts
+    }, deploymentOptions);
+
+    if (!deployResult.success) {
+      throw new Error(`Failed to deploy agent account: ${deployResult.message}`);
+    }
+
+    const explorerUrl = getExplorerUrl(validNetwork, deployResult.data.txid);
+
+    return {
+      ...deployResult,
+      data: {
+        ...deployResult.data,
+        link: explorerUrl,
+      },
+    };
   } catch (error) {
     console.error("Error deploying agent account:", error);
     throw error;
