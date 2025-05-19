@@ -260,15 +260,9 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
 
     //console.log(`Posted to AIBTC core: ${JSON.stringify(postResult, null, 2)}`);
 
-    const successMessage = [
-      `Successfully deployed ${
-        Object.keys(deploymentResults).length
-      } DAO contracts for token ${args.tokenSymbolUpper}`,
-      `Deployment results:`,
-      ...Object.entries(deploymentResults).map(
-        ([name, result]) => `${name}: ${getExplorerUrl(network, result.txid)}`
-      ),
-    ].join("\n");
+    const successMessage = `Successfully deployed ${
+      Object.keys(deploymentResults).length
+    } DAO contracts for token ${args.tokenSymbolUpper}`;
 
     return {
       success: true,
