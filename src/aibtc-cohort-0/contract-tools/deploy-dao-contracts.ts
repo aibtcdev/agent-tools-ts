@@ -24,7 +24,8 @@ const usageExample =
   'Example: bun run deploy-dao-contracts.ts MYTOKEN "https://example.com/token.json" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "This is my DAO" "1894855072556912681" "testnet" true';
 
 interface ExpectedArgs {
-  tokenSymbol: string;
+  tokenSymbolLower: string;
+  tokenSymbolUpper: string;
   tokenUri: string;
   originAddress: string;
   daoManifest: string;
@@ -52,6 +53,9 @@ function validateArgs(): ExpectedArgs {
     );
     throw new Error(errorMessage);
   }
+
+  const tokenSymbolLower = tokenSymbol.toLowerCase();
+  const tokenSymbolUpper = tokenSymbol.toUpperCase();
 
   if (!tokenUri) {
     const errorMessage = ["Token URI is required", usage, usageExample].join(
@@ -95,7 +99,8 @@ function validateArgs(): ExpectedArgs {
   const saveToFile = convertStringToBoolean(saveToFileStr);
 
   return {
-    tokenSymbol,
+    tokenSymbolLower,
+    tokenSymbolUpper,
     tokenUri,
     originAddress,
     daoManifest,
@@ -107,7 +112,7 @@ function validateArgs(): ExpectedArgs {
       tweet_origin: tweetOrigin || "",
       origin_address: originAddress,
       dao_token_metadata: tokenUri,
-      dao_token_symbol: tokenSymbol,
+      dao_token_symbol: tokenSymbolLower,
     },
   };
 }
@@ -122,7 +127,7 @@ async function main(): Promise<
     // Generate all DAO contracts
     const generatedContractsResponse = await apiClient.generateDaoContracts(
       args.network,
-      args.tokenSymbol,
+      args.tokenSymbolLower,
       args.customReplacements
     );
 
@@ -166,7 +171,7 @@ async function main(): Promise<
 
     // Save contracts to files if requested
     if (args.saveToFile) {
-      await saveContractsToFiles(contracts, args.tokenSymbol, network);
+      await saveContractsToFiles(contracts, args.tokenSymbolLower, network);
     }
 
     const deploymentOptions: DeploymentOptions = {
@@ -210,7 +215,7 @@ async function main(): Promise<
     }
 
     // find the token contract deployment entry
-    const tokenContractName = `${args.tokenSymbol}-faktory`;
+    const tokenContractName = `${args.tokenSymbolLower}-faktory`;
     const tokenDeploymentResult = deploymentResults[tokenContractName];
     if (!tokenDeploymentResult) {
       throw new Error(
@@ -223,15 +228,15 @@ async function main(): Promise<
 
     // post result to AIBTC core
     const aibtcRequestBody: aibtcCoreRequestBody = {
-      name: `${args.tokenSymbol}•AIBTC•DAO`,
+      name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
       mission: args.daoManifest,
       description: args.daoManifest,
       extensions: contracts,
       token: {
-        name: `${args.tokenSymbol}•AIBTC•DAO`,
-        symbol: `${args.tokenSymbol}•AIBTC•DAO`,
+        name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+        symbol: `${args.tokenSymbolUpper}•AIBTC•DAO`,
         decimals: 8,
-        description: `${args.tokenSymbol}•AIBTC•DAO`,
+        description: `${args.tokenSymbolUpper}•AIBTC•DAO`,
         max_supply: "1000000000", // 1 billion
         uri: args.tokenUri,
         tx_id: tokenDeploymentResult.txid,
@@ -246,7 +251,7 @@ async function main(): Promise<
     const successMessage = [
       `Successfully deployed ${
         Object.keys(deploymentResults).length
-      } DAO contracts for token ${args.tokenSymbol}`,
+      } DAO contracts for token ${args.tokenSymbolUpper}`,
       `Deployment results:`,
       ...Object.entries(deploymentResults).map(
         ([name, result]) => `${name}: ${getExplorerUrl(network, result.txid)}`
