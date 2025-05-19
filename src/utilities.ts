@@ -1189,7 +1189,7 @@ export type aibtcCoreRequestBody = {
 export async function postToAibtcCore(
   network: StacksNetworkName,
   infoToPost: aibtcCoreRequestBody
-) {
+): Promise<AibtcCorePostResponse> {
   const url = getAibtcCoreApiUrl(network);
   const response = await fetch(url, {
     method: "POST",
@@ -1204,6 +1204,16 @@ export async function postToAibtcCore(
       `Failed to post to AIBTC Core: ${response.status} ${response.statusText}`
     );
   }
-  const data = await response.json();
+  const data = (await response.json()) as AibtcCorePostResponse;
   return data;
 }
+
+export type AibtcCorePostResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    dao_id: string;
+    extension_ids: string[];
+    token_id: string;
+  };
+};

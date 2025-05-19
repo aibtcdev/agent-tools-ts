@@ -11,11 +11,11 @@ import {
   postToAibtcCore,
   sendToLLM,
   ToolResponse,
-  TxBroadcastResultWithLink,
   validateNetwork,
 } from "../../utilities";
 import {
   BroadcastedContractResponse,
+  BroadcastedAndPostedResponse,
   deployContract,
   DeploymentOptions,
 } from "../utils/deploy-contract";
@@ -121,9 +121,7 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main(): Promise<
-  ToolResponse<Record<string, BroadcastedContractResponse>>
-> {
+async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
   const args = validateArgs();
   const apiClient = new ContractApiClient();
 
@@ -260,7 +258,7 @@ async function main(): Promise<
     };
     const postResult = await postToAibtcCore(validNetwork, aibtcRequestBody);
 
-    console.log(`Posted to AIBTC core: ${JSON.stringify(postResult, null, 2)}`);
+    //console.log(`Posted to AIBTC core: ${JSON.stringify(postResult, null, 2)}`);
 
     const successMessage = [
       `Successfully deployed ${
@@ -275,7 +273,10 @@ async function main(): Promise<
     return {
       success: true,
       message: successMessage,
-      data: deploymentResults,
+      data: {
+        broadcastedContracts: deploymentResults,
+        aibtcCoreResponse: postResult,
+      },
     };
   } catch (error) {
     const errorMessage = [

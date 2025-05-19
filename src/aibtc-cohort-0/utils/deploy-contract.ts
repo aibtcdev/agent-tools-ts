@@ -4,6 +4,7 @@ import {
   PostConditionMode,
 } from "@stacks/transactions";
 import {
+  AibtcCorePostResponse,
   broadcastTx,
   getNetwork,
   ToolResponse,
@@ -14,6 +15,11 @@ import { validateNetwork } from "@faktoryfun/core-sdk";
 
 export type BroadcastedContractResponse = ContractResponse &
   TxBroadcastResultWithLink;
+
+export type BroadcastedAndPostedResponse = {
+  broadcastedContracts: Record<string, BroadcastedContractResponse>;
+  aibtcCoreResponse: AibtcCorePostResponse;
+};
 
 export type DeploymentOptions = {
   address: string;
