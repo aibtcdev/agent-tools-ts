@@ -165,14 +165,17 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
   try {
     // Generate contract name in the format aibtc-acct-ABCDE-FGHIJ-KLMNO-PQRST
     const ownerFirst5 = args.ownerAddress.substring(0, 5);
-    const ownerLast5 = args.ownerAddress.substring(args.ownerAddress.length - 5);
+    const ownerLast5 = args.ownerAddress.substring(
+      args.ownerAddress.length - 5
+    );
     const agentAddress = args.agentAddress || args.ownerAddress;
     const agentFirst5 = agentAddress.substring(0, 5);
     const agentLast5 = agentAddress.substring(agentAddress.length - 5);
     const contractName = `aibtc-acct-${ownerFirst5}-${ownerLast5}-${agentFirst5}-${agentLast5}`;
 
     // Generate the agent account contract using the new endpoint
-    const result = await apiClient.generateAgentContract(
+    const result = await apiClient.generateAgentAccount(
+      contractName,
       args.network,
       args.tokenSymbol || "aibtc",
       {
@@ -275,7 +278,8 @@ export async function generateAgentAccount(params: AgentAccountParams) {
     const contractName = `aibtc-acct-${ownerFirst5}-${ownerLast5}-${agentFirst5}-${agentLast5}`;
 
     // Generate the agent account contract using the new endpoint
-    const result = await apiClient.generateAgentContract(
+    const result = await apiClient.generateAgentAccount(
+      contractName,
       validNetwork,
       tokenSymbol,
       {

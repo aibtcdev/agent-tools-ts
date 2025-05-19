@@ -14,12 +14,12 @@ import {
 } from "../../utilities";
 import { deployContract, DeploymentOptions } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
-import { generateAgentAccount, saveContractToFile } from "./generate-agent-account";
+import { generateAgentAccount } from "./generate-agent-account";
 
 const usage =
   "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [tokenSymbol] [network] [saveToFile]";
 const usageExample =
-  "Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM MYTOKEN \"testnet\" true";
+  'Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM MYTOKEN "testnet" true';
 
 interface ExpectedArgs {
   ownerAddress: string;
@@ -135,7 +135,10 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
       saveToFile: args.saveToFile,
     });
 
-    if (!generatedContractResponse.success || !generatedContractResponse.contract) {
+    if (
+      !generatedContractResponse.success ||
+      !generatedContractResponse.contract
+    ) {
       return {
         success: false,
         message: `Failed to generate agent account: ${
@@ -168,13 +171,16 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
 
     // Deploy the contract
     const contractName = `${args.ownerAddress.split(".")[0]}-agent-account`;
-    const deployResult = await deployContract({
-      name: contractName,
-      source: generatedContractResponse.contract.source,
-      clarityVersion: generatedContractResponse.contract.clarityVersion,
-      hash: generatedContractResponse.contract.hash,
-      deploymentOrder: 0, // Not used for agent accounts
-    }, deploymentOptions);
+    const deployResult = await deployContract(
+      {
+        name: contractName,
+        source: generatedContractResponse.contract.source,
+        clarityVersion: generatedContractResponse.contract.clarityVersion,
+        hash: generatedContractResponse.contract.hash,
+        deploymentOrder: 0, // Not used for agent accounts
+      },
+      deploymentOptions
+    );
 
     if (!deployResult.success) {
       return {
@@ -264,16 +270,21 @@ export async function deployAgentAccount(params: DeployAgentAccountParams) {
 
     // Deploy the contract
     const contractName = `${ownerAddress.split(".")[0]}-agent-account`;
-    const deployResult = await deployContract({
-      name: contractName,
-      source: generatedContractResponse.contract.source,
-      clarityVersion: generatedContractResponse.contract.clarityVersion,
-      hash: generatedContractResponse.contract.hash,
-      deploymentOrder: 0, // Not used for agent accounts
-    }, deploymentOptions);
+    const deployResult = await deployContract(
+      {
+        contractName,
+        source: generatedContractResponse.contract.source,
+        clarityVersion: generatedContractResponse.contract.clarityVersion,
+        hash: generatedContractResponse.contract.hash,
+        deploymentOrder: 0, // Not used for agent accounts
+      },
+      deploymentOptions
+    );
 
     if (!deployResult.success) {
-      throw new Error(`Failed to deploy agent account: ${deployResult.message}`);
+      throw new Error(
+        `Failed to deploy agent account: ${deployResult.message}`
+      );
     }
 
     const explorerUrl = getExplorerUrl(validNetwork, deployResult.data.txid);
