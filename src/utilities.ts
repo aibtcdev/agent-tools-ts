@@ -292,6 +292,10 @@ export function broadcastTx(
 //////////////////////////////
 
 export function isValidContractPrincipal(principal: string): boolean {
+  if (!principal) {
+    // throw new Error(`Invalid contract principal: ${principal}`);
+    return false;
+  }
   const [addr, name] = principal.split(".");
   if (!addr || !validateStacksAddress(addr)) {
     // throw new Error(`Invalid contract address: ${addr}`);
