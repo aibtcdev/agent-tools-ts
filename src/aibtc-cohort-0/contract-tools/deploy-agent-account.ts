@@ -17,19 +17,18 @@ import { validateStacksAddress } from "@stacks/transactions";
 import { generateAgentAccount, saveContractToFile } from "./generate-agent-account";
 
 const usage =
-  "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [network] [saveToFile]";
+  "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [tokenSymbol] [network] [saveToFile]";
 const usageExample =
-  "Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM \"testnet\" true";
+  "Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM MYTOKEN \"testnet\" true";
 
 interface ExpectedArgs {
   ownerAddress: string;
   daoTokenContract: string;
   daoTokenDexContract: string;
   agentAddress?: string;
+  tokenSymbol?: string;
   network?: string;
   saveToFile?: boolean;
-  // build replacements from params
-  customReplacements?: Record<string, string>;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -38,6 +37,7 @@ function validateArgs(): ExpectedArgs {
     daoTokenContract,
     daoTokenDexContract,
     agentAddress,
+    tokenSymbol = "aibtc",
     network = CONFIG.NETWORK,
     saveToFileStr = "false",
   ] = process.argv.slice(2);
@@ -114,15 +114,9 @@ function validateArgs(): ExpectedArgs {
     daoTokenContract,
     daoTokenDexContract,
     agentAddress,
+    tokenSymbol,
     network: validateNetwork(network),
     saveToFile,
-    // build replacements from params
-    customReplacements: {
-      owner_address: ownerAddress,
-      agent_address: agentAddress || ownerAddress,
-      dao_token_contract: daoTokenContract,
-      dao_token_dex_contract: daoTokenDexContract,
-    },
   };
 }
 
@@ -136,6 +130,7 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
       agentAddress: args.agentAddress,
       daoTokenContract: args.daoTokenContract,
       daoTokenDexContract: args.daoTokenDexContract,
+      tokenSymbol: args.tokenSymbol,
       network: args.network,
       saveToFile: args.saveToFile,
     });
@@ -216,6 +211,7 @@ export interface DeployAgentAccountParams {
   agentAddress?: string;
   daoTokenContract: string;
   daoTokenDexContract: string;
+  tokenSymbol?: string;
   network?: string;
   saveToFile?: boolean;
 }
@@ -226,6 +222,7 @@ export async function deployAgentAccount(params: DeployAgentAccountParams) {
     agentAddress = ownerAddress,
     daoTokenContract,
     daoTokenDexContract,
+    tokenSymbol = "aibtc",
     network = CONFIG.NETWORK,
     saveToFile = false,
   } = params;
@@ -239,6 +236,7 @@ export async function deployAgentAccount(params: DeployAgentAccountParams) {
       agentAddress,
       daoTokenContract,
       daoTokenDexContract,
+      tokenSymbol,
       network: validNetwork,
       saveToFile,
     });
