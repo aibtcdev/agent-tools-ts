@@ -16,7 +16,7 @@ import { ContractResponse, GeneratedContractResponse } from "@aibtc/types";
 const usage =
   "Usage: bun run generate-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [tokenSymbol] [network] [saveToFile]";
 const usageExample =
-  "Example: bun run generate-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM MYTOKEN \"testnet\" true";
+  'Example: bun run generate-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM MYTOKEN "testnet" true';
 
 interface ExpectedArgs {
   ownerAddress: string;
@@ -126,29 +126,35 @@ export async function saveContractToFile(
   network: string
 ) {
   // Create the directory if it doesn't exist
-  const outputDir = path.join(__dirname, "generated", "agent-accounts", tokenSymbol, network);
+  const outputDir = path.join(
+    __dirname,
+    "generated",
+    "agent-accounts",
+    tokenSymbol,
+    network
+  );
   fs.mkdirSync(outputDir, { recursive: true });
 
   // Use the contract's name property
   const contractName = contract.name;
   const filePath = path.join(outputDir, `${contractName}.clar`);
-  
+
   if (!contract.source) {
     throw new Error(
       `Contract ${contractName} does not have source code available`
     );
   }
-  
+
   const sourceCode = contract.source;
   fs.writeFileSync(filePath, sourceCode);
-  
+
   // Save the full response as JSON for reference
   const jsonPath = path.join(outputDir, `${contractName}.json`);
   fs.writeFileSync(jsonPath, JSON.stringify(contract, null, 2));
-  
+
   return {
     contractPath: filePath,
-    jsonPath: jsonPath
+    jsonPath: jsonPath,
   };
 }
 
@@ -169,7 +175,7 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
       }
     );
 
-    if (!result.success || !result.contract) {
+    if (!result.success || !result.data?.contract) {
       if (result.error) {
         throw new Error(result.error.message);
       }
@@ -178,7 +184,7 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
       );
     }
 
-    const contract = result.contract;
+    const contract = result.data.contract;
 
     // Save contract to file if requested
     let filePaths = null;
@@ -186,7 +192,7 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
       filePaths = await saveContractToFile(
         contract,
         args.tokenSymbol || "aibtc",
-        args.network
+        args.network ?? CONFIG.NETWORK
       );
     }
 
@@ -203,12 +209,14 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
 
     return {
       success: true,
-      message: `Successfully generated agent account contract for owner ${args.ownerAddress}${
-        args.saveToFile ? " (saved to file)" : ""
-      }`,
+      message: `Successfully generated agent account contract for owner ${
+        args.ownerAddress
+      }${args.saveToFile ? " (saved to file)" : ""}`,
       data: {
+        tokenSymbol: args.tokenSymbol || "aibtc",
+        network: args.network ?? CONFIG.NETWORK,
+        ...contract,
         contract: truncatedContract,
-        filePaths
       },
     };
   } catch (error) {
@@ -260,7 +268,7 @@ export async function generateAgentAccount(params: AgentAccountParams) {
       }
     );
 
-    if (!result.success || !result.contract) {
+    if (!result.success || !result.data?.contract) {
       if (result.error) {
         throw new Error(result.error.message);
       }
@@ -269,23 +277,19 @@ export async function generateAgentAccount(params: AgentAccountParams) {
       );
     }
 
-    const contract = result.contract;
+    const contract = result.data.contract;
 
     // Save contract to file if requested
     let filePaths = null;
     if (saveToFile) {
-      filePaths = await saveContractToFile(
-        contract,
-        tokenSymbol,
-        validNetwork
-      );
+      filePaths = await saveContractToFile(contract, tokenSymbol, validNetwork);
     }
 
     return {
       success: true,
       message: `Successfully generated agent account contract for owner ${ownerAddress}`,
       contract,
-      filePaths
+      filePaths,
     };
   } catch (error) {
     console.error("Error generating agent account:", error);
