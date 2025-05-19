@@ -241,7 +241,7 @@ async function main(): Promise<ToolResponse<DeployedContractRegistryEntry[]>> {
   const aibtcCoreRequest: aibtcCoreRequestBody = {
     name: args.tokenSymbol,
     mission: args.daoManifest,
-    descripton: args.daoManifest,
+    description: args.daoManifest,
     extensions: deployedContracts,
     token: {
       name: args.tokenName,

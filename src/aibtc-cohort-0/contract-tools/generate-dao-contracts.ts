@@ -9,10 +9,7 @@ import {
   ToolResponse,
 } from "../../utilities";
 import { validateStacksAddress } from "@stacks/transactions";
-import {
-  GeneratedDaoContractsResponse,
-  ContractResponse
-} from "@aibtc/types";
+import { GeneratedDaoContractsResponse, ContractResponse } from "@aibtc/types";
 
 const displayName = (symbol: string, name: string) =>
   name.replace("aibtc", symbol).toLowerCase();
@@ -29,8 +26,9 @@ interface ExpectedArgs {
   daoManifest: string;
   tweetOrigin?: string;
   network?: string;
-  customReplacements?: Record<string, string>;
   saveToFile?: boolean;
+  // buld replacements from params
+  customReplacements?: Record<string, string>;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -86,6 +84,8 @@ function validateArgs(): ExpectedArgs {
     daoManifest,
     tweetOrigin: tweetOrigin || undefined,
     network: network || CONFIG.NETWORK,
+    saveToFile,
+    // buld replacements from params
     customReplacements: {
       dao_manifest: daoManifest,
       tweet_origin: tweetOrigin || "",
@@ -93,7 +93,6 @@ function validateArgs(): ExpectedArgs {
       dao_token_metadata: tokenUri,
       dao_token_symbol: tokenSymbol,
     },
-    saveToFile,
   };
 }
 
@@ -177,7 +176,6 @@ export async function saveContractsToFiles(
   tokenSymbol: string,
   network: string
 ) {
-
   // Create the directory if it doesn't exist
   const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
   fs.mkdirSync(outputDir, { recursive: true });
@@ -194,12 +192,12 @@ export async function saveContractsToFiles(
     }
     const sourceCode = contractData.source!;
     fs.writeFileSync(filePath, sourceCode);
-    console.log(`Saved contract ${contractName} to ${filePath}`);
+    //console.log(`Saved contract ${contractName} to ${filePath}`);
   }
   // Save the full response as JSON for reference
   const jsonPath = path.join(outputDir, `_full_response.json`);
   fs.writeFileSync(jsonPath, JSON.stringify(contracts, null, 2));
-  console.log(`Saved full response to ${jsonPath}`);
+  //console.log(`Saved full response to ${jsonPath}`);
 }
 
 // Run the main function if this file is executed directly

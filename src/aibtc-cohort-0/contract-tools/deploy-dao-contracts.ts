@@ -1,16 +1,24 @@
 import { ContractApiClient } from "../api/client";
 import {
+  aibtcCoreRequestBody,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
+  getExplorerUrl,
+  getImageUrlFromTokenUri,
   getNextNonce,
-  isValidContractPrincipal,
+  postToAibtcCore,
   sendToLLM,
   ToolResponse,
-  TxBroadcastResultWithLink,
+  validateNetwork,
 } from "../../utilities";
-import { deployContract } from "../utils/deploy-contract";
+import {
+  BroadcastedContractResponse,
+  BroadcastedAndPostedResponse,
+  deployContract,
+  DeploymentOptions,
+} from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
 import { saveContractsToFiles } from "./generate-dao-contracts";
 
@@ -20,14 +28,16 @@ const usageExample =
   'Example: bun run deploy-dao-contracts.ts MYTOKEN "https://example.com/token.json" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "This is my DAO" "1894855072556912681" "testnet" true';
 
 interface ExpectedArgs {
-  tokenSymbol: string;
+  tokenSymbolLower: string;
+  tokenSymbolUpper: string;
   tokenUri: string;
   originAddress: string;
   daoManifest: string;
   tweetOrigin?: string;
   network?: string;
-  customReplacements?: Record<string, string>;
   saveToFile?: boolean;
+  // buld replacements from params
+  customReplacements?: Record<string, string>;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -47,6 +57,9 @@ function validateArgs(): ExpectedArgs {
     );
     throw new Error(errorMessage);
   }
+
+  const tokenSymbolLower = tokenSymbol.toLowerCase();
+  const tokenSymbolUpper = tokenSymbol.toUpperCase();
 
   if (!tokenUri) {
     const errorMessage = ["Token URI is required", usage, usageExample].join(
@@ -90,26 +103,25 @@ function validateArgs(): ExpectedArgs {
   const saveToFile = convertStringToBoolean(saveToFileStr);
 
   return {
-    tokenSymbol,
+    tokenSymbolLower,
+    tokenSymbolUpper,
     tokenUri,
     originAddress,
     daoManifest,
     tweetOrigin,
     network,
+    saveToFile,
     customReplacements: {
       dao_manifest: daoManifest,
       tweet_origin: tweetOrigin || "",
       origin_address: originAddress,
       dao_token_metadata: tokenUri,
-      dao_token_symbol: tokenSymbol,
+      dao_token_symbol: tokenSymbolLower,
     },
-    saveToFile,
   };
 }
 
-async function main(): Promise<
-  ToolResponse<Record<string, TxBroadcastResultWithLink>>
-> {
+async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
   const args = validateArgs();
   const apiClient = new ContractApiClient();
 
@@ -117,7 +129,7 @@ async function main(): Promise<
     // Generate all DAO contracts
     const generatedContractsResponse = await apiClient.generateDaoContracts(
       args.network,
-      args.tokenSymbol,
+      args.tokenSymbolLower,
       args.customReplacements
     );
 
@@ -129,13 +141,16 @@ async function main(): Promise<
         throw new Error(generatedContractsResponse.error.message);
       }
       throw new Error(
-        `Failed to generate DAO contracts: ${JSON.stringify(generatedContractsResponse)}`
+        `Failed to generate DAO contracts: ${JSON.stringify(
+          generatedContractsResponse
+        )}`
       );
     }
 
     // Prepare for deployment
 
     const network = args.network || CONFIG.NETWORK;
+    const validNetwork = validateNetwork(network);
 
     // Get deployment credentials
     const { address, key } = await deriveChildAccount(
@@ -143,52 +158,119 @@ async function main(): Promise<
       CONFIG.MNEMONIC,
       CONFIG.ACCOUNT_INDEX
     );
-    
+
     // Get the current nonce for the account
     let currentNonce = await getNextNonce(network, address);
-    
+
     // Deploy each contract
-    const deploymentResults: Record<string, TxBroadcastResultWithLink> = {};
+    const deploymentResults: Record<string, BroadcastedContractResponse> = {};
 
     //console.log("Generated contracts:", generatedContractsResponse.data);
-    const contracts = generatedContractsResponse.data.contracts;
+    // sort them by deployment order
+    const contracts = generatedContractsResponse.data.contracts.sort(
+      (a, b) => a.deploymentOrder - b.deploymentOrder
+    );
 
     // Save contracts to files if requested
     if (args.saveToFile) {
-      await saveContractsToFiles(contracts, args.tokenSymbol, network);
+      await saveContractsToFiles(contracts, args.tokenSymbolLower, network);
     }
 
+    const deploymentOptions: DeploymentOptions = {
+      address,
+      key,
+      network,
+      nonce: currentNonce,
+    };
+
     for (const contractData of Object.values(contracts)) {
-      const contractName = contractData.name;
-      console.log(`Deploying contract: ${contractName} with nonce ${currentNonce}`);
+      const contractName = contractData.displayName ?? contractData.name;
+
+      //console.log("==========================");
+      //console.log(
+      //  `Deploying contract: ${contractName} with nonce ${currentNonce}`
+      //);
 
       try {
         // Deploy the contract using our utility
         const deployResult = await deployContract(contractData, {
-          address,
-          key,
-          network,
-          nonce: currentNonce
+          ...deploymentOptions,
+          nonce: currentNonce,
         });
 
         if (!deployResult.success) {
-          throw new Error(`Failed to deploy ${contractName}: ${deployResult.message}`);
+          throw new Error(
+            `Failed to deploy ${contractName}: ${deployResult.message}`
+          );
         }
 
-        deploymentResults[contractName] = deployResult.data;
+        if (!deployResult.data) {
+          throw new Error(`No data returned for ${contractName}`);
+        }
+
+        const deployResultData = deployResult.data;
+        const contractSource = deployResultData.source ?? "";
+        const truncatedSource =
+          contractSource.length > 100
+            ? contractSource.substring(0, 97) + "..."
+            : contractSource;
+
+        deploymentResults[contractName] = {
+          ...deployResultData,
+          source: truncatedSource,
+        };
         currentNonce++;
       } catch (error) {
-        console.error(`Error deploying ${contractName}:`, error);
+        //console.error(`Error deploying ${contractName}:`, error);
         throw error; // Stop the process if any deployment fails
       }
     }
 
+    // find the token contract deployment entry
+    const tokenContractName = `${args.tokenSymbolLower}-faktory`;
+    const tokenDeploymentResult = deploymentResults[tokenContractName];
+    if (!tokenDeploymentResult) {
+      throw new Error(
+        `Token contract ${tokenContractName} not found in deployment results`
+      );
+    }
+
+    // fetch token URI, get image link
+    const imageUrl = await getImageUrlFromTokenUri(args.tokenUri);
+
+    // post result to AIBTC core
+    const aibtcRequestBody: aibtcCoreRequestBody = {
+      name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+      mission: args.daoManifest,
+      description: args.daoManifest,
+      extensions: contracts,
+      token: {
+        name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+        symbol: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+        decimals: 8,
+        description: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+        max_supply: "1000000000", // 1 billion
+        uri: args.tokenUri,
+        tx_id: tokenDeploymentResult.txid,
+        contract_principal: `${address}.${tokenContractName}`,
+        image_url: imageUrl,
+      },
+    };
+    const postResult = await postToAibtcCore(validNetwork, aibtcRequestBody);
+
+    //console.log(`Posted to AIBTC core: ${JSON.stringify(postResult, null, 2)}`);
+
+    const successMessage = `Successfully deployed ${
+      Object.keys(deploymentResults).length
+    } DAO contracts for token ${args.tokenSymbolUpper}`;
+
     return {
       success: true,
-      message: `Successfully deployed ${
-        Object.keys(deploymentResults).length
-      } DAO contracts for token ${args.tokenSymbol}`,
-      data: deploymentResults,
+      message: successMessage,
+      data: {
+        broadcastedContracts: deploymentResults,
+        aibtcCoreResponse: postResult,
+      },
     };
   } catch (error) {
     const errorMessage = [
@@ -199,70 +281,6 @@ async function main(): Promise<
     ].join("\n");
     throw new Error(errorMessage);
   }
-}
-
-// Export for use in other modules
-export interface DeployDaoParams {
-  tokenSymbol: string;
-  tokenName: string;
-  tokenMaxSupply: number;
-  tokenUri: string;
-  logoUrl: string;
-  originAddress: string;
-  daoManifest: string;
-  tweetOrigin: string;
-  daoManifestInscriptionId?: string;
-  network?: string;
-}
-
-export async function deployDaoContracts(params: DeployDaoParams) {
-  const {
-    tokenSymbol,
-    tokenName,
-    tokenMaxSupply,
-    tokenUri,
-    logoUrl,
-    originAddress,
-    daoManifest,
-    tweetOrigin,
-    daoManifestInscriptionId,
-    network = CONFIG.NETWORK,
-  } = params;
-
-  // Generate contracts using the API
-  const apiClient = new ContractApiClient();
-  const customReplacements = {
-    token_symbol: tokenSymbol,
-    token_name: tokenName,
-    token_max_supply: tokenMaxSupply.toString(),
-    token_uri: tokenUri,
-    logo_url: logoUrl,
-    origin_address: originAddress,
-    dao_manifest: daoManifest,
-    tweet_origin: tweetOrigin,
-    dao_manifest_inscription_id: daoManifestInscriptionId || "",
-  };
-
-  // Generate all DAO contracts
-  const generatedContractsResponse = await apiClient.generateDaoContracts(
-    network,
-    tokenSymbol,
-    customReplacements
-  );
-
-  if (!generatedContractsResponse.success || !generatedContractsResponse.data) {
-    console.error("Failed to generate DAO contracts:");
-    console.error(JSON.stringify(generatedContractsResponse, null, 2));
-    throw new Error(
-      `Failed to generate DAO contracts: ${
-        generatedContractsResponse.message || "Unknown error"
-      }`
-    );
-  }
-
-  // Here you would typically deploy these contracts
-  // For now, we'll just return the generated contracts
-  return generatedContractsResponse;
 }
 
 // Run the main function if this file is executed directly

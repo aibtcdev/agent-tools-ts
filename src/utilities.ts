@@ -30,6 +30,7 @@ import {
 } from "./aibtc-dao/registries/dao-contract-registry";
 import { ContractCallsClient } from "./api/contract-calls-client";
 import { TokenInfoService } from "./api/token-info-service";
+import { ContractResponse } from "@aibtc/types";
 
 //////////////////////////////
 // GENERAL HELPERS
@@ -291,6 +292,10 @@ export function broadcastTx(
 //////////////////////////////
 
 export function isValidContractPrincipal(principal: string): boolean {
+  if (!principal) {
+    // throw new Error(`Invalid contract principal: ${principal}`);
+    return false;
+  }
   const [addr, name] = principal.split(".");
   if (!addr || !validateStacksAddress(addr)) {
     // throw new Error(`Invalid contract address: ${addr}`);
@@ -1100,6 +1105,59 @@ function verifyFaktoryContracts(
 // AIBTC CORE
 //////////////////////////////
 
+// loosely based on SIP-010
+// only has fields we use rn
+type SIP010UriJson = {
+  sip: number;
+  name: string;
+  description: string;
+  image: string;
+  properties: {
+    decimals: number;
+    external_url: string;
+  };
+};
+
+// fetch (and eventually cache) token URI JSON / IMAGE
+export async function getImageUrlFromTokenUri(
+  tokenUri: string
+): Promise<string> {
+  // check if tokenUri is a valid URL
+  const tokenUriUrl = new URL(tokenUri);
+  if (!tokenUriUrl) {
+    throw new Error(`Token URI is invalid: ${tokenUri}`);
+  }
+  // attempt to fetch the token URI JSON
+  const tokenUriResponse = await fetch(tokenUriUrl);
+  if (!tokenUriResponse.ok) {
+    throw new Error(
+      `Failed to fetch token URI JSON: ${tokenUriResponse.statusText}`
+    );
+  }
+  // parse the token URI JSON
+  const tokenUriJson = (await tokenUriResponse.json()) as SIP010UriJson;
+  if (!tokenUriJson) {
+    throw new Error(`Token URI JSON is empty`);
+  }
+  // validate if it matches our expected type
+  const sip010UriJson: SIP010UriJson = {
+    sip: tokenUriJson.sip!,
+    name: tokenUriJson.name!,
+    description: tokenUriJson.description!,
+    image: tokenUriJson.image!,
+    properties: {
+      decimals: tokenUriJson.properties.decimals!,
+      external_url: tokenUriJson.properties.external_url!,
+    },
+  };
+  // check if image is a valid URL
+  const imageUrl = new URL(sip010UriJson.image);
+  if (!imageUrl) {
+    throw new Error(`Image URL is invalid: ${sip010UriJson.image}`);
+  }
+  return imageUrl.toString();
+}
+
 export function getAibtcCoreApiUrl(network: string) {
   switch (network) {
     case "mainnet":
@@ -1114,8 +1172,8 @@ export function getAibtcCoreApiUrl(network: string) {
 export type aibtcCoreRequestBody = {
   name: string;
   mission: string;
-  descripton: string;
-  extensions: DeployedContractRegistryEntry[];
+  description: string;
+  extensions: DeployedContractRegistryEntry[] | ContractResponse[];
   token: {
     name: string;
     symbol: string;
@@ -1135,7 +1193,7 @@ export type aibtcCoreRequestBody = {
 export async function postToAibtcCore(
   network: StacksNetworkName,
   infoToPost: aibtcCoreRequestBody
-) {
+): Promise<AibtcCorePostResponse> {
   const url = getAibtcCoreApiUrl(network);
   const response = await fetch(url, {
     method: "POST",
@@ -1150,6 +1208,16 @@ export async function postToAibtcCore(
       `Failed to post to AIBTC Core: ${response.status} ${response.statusText}`
     );
   }
-  const data = await response.json();
+  const data = (await response.json()) as AibtcCorePostResponse;
   return data;
 }
+
+export type AibtcCorePostResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    dao_id: string;
+    extension_ids: string[];
+    token_id: string;
+  };
+};
