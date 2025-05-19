@@ -1,14 +1,18 @@
 import { ContractApiClient } from "../api/client";
 import {
+  aibtcCoreRequestBody,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
   getExplorerUrl,
+  getImageUrlFromTokenUri,
   getNextNonce,
+  postToAibtcCore,
   sendToLLM,
   ToolResponse,
   TxBroadcastResultWithLink,
+  validateNetwork,
 } from "../../utilities";
 import { deployContract, DeploymentOptions } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
@@ -139,6 +143,7 @@ async function main(): Promise<
     // Prepare for deployment
 
     const network = args.network || CONFIG.NETWORK;
+    const validNetwork = validateNetwork(network);
 
     // Get deployment credentials
     const { address, key } = await deriveChildAccount(
@@ -205,6 +210,41 @@ async function main(): Promise<
         throw error; // Stop the process if any deployment fails
       }
     }
+
+    // find the token contract deployment entry
+    const tokenContractName = "aibtc-faktory";
+    const tokenContractDisplayName = `${args.tokenSymbol}-faktory`;
+    const tokenDeploymentResult = deploymentResults[tokenContractName];
+    if (!tokenDeploymentResult) {
+      throw new Error(
+        `Token contract ${tokenContractName} not found in deployment results`
+      );
+    }
+
+    // fetch token URI, get image link
+    const imageUrl = await getImageUrlFromTokenUri(args.tokenUri);
+
+    // post result to AIBTC core
+    const aibtcRequestBody: aibtcCoreRequestBody = {
+      name: `${args.tokenSymbol}•AIBTC•DAO`,
+      mission: args.daoManifest,
+      description: args.daoManifest,
+      extensions: contracts,
+      token: {
+        name: `${args.tokenSymbol}•AIBTC•DAO`,
+        symbol: `${args.tokenSymbol}•AIBTC•DAO`,
+        decimals: 8,
+        description: `${args.tokenSymbol}•AIBTC•DAO`,
+        max_supply: "1000000000", // 1 billion
+        uri: args.tokenUri,
+        tx_id: tokenDeploymentResult.txid,
+        contract_principal: `${address}.${tokenContractDisplayName}`,
+        image_url: imageUrl,
+      },
+    };
+    const postResult = postToAibtcCore(validNetwork, aibtcRequestBody);
+
+    console.log(`Posted to AIBTC core: ${JSON.stringify(postResult, null, 2)}`);
 
     const successMessage = [
       `Successfully deployed ${
