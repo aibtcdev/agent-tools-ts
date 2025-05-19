@@ -39,7 +39,7 @@ export async function deployContract(
   contract: ContractResponse,
   deploymentOptions: DeploymentOptions
 ): Promise<ToolResponse<BroadcastedContractResponse>> {
-  const { name, source } = contract;
+  const { name, displayName, source } = contract;
   const { address, key, network, nonce } = deploymentOptions;
   console.log(`Deploying contract ${name} from address: ${address}`);
 
@@ -54,7 +54,7 @@ export async function deployContract(
   }
 
   const transaction = await makeContractDeploy({
-    contractName: name,
+    contractName: displayName ?? name,
     codeBody: source,
     senderKey: key,
     nonce: nonce ?? 0,

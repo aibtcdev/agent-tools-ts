@@ -177,9 +177,7 @@ async function main(): Promise<
     };
 
     for (const contractData of Object.values(contracts)) {
-      const contractName = contractData.displayName
-        ? contractData.displayName
-        : contractData.name;
+      const contractName = contractData.displayName ?? contractData.name;
 
       console.log("==========================");
       console.log(
