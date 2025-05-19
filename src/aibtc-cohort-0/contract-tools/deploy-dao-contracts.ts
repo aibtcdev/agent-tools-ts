@@ -183,10 +183,10 @@ async function main(): Promise<
 
       try {
         // Deploy the contract using our utility
-        const deployResult = await deployContract(
-          contractData,
-          deploymentOptions
-        );
+        const deployResult = await deployContract(contractData, {
+          ...deploymentOptions,
+          nonce: currentNonce,
+        });
 
         if (!deployResult.success) {
           throw new Error(
