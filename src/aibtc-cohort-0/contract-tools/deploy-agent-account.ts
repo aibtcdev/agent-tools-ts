@@ -14,7 +14,7 @@ import {
 } from "../../utilities";
 import { deployContract, DeploymentOptions } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
-import { generateAgentAccount } from "./generate-agent-account";
+import { ContractResponse } from "@aibtc/types";
 
 const usage =
   "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [tokenSymbol] [network] [saveToFile]";
@@ -122,31 +122,42 @@ function validateArgs(): ExpectedArgs {
 
 async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
   const args = validateArgs();
+  const apiClient = new ContractApiClient();
 
   try {
-    // Generate the agent account contract
-    const generatedContractResponse = await generateAgentAccount({
-      ownerAddress: args.ownerAddress,
-      agentAddress: args.agentAddress,
-      daoTokenContract: args.daoTokenContract,
-      daoTokenDexContract: args.daoTokenDexContract,
-      tokenSymbol: args.tokenSymbol,
-      network: args.network,
-      saveToFile: args.saveToFile,
-    });
+    // Generate contract name in the format aibtc-acct-ABCDE-FGHIJ-KLMNO-PQRST
+    const ownerFirst5 = args.ownerAddress.substring(0, 5);
+    const ownerLast5 = args.ownerAddress.substring(
+      args.ownerAddress.length - 5
+    );
+    const agentAddress = args.agentAddress || args.ownerAddress;
+    const agentFirst5 = agentAddress.substring(0, 5);
+    const agentLast5 = agentAddress.substring(agentAddress.length - 5);
+    const contractName = `aibtc-acct-${ownerFirst5}-${ownerLast5}-${agentFirst5}-${agentLast5}`;
 
-    if (
-      !generatedContractResponse.success ||
-      !generatedContractResponse.contract
-    ) {
-      return {
-        success: false,
-        message: `Failed to generate agent account: ${
-          generatedContractResponse.message || "Unknown error"
-        }`,
-        data: null,
-      };
+    // Generate the agent account contract using the API client
+    const generatedContractResponse = await apiClient.generateAgentAccount(
+      contractName,
+      args.network || CONFIG.NETWORK,
+      {
+        account_owner: args.ownerAddress,
+        account_agent: agentAddress,
+        dao_token: args.daoTokenContract,
+        dao_token_dex: args.daoTokenDexContract,
+        contractName: contractName,
+      }
+    );
+
+    if (!generatedContractResponse.success || !generatedContractResponse.data?.contract) {
+      if (generatedContractResponse.error) {
+        throw new Error(generatedContractResponse.error.message);
+      }
+      throw new Error(
+        `Failed to generate agent account: ${JSON.stringify(generatedContractResponse)}`
+      );
     }
+
+    const contract = generatedContractResponse.data.contract;
 
     // Prepare for deployment
     const network = args.network || CONFIG.NETWORK;
@@ -170,13 +181,12 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
     };
 
     // Deploy the contract
-    const contractName = `${args.ownerAddress.split(".")[0]}-agent-account`;
     const deployResult = await deployContract(
       {
         name: contractName,
-        source: generatedContractResponse.contract.source,
-        clarityVersion: generatedContractResponse.contract.clarityVersion,
-        hash: generatedContractResponse.contract.hash,
+        source: contract.source,
+        clarityVersion: contract.clarityVersion,
+        hash: contract.hash,
         deploymentOrder: 0, // Not used for agent accounts
       },
       deploymentOptions
@@ -222,7 +232,7 @@ export interface DeployAgentAccountParams {
   saveToFile?: boolean;
 }
 
-export async function deployAgentAccount(params: DeployAgentAccountParams) {
+export async function deployAgentAccount(params: DeployAgentAccountParams): Promise<ToolResponse<TxBroadcastResultWithLink>> {
   const {
     ownerAddress,
     agentAddress = ownerAddress,
@@ -234,22 +244,39 @@ export async function deployAgentAccount(params: DeployAgentAccountParams) {
   } = params;
 
   const validNetwork = validateNetwork(network);
+  const apiClient = new ContractApiClient();
 
   try {
-    // Generate the agent account contract
-    const generatedContractResponse = await generateAgentAccount({
-      ownerAddress,
-      agentAddress,
-      daoTokenContract,
-      daoTokenDexContract,
-      tokenSymbol,
-      network: validNetwork,
-      saveToFile,
-    });
+    // Generate contract name in the format aibtc-acct-ABCDE-FGHIJ-KLMNO-PQRST
+    const ownerFirst5 = ownerAddress.substring(0, 5);
+    const ownerLast5 = ownerAddress.substring(ownerAddress.length - 5);
+    const agentFirst5 = agentAddress.substring(0, 5);
+    const agentLast5 = agentAddress.substring(agentAddress.length - 5);
+    const contractName = `aibtc-acct-${ownerFirst5}-${ownerLast5}-${agentFirst5}-${agentLast5}`;
 
-    if (!generatedContractResponse.contract) {
-      throw new Error("Failed to generate agent account contract");
+    // Generate the agent account contract using the API client
+    const generatedContractResponse = await apiClient.generateAgentAccount(
+      contractName,
+      validNetwork,
+      {
+        account_owner: ownerAddress,
+        account_agent: agentAddress,
+        dao_token: daoTokenContract,
+        dao_token_dex: daoTokenDexContract,
+        contractName: contractName,
+      }
+    );
+
+    if (!generatedContractResponse.success || !generatedContractResponse.data?.contract) {
+      if (generatedContractResponse.error) {
+        throw new Error(generatedContractResponse.error.message);
+      }
+      throw new Error(
+        `Failed to generate agent account: ${JSON.stringify(generatedContractResponse)}`
+      );
     }
+
+    const contract = generatedContractResponse.data.contract;
 
     // Get deployment credentials
     const { address, key } = await deriveChildAccount(
@@ -269,13 +296,12 @@ export async function deployAgentAccount(params: DeployAgentAccountParams) {
     };
 
     // Deploy the contract
-    const contractName = `${ownerAddress.split(".")[0]}-agent-account`;
     const deployResult = await deployContract(
       {
-        contractName,
-        source: generatedContractResponse.contract.source,
-        clarityVersion: generatedContractResponse.contract.clarityVersion,
-        hash: generatedContractResponse.contract.hash,
+        name: contractName,
+        source: contract.source,
+        clarityVersion: contract.clarityVersion,
+        hash: contract.hash,
         deploymentOrder: 0, // Not used for agent accounts
       },
       deploymentOptions
@@ -290,7 +316,8 @@ export async function deployAgentAccount(params: DeployAgentAccountParams) {
     const explorerUrl = getExplorerUrl(validNetwork, deployResult.data.txid);
 
     return {
-      ...deployResult,
+      success: true,
+      message: `Successfully deployed agent account contract for owner ${ownerAddress}`,
       data: {
         ...deployResult.data,
         link: explorerUrl,
@@ -298,7 +325,11 @@ export async function deployAgentAccount(params: DeployAgentAccountParams) {
     };
   } catch (error) {
     console.error("Error deploying agent account:", error);
-    throw error;
+    return {
+      success: false,
+      message: `Error deploying agent account: ${error instanceof Error ? error.message : String(error)}`,
+      data: null,
+    };
   }
 }
 
