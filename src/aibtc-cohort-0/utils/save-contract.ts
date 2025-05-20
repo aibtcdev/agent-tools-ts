@@ -61,6 +61,7 @@ export async function saveDaoContractsToFiles(
 ) {
   // Create the directory if it doesn't exist
   const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
+  //console.log(`Saving contracts to ${outputDir}`);
   fs.mkdirSync(outputDir, { recursive: true });
 
   // Save each contract to a file

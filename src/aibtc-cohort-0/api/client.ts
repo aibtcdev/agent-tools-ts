@@ -144,8 +144,8 @@ export class ContractApiClient {
   }
 
   async generateAgentAccount(
-    network: string = "devnet",
     contractName: string = "agent-account",
+    network: string = "devnet",
     customReplacements: Record<string, string> = {}
   ): Promise<ApiResponse<GeneratedContractResponse>> {
     const requestUrl = `${this.baseUrl}/generate-agent-account`;
@@ -153,8 +153,9 @@ export class ContractApiClient {
       console.log(`Generating agent account on ${network}`);
       console.log(`Url: ${requestUrl}`);
       const requestBody = {
-        contractName: network,
-        customReplacements,
+        contractName,
+        network,
+        ...customReplacements,
       };
       console.log("Request body:", JSON.stringify(requestBody, null, 2));
       const response = await fetch(requestUrl, {
