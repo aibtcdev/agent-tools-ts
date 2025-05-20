@@ -14,16 +14,15 @@ import { validateStacksAddress } from "@stacks/transactions";
 import { ContractResponse, GeneratedContractResponse } from "@aibtc/types";
 
 const usage =
-  "Usage: bun run generate-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [tokenSymbol] [network] [saveToFile]";
+  "Usage: bun run generate-agent-account.ts <ownerAddress> <agentAddress> <daoTokenContract> <daoTokenDexContract> [network] [saveToFile]";
 const usageExample =
-  'Example: bun run generate-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM MYTOKEN "testnet" true';
+  "Example: bun run generate-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5 ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-faktory ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-faktory-dex testnet true";
 
 interface ExpectedArgs {
   ownerAddress: string;
+  agentAddress: string;
   daoTokenContract: string;
   daoTokenDexContract: string;
-  agentAddress?: string;
-  tokenSymbol?: string;
   network?: string;
   saveToFile?: boolean;
 }
@@ -31,22 +30,12 @@ interface ExpectedArgs {
 function validateArgs(): ExpectedArgs {
   const [
     ownerAddress,
+    agentAddress,
     daoTokenContract,
     daoTokenDexContract,
-    agentAddress,
-    tokenSymbol = "aibtc",
     network = CONFIG.NETWORK,
     saveToFileStr = "false",
   ] = process.argv.slice(2);
-
-  if (!ownerAddress) {
-    const errorMessage = [
-      "Owner address is required",
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
 
   if (!validateStacksAddress(ownerAddress)) {
     const errorMessage = [
@@ -57,9 +46,9 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!daoTokenContract) {
+  if (!validateStacksAddress(agentAddress)) {
     const errorMessage = [
-      "DAO token contract is required",
+      `Invalid agent address: ${agentAddress}`,
       usage,
       usageExample,
     ].join("\n");
@@ -75,28 +64,9 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!daoTokenDexContract) {
-    const errorMessage = [
-      "DAO token DEX contract is required",
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
   if (!isValidContractPrincipal(daoTokenDexContract)) {
     const errorMessage = [
       `Invalid DAO token DEX contract: ${daoTokenDexContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
-  // If agent address is provided, validate it
-  if (agentAddress && !validateStacksAddress(agentAddress)) {
-    const errorMessage = [
-      `Invalid agent address: ${agentAddress}`,
       usage,
       usageExample,
     ].join("\n");
@@ -108,10 +78,9 @@ function validateArgs(): ExpectedArgs {
 
   return {
     ownerAddress,
+    agentAddress,
     daoTokenContract,
     daoTokenDexContract,
-    agentAddress,
-    tokenSymbol,
     network: validateNetwork(network),
     saveToFile,
   };
@@ -122,7 +91,6 @@ function validateArgs(): ExpectedArgs {
  */
 export async function saveContractToFile(
   contract: ContractResponse,
-  tokenSymbol: string,
   network: string
 ) {
   // Create the directory if it doesn't exist
@@ -130,13 +98,12 @@ export async function saveContractToFile(
     __dirname,
     "generated",
     "agent-accounts",
-    tokenSymbol,
     network
   );
   fs.mkdirSync(outputDir, { recursive: true });
 
   // Use the contract's name property
-  const contractName = contract.name;
+  const contractName = contract.displayName ?? contract.name;
   const filePath = path.join(outputDir, `${contractName}.clar`);
 
   if (!contract.source) {
@@ -177,7 +144,6 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
     const result = await apiClient.generateAgentAccount(
       contractName,
       args.network,
-      args.tokenSymbol || "aibtc",
       {
         account_owner: args.ownerAddress,
         account_agent: args.agentAddress || args.ownerAddress,
@@ -199,13 +165,13 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
     }
 
     const contract = result.data.contract;
+    contract.displayName = contractName;
 
     // Save contract to file if requested
     let filePaths = null;
     if (args.saveToFile) {
       filePaths = await saveContractToFile(
         contract,
-        args.tokenSymbol || "aibtc",
         args.network ?? CONFIG.NETWORK
       );
     }
@@ -227,7 +193,7 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
         args.ownerAddress
       }${args.saveToFile ? " (saved to file)" : ""}`,
       data: {
-        tokenSymbol: args.tokenSymbol || "aibtc",
+        tokenSymbol: "aibtc", // TODO: find cleaner way
         network: args.network ?? CONFIG.NETWORK,
         ...contract,
         contract: truncatedContract,
@@ -250,7 +216,6 @@ export interface AgentAccountParams {
   agentAddress?: string;
   daoTokenContract: string;
   daoTokenDexContract: string;
-  tokenSymbol?: string;
   network?: string;
   saveToFile?: boolean;
 }
@@ -261,7 +226,6 @@ export async function generateAgentAccount(params: AgentAccountParams) {
     agentAddress = ownerAddress,
     daoTokenContract,
     daoTokenDexContract,
-    tokenSymbol = "aibtc",
     network = CONFIG.NETWORK,
     saveToFile = false,
   } = params;
@@ -281,7 +245,6 @@ export async function generateAgentAccount(params: AgentAccountParams) {
     const result = await apiClient.generateAgentAccount(
       contractName,
       validNetwork,
-      tokenSymbol,
       {
         account_owner: ownerAddress,
         account_agent: agentAddress,
@@ -305,7 +268,7 @@ export async function generateAgentAccount(params: AgentAccountParams) {
     // Save contract to file if requested
     let filePaths = null;
     if (saveToFile) {
-      filePaths = await saveContractToFile(contract, tokenSymbol, validNetwork);
+      filePaths = await saveContractToFile(contract, validNetwork);
     }
 
     return {
