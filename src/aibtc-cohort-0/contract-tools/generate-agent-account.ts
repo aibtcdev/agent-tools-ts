@@ -146,7 +146,7 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
       args.network,
       {
         account_owner: args.ownerAddress,
-        account_agent: args.agentAddress || args.ownerAddress,
+        account_agent: args.agentAddress,
         dao_token: args.daoTokenContract,
         dao_token_dex: args.daoTokenDexContract,
         contractName: contractName,
@@ -207,79 +207,6 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
-  }
-}
-
-// Export for use in other modules
-export interface AgentAccountParams {
-  ownerAddress: string;
-  agentAddress?: string;
-  daoTokenContract: string;
-  daoTokenDexContract: string;
-  network?: string;
-  saveToFile?: boolean;
-}
-
-export async function generateAgentAccount(params: AgentAccountParams) {
-  const {
-    ownerAddress,
-    agentAddress = ownerAddress,
-    daoTokenContract,
-    daoTokenDexContract,
-    network = CONFIG.NETWORK,
-    saveToFile = false,
-  } = params;
-
-  const validNetwork = validateNetwork(network);
-  const apiClient = new ContractApiClient();
-
-  try {
-    // Generate contract name in the format aibtc-acct-ABCDE-FGHIJ-KLMNO-PQRST
-    const ownerFirst5 = ownerAddress.substring(0, 5);
-    const ownerLast5 = ownerAddress.substring(ownerAddress.length - 5);
-    const agentFirst5 = agentAddress.substring(0, 5);
-    const agentLast5 = agentAddress.substring(agentAddress.length - 5);
-    const contractName = `aibtc-acct-${ownerFirst5}-${ownerLast5}-${agentFirst5}-${agentLast5}`;
-
-    // Generate the agent account contract using the new endpoint
-    const result = await apiClient.generateAgentAccount(
-      contractName,
-      validNetwork,
-      {
-        account_owner: ownerAddress,
-        account_agent: agentAddress,
-        dao_token: daoTokenContract,
-        dao_token_dex: daoTokenDexContract,
-        contractName: contractName,
-      }
-    );
-
-    if (!result.success || !result.data?.contract) {
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
-      throw new Error(
-        `Failed to generate agent account: ${JSON.stringify(result)}`
-      );
-    }
-
-    const contract = result.data.contract;
-
-    // Save contract to file if requested
-    let filePaths = null;
-    if (saveToFile) {
-      filePaths = await saveContractToFile(contract, validNetwork);
-    }
-
-    return {
-      success: true,
-      message: `Successfully generated agent account contract for owner ${ownerAddress}`,
-      contract,
-      filePaths,
-    };
-  } catch (error) {
-    console.error("Error generating agent account:", error);
-    throw error;
   }
 }
 
