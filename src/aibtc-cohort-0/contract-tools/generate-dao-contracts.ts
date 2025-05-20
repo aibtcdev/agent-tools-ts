@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
@@ -10,9 +8,10 @@ import {
 } from "../../utilities";
 import { validateStacksAddress } from "@stacks/transactions";
 import { GeneratedDaoContractsResponse, ContractResponse } from "@aibtc/types";
-
-const displayName = (symbol: string, name: string) =>
-  name.replace("aibtc", symbol).toLowerCase();
+import {
+  getContractDisplayName,
+  saveDaoContractsToFiles,
+} from "../utils/save-contract";
 
 const usage =
   "Usage: bun run generate-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> [tweetOrigin] [network] [saveToFile]";
@@ -123,12 +122,14 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
 
     // Save contracts to files if requested
     if (args.saveToFile) {
-      await saveContractsToFiles(contracts, args.tokenSymbol, network);
+      await saveDaoContractsToFiles(contracts, args.tokenSymbol, network);
     }
 
     const truncatedContracts: Record<string, ContractResponse> = {};
     for (const contractData of Object.values(contracts)) {
-      const contractName = displayName(args.tokenSymbol, contractData.name);
+      const contractName =
+        contractData.displayName ??
+        getContractDisplayName(args.tokenSymbol, contractData.name);
       if (!contractData.source) {
         throw new Error(
           `Contract ${contractName} does not have source code available`
@@ -166,38 +167,6 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
     ].join("\n");
     throw new Error(errorMessage);
   }
-}
-
-/**
- * Save generated contracts to files in the contract-tools/generated directory
- */
-export async function saveContractsToFiles(
-  contracts: ContractResponse[],
-  tokenSymbol: string,
-  network: string
-) {
-  // Create the directory if it doesn't exist
-  const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
-  fs.mkdirSync(outputDir, { recursive: true });
-
-  // Save each contract to a file
-  for (const contractData of contracts) {
-    // Use the contract's name property if available
-    const contractName = displayName(tokenSymbol, contractData.name);
-    const filePath = path.join(outputDir, `${contractName}.clar`);
-    if (!contractData.source) {
-      throw new Error(
-        `Contract ${contractName} does not have source code available`
-      );
-    }
-    const sourceCode = contractData.source!;
-    fs.writeFileSync(filePath, sourceCode);
-    //console.log(`Saved contract ${contractName} to ${filePath}`);
-  }
-  // Save the full response as JSON for reference
-  const jsonPath = path.join(outputDir, `_full_response.json`);
-  fs.writeFileSync(jsonPath, JSON.stringify(contracts, null, 2));
-  //console.log(`Saved full response to ${jsonPath}`);
 }
 
 // Run the main function if this file is executed directly

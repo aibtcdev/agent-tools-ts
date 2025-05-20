@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
@@ -11,7 +9,8 @@ import {
   validateNetwork,
 } from "../../utilities";
 import { validateStacksAddress } from "@stacks/transactions";
-import { ContractResponse, GeneratedContractResponse } from "@aibtc/types";
+import { GeneratedContractResponse } from "@aibtc/types";
+import { saveAgentAccountToFile } from "../utils/save-contract";
 
 const usage =
   "Usage: bun run generate-agent-account.ts <ownerAddress> <agentAddress> <daoTokenContract> <daoTokenDexContract> [network] [saveToFile]";
@@ -86,45 +85,6 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-/**
- * Save generated agent account contract to a file in the contract-tools/generated directory
- */
-export async function saveContractToFile(
-  contract: ContractResponse,
-  network: string
-) {
-  // Create the directory if it doesn't exist
-  const outputDir = path.join(
-    __dirname,
-    "generated",
-    "agent-accounts",
-    network
-  );
-  fs.mkdirSync(outputDir, { recursive: true });
-
-  // Use the contract's name property
-  const contractName = contract.displayName ?? contract.name;
-  const filePath = path.join(outputDir, `${contractName}.clar`);
-
-  if (!contract.source) {
-    throw new Error(
-      `Contract ${contractName} does not have source code available`
-    );
-  }
-
-  const sourceCode = contract.source;
-  fs.writeFileSync(filePath, sourceCode);
-
-  // Save the full response as JSON for reference
-  const jsonPath = path.join(outputDir, `${contractName}.json`);
-  fs.writeFileSync(jsonPath, JSON.stringify(contract, null, 2));
-
-  return {
-    contractPath: filePath,
-    jsonPath: jsonPath,
-  };
-}
-
 async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
   const args = validateArgs();
   const apiClient = new ContractApiClient();
@@ -170,7 +130,7 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
     // Save contract to file if requested
     let filePaths = null;
     if (args.saveToFile) {
-      filePaths = await saveContractToFile(
+      filePaths = await saveAgentAccountToFile(
         contract,
         args.network ?? CONFIG.NETWORK
       );
