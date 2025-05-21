@@ -1,5 +1,4 @@
 import {
-  AnchorMode,
   Cl,
   makeContractCall,
   Pc,
