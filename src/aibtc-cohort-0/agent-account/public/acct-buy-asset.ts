@@ -1,5 +1,4 @@
 import {
-  AnchorMode,
   Cl,
   makeContractCall,
   Pc,
@@ -15,8 +14,8 @@ import {
   getNextNonce,
   isValidContractPrincipal,
   sendToLLM,
-  TokenInfoService,
-} from "../../../../utilities";
+} from "../../../utilities";
+import { TokenInfoService } from "../../../api/token-info-service";
 
 const usage =
   "Usage: bun run acct-buy-asset.ts <agentAccountContract> <faktoryDexContract> <assetContract> <amount>";
@@ -31,12 +30,8 @@ interface ExpectedArgs {
 }
 
 function validateArgs(): ExpectedArgs {
-  const [
-    agentAccountContract,
-    faktoryDexContract,
-    assetContract,
-    amountStr,
-  ] = process.argv.slice(2);
+  const [agentAccountContract, faktoryDexContract, assetContract, amountStr] =
+    process.argv.slice(2);
   const amount = parseInt(amountStr);
 
   if (
@@ -144,7 +139,6 @@ async function main() {
     senderKey: key,
     postConditionMode: PostConditionMode.Deny,
     postConditions,
-    anchorMode: AnchorMode.Any,
   };
 
   const transaction = await makeContractCall(txOptions);
