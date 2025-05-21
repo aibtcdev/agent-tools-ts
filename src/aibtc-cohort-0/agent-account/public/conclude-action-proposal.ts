@@ -16,7 +16,7 @@ import {
   getNextNonce,
   isValidContractPrincipal,
   sendToLLM,
-} from "../../../../utilities";
+} from "../../../utilities";
 
 const usage =
   "Usage: bun run conclude-action-proposal.ts <agentAccountContract> <votingContract> <daoTokenContract> <proposalId> <actionContract>";

@@ -7,7 +7,7 @@ import {
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
-} from "../../../../utilities";
+} from "../../../utilities";
 
 const usage =
   "Usage: bun run is-approved-asset.ts <agentAccountContract> <assetContract>";

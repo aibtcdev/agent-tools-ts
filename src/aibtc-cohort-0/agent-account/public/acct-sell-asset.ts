@@ -15,8 +15,8 @@ import {
   getNextNonce,
   isValidContractPrincipal,
   sendToLLM,
-  TokenInfoService,
-} from "../../../../utilities";
+} from "../../../utilities";
+import { TokenInfoService } from "../../../api/token-info-service";
 
 const usage =
   "Usage: bun run acct-sell-asset.ts <agentAccountContract> <faktoryDexContract> <assetContract> <amount>";

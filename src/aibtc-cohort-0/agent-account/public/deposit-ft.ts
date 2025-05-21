@@ -15,9 +15,9 @@ import {
   getNextNonce,
   isValidContractPrincipal,
   sendToLLM,
-  TokenInfoService,
-} from "../../../../utilities";
-import { ContractCallError } from "../../../../api/contract-calls-client";
+} from "../../../utilities";
+import { TokenInfoService } from "../../../api/token-info-service";
+import { ContractCallError } from "../../../api/contract-calls-client";
 
 const usage =
   "Usage: bun run deposit-ft.ts <agentAccountContract> <ftContract> <amount>";
