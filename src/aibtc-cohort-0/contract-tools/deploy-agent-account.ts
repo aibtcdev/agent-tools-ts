@@ -16,6 +16,7 @@ import {
   DeploymentOptions,
 } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
+import { saveAgentAccountToFile } from "../utils/save-contract";
 
 const usage =
   "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [tokenSymbol] [network] [saveToFile]";
@@ -165,6 +166,14 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
 
     const contract = generatedContractResponse.data.contract;
 
+    // Save contract to file if requested
+    if (args.saveToFile) {
+      await saveAgentAccountToFile(
+        contract,
+        args.network ?? CONFIG.NETWORK
+      );
+    }
+
     // Prepare for deployment
     const network = args.network || CONFIG.NETWORK;
 
@@ -194,6 +203,17 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
           deployResult
         )}`
       );
+    }
+
+    // Truncate source code for response
+    if (deployResult.data) {
+      const contractSource = deployResult.data.source ?? "";
+      const truncatedSource =
+        contractSource.length > 100
+          ? contractSource.substring(0, 97) + "..."
+          : contractSource;
+
+      deployResult.data.source = truncatedSource;
     }
 
     return deployResult;
