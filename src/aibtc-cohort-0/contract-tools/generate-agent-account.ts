@@ -108,8 +108,8 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
       {
         account_owner: args.ownerAddress,
         account_agent: args.agentAddress,
-        dao_contract_token: args.daoTokenContract,
-        dao_contract_token_dex: args.daoTokenDexContract,
+        dao_contract_token: `'${args.daoTokenContract}`, // fully qualified since we're replacing relative
+        dao_contract_token_dex: `'${args.daoTokenDexContract}`,
         contractName: contractName,
       }
     );
