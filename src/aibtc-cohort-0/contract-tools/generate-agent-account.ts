@@ -104,6 +104,7 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
     const result = await apiClient.generateAgentAccount(
       contractName,
       args.network,
+      "aibtc", // Default tokenSymbol for agent accounts
       {
         account_owner: args.ownerAddress,
         account_agent: args.agentAddress,

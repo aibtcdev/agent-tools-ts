@@ -111,14 +111,15 @@ export class ContractApiClient {
   ): Promise<ApiResponse<GeneratedDaoContractsResponse>> {
     const requestUrl = `${this.baseUrl}/generate-dao-contracts`;
     try {
+      const body = {
+        network,
+        tokenSymbol,
+        customReplacements,
+      };
       const response = await fetch(requestUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          network,
-          tokenSymbol,
-          customReplacements,
-        }),
+        body: JSON.stringify(body),
       });
       // catch error if response is not ok
       if (!response.ok) {
@@ -146,22 +147,26 @@ export class ContractApiClient {
   async generateAgentAccount(
     contractName: string = "agent-account",
     network: string = "devnet",
+    tokenSymbol: string = "aibtc",
     customReplacements: Record<string, string> = {}
   ): Promise<ApiResponse<GeneratedContractResponse>> {
     const requestUrl = `${this.baseUrl}/generate-agent-account`;
     try {
-      console.log(`Generating agent account on ${network}`);
+      console.log(
+        `Generating agent account ${contractName} on ${network} with token ${tokenSymbol}`
+      );
       console.log(`Url: ${requestUrl}`);
-      const requestBody = {
+      const body = {
         contractName,
         network,
-        ...customReplacements,
+        tokenSymbol,
+        customReplacements,
       };
-      console.log("Request body:", JSON.stringify(requestBody, null, 2));
+      console.log("Request body:", JSON.stringify(body, null, 2));
       const response = await fetch(requestUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(body),
       });
 
       console.log("Response status:", response.status);

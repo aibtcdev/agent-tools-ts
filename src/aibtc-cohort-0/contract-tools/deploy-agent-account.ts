@@ -110,6 +110,7 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
     const generatedContractResponse = await apiClient.generateAgentAccount(
       contractName,
       args.network || CONFIG.NETWORK,
+      "aibtc", // Default tokenSymbol for agent accounts
       {
         account_owner: args.ownerAddress,
         account_agent: agentAddress,
