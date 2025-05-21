@@ -19,16 +19,15 @@ import { validateStacksAddress } from "@stacks/transactions";
 import { saveAgentAccountToFile } from "../utils/save-contract";
 
 const usage =
-  "Usage: bun run deploy-agent-account.ts <ownerAddress> <agentAddress> <daoTokenContract> <daoTokenDexContract> [tokenSymbol] [network] [saveToFile]";
+  "Usage: bun run deploy-agent-account.ts <ownerAddress> <agentAddress> <daoTokenContract> <daoTokenDexContract> [network] [saveToFile]";
 const usageExample =
-  'Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex MYTOKEN "testnet" true';
+  'Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex "testnet" true';
 
 interface ExpectedArgs {
   ownerAddress: string;
+  agentAddress: string;
   daoTokenContract: string;
   daoTokenDexContract: string;
-  agentAddress?: string;
-  tokenSymbol?: string;
   network?: string;
   saveToFile?: boolean;
 }
@@ -39,32 +38,13 @@ function validateArgs(): ExpectedArgs {
     agentAddress,
     daoTokenContract,
     daoTokenDexContract,
-    tokenSymbol = "aibtc",
     network = CONFIG.NETWORK,
     saveToFileStr = "false",
   ] = process.argv.slice(2);
 
-  if (!ownerAddress) {
-    const errorMessage = [
-      "Owner address is required",
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
   if (!validateStacksAddress(ownerAddress)) {
     const errorMessage = [
       `Invalid owner address: ${ownerAddress}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
-  if (!agentAddress) {
-    const errorMessage = [
-      "Agent address is required",
       usage,
       usageExample,
     ].join("\n");
@@ -80,27 +60,9 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!daoTokenContract) {
-    const errorMessage = [
-      "DAO token contract is required",
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
   if (!isValidContractPrincipal(daoTokenContract)) {
     const errorMessage = [
       `Invalid DAO token contract: ${daoTokenContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
-  if (!daoTokenDexContract) {
-    const errorMessage = [
-      "DAO token DEX contract is required",
       usage,
       usageExample,
     ].join("\n");
@@ -115,23 +77,15 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-    const errorMessage = [
-      `Invalid agent address: ${agentAddress}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
 
   // Parse saveToFile parameter
   const saveToFile = convertStringToBoolean(saveToFileStr);
 
   return {
     ownerAddress,
+    agentAddress,
     daoTokenContract,
     daoTokenDexContract,
-    agentAddress,
-    tokenSymbol,
     network: validateNetwork(network),
     saveToFile,
   };
@@ -183,10 +137,7 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
 
     // Save contract to file if requested
     if (args.saveToFile) {
-      await saveAgentAccountToFile(
-        contract,
-        args.network ?? CONFIG.NETWORK
-      );
+      await saveAgentAccountToFile(contract, args.network ?? CONFIG.NETWORK);
     }
 
     // Prepare for deployment

@@ -95,7 +95,7 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
     const ownerLast5 = args.ownerAddress.substring(
       args.ownerAddress.length - 5
     );
-    const agentAddress = args.agentAddress || args.ownerAddress;
+    const agentAddress = args.agentAddress;
     const agentFirst5 = agentAddress.substring(0, 5);
     const agentLast5 = agentAddress.substring(agentAddress.length - 5);
     const contractName = `aibtc-acct-${ownerFirst5}-${ownerLast5}-${agentFirst5}-${agentLast5}`;
@@ -128,12 +128,8 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
     contract.displayName = contractName;
 
     // Save contract to file if requested
-    let filePaths = null;
     if (args.saveToFile) {
-      filePaths = await saveAgentAccountToFile(
-        contract,
-        args.network ?? CONFIG.NETWORK
-      );
+      await saveAgentAccountToFile(contract, args.network ?? CONFIG.NETWORK);
     }
 
     // Truncate source code for response
