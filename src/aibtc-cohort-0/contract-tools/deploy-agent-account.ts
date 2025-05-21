@@ -113,8 +113,8 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
       {
         account_owner: args.ownerAddress,
         account_agent: agentAddress,
-        dao_token: args.daoTokenContract,
-        dao_token_dex: args.daoTokenDexContract,
+        dao_contract_token: args.daoTokenContract,
+        dao_contract_token_dex: args.daoTokenDexContract,
         contractName: contractName,
       }
     );
@@ -134,6 +134,7 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
     }
 
     const contract = generatedContractResponse.data.contract;
+    contract.displayName = contractName;
 
     // Save contract to file if requested
     if (args.saveToFile) {

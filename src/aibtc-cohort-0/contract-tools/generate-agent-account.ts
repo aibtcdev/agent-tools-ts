@@ -107,8 +107,8 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
       {
         account_owner: args.ownerAddress,
         account_agent: args.agentAddress,
-        dao_token: args.daoTokenContract,
-        dao_token_dex: args.daoTokenDexContract,
+        dao_contract_token: args.daoTokenContract,
+        dao_contract_token_dex: args.daoTokenDexContract,
         contractName: contractName,
       }
     );
