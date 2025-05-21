@@ -19,9 +19,9 @@ import { validateStacksAddress } from "@stacks/transactions";
 import { saveAgentAccountToFile } from "../utils/save-contract";
 
 const usage =
-  "Usage: bun run deploy-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [tokenSymbol] [network] [saveToFile]";
+  "Usage: bun run deploy-agent-account.ts <ownerAddress> <agentAddress> <daoTokenContract> <daoTokenDexContract> [tokenSymbol] [network] [saveToFile]";
 const usageExample =
-  'Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM MYTOKEN "testnet" true';
+  'Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex MYTOKEN "testnet" true';
 
 interface ExpectedArgs {
   ownerAddress: string;
@@ -36,9 +36,9 @@ interface ExpectedArgs {
 function validateArgs(): ExpectedArgs {
   const [
     ownerAddress,
+    agentAddress,
     daoTokenContract,
     daoTokenDexContract,
-    agentAddress,
     tokenSymbol = "aibtc",
     network = CONFIG.NETWORK,
     saveToFileStr = "false",
@@ -56,6 +56,24 @@ function validateArgs(): ExpectedArgs {
   if (!validateStacksAddress(ownerAddress)) {
     const errorMessage = [
       `Invalid owner address: ${ownerAddress}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
+  if (!agentAddress) {
+    const errorMessage = [
+      "Agent address is required",
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
+  if (!validateStacksAddress(agentAddress)) {
+    const errorMessage = [
+      `Invalid agent address: ${agentAddress}`,
       usage,
       usageExample,
     ].join("\n");
@@ -97,9 +115,6 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-
-  // If agent address is provided, validate it
-  if (agentAddress && !validateStacksAddress(agentAddress)) {
     const errorMessage = [
       `Invalid agent address: ${agentAddress}`,
       usage,
@@ -132,7 +147,7 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
     const ownerLast5 = args.ownerAddress.substring(
       args.ownerAddress.length - 5
     );
-    const agentAddress = args.agentAddress || args.ownerAddress;
+    const agentAddress = args.agentAddress;
     const agentFirst5 = agentAddress.substring(0, 5);
     const agentLast5 = agentAddress.substring(agentAddress.length - 5);
     const contractName = `aibtc-acct-${ownerFirst5}-${ownerLast5}-${agentFirst5}-${agentLast5}`;
