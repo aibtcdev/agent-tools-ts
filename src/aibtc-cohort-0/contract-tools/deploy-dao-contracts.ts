@@ -5,7 +5,6 @@ import {
   convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
-  getExplorerUrl,
   getImageUrlFromTokenUri,
   getNextNonce,
   postToAibtcCore,
@@ -20,7 +19,7 @@ import {
   DeploymentOptions,
 } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
-import { saveContractsToFiles } from "./generate-dao-contracts";
+import { saveDaoContractsToFiles } from "../utils/save-contract";
 
 const usage =
   "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> [tweetOrigin] [network] [saveToFile]";
@@ -173,7 +172,7 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
 
     // Save contracts to files if requested
     if (args.saveToFile) {
-      await saveContractsToFiles(contracts, args.tokenSymbolLower, network);
+      await saveDaoContractsToFiles(contracts, args.tokenSymbolLower, network);
     }
 
     const deploymentOptions: DeploymentOptions = {

@@ -111,14 +111,15 @@ export class ContractApiClient {
   ): Promise<ApiResponse<GeneratedDaoContractsResponse>> {
     const requestUrl = `${this.baseUrl}/generate-dao-contracts`;
     try {
+      const body = {
+        network,
+        tokenSymbol,
+        customReplacements,
+      };
       const response = await fetch(requestUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          network,
-          tokenSymbol,
-          customReplacements,
-        }),
+        body: JSON.stringify(body),
       });
       // catch error if response is not ok
       if (!response.ok) {
@@ -137,6 +138,66 @@ export class ContractApiClient {
       console.error("Error generating DAO contracts:", error);
       throw new Error(
         `Error generating DAO contracts: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  async generateAgentAccount(
+    contractName: string = "agent-account",
+    network: string = "devnet",
+    tokenSymbol: string = "aibtc",
+    customReplacements: Record<string, string> = {}
+  ): Promise<ApiResponse<GeneratedContractResponse>> {
+    const requestUrl = `${this.baseUrl}/generate-agent-account`;
+    try {
+      console.log(
+        `Generating agent account ${contractName} on ${network} with token ${tokenSymbol}`
+      );
+      console.log(`Url: ${requestUrl}`);
+      const body = {
+        contractName,
+        network,
+        tokenSymbol,
+        customReplacements,
+      };
+      console.log("Request body:", JSON.stringify(body, null, 2));
+      const response = await fetch(requestUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      console.log("Response status:", response.status);
+
+      // catch error if response is not ok
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`API request failed with status ${response.status}`);
+        console.error("Error response body:", errorText);
+        throw new Error(
+          `API request failed with status ${response.status}: ${errorText}`
+        );
+      }
+
+      // Clone the response so we can inspect the raw text
+      const responseClone = response.clone();
+      const rawResponseText = await responseClone.text();
+      console.log(
+        "Raw response text (first 500 chars):",
+        rawResponseText.substring(0, 500) +
+          (rawResponseText.length > 500 ? "..." : "")
+      );
+
+      // Try to parse the JSON response
+      const jsonResponse = JSON.parse(rawResponseText);
+      console.log("Response structure:", Object.keys(jsonResponse));
+      return jsonResponse as ApiResponse<GeneratedContractResponse>;
+    } catch (error) {
+      console.error("Error generating agent contract:", error);
+      throw new Error(
+        `Error generating agent contract: ${
           error instanceof Error ? error.message : String(error)
         }`
       );

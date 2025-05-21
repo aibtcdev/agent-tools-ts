@@ -1,44 +1,42 @@
 import { ContractApiClient } from "../api/client";
 import {
   CONFIG,
+  convertStringToBoolean,
   createErrorResponse,
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
+  validateNetwork,
 } from "../../utilities";
+import { validateStacksAddress } from "@stacks/transactions";
+import { GeneratedContractResponse } from "@aibtc/types";
+import { saveAgentAccountToFile } from "../utils/save-contract";
 
 const usage =
-  "Usage: bun run generate-agent-account.ts <ownerAddress> <daoTokenContract> <daoTokenDexContract> [agentAddress] [network]";
+  "Usage: bun run generate-agent-account.ts <ownerAddress> <agentAddress> <daoTokenContract> <daoTokenDexContract> [network] [saveToFile]";
 const usageExample =
-  "Example: bun run generate-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex";
+  "Example: bun run generate-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5 ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-faktory ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-faktory-dex testnet true";
 
 interface ExpectedArgs {
   ownerAddress: string;
+  agentAddress: string;
   daoTokenContract: string;
   daoTokenDexContract: string;
-  agentAddress?: string;
   network?: string;
+  saveToFile?: boolean;
 }
 
 function validateArgs(): ExpectedArgs {
   const [
     ownerAddress,
+    agentAddress,
     daoTokenContract,
     daoTokenDexContract,
-    agentAddress,
     network = CONFIG.NETWORK,
+    saveToFileStr = "false",
   ] = process.argv.slice(2);
 
-  if (!ownerAddress) {
-    const errorMessage = [
-      "Owner address is required",
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
-  if (!isValidContractPrincipal(ownerAddress)) {
+  if (!validateStacksAddress(ownerAddress)) {
     const errorMessage = [
       `Invalid owner address: ${ownerAddress}`,
       usage,
@@ -47,9 +45,9 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!daoTokenContract) {
+  if (!validateStacksAddress(agentAddress)) {
     const errorMessage = [
-      "DAO token contract is required",
+      `Invalid agent address: ${agentAddress}`,
       usage,
       usageExample,
     ].join("\n");
@@ -65,15 +63,6 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!daoTokenDexContract) {
-    const errorMessage = [
-      "DAO token DEX contract is required",
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
   if (!isValidContractPrincipal(daoTokenDexContract)) {
     const errorMessage = [
       `Invalid DAO token DEX contract: ${daoTokenDexContract}`,
@@ -83,75 +72,89 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  // If agent address is provided, validate it
-  if (agentAddress && !isValidContractPrincipal(agentAddress)) {
-    const errorMessage = [
-      `Invalid agent address: ${agentAddress}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
+  // Parse saveToFile parameter
+  const saveToFile = convertStringToBoolean(saveToFileStr);
 
   return {
     ownerAddress,
+    agentAddress,
     daoTokenContract,
     daoTokenDexContract,
-    agentAddress,
-    network,
+    network: validateNetwork(network),
+    saveToFile,
   };
 }
 
-async function main(): Promise<ToolResponse<any>> {
+async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
   const args = validateArgs();
   const apiClient = new ContractApiClient();
 
   try {
-    // First get the agent account contract template
-    const contractResponse = await apiClient.getContractByTypeAndSubtype(
-      "SMART_WALLET",
-      "BASE"
+    // Generate contract name in the format aibtc-acct-ABCDE-FGHIJ-KLMNO-PQRST
+    const ownerFirst5 = args.ownerAddress.substring(0, 5);
+    const ownerLast5 = args.ownerAddress.substring(
+      args.ownerAddress.length - 5
     );
+    const agentAddress = args.agentAddress;
+    const agentFirst5 = agentAddress.substring(0, 5);
+    const agentLast5 = agentAddress.substring(agentAddress.length - 5);
+    const contractName = `aibtc-acct-${ownerFirst5}-${ownerLast5}-${agentFirst5}-${agentLast5}`;
 
-    if (!contractResponse.success || !contractResponse.contract) {
-      return {
-        success: false,
-        message: "Failed to retrieve agent account contract template",
-        data: null,
-      };
-    }
-
-    const contractName = contractResponse.contract.name;
-
-    // Generate the contract with replacements
-    const customReplacements = {
-      owner_address: args.ownerAddress,
-      agent_address: args.agentAddress || args.ownerAddress,
-      dao_token_contract: args.daoTokenContract,
-      dao_token_dex_contract: args.daoTokenDexContract,
-    };
-
-    const generatedContract = await apiClient.generateContract(
+    // Generate the agent account contract using the new endpoint
+    const result = await apiClient.generateAgentAccount(
       contractName,
       args.network,
-      "aibtc", // Default token symbol
-      customReplacements
+      "aibtc", // Default tokenSymbol for agent accounts
+      {
+        account_owner: args.ownerAddress,
+        account_agent: args.agentAddress,
+        dao_contract_token: `'${args.daoTokenContract}`, // fully qualified since we're replacing relative
+        dao_contract_token_dex: `'${args.daoTokenDexContract}`,
+        contractName: contractName,
+      }
     );
 
-    if (!generatedContract.success) {
-      return {
-        success: false,
-        message: `Failed to generate agent account: ${
-          generatedContract.message || "Unknown error"
-        }`,
-        data: null,
-      };
+    console.log("Result:", result);
+
+    if (!result.success || !result.data?.contract) {
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      throw new Error(
+        `Failed to generate agent account: ${JSON.stringify(result)}`
+      );
     }
+
+    const contract = result.data.contract;
+    contract.displayName = contractName;
+
+    // Save contract to file if requested
+    if (args.saveToFile) {
+      await saveAgentAccountToFile(contract, args.network ?? CONFIG.NETWORK);
+    }
+
+    // Truncate source code for response
+    const truncatedSource =
+      contract.source && contract.source.length > 100
+        ? contract.source.substring(0, 97) + "..."
+        : contract.source;
+
+    const truncatedContract = {
+      ...contract,
+      source: truncatedSource,
+    };
 
     return {
       success: true,
-      message: `Successfully generated agent account contract for owner ${args.ownerAddress}`,
-      data: generatedContract,
+      message: `Successfully generated agent account contract for owner ${
+        args.ownerAddress
+      }${args.saveToFile ? " (saved to file)" : ""}`,
+      data: {
+        tokenSymbol: "aibtc", // TODO: find cleaner way
+        network: args.network ?? CONFIG.NETWORK,
+        ...contract,
+        contract: truncatedContract,
+      },
     };
   } catch (error) {
     const errorMessage = [
@@ -161,61 +164,6 @@ async function main(): Promise<ToolResponse<any>> {
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
-  }
-}
-
-// Export for use in other modules
-export interface AgentAccountParams {
-  ownerAddress: string;
-  agentAddress?: string;
-  daoTokenContract: string;
-  daoTokenDexContract: string;
-  network?: string;
-}
-
-export async function generateAgentAccount(params: AgentAccountParams) {
-  const {
-    ownerAddress,
-    agentAddress = ownerAddress,
-    daoTokenContract,
-    daoTokenDexContract,
-    network = CONFIG.NETWORK,
-  } = params;
-
-  const apiClient = new ContractApiClient();
-
-  try {
-    // First get the agent account contract template
-    const contractResponse = await apiClient.getContractByTypeAndSubtype(
-      "SMART_WALLET",
-      "BASE"
-    );
-
-    if (!contractResponse.contract) {
-      throw new Error("Failed to retrieve agent account contract template");
-    }
-
-    const contractName = contractResponse.contract.name;
-
-    // Generate the contract with replacements
-    const customReplacements = {
-      owner_address: ownerAddress,
-      agent_address: agentAddress,
-      dao_token_contract: daoTokenContract,
-      dao_token_dex_contract: daoTokenDexContract,
-    };
-
-    const generatedContract = await apiClient.generateContract(
-      contractName,
-      network,
-      "aibtc", // Default token symbol
-      customReplacements
-    );
-
-    return generatedContract;
-  } catch (error) {
-    console.error("Error generating agent account:", error);
-    throw error;
   }
 }
 
