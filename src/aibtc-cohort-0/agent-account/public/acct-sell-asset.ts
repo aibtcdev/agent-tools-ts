@@ -31,12 +31,8 @@ interface ExpectedArgs {
 }
 
 function validateArgs(): ExpectedArgs {
-  const [
-    agentAccountContract,
-    faktoryDexContract,
-    assetContract,
-    amountStr,
-  ] = process.argv.slice(2);
+  const [agentAccountContract, faktoryDexContract, assetContract, amountStr] =
+    process.argv.slice(2);
   const amount = parseInt(amountStr);
 
   if (
