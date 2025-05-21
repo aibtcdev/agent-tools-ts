@@ -97,7 +97,6 @@ async function main() {
     senderKey: key,
     postConditionMode: PostConditionMode.Deny, // Or .Allow if no specific conditions
     postConditions: [], // Typically no direct asset transfers for veto
-    anchorMode: AnchorMode.Any,
   };
 
   const transaction = await makeContractCall(txOptions);

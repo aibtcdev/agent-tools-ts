@@ -140,7 +140,6 @@ async function main() {
     senderKey: key,
     postConditionMode: PostConditionMode.Deny,
     postConditions,
-    anchorMode: AnchorMode.Any,
   };
 
   const transaction = await makeContractCall(txOptions);
