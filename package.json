@@ -21,7 +21,7 @@
   ],
   "dependencies": {
     "@bitflowlabs/core-sdk": "^2.2.0",
-    "@faktoryfun/core-sdk": "^0.3.0",
+    "@faktoryfun/core-sdk": "^0.3.1",
     "@jingcash/core-sdk": "^0.1.10",
     "@stacks/blockchain-api-client": "^8.10.0",
     "@stacks/bns": "^7.0.6",
@@ -43,7 +43,7 @@
     "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "@aibtc/types": "^0.2.10",
+    "@aibtc/types": "^0.2.11",
     "@types/bun": "^1.2.14",
     "@types/node": "^22.15.21",
     "bun-types": "^1.2.14",
