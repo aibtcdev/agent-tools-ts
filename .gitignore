@@ -5,3 +5,4 @@ dist
 .aider*
 # generated clarity contracts for debugging
 generated
+.env.example
