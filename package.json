@@ -45,7 +45,7 @@
   "devDependencies": {
     "@aibtc/types": "^0.2.10",
     "@types/bun": "^1.2.13",
-    "@types/node": "^22.15.19",
+    "@types/node": "^22.15.21",
     "bun-types": "^1.2.13",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3"
