@@ -5,7 +5,7 @@
       "name": "@aibtc/agent-tools",
       "dependencies": {
         "@bitflowlabs/core-sdk": "^2.2.0",
-        "@faktoryfun/core-sdk": "^0.2.23",
+        "@faktoryfun/core-sdk": "^0.3.1",
         "@jingcash/core-sdk": "^0.1.10",
         "@stacks/blockchain-api-client": "^8.10.0",
         "@stacks/bns": "^7.0.6",
@@ -27,17 +27,17 @@
         "tslib": "^2.8.1",
       },
       "devDependencies": {
-        "@aibtc/types": "^0.2.10",
-        "@types/bun": "^1.2.13",
+        "@aibtc/types": "^0.2.12",
+        "@types/bun": "^1.2.14",
         "@types/node": "^22.15.21",
-        "bun-types": "^1.2.13",
+        "bun-types": "^1.2.14",
         "tsup": "^8.5.0",
         "typescript": "^5.8.3",
       },
     },
   },
   "packages": {
-    "@aibtc/types": ["@aibtc/types@0.2.10", "", {}, "sha512-sy38bFkIfl7pmxc4PjAYpM2xeew1TybCcXyEuoJtdUVG7YN90+FwckBZVMDytpbXxPDJnsU0qsmG4z4lgB5PKw=="],
+    "@aibtc/types": ["@aibtc/types@0.2.12", "", {}, "sha512-q3yNq1a15DiP7KkQ9hLX/YEGJeNGpnDXO26lR8v26YaOBoM26A3C0AkLxB5QIXA68jI08Iq+QKPjxEIdrs0dKQ=="],
 
     "@bitflowlabs/core-sdk": ["@bitflowlabs/core-sdk@2.2.0", "", { "dependencies": { "@stacks/connect": "^7.10.2", "@stacks/network": "^7.0.2", "@stacks/transactions": "^7.0.5", "dotenv": "^16.4.7" } }, "sha512-i/gcnVyM5A+c98SPgQcKoVsRCKW9q7KYKuls/LHYkEo0sGkPH83qQn6d1dMe6ALsHvkixlJmfosT+qG6gM4hhg=="],
 
@@ -91,7 +91,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.0", "", { "os": "win32", "cpu": "x64" }, "sha512-ZENoHJBxA20C2zFzh6AI4fT6RraMzjYw4xKWemRTRmRVtN9c5DcH9r/f2ihEkMjOW5eGgrwCslG/+Y/3bL+DHQ=="],
 
-    "@faktoryfun/core-sdk": ["@faktoryfun/core-sdk@0.2.23", "", { "dependencies": { "@stacks/network": "^6.17.0", "@stacks/stacks-blockchain-api-types": "^7.14.1", "@stacks/transactions": "^6.17.0", "@stacks/wallet-sdk": "^7.0.0" } }, "sha512-d5W+73rY1cSymR5zrrt8DmjXst+/bqKe5wIuEknXpcsg+b33wJNVAxWqWEktWrendNKzbmrPqNaYZy+p3ON7Vw=="],
+    "@faktoryfun/core-sdk": ["@faktoryfun/core-sdk@0.3.1", "", { "dependencies": { "@stacks/common": "^7.0.0", "@stacks/network": "^7.0.0", "@stacks/stacks-blockchain-api-types": "^7.14.1", "@stacks/transactions": "^7.0.0", "@stacks/wallet-sdk": "^7.0.0" } }, "sha512-+WbcK7TnItmz5NDHdADSK8OLulEgGD/HsUa2kj7e08NWcsxfKJPLIBtZ7eqdnBIooOpXWELHWTwDB9GM+estFA=="],
 
     "@isaacs/cliui": ["@isaacs/cliui@8.0.2", "", { "dependencies": { "string-width": "^5.1.2", "string-width-cjs": "npm:string-width@^4.2.0", "strip-ansi": "^7.0.1", "strip-ansi-cjs": "npm:strip-ansi@^6.0.1", "wrap-ansi": "^8.1.0", "wrap-ansi-cjs": "npm:wrap-ansi@^7.0.0" } }, ""],
 
@@ -197,7 +197,7 @@
 
     "@types/bn.js": ["@types/bn.js@5.1.5", "", { "dependencies": { "@types/node": "*" } }, ""],
 
-    "@types/bun": ["@types/bun@1.2.13", "", { "dependencies": { "bun-types": "1.2.13" } }, "sha512-u6vXep/i9VBxoJl3GjZsl/BFIsvML8DfVDO0RYLEwtSZSp981kEO1V5NwRcO1CPJ7AmvpbnDCiMKo3JvbDEjAg=="],
+    "@types/bun": ["@types/bun@1.2.14", "", { "dependencies": { "bun-types": "1.2.14" } }, "sha512-VsFZKs8oKHzI7zwvECiAJ5oSorWndIWEVhfbYqZd4HI/45kzW7PN2Rr5biAzvGvRuNmYLSANY+H59ubHq8xw7Q=="],
 
     "@types/estree": ["@types/estree@1.0.6", "", {}, "sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw=="],
 
@@ -235,7 +235,7 @@
 
     "buffer": ["buffer@6.0.3", "", { "dependencies": { "base64-js": "^1.3.1", "ieee754": "^1.2.1" } }, ""],
 
-    "bun-types": ["bun-types@1.2.13", "", { "dependencies": { "@types/node": "*" } }, "sha512-rRjA1T6n7wto4gxhAO/ErZEtOXyEZEmnIHQfl0Dt1QQSB4QV0iP6BZ9/YB5fZaHFQ2dwHFrmPaRQ9GGMX01k9Q=="],
+    "bun-types": ["bun-types@1.2.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-Kuh4Ub28ucMRWeiUUWMHsT9Wcbr4H3kLIO72RZZElSDxSu7vpetRvxIUDUaW6QtaIeixIpm7OXtNnZPf82EzwA=="],
 
     "bundle-require": ["bundle-require@5.1.0", "", { "dependencies": { "load-tsconfig": "^0.2.3" }, "peerDependencies": { "esbuild": ">=0.18" } }, ""],
 
@@ -505,12 +505,6 @@
 
     "@bitflowlabs/core-sdk/@stacks/connect": ["@stacks/connect@7.10.2", "", { "dependencies": { "@stacks/auth": "^7.0.0", "@stacks/common": "^7.0.0", "@stacks/connect-ui": "6.6.0", "@stacks/network": "^7.0.0", "@stacks/network-v6": "npm:@stacks/network@^6.16.0", "@stacks/profile": "^7.0.0", "@stacks/transactions": "^7.0.0", "@stacks/transactions-v6": "npm:@stacks/transactions@^6.16.0", "jsontokens": "^4.0.1" } }, "sha512-fQcdayBgq9XZnX4rqQxa//Gx9c0ycrmrZT9dZ01uHDlIr/ZxwU18d5A3hyYv4F7LQYQQkFr9htpVTlH0RSqWUw=="],
 
-    "@faktoryfun/core-sdk/@stacks/network": ["@stacks/network@6.17.0", "", { "dependencies": { "@stacks/common": "^6.16.0", "cross-fetch": "^3.1.5" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/transactions": ["@stacks/transactions@6.17.0", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@stacks/common": "^6.16.0", "@stacks/network": "^6.17.0", "c32check": "^2.0.0", "lodash.clonedeep": "^4.5.0" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk": ["@stacks/wallet-sdk@7.0.2", "", { "dependencies": { "@scure/bip32": "1.1.3", "@scure/bip39": "1.1.0", "@stacks/auth": "^7.0.2", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.0.2", "@stacks/network": "^7.0.2", "@stacks/profile": "^7.0.2", "@stacks/storage": "^7.0.2", "@stacks/transactions": "^7.0.2", "c32check": "^2.0.0", "jsontokens": "^4.0.1", "zone-file": "^2.0.0-beta.3" } }, ""],
-
     "@isaacs/cliui/string-width": ["string-width@5.1.2", "", { "dependencies": { "eastasianwidth": "^0.2.0", "emoji-regex": "^9.2.2", "strip-ansi": "^7.0.1" } }, ""],
 
     "@isaacs/cliui/wrap-ansi": ["wrap-ansi@8.1.0", "", { "dependencies": { "ansi-styles": "^6.1.0", "string-width": "^5.0.1", "strip-ansi": "^7.0.1" } }, ""],
@@ -550,8 +544,6 @@
     "bitflow-sdk/@stacks/transactions": ["@stacks/transactions@6.16.1", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@stacks/common": "^6.16.0", "@stacks/network": "^6.16.0", "c32check": "^2.0.0", "lodash.clonedeep": "^4.5.0" } }, ""],
 
     "bitflow-sdk/dotenv": ["dotenv@16.4.5", "", {}, ""],
-
-    "bun-types/@types/node": ["@types/node@22.15.18", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-v1DKRfUdyW+jJhZNEI1PYy29S2YRxMV5AOO/x/SjKmW0acCIOqmbj6Haf9eHAhsPmrhlHSxEhv/1WszcLWV4cg=="],
 
     "c32check/@noble/hashes": ["@noble/hashes@1.3.3", "", {}, ""],
 
@@ -608,20 +600,6 @@
     "@bitflowlabs/core-sdk/@stacks/connect/@stacks/auth": ["@stacks/auth@7.0.2", "", { "dependencies": { "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.0.2", "@stacks/network": "^7.0.2", "@stacks/profile": "^7.0.2", "cross-fetch": "^3.1.5", "jsontokens": "^4.0.1" } }, ""],
 
     "@bitflowlabs/core-sdk/@stacks/connect/@stacks/connect-ui": ["@stacks/connect-ui@6.6.0", "", { "dependencies": { "@stencil/core": "^2.17.1" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/network/@stacks/common": ["@stacks/common@6.16.0", "", { "dependencies": { "@types/bn.js": "^5.1.0", "@types/node": "^18.0.4" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/transactions/@stacks/common": ["@stacks/common@6.16.0", "", { "dependencies": { "@types/bn.js": "^5.1.0", "@types/node": "^18.0.4" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/auth": ["@stacks/auth@7.0.2", "", { "dependencies": { "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.0.2", "@stacks/network": "^7.0.2", "@stacks/profile": "^7.0.2", "cross-fetch": "^3.1.5", "jsontokens": "^4.0.1" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/encryption": ["@stacks/encryption@7.0.2", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@scure/bip39": "1.1.0", "@stacks/common": "^7.0.2", "base64-js": "^1.5.1", "bs58": "^5.0.0", "ripemd160-min": "^0.0.6", "varuint-bitcoin": "^1.1.2" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/network": ["@stacks/network@7.0.2", "", { "dependencies": { "@stacks/common": "^7.0.2", "cross-fetch": "^3.1.5" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/storage": ["@stacks/storage@7.0.2", "", { "dependencies": { "@stacks/auth": "^7.0.2", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.0.2", "@stacks/network": "^7.0.2", "base64-js": "^1.5.1", "jsontokens": "^4.0.1" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/transactions": ["@stacks/transactions@7.0.2", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/network": "^7.0.2", "c32check": "^2.0.0", "lodash.clonedeep": "^4.5.0" } }, ""],
 
     "@isaacs/cliui/string-width/emoji-regex": ["emoji-regex@9.2.2", "", {}, ""],
 
@@ -707,10 +685,6 @@
 
     "@bitflowlabs/core-sdk/@stacks/connect/@stacks/auth/@stacks/encryption": ["@stacks/encryption@7.0.2", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@scure/bip39": "1.1.0", "@stacks/common": "^7.0.2", "base64-js": "^1.5.1", "bs58": "^5.0.0", "ripemd160-min": "^0.0.6", "varuint-bitcoin": "^1.1.2" } }, ""],
 
-    "@faktoryfun/core-sdk/@stacks/network/@stacks/common/@types/node": ["@types/node@18.19.10", "", { "dependencies": { "undici-types": "~5.26.4" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/transactions/@stacks/common/@types/node": ["@types/node@18.19.10", "", { "dependencies": { "undici-types": "~5.26.4" } }, ""],
-
     "@jingcash/core-sdk/@stacks/network/@stacks/common/@types/node": ["@types/node@18.19.10", "", { "dependencies": { "undici-types": "~5.26.4" } }, ""],
 
     "@jingcash/core-sdk/@stacks/transactions/@stacks/common/@types/node": ["@types/node@18.19.10", "", { "dependencies": { "undici-types": "~5.26.4" } }, ""],
@@ -740,10 +714,6 @@
     "stxcity-sdk/@stacks/transactions/@stacks/common/@types/node": ["@types/node@18.19.10", "", { "dependencies": { "undici-types": "~5.26.4" } }, ""],
 
     "yargs/string-width/strip-ansi/ansi-regex": ["ansi-regex@5.0.1", "", {}, ""],
-
-    "@faktoryfun/core-sdk/@stacks/network/@stacks/common/@types/node/undici-types": ["undici-types@5.26.5", "", {}, ""],
-
-    "@faktoryfun/core-sdk/@stacks/transactions/@stacks/common/@types/node/undici-types": ["undici-types@5.26.5", "", {}, ""],
 
     "@jingcash/core-sdk/@stacks/network/@stacks/common/@types/node/undici-types": ["undici-types@5.26.5", "", {}, ""],
 
