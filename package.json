@@ -23,7 +23,7 @@
     "@bitflowlabs/core-sdk": "^2.2.0",
     "@faktoryfun/core-sdk": "^0.3.1",
     "@jingcash/core-sdk": "^0.1.10",
-    "@stacks/blockchain-api-client": "^8.10.0",
+    "@stacks/blockchain-api-client": "^8.11.0",
     "@stacks/bns": "^7.0.6",
     "@stacks/connect": "^8.1.9",
     "@stacks/encryption": "^7.0.6",
