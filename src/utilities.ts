@@ -1172,27 +1172,6 @@ export function getAibtcCoreApiUrl(network: string) {
 export type aibtcCoreRequestBody = {
   name: string;
   mission: string;
-  description: string;
-  extensions: DeployedContractRegistryEntry[] | ContractResponse[];
-  token: {
-    name: string;
-    symbol: string;
-    decimals: number;
-    description: string;
-    max_supply: string;
-    uri: string;
-    tx_id: string;
-    contract_principal: string;
-    image_url: string;
-    x_url?: string;
-    telegram_url?: string;
-    website_url?: string;
-  };
-};
-
-export type aibtcCoreRequestBodyV2 = {
-  name: string;
-  mission: string;
   contracts: aibtcCoreRequestContract[];
   token_info: aibtcCoreRequestTokenInfo;
 };

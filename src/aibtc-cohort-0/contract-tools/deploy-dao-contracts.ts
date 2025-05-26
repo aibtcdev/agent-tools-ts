@@ -1,7 +1,6 @@
 import { ContractApiClient } from "../api/client";
 import {
   aibtcCoreRequestBody,
-  aibtcCoreRequestBodyV2,
   aibtcCoreRequestContract,
   aibtcCoreRequestTokenInfo,
   CONFIG,
@@ -25,7 +24,7 @@ import {
 } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
 import { saveDaoContractsToFiles } from "../utils/save-contract";
-import { ContractResponse, CONTRACT_NAMES } from "@aibtc/types";
+import { CONTRACT_NAMES } from "@aibtc/types";
 
 const usage =
   "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> <tweetOrigin> [network] [saveToFile]";
@@ -200,12 +199,13 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
       (c) => c.name === CONTRACT_NAMES.TOKEN.POOL
     );
 
+    // verify all matches were found
     if (!prelaunchMatch || !tokenMatch || !dexMatch || !poolMatch) {
       throw new Error(
         `Failed to find all required Faktory contracts (prelaunch, token, dex, pool) in generated contracts list.`
       );
     }
-
+    // update contract sources and hashes
     prelaunchMatch.source = faktoryPrelaunch.code;
     prelaunchMatch.hash = faktoryPrelaunch.hash;
     tokenMatch.source = faktoryToken.code;
@@ -297,27 +297,6 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
       );
     }
 
-    // imageUrl was already fetched earlier for Faktory request and can be reused here.
-
-    // post result to AIBTC core
-    const aibtcRequestBody: aibtcCoreRequestBody = {
-      name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
-      mission: args.daoManifest,
-      description: args.daoManifest,
-      extensions: contracts,
-      token: {
-        name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
-        symbol: `${args.tokenSymbolUpper}•AIBTC•DAO`,
-        decimals: 8,
-        description: `${args.tokenSymbolUpper}•AIBTC•DAO`,
-        max_supply: "1000000000", // 1 billion
-        uri: args.tokenUri,
-        tx_id: tokenDeploymentResult.txid,
-        contract_principal: `${address}.${tokenContractName}`,
-        image_url: imageUrl,
-      },
-    };
-
     const coreRequestContracts: aibtcCoreRequestContract[] = contracts.map(
       (contract) =>
         ({
@@ -340,25 +319,12 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
       x_url: `https://x.com/${args.tweetOrigin}`,
     };
 
-    const aibtcRequestBodyV2: aibtcCoreRequestBodyV2 = {
+    const aibtcRequestBody: aibtcCoreRequestBody = {
       name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
       mission: args.daoManifest,
       contracts: coreRequestContracts,
       token_info: coreRequestTokenInfo,
     };
-
-    const { extensions } = aibtcRequestBody;
-    const fixedExtensions = extensions.map((ext) => {
-      const sourceLength = ext.source?.length || 0;
-      return {
-        ...ext,
-        source:
-          sourceLength > 100
-            ? `${ext.source?.substring(0, 97)}...`
-            : ext.source,
-      };
-    });
-    aibtcRequestBody.extensions = fixedExtensions as ContractResponse[];
 
     console.log("==========================");
     console.log(`Posting to AIBTC core with request body:`);
