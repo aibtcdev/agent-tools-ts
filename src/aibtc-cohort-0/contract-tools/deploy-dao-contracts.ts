@@ -304,7 +304,7 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
           display_name: contract.displayName!,
           type: contract.type,
           subtype: contract.subtype,
-          tx_id: deploymentResults[contract.name]?.txid!,
+          tx_id: deploymentResults[contract.displayName!]?.txid!,
           deployer: address,
           contract_principal: `${address}.${contract.name}`,
         } satisfies aibtcCoreRequestContract)
