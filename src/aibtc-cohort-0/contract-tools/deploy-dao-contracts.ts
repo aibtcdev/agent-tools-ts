@@ -1,10 +1,14 @@
 import { ContractApiClient } from "../api/client";
 import {
   aibtcCoreRequestBody,
+  aibtcCoreRequestContract,
+  aibtcCoreRequestTokenInfo,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
+  FaktoryRequestBody,
+  getFaktoryContracts,
   getImageUrlFromTokenUri,
   getNextNonce,
   postToAibtcCore,
@@ -20,9 +24,10 @@ import {
 } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
 import { saveDaoContractsToFiles } from "../utils/save-contract";
+import { CONTRACT_NAMES } from "@aibtc/types";
 
 const usage =
-  "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> [tweetOrigin] [network] [saveToFile]";
+  "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> <tweetOrigin> [network] [saveToFile]";
 const usageExample =
   'Example: bun run deploy-dao-contracts.ts MYTOKEN "https://example.com/token.json" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "This is my DAO" "1894855072556912681" "testnet" true';
 
@@ -32,7 +37,7 @@ interface ExpectedArgs {
   tokenUri: string;
   originAddress: string;
   daoManifest: string;
-  tweetOrigin?: string;
+  tweetOrigin: string;
   network?: string;
   saveToFile?: boolean;
   // buld replacements from params
@@ -45,7 +50,7 @@ function validateArgs(): ExpectedArgs {
     tokenUri,
     originAddress,
     daoManifest,
-    tweetOrigin = "",
+    tweetOrigin,
     network = CONFIG.NETWORK,
     saveToFileStr = "false",
   ] = process.argv.slice(2);
@@ -112,7 +117,7 @@ function validateArgs(): ExpectedArgs {
     saveToFile,
     customReplacements: {
       dao_manifest: daoManifest,
-      tweet_origin: tweetOrigin || "",
+      tweet_origin: tweetOrigin,
       origin_address: originAddress,
       dao_token_metadata: tokenUri,
       dao_token_symbol: tokenSymbolLower,
@@ -121,13 +126,26 @@ function validateArgs(): ExpectedArgs {
 }
 
 async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
+  // validate and store provided args
   const args = validateArgs();
+
+  // Setup network, wallet info, and image URL early
+  const currentNetwork = args.network || CONFIG.NETWORK;
+  const validNetwork = validateNetwork(currentNetwork);
+  const { address, key } = await deriveChildAccount(
+    currentNetwork,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+  const imageUrl = await getImageUrlFromTokenUri(args.tokenUri);
+
+  // create new api client for aibtcdev-daos API
   const apiClient = new ContractApiClient();
 
   try {
     // Generate all DAO contracts
     const generatedContractsResponse = await apiClient.generateDaoContracts(
-      args.network,
+      currentNetwork, // Use consistent network variable
       args.tokenSymbolLower,
       args.customReplacements
     );
@@ -146,39 +164,84 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
       );
     }
 
-    // Prepare for deployment
+    const contractsToProcess = generatedContractsResponse.data!.contracts;
 
-    const network = args.network || CONFIG.NETWORK;
-    const validNetwork = validateNetwork(network);
+    // Get latest faktory contracts from endpoint and update source/hash
+    const faktoryRequestBody: FaktoryRequestBody = {
+      symbol: args.tokenSymbolLower,
+      name: args.tokenSymbolLower,
+      supply: 1000000000, // Default supply, consistent with generator
+      creatorAddress: address,
+      originAddress: args.originAddress,
+      uri: args.tokenUri,
+      logoUrl: imageUrl, // Use imageUrl fetched earlier
+      description: args.daoManifest,
+      tweetOrigin: args.tweetOrigin,
+    };
+    const {
+      prelaunch: faktoryPrelaunch,
+      token: faktoryToken,
+      dex: faktoryDex,
+      pool: faktoryPool,
+    } = await getFaktoryContracts(faktoryRequestBody);
 
-    // Get deployment credentials
-    const { address, key } = await deriveChildAccount(
-      network,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
+    // Find matching contracts from our generated contracts and update their source and hash
+    const prelaunchMatch = contractsToProcess.find(
+      (c) => c.name === CONTRACT_NAMES.TOKEN.PRELAUNCH
+    );
+    const tokenMatch = contractsToProcess.find(
+      (c) => c.name === CONTRACT_NAMES.TOKEN.DAO
+    );
+    const dexMatch = contractsToProcess.find(
+      (c) => c.name === CONTRACT_NAMES.TOKEN.DEX
+    );
+    const poolMatch = contractsToProcess.find(
+      (c) => c.name === CONTRACT_NAMES.TOKEN.POOL
     );
 
+    // verify all matches were found
+    if (!prelaunchMatch || !tokenMatch || !dexMatch || !poolMatch) {
+      throw new Error(
+        `Failed to find all required Faktory contracts (prelaunch, token, dex, pool) in generated contracts list.`
+      );
+    }
+    // update contract sources and hashes
+    prelaunchMatch.source = faktoryPrelaunch.code;
+    prelaunchMatch.hash = faktoryPrelaunch.hash;
+    tokenMatch.source = faktoryToken.code;
+    tokenMatch.hash = faktoryToken.hash;
+    dexMatch.source = faktoryDex.code;
+    dexMatch.hash = faktoryDex.hash;
+    poolMatch.source = faktoryPool.code;
+    poolMatch.hash = faktoryPool.hash;
+
+    // Prepare for deployment (network, address, key, validNetwork are already set up)
     // Get the current nonce for the account
-    let currentNonce = await getNextNonce(network, address);
+    let currentNonce = await getNextNonce(currentNetwork, address);
 
     // Deploy each contract
     const deploymentResults: Record<string, BroadcastedContractResponse> = {};
 
-    //console.log("Generated contracts:", generatedContractsResponse.data);
+    //console.log("Generated contracts:", contractsToProcess); // Updated variable
     // sort them by deployment order
-    const contracts = generatedContractsResponse.data.contracts.sort(
+    const contracts = contractsToProcess.sort(
+      // Use the updated contractsToProcess list
       (a, b) => a.deploymentOrder - b.deploymentOrder
     );
 
     // Save contracts to files if requested
     if (args.saveToFile) {
-      await saveDaoContractsToFiles(contracts, args.tokenSymbolLower, network);
+      await saveDaoContractsToFiles(
+        contracts,
+        args.tokenSymbolLower,
+        currentNetwork
+      );
     }
 
     const deploymentOptions: DeploymentOptions = {
       address,
       key,
-      network,
+      network: currentNetwork,
       nonce: currentNonce,
     };
 
@@ -234,30 +297,46 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
       );
     }
 
-    // fetch token URI, get image link
-    const imageUrl = await getImageUrlFromTokenUri(args.tokenUri);
+    const coreRequestContracts: aibtcCoreRequestContract[] = contracts.map(
+      (contract) =>
+        ({
+          name: contract.name,
+          display_name: contract.displayName!,
+          type: contract.type,
+          subtype: contract.subtype,
+          tx_id: deploymentResults[contract.name]?.txid!,
+          deployer: address,
+          contract_principal: `${address}.${contract.name}`,
+        } satisfies aibtcCoreRequestContract)
+    );
 
-    // post result to AIBTC core
+    const coreRequestTokenInfo: aibtcCoreRequestTokenInfo = {
+      symbol: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+      decimals: 8,
+      max_supply: "1000000000", // 1 billion
+      uri: args.tokenUri,
+      image_url: imageUrl,
+      x_url: `https://x.com/${args.tweetOrigin}`,
+    };
+
     const aibtcRequestBody: aibtcCoreRequestBody = {
       name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
       mission: args.daoManifest,
-      description: args.daoManifest,
-      extensions: contracts,
-      token: {
-        name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
-        symbol: `${args.tokenSymbolUpper}•AIBTC•DAO`,
-        decimals: 8,
-        description: `${args.tokenSymbolUpper}•AIBTC•DAO`,
-        max_supply: "1000000000", // 1 billion
-        uri: args.tokenUri,
-        tx_id: tokenDeploymentResult.txid,
-        contract_principal: `${address}.${tokenContractName}`,
-        image_url: imageUrl,
-      },
+      contracts: coreRequestContracts,
+      token_info: coreRequestTokenInfo,
     };
+
+    console.log("==========================");
+    console.log(`Posting to AIBTC core with request body:`);
+    console.log(JSON.stringify(aibtcRequestBody, null, 2));
+    console.log("==========================");
+
     const postResult = await postToAibtcCore(validNetwork, aibtcRequestBody);
 
-    //console.log(`Posted to AIBTC core: ${JSON.stringify(postResult, null, 2)}`);
+    console.log("==========================");
+    console.log(`Post result from AIBTC core:`);
+    console.log(JSON.stringify(postResult, null, 2));
+    console.log("==========================");
 
     const successMessage = `Successfully deployed ${
       Object.keys(deploymentResults).length
