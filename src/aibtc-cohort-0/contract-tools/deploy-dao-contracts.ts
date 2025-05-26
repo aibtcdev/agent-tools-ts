@@ -125,7 +125,9 @@ function validateArgs(): ExpectedArgs {
 }
 
 async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
+  // validate and store provided args
   const args = validateArgs();
+  // create new api client for aibtcdev-daos API
   const apiClient = new ContractApiClient();
 
   try {
