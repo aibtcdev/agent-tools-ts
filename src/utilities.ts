@@ -1193,7 +1193,6 @@ export type aibtcCoreRequestBody = {
 export type aibtcCoreRequestBodyV2 = {
   name: string;
   mission: string;
-  description: string;
   contracts: aibtcCoreRequestContract[];
   token_info: aibtcCoreRequestTokenInfo;
 };
