@@ -1,6 +1,9 @@
 import { ContractApiClient } from "../api/client";
 import {
   aibtcCoreRequestBody,
+  aibtcCoreRequestBodyV2,
+  aibtcCoreRequestContract,
+  aibtcCoreRequestTokenInfo,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
@@ -20,6 +23,7 @@ import {
 } from "../utils/deploy-contract";
 import { validateStacksAddress } from "@stacks/transactions";
 import { saveDaoContractsToFiles } from "../utils/save-contract";
+import { ContractResponse } from "@aibtc/types";
 
 const usage =
   "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> [tweetOrigin] [network] [saveToFile]";
@@ -255,9 +259,60 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
         image_url: imageUrl,
       },
     };
+
+    const coreRequestContracts: aibtcCoreRequestContract[] = contracts.map(
+      (contract) =>
+        ({
+          name: contract.name,
+          display_name: contract.displayName!,
+          type: contract.type,
+          subtype: contract.subtype,
+          tx_id: deploymentResults[contract.name]?.txid!,
+          deployer: address,
+          contract_principal: `${address}.${contract.name}`,
+        } satisfies aibtcCoreRequestContract)
+    );
+
+    const coreRequestTokenInfo: aibtcCoreRequestTokenInfo = {
+      symbol: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+      decimals: 8,
+      max_supply: "1000000000", // 1 billion
+      uri: args.tokenUri,
+      image_url: imageUrl,
+      x_url: `https://x.com/${args.tweetOrigin}`,
+    };
+
+    const aibtcRequestBodyV2: aibtcCoreRequestBodyV2 = {
+      name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+      mission: args.daoManifest,
+      contracts: coreRequestContracts,
+      token_info: coreRequestTokenInfo,
+    };
+
+    const { extensions } = aibtcRequestBody;
+    const fixedExtensions = extensions.map((ext) => {
+      const sourceLength = ext.source?.length || 0;
+      return {
+        ...ext,
+        source:
+          sourceLength > 100
+            ? `${ext.source?.substring(0, 97)}...`
+            : ext.source,
+      };
+    });
+    aibtcRequestBody.extensions = fixedExtensions as ContractResponse[];
+
+    console.log("==========================");
+    console.log(`Posting to AIBTC core with request body:`);
+    console.log(JSON.stringify(aibtcRequestBody, null, 2));
+    console.log("==========================");
+
     const postResult = await postToAibtcCore(validNetwork, aibtcRequestBody);
 
-    //console.log(`Posted to AIBTC core: ${JSON.stringify(postResult, null, 2)}`);
+    console.log("==========================");
+    console.log(`Post result from AIBTC core:`);
+    console.log(JSON.stringify(postResult, null, 2));
+    console.log("==========================");
 
     const successMessage = `Successfully deployed ${
       Object.keys(deploymentResults).length

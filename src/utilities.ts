@@ -1197,7 +1197,7 @@ export type aibtcCoreRequestBodyV2 = {
   token_info: aibtcCoreRequestTokenInfo;
 };
 
-type aibtcCoreRequestContract = {
+export type aibtcCoreRequestContract = {
   name: string; // matches repo contract names
   display_name: string; // has token symbol in it
   type: ContractType; // type e.g. "EXTENSIONS", "ACTIONS"
@@ -1207,7 +1207,7 @@ type aibtcCoreRequestContract = {
   contract_principal: string;
 };
 
-type aibtcCoreRequestTokenInfo = {
+export type aibtcCoreRequestTokenInfo = {
   symbol: string; // removed name and desc, same value
   decimals: number; // can hardcode as 8?
   max_supply: string; // can hardcode 1B + decimals?
