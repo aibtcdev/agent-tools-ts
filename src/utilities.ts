@@ -30,7 +30,7 @@ import {
 } from "./aibtc-dao/registries/dao-contract-registry";
 import { ContractCallsClient } from "./api/contract-calls-client";
 import { TokenInfoService } from "./api/token-info-service";
-import { ContractResponse } from "@aibtc/types";
+import { ContractResponse, ContractSubtype, ContractType } from "@aibtc/types";
 
 //////////////////////////////
 // GENERAL HELPERS
@@ -1188,6 +1188,35 @@ export type aibtcCoreRequestBody = {
     telegram_url?: string;
     website_url?: string;
   };
+};
+
+export type aibtcCoreRequestBodyV2 = {
+  name: string;
+  mission: string;
+  description: string;
+  contracts: aibtcCoreRequestContract[];
+  token_info: aibtcCoreRequestTokenInfo;
+};
+
+type aibtcCoreRequestContract = {
+  name: string; // matches repo contract names
+  display_name: string; // has token symbol in it
+  type: ContractType; // type e.g. "EXTENSIONS", "ACTIONS"
+  subtype: ContractSubtype<ContractType>; // subtype e.g. "ONCHAIN_MESSAGING", "SEND_MESSAGE"
+  tx_id: string;
+  deployer: string;
+  contract_principal: string;
+};
+
+type aibtcCoreRequestTokenInfo = {
+  symbol: string; // removed name and desc, same value
+  decimals: number; // can hardcode as 8?
+  max_supply: string; // can hardcode 1B + decimals?
+  uri: string; // JSON URL for the token metadata
+  image_url: string; // image URL for the token
+  x_url?: string;
+  telegram_url?: string;
+  website_url?: string;
 };
 
 export async function postToAibtcCore(
