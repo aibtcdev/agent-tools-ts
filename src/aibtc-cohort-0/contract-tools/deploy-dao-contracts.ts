@@ -28,7 +28,7 @@ import { saveDaoContractsToFiles } from "../utils/save-contract";
 import { ContractResponse, CONTRACT_NAMES } from "@aibtc/types";
 
 const usage =
-  "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> [tweetOrigin] [network] [saveToFile]";
+  "Usage: bun run deploy-dao-contracts.ts <tokenSymbol> <tokenUri> <originAddress> <daoManifest> <tweetOrigin> [network] [saveToFile]";
 const usageExample =
   'Example: bun run deploy-dao-contracts.ts MYTOKEN "https://example.com/token.json" ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "This is my DAO" "1894855072556912681" "testnet" true';
 
@@ -38,7 +38,7 @@ interface ExpectedArgs {
   tokenUri: string;
   originAddress: string;
   daoManifest: string;
-  tweetOrigin?: string;
+  tweetOrigin: string;
   network?: string;
   saveToFile?: boolean;
   // buld replacements from params
@@ -51,7 +51,7 @@ function validateArgs(): ExpectedArgs {
     tokenUri,
     originAddress,
     daoManifest,
-    tweetOrigin = "",
+    tweetOrigin,
     network = CONFIG.NETWORK,
     saveToFileStr = "false",
   ] = process.argv.slice(2);
@@ -118,7 +118,7 @@ function validateArgs(): ExpectedArgs {
     saveToFile,
     customReplacements: {
       dao_manifest: daoManifest,
-      tweet_origin: tweetOrigin || "",
+      tweet_origin: tweetOrigin,
       origin_address: originAddress,
       dao_token_metadata: tokenUri,
       dao_token_symbol: tokenSymbolLower,
@@ -177,7 +177,7 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
       uri: args.tokenUri,
       logoUrl: imageUrl, // Use imageUrl fetched earlier
       description: args.daoManifest,
-      tweetOrigin: args.tweetOrigin || "",
+      tweetOrigin: args.tweetOrigin,
     };
     const {
       prelaunch: faktoryPrelaunch,
@@ -224,19 +224,24 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
 
     //console.log("Generated contracts:", contractsToProcess); // Updated variable
     // sort them by deployment order
-    const contracts = contractsToProcess.sort( // Use the updated contractsToProcess list
+    const contracts = contractsToProcess.sort(
+      // Use the updated contractsToProcess list
       (a, b) => a.deploymentOrder - b.deploymentOrder
     );
 
     // Save contracts to files if requested
     if (args.saveToFile) {
-      await saveDaoContractsToFiles(contracts, args.tokenSymbolLower, network);
+      await saveDaoContractsToFiles(
+        contracts,
+        args.tokenSymbolLower,
+        currentNetwork
+      );
     }
 
     const deploymentOptions: DeploymentOptions = {
       address,
       key,
-      network,
+      network: currentNetwork,
       nonce: currentNonce,
     };
 
