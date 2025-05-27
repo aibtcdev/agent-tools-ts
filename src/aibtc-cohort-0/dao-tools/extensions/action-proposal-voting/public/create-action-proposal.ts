@@ -5,26 +5,24 @@ import {
   PostConditionMode,
   SignedContractCallOptions,
   ClarityType,
-  cvToJSON, // For reading proposal bond if needed, though constants are used here
-  fetchCallReadOnlyFunction, // For potentially fetching constants or asset names
+  cvToJSON,
+  fetchCallReadOnlyFunction,
 } from "@stacks/transactions";
 import {
   broadcastTx,
   CONFIG,
-  convertStringToBoolean,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
   sendToLLM,
-  ToolResponse,
   validatePrincipal,
   validateHexString,
 } from "../../../../../utilities";
+import { TokenInfoService } from "../../../../../api/token-info-service";
 
-const VOTING_BOND_AMOUNT = 500000000000; // u500000000000 from contract
+// This constant reflects the contract's definition and is used if dynamic fetching fails or as a fallback.
 const AIBTC_DAO_RUN_COST_AMOUNT = 10000000000; // u10000000000 from contract
-const TOTAL_COST_AMOUNT = VOTING_BOND_AMOUNT + AIBTC_DAO_RUN_COST_AMOUNT;
 
 const usage =
   "Usage: bun run create-action-proposal.ts <daoActionProposalVotingContract> <actionContractToExecute> <parametersHex> <daoTokenContract> [memo]";
@@ -37,6 +35,38 @@ interface ExpectedArgs {
   parametersHex: string;
   daoTokenContract: string;
   memo?: string;
+}
+
+interface VotingConfigurationData {
+  proposalBond: string; // uint
+  // other fields from get-voting-configuration if needed later
+}
+
+async function getVotingConfigurationFromContract(
+  contractAddress: string,
+  contractName: string,
+  senderAddress: string,
+  network: any
+): Promise<VotingConfigurationData> {
+  const result = await fetchCallReadOnlyFunction({
+    contractAddress,
+    contractName,
+    functionName: "get-voting-configuration",
+    functionArgs: [],
+    senderAddress,
+    network,
+  });
+  const jsonData = cvToJSON(result).value;
+  if (jsonData && jsonData.proposalBond && jsonData.proposalBond.value) {
+    return {
+      proposalBond: jsonData.proposalBond.value,
+    };
+  }
+  throw new Error(
+    `Could not retrieve proposalBond from voting configuration: ${JSON.stringify(
+      jsonData
+    )}`
+  );
 }
 
 function validateArgs(): ExpectedArgs {
@@ -125,10 +155,29 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
+  const votingConfig = await getVotingConfigurationFromContract(
+    extensionAddress,
+    extensionName,
+    address, // sender for read-only call
+    networkObj
+  );
+  const dynamicProposalBond = parseInt(votingConfig.proposalBond);
+  const totalCostAmount = dynamicProposalBond + AIBTC_DAO_RUN_COST_AMOUNT;
+
+  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+  const daoTokenAssetName = await tokenInfoService.getAssetNameFromAbi(
+    args.daoTokenContract
+  );
+  if (!daoTokenAssetName) {
+    throw new Error(
+      `Could not determine asset name for DAO token contract: ${args.daoTokenContract}`
+    );
+  }
+
   const postConditions = [
     Pc.principal(address)
-      .willSendEq(TOTAL_COST_AMOUNT.toString())
-      .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenName), // Assuming asset name is token name
+      .willSendEq(totalCostAmount.toString())
+      .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenAssetName),
   ];
 
   const functionArgs = [

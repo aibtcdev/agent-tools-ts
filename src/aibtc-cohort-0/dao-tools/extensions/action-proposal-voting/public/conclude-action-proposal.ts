@@ -16,9 +16,9 @@ import {
   getNetwork,
   getNextNonce,
   sendToLLM,
-  ToolResponse,
   validatePrincipal,
 } from "../../../../../utilities";
+import { TokenInfoService } from "../../../../../api/token-info-service";
 
 const usage =
   "Usage: bun run conclude-action-proposal.ts <daoActionProposalVotingContract> <proposalId> <actionContractToExecute> <daoTokenContract>";
@@ -165,10 +165,20 @@ async function main() {
     networkObj
   );
 
+  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+  const daoTokenAssetName = await tokenInfoService.getAssetNameFromAbi(
+    args.daoTokenContract
+  );
+  if (!daoTokenAssetName) {
+    throw new Error(
+      `Could not determine asset name for DAO token contract: ${args.daoTokenContract}`
+    );
+  }
+
   const postConditions = [
     Pc.principal(`${extensionAddress}.${extensionName}`)
       .willSendEq(proposalBondAmount)
-      .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenName), // Assuming asset name is token name
+      .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenAssetName),
   ];
 
   const functionArgs = [
