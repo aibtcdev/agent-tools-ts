@@ -15,6 +15,7 @@ import {
   sendToLLM,
   ToolResponse,
   validateStacksAddress,
+  isValidContractPrincipal,
 } from "../../../../../utilities";
 
 const usage =
@@ -45,9 +46,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  const [extensionAddress, extensionName] =
-    daoActionProposalVotingContract.split(".");
-  if (!extensionAddress || !extensionName || !validateStacksAddress(extensionAddress)) {
+  if (!isValidContractPrincipal(daoActionProposalVotingContract)) {
     const errorMessage = [
       `Invalid DAO Action Proposal Voting contract: ${daoActionProposalVotingContract}`,
       usage,
