@@ -16,8 +16,6 @@ import {
   getNetwork,
   getNextNonce,
   sendToLLM,
-  validateStacksAddress,
-  validateHexString,
   isValidContractPrincipal,
 } from "../../../../../utilities";
 import { TokenInfoService } from "../../../../../api/token-info-service";
@@ -103,23 +101,13 @@ function validateArgs(): ExpectedArgs {
   }
 
   if (!isValidContractPrincipal(actionContractToExecute)) {
-     const errorMessage = [
+    const errorMessage = [
       `Invalid action contract to execute: ${actionContractToExecute}`,
       usage,
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
-
-  if (!validateHexString(parametersHex)) {
-    const errorMessage = [
-      `Invalid parametersHex: ${parametersHex}. Must be a valid hex string.`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
 
   if (!isValidContractPrincipal(daoTokenContract)) {
     const errorMessage = [
