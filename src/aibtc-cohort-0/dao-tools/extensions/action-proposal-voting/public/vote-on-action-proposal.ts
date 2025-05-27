@@ -14,7 +14,7 @@ import {
   getNextNonce,
   sendToLLM,
   ToolResponse,
-  validatePrincipal,
+  validateStacksAddress,
 } from "../../../../../utilities";
 
 const usage =
@@ -47,7 +47,7 @@ function validateArgs(): ExpectedArgs {
 
   const [extensionAddress, extensionName] =
     daoActionProposalVotingContract.split(".");
-  if (!extensionAddress || !extensionName || !validatePrincipal(extensionAddress)) {
+  if (!extensionAddress || !extensionName || !validateStacksAddress(extensionAddress)) {
     const errorMessage = [
       `Invalid DAO Action Proposal Voting contract: ${daoActionProposalVotingContract}`,
       usage,

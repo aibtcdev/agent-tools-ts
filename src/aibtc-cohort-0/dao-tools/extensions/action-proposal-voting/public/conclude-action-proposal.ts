@@ -16,7 +16,7 @@ import {
   getNetwork,
   getNextNonce,
   sendToLLM,
-  validatePrincipal,
+  validateStacksAddress,
 } from "../../../../../utilities";
 import { TokenInfoService } from "../../../../../api/token-info-service";
 
@@ -62,7 +62,7 @@ function validateArgs(): ExpectedArgs {
 
   const [extensionAddress, extensionName] =
     daoActionProposalVotingContract.split(".");
-  if (!extensionAddress || !extensionName || !validatePrincipal(extensionAddress)) {
+  if (!extensionAddress || !extensionName || !validateStacksAddress(extensionAddress)) {
     const errorMessage = [
       `Invalid DAO Action Proposal Voting contract: ${daoActionProposalVotingContract}`,
       usage,
@@ -81,7 +81,7 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!validatePrincipal(actionContractToExecute.split(".")[0])) {
+  if (!validateStacksAddress(actionContractToExecute.split(".")[0])) {
      const errorMessage = [
       `Invalid action contract to execute: ${actionContractToExecute}`,
       usage,
@@ -91,7 +91,7 @@ function validateArgs(): ExpectedArgs {
   }
 
   const [tokenAddress, tokenName] = daoTokenContract.split(".");
-  if (!tokenAddress || !tokenName || !validatePrincipal(tokenAddress)) {
+  if (!tokenAddress || !tokenName || !validateStacksAddress(tokenAddress)) {
     const errorMessage = [
       `Invalid DAO token contract: ${daoTokenContract}`,
       usage,
