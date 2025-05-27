@@ -162,7 +162,7 @@ async function main() {
 
   const postConditions = [
     Pc.principal(address)
-      .willSendEq(totalCostAmount.toString())
+      .willSendGte(totalCostAmount.toString())
       .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenAssetName),
   ];
 
@@ -193,8 +193,7 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions: postConditions,
+    postConditionMode: PostConditionMode.Allow,
   };
 
   const transaction = await makeContractCall(txOptions);
