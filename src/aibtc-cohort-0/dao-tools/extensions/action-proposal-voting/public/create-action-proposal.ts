@@ -24,14 +24,14 @@ import { TokenInfoService } from "../../../../../api/token-info-service";
 const AIBTC_DAO_RUN_COST_AMOUNT = 10000000000; // u10000000000 from contract
 
 const usage =
-  "Usage: bun run create-action-proposal.ts <daoActionProposalVotingContract> <actionContractToExecute> <parametersHex> <daoTokenContract> [memo]";
+  "Usage: bun run create-action-proposal.ts <daoActionProposalVotingContract> <actionContractToExecute> <messageToSend> <daoTokenContract> [memo]";
 const usageExample =
-  'Example: bun run create-action-proposal.ts ST000000000000000000002AMW42H.aibtc-action-proposal-voting ST000000000000000000002AMW42H.some-action-contract 00 ST000000000000000000002AMW42H.aibtc-token "My proposal memo"';
+  'Example: bun run create-action-proposal.ts ST000000000000000000002AMW42H.aibtc-action-proposal-voting ST000000000000000000002AMW42H.some-action-contract "hello from the dao" ST000000000000000000002AMW42H.aibtc-token "My proposal memo"';
 
 interface ExpectedArgs {
   daoActionProposalVotingContract: string;
   actionContractToExecute: string;
-  parametersHex: string;
+  messageToSend: string;
   daoTokenContract: string;
   memo?: string;
 }
@@ -72,7 +72,7 @@ function validateArgs(): ExpectedArgs {
   const [
     daoActionProposalVotingContract,
     actionContractToExecute,
-    parametersHex,
+    messageToSend,
     daoTokenContract,
     memo,
   ] = process.argv.slice(2);
@@ -80,7 +80,7 @@ function validateArgs(): ExpectedArgs {
   if (
     !daoActionProposalVotingContract ||
     !actionContractToExecute ||
-    parametersHex === undefined || // empty hex string is valid '00'
+    !messageToSend ||
     !daoTokenContract
   ) {
     const errorMessage = [
@@ -121,7 +121,7 @@ function validateArgs(): ExpectedArgs {
   return {
     daoActionProposalVotingContract,
     actionContractToExecute,
-    parametersHex,
+    messageToSend,
     daoTokenContract,
     memo: memo || undefined,
   };
@@ -166,9 +166,22 @@ async function main() {
       .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenAssetName),
   ];
 
+  console.log("==========");
+  console.log(`Creating action proposal with the following parameters:`);
+  console.log(
+    `DAO Action Proposal Voting Contract: ${args.daoActionProposalVotingContract}`
+  );
+  console.log(`Action Contract to Execute: ${args.actionContractToExecute}`);
+  console.log(`Message: ${args.messageToSend}`);
+  console.log(`DAO Token Contract: ${args.daoTokenContract}`);
+  console.log(`Memo: ${args.memo || "None"}`);
+  console.log(`Total Cost Amount: ${totalCostAmount}`);
+  console.log(`Post Conditions: ${JSON.stringify(postConditions, null, 2)}`);
+  console.log(`Sender Address: ${address}`);
+
   const functionArgs = [
     Cl.principal(args.actionContractToExecute),
-    Cl.bufferFromHex(args.parametersHex),
+    Cl.bufferFromHex(Cl.serialize(Cl.stringAscii(args.messageToSend))),
     args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
   ];
 
