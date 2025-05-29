@@ -17,20 +17,18 @@ import type {
 import {
   broadcastTransaction,
   fetchCallReadOnlyFunction,
-  Cl,
   cvToValue,
   StacksTransactionWire,
   TxBroadcastResult,
   validateStacksAddress,
 } from "@stacks/transactions";
 import {
-  DeployedContractRegistryEntry,
   getContractName,
   getContractsBySubcategory,
 } from "./aibtc-dao/registries/dao-contract-registry";
 import { ContractCallsClient } from "./api/contract-calls-client";
 import { TokenInfoService } from "./api/token-info-service";
-import { ContractResponse, ContractSubtype, ContractType } from "@aibtc/types";
+import { ContractSubtype, ContractType } from "@aibtc/types";
 
 //////////////////////////////
 // GENERAL HELPERS
@@ -1177,8 +1175,7 @@ export type aibtcCoreRequestBody = {
 };
 
 export type aibtcCoreRequestContract = {
-  name: string; // matches repo contract names
-  display_name: string; // has token symbol in it
+  name: string; // displayName: name with token symbol
   type: ContractType; // type e.g. "EXTENSIONS", "ACTIONS"
   subtype: ContractSubtype<ContractType>; // subtype e.g. "ONCHAIN_MESSAGING", "SEND_MESSAGE"
   tx_id: string;

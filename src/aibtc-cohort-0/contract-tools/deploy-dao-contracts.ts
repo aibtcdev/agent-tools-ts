@@ -300,13 +300,12 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
     const coreRequestContracts: aibtcCoreRequestContract[] = contracts.map(
       (contract) =>
         ({
-          name: contract.name,
-          display_name: contract.displayName!,
+          name: contract.displayName!,
           type: contract.type,
           subtype: contract.subtype,
           tx_id: deploymentResults[contract.displayName!]?.txid!,
           deployer: address,
-          contract_principal: `${address}.${contract.name}`,
+          contract_principal: `${address}.${contract.displayName!}`,
         } satisfies aibtcCoreRequestContract)
     );
 
