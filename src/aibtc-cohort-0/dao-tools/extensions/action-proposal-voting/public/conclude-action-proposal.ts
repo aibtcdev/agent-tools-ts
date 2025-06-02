@@ -4,9 +4,6 @@ import {
   Pc,
   PostConditionMode,
   SignedContractCallOptions,
-  fetchCallReadOnlyFunction,
-  ClarityType,
-  cvToJSON,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -17,8 +14,8 @@ import {
   getNextNonce,
   sendToLLM,
   isValidContractPrincipal,
+  getCurrentActionProposalBond,
 } from "../../../../../utilities";
-import { TokenInfoService } from "../../../../../api/token-info-service";
 
 const usage =
   "Usage: bun run conclude-action-proposal.ts <daoActionProposalVotingContract> <proposalId> <actionContractToExecute> <daoTokenContract>";
@@ -30,11 +27,6 @@ interface ExpectedArgs {
   proposalId: number;
   actionContractToExecute: string;
   daoTokenContract: string;
-}
-
-interface ProposalDataForBond {
-  bond: string; // uint - string representation of number
-  // We only need bond for post-condition, but get-proposal returns more
 }
 
 function validateArgs(): ExpectedArgs {
@@ -104,42 +96,6 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function getProposalBond(
-  extensionContractAddress: string,
-  extensionContractName: string,
-  proposalId: number,
-  senderAddress: string,
-  network: any
-): Promise<string> {
-  const result = await fetchCallReadOnlyFunction({
-    contractAddress: extensionContractAddress,
-    contractName: extensionContractName,
-    functionName: "get-proposal",
-    functionArgs: [Cl.uint(proposalId)],
-    senderAddress,
-    network,
-  });
-
-  if (result.type === ClarityType.OptionalSome) {
-    const proposal = cvToJSON(result.value).value as ProposalDataForBond;
-    if (proposal && proposal.bond) {
-      return proposal.bond;
-    }
-    throw new Error(
-      `Could not find bond in proposal data: ${JSON.stringify(proposal)}`
-    );
-  } else if (result.type === ClarityType.OptionalNone) {
-    throw new Error(`Proposal with ID ${proposalId} not found.`);
-  } else {
-    const errorValue = (result as any).value
-      ? cvToJSON((result as any).value)
-      : result;
-    throw new Error(
-      `Error retrieving proposal for bond: ${JSON.stringify(errorValue)}`
-    );
-  }
-}
-
 async function main() {
   const args = validateArgs();
   const [extensionAddress, extensionName] =
@@ -154,28 +110,16 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  const proposalBondAmount = await getProposalBond(
-    extensionAddress,
-    extensionName,
-    args.proposalId,
-    address, // sender for read-only call
-    networkObj
+  const proposalBondInfo = await getCurrentActionProposalBond(
+    args.daoActionProposalVotingContract,
+    args.daoTokenContract,
+    address
   );
-
-  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
-  const daoTokenAssetName = await tokenInfoService.getAssetNameFromAbi(
-    args.daoTokenContract
-  );
-  if (!daoTokenAssetName) {
-    throw new Error(
-      `Could not determine asset name for DAO token contract: ${args.daoTokenContract}`
-    );
-  }
 
   const postConditions = [
     Pc.principal(`${extensionAddress}.${extensionName}`)
-      .willSendEq(proposalBondAmount)
-      .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenAssetName),
+      .willSendEq(proposalBondInfo.bond.valueOf())
+      .ft(`${daoTokenAddress}.${daoTokenName}`, proposalBondInfo.assetName),
   ];
 
   const functionArgs = [

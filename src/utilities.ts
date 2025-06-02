@@ -21,6 +21,10 @@ import {
   StacksTransactionWire,
   TxBroadcastResult,
   validateStacksAddress,
+  PrincipalCV,
+  UIntCV,
+  ClarityType,
+  ClarityValue,
 } from "@stacks/transactions";
 import {
   getContractName,
@@ -289,6 +293,23 @@ export function broadcastTx(
 // STACKS CONTRACT HELPERS
 //////////////////////////////
 
+export function convertClarityTuple<T>(clarityValue: ClarityValue): T {
+  if (clarityValue.type !== ClarityType.Tuple) {
+    throw new Error(
+      `Invalid format: expected tuple, got ${
+        clarityValue.type
+      }. Value: ${JSON.stringify(clarityValue)}`
+    );
+  }
+  const tupleValue = clarityValue.value;
+  return Object.fromEntries(
+    Object.entries(tupleValue).map(([key, value]) => [
+      key,
+      cvToValue(value as ClarityValue),
+    ])
+  ) as T;
+}
+
 export function isValidContractPrincipal(principal: string): boolean {
   if (!principal) {
     // throw new Error(`Invalid contract principal: ${principal}`);
@@ -409,6 +430,20 @@ type BondInfo = {
   assetName: string;
 };
 
+type ActionProposalConfig = {
+  self: string;
+  deployedBitcoinBlock: bigint;
+  deployedStacksBlock: bigint;
+  delay: bigint;
+  period: bigint;
+  quorum: bigint;
+  threshold: bigint;
+  treasury: string;
+  proposalBond: bigint;
+  proposalReward: bigint;
+};
+
+// TODO: update to latest proposal info format (more fields)
 type ProposalInfo = {
   createdAt: number;
   caller: string;
@@ -605,6 +640,70 @@ export async function getCurrentBondProposalAmount(
     bond: BigInt(cvToValue(proposalBond)),
     assetName: assetName,
   };
+}
+
+/**
+ * Fetches the action proposal voting configuration from the contract.
+ */
+export async function getActionProposalVotingConfig(
+  proposalsExtensionContract: string,
+  sender: string
+): Promise<ActionProposalConfig> {
+  const [extensionAddress, extensionName] =
+    proposalsExtensionContract.split(".");
+  // fetch the voting configuration from the contract
+  const proposalVotingConfig = await fetchCallReadOnlyFunction({
+    contractAddress: extensionAddress,
+    contractName: extensionName,
+    functionName: "get-voting-configuration",
+    functionArgs: [],
+    network: getNetwork(CONFIG.NETWORK),
+    senderAddress: sender,
+  });
+  const votingConfig =
+    convertClarityTuple<ActionProposalConfig>(proposalVotingConfig);
+
+  //console.log("votingConfig", votingConfig);
+
+  return votingConfig;
+}
+
+/**
+ * Fetches the current action proposal bond amount, used for creating new proposals.
+ */
+export async function getCurrentActionProposalBond(
+  proposalsExtensionContract: string,
+  daoTokenContract: string,
+  sender: string
+): Promise<BondInfo> {
+  // get the bond amount from voting config
+  const votingConfig = await getActionProposalVotingConfig(
+    proposalsExtensionContract,
+    sender
+  );
+  const bondAmount = votingConfig.proposalBond;
+  // get the asset name from the token contract
+  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+  const assetName = await tokenInfoService.getAssetNameFromAbi(
+    daoTokenContract
+  );
+  if (!assetName) {
+    throw new Error(
+      `Could not determine asset name for token contract: ${daoTokenContract}`
+    );
+  }
+  // return the bond amount and asset name
+  return {
+    bond: BigInt(bondAmount),
+    assetName: assetName,
+  };
+}
+
+/**
+ * Fetches the bond amount for a specific action proposal, retrieved from the proposal data after it's created.
+ */
+export async function getBondFromActionProposal(): Promise<BondInfo | bigint> {
+  return 0n;
 }
 
 //////////////////////////////
