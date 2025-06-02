@@ -12,8 +12,6 @@ import {
   getNetwork,
   getNextNonce,
   sendToLLM,
-  ToolResponse,
-  validateStacksAddress,
   isValidContractPrincipal,
 } from "../../../../../utilities";
 
