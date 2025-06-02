@@ -4,7 +4,6 @@ import {
   Pc,
   PostConditionMode,
   SignedContractCallOptions,
-  ClarityType,
   cvToJSON,
   fetchCallReadOnlyFunction,
 } from "@stacks/transactions";

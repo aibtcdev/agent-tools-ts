@@ -16,7 +16,6 @@ import {
   getNetwork,
   getNextNonce,
   sendToLLM,
-  validateStacksAddress,
   isValidContractPrincipal,
 } from "../../../../../utilities";
 import { TokenInfoService } from "../../../../../api/token-info-service";
@@ -37,7 +36,6 @@ interface ProposalDataForBond {
   bond: string; // uint - string representation of number
   // We only need bond for post-condition, but get-proposal returns more
 }
-
 
 function validateArgs(): ExpectedArgs {
   const [
@@ -81,7 +79,7 @@ function validateArgs(): ExpectedArgs {
   }
 
   if (!isValidContractPrincipal(actionContractToExecute)) {
-     const errorMessage = [
+    const errorMessage = [
       `Invalid action contract to execute: ${actionContractToExecute}`,
       usage,
       usageExample,
@@ -133,13 +131,14 @@ async function getProposalBond(
   } else if (result.type === ClarityType.OptionalNone) {
     throw new Error(`Proposal with ID ${proposalId} not found.`);
   } else {
-    const errorValue = (result as any).value ? cvToJSON((result as any).value) : result;
+    const errorValue = (result as any).value
+      ? cvToJSON((result as any).value)
+      : result;
     throw new Error(
       `Error retrieving proposal for bond: ${JSON.stringify(errorValue)}`
     );
   }
 }
-
 
 async function main() {
   const args = validateArgs();
