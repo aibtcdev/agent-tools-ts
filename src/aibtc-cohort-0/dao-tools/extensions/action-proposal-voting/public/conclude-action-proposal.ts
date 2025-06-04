@@ -135,8 +135,8 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions: postConditions,
+    postConditionMode: PostConditionMode.Allow,
+    //postConditions: postConditions,
   };
 
   const transaction = await makeContractCall(txOptions);
