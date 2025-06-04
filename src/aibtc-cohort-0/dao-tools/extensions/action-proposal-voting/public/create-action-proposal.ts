@@ -165,6 +165,7 @@ async function main() {
       .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenAssetName),
   ];
 
+  /*
   console.log("==========");
   console.log(`Creating action proposal with the following parameters:`);
   console.log(
@@ -177,10 +178,11 @@ async function main() {
   console.log(`Total Cost Amount: ${totalCostAmount}`);
   console.log(`Post Conditions: ${JSON.stringify(postConditions, null, 2)}`);
   console.log(`Sender Address: ${address}`);
+  */
 
   const functionArgs = [
     Cl.principal(args.actionContractToExecute),
-    Cl.bufferFromHex(Cl.serialize(Cl.stringAscii(args.messageToSend))),
+    Cl.bufferFromHex(Cl.serialize(Cl.stringUtf8(args.messageToSend))),
     args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
   ];
 
