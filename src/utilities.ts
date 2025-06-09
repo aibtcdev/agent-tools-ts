@@ -123,6 +123,8 @@ export interface AppConfig {
   AIBTC_DEFAULT_FEE: number;
   AIBTC_CORE_API_KEY: string;
   AIBTC_FAKTORY_API_KEY: string;
+  AIBTC_SPONSOR_HOST_URL: string;
+  AIBTC_SPONSOR_FEE_AMOUNT_USTX: number;
 }
 
 // define default values for app config
@@ -135,6 +137,8 @@ const DEFAULT_CONFIG: AppConfig = {
   AIBTC_DEFAULT_FEE: 100_000, // 0.1 STX
   AIBTC_CORE_API_KEY: "",
   AIBTC_FAKTORY_API_KEY: "",
+  AIBTC_SPONSOR_HOST_URL: "https://sponsoring.friedger.workers.dev",
+  AIBTC_SPONSOR_FEE_AMOUNT_USTX: 3000,
 };
 
 // load configuration from environment variables
@@ -153,6 +157,12 @@ function loadConfig(): AppConfig {
       process.env.AIBTC_CORE_API_KEY || DEFAULT_CONFIG.AIBTC_CORE_API_KEY,
     AIBTC_FAKTORY_API_KEY:
       process.env.AIBTC_FAKTORY_API_KEY || DEFAULT_CONFIG.AIBTC_FAKTORY_API_KEY,
+    AIBTC_SPONSOR_HOST_URL:
+      process.env.AIBTC_SPONSOR_HOST_URL ||
+      DEFAULT_CONFIG.AIBTC_SPONSOR_HOST_URL,
+    AIBTC_SPONSOR_FEE_AMOUNT_USTX:
+      Number(process.env.AIBTC_SPONSOR_FEE_AMOUNT_USTX) ||
+      DEFAULT_CONFIG.AIBTC_SPONSOR_FEE_AMOUNT_USTX,
   };
 }
 
@@ -308,6 +318,94 @@ export function broadcastTx(
       reject(createErrorResponse(error));
     }
   });
+}
+
+export async function broadcastSponsoredTx(
+  transaction: StacksTransactionWire, // This is Buffer from @stacks/transactions
+  network: StacksNetwork // StacksNetwork object from @stacks/network
+): Promise<ToolResponse<TxBroadcastResultWithLink>> {
+  console.log("[DEBUG] broadcastSponsoredTx: Initiating sponsored transaction broadcast.");
+
+  const currentNetworkName = getNetworkNameFromNetwork(network);
+  console.log(`[DEBUG] broadcastSponsoredTx: Determined network name: ${currentNetworkName}`);
+
+  const sponsorHostUrl = CONFIG.AIBTC_SPONSOR_HOST_URL;
+  const assetForFeePayment = "stx"; // Hardcoded as per requirement
+  const feesInAsset = String(CONFIG.AIBTC_SPONSOR_FEE_AMOUNT_USTX);
+
+  console.log(`[DEBUG] broadcastSponsoredTx: Sponsor Host URL: ${sponsorHostUrl}`);
+  console.log(`[DEBUG] broadcastSponsoredTx: Asset for Fee Payment: ${assetForFeePayment}`);
+  console.log(`[DEBUG] broadcastSponsoredTx: Fees in Asset (uSTX): ${feesInAsset}`);
+
+  const originatorTxRaw = transaction.toString('hex');
+  console.log(`[DEBUG] broadcastSponsoredTx: Originator Tx Raw (first 64 chars): ${originatorTxRaw.substring(0,64)}...`);
+
+  const sponsorApiUrl = `${sponsorHostUrl}/${assetForFeePayment}/v1/sponsor`;
+  console.log(`[DEBUG] broadcastSponsoredTx: Sponsor API URL: ${sponsorApiUrl}`);
+
+  const sponsorRequestBody = {
+    tx: originatorTxRaw,
+    feesInTokens: feesInAsset,
+    network: currentNetworkName,
+  };
+  console.log("[DEBUG] broadcastSponsoredTx: Sponsor Request Body:", JSON.stringify(sponsorRequestBody, null, 2));
+
+  try {
+    console.log("[DEBUG] broadcastSponsoredTx: Sending request to sponsor service...");
+    const response = await fetch(sponsorApiUrl, {
+      method: 'POST',
+      body: JSON.stringify(sponsorRequestBody),
+      headers: { 'Content-Type': 'text/plain' },
+    });
+
+    console.log(`[DEBUG] broadcastSponsoredTx: Sponsor service response status: ${response.status}`);
+
+    if (!response.ok) {
+      let errorDetails = `Sponsor API request failed with status: ${response.status}`;
+      try {
+        const errorJson = await response.json();
+        console.log("[DEBUG] broadcastSponsoredTx: Sponsor error response (JSON):", errorJson);
+        errorDetails += ` - ${errorJson.error || JSON.stringify(errorJson)}`;
+      } catch (e) {
+        console.log("[DEBUG] broadcastSponsoredTx: Sponsor error response (JSON parsing failed).");
+        try {
+          const errorText = await response.text();
+          console.log("[DEBUG] broadcastSponsoredTx: Sponsor error response (Text):", errorText);
+          errorDetails += ` - ${errorText}`;
+        } catch (e2) {
+          console.log("[DEBUG] broadcastSponsoredTx: Sponsor error response (Text parsing also failed).");
+        }
+      }
+      console.error(`[DEBUG] broadcastSponsoredTx: Error: ${errorDetails}`);
+      return createErrorResponse(errorDetails);
+    }
+
+    const responseData = await response.json();
+    console.log("[DEBUG] broadcastSponsoredTx: Sponsor success response data:", JSON.stringify(responseData, null, 2));
+
+    if (!responseData.result || !responseData.result.txid) {
+      const errMsg = "Sponsored transaction broadcast failed: Invalid response from sponsor service. Missing txid.";
+      console.error(`[DEBUG] broadcastSponsoredTx: Error: ${errMsg}`);
+      console.error("[DEBUG] broadcastSponsoredTx: Full invalid responseData:", responseData);
+      return createErrorResponse(errMsg);
+    }
+
+    const explorerUrl = getExplorerUrl(currentNetworkName, responseData.result.txid);
+    const successResponse: ToolResponse<TxBroadcastResultWithLink> = {
+      success: true,
+      message: `Sponsored transaction broadcasted successfully: 0x${responseData.result.txid}`,
+      data: {
+        ...responseData.result,
+        link: explorerUrl,
+      },
+    };
+    console.log("[DEBUG] broadcastSponsoredTx: Successfully processed sponsored transaction:", JSON.stringify(successResponse, null, 2));
+    return successResponse;
+
+  } catch (error) {
+    console.error("[DEBUG] broadcastSponsoredTx: Fetch request to sponsor service failed:", error);
+    return createErrorResponse(error);
+  }
 }
 
 //////////////////////////////
