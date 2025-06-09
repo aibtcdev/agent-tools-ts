@@ -340,7 +340,7 @@ export async function broadcastSponsoredTx(
   const originatorTxRaw = transaction.toString('hex');
   console.log(`[DEBUG] broadcastSponsoredTx: Originator Tx Raw (first 64 chars): ${originatorTxRaw.substring(0,64)}...`);
 
-  const sponsorApiUrl = `${sponsorHostUrl}/${assetForFeePayment}/v1/sponsor`;
+  const sponsorApiUrl = `${sponsorHostUrl}/v1/sponsor`;
   console.log(`[DEBUG] broadcastSponsoredTx: Sponsor API URL: ${sponsorApiUrl}`);
 
   const sponsorRequestBody = {
