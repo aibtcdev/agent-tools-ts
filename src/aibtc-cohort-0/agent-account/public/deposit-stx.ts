@@ -4,9 +4,13 @@ import {
   SignedContractCallOptions,
   PostConditionMode,
   Pc,
+  makeUnsignedContractCall,
+  privateKeyToPublic,
+  UnsignedContractCallOptions,
 } from "@stacks/transactions";
 import {
   broadcastTx,
+  broadcastSponsoredTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
@@ -71,10 +75,17 @@ async function main() {
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
+    CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  const pubKey = privateKeyToPublic(key);
+
+  /**
+   * Uncomment to send directly by signing / paying for the transaction
+   * requires makeContractCall() and broadcastTx()
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  */
 
   const postConditions = [
     Pc.principal(address) // The sender (user running the script)
@@ -84,6 +95,9 @@ async function main() {
 
   const functionArgs = [Cl.uint(args.amount)];
 
+  /**
+   * Uncomment to send directly by signing / paying for the transaction
+   * requires makeContractCall() and broadcastTx()
   const txOptions: SignedContractCallOptions = {
     contractAddress,
     contractName,
@@ -95,10 +109,38 @@ async function main() {
     postConditionMode: PostConditionMode.Deny,
     postConditions,
   };
+  */
 
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+  const unsignedTxOptions: UnsignedContractCallOptions = {
+    contractAddress,
+    contractName,
+    functionName: "deposit-stx",
+    functionArgs,
+    network: networkObj,
+    publicKey: pubKey,
+    sponsored: true,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
+  };
+
+  try {
+    const unsignedTx = await makeUnsignedContractCall(unsignedTxOptions);
+    const broadcastResponse = await broadcastSponsoredTx(
+      unsignedTx,
+      networkObj
+    );
+    // const transaction = await makeContractCall(txOptions);
+    // const broadcastResponse = await broadcastTx(transaction, networkObj);
+    return broadcastResponse;
+  } catch (error) {
+    const errorMessage = [
+      `Error depositing STX to agent account:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
 }
 
 main()

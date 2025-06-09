@@ -4,9 +4,13 @@ import {
   SignedContractCallOptions,
   PostConditionMode,
   Pc,
+  makeUnsignedContractCall,
+  privateKeyToPublic,
+  UnsignedContractCallOptions,
 } from "@stacks/transactions";
 import {
   broadcastTx,
+  broadcastSponsoredTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
@@ -86,10 +90,17 @@ async function main() {
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
+    CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  const pubKey = privateKeyToPublic(key);
+
+  /**
+   * Uncomment to send directly by signing / paying for the transaction
+   * requires makeContractCall() and broadcastTx()
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  */
 
   try {
     const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
@@ -111,6 +122,9 @@ async function main() {
 
     const functionArgs = [Cl.principal(args.ftContract), Cl.uint(args.amount)];
 
+    /**
+     * Uncomment to send directly by signing / paying for the transaction
+     * requires makeContractCall() and broadcastTx()
     const txOptions: SignedContractCallOptions = {
       contractAddress,
       contractName,
@@ -122,14 +136,48 @@ async function main() {
       postConditionMode: PostConditionMode.Deny,
       postConditions,
     };
+    */
 
-    const transaction = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTx(transaction, networkObj);
-    return broadcastResponse;
-  } catch (error) {
-    if (error instanceof ContractCallError) {
-      throw new Error(`Contract call failed: ${error.message} (${error.code})`);
+    const unsignedTxOptions: UnsignedContractCallOptions = {
+      contractAddress,
+      contractName,
+      functionName: "deposit-ft",
+      functionArgs,
+      network: networkObj,
+      publicKey: pubKey,
+      sponsored: true,
+      postConditionMode: PostConditionMode.Deny,
+      postConditions,
+    };
+
+    try {
+      const unsignedTx = await makeUnsignedContractCall(unsignedTxOptions);
+      const broadcastResponse = await broadcastSponsoredTx(
+        unsignedTx,
+        networkObj
+      );
+      // const transaction = await makeContractCall(txOptions);
+      // const broadcastResponse = await broadcastTx(transaction, networkObj);
+      return broadcastResponse;
+    } catch (txError) {
+      const errorMessage = [
+        `Error depositing FT to agent account:`,
+        `${txError instanceof Error ? txError.message : String(txError)}`,
+        usage,
+        usageExample,
+      ].join("\n");
+      throw new Error(errorMessage);
     }
+  } catch (error) {
+    // This outer catch handles errors from getAssetNameFromAbi or the rethrown txError
+    if (error instanceof ContractCallError) {
+      // This might catch errors from getAssetNameFromAbi if it throws ContractCallError
+      throw new Error(
+        `Operation failed (possibly fetching token info): ${error.message} (${error.code})`
+      );
+    }
+    // If it's the rethrown error from the inner catch, it will be a generic Error.
+    // If it's another error from getAssetNameFromAbi, it will be whatever that throws.
     throw error;
   }
 }

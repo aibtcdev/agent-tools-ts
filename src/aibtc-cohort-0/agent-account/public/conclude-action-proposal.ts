@@ -4,9 +4,13 @@ import {
   Pc,
   PostConditionMode,
   SignedContractCallOptions,
+  makeUnsignedContractCall,
+  privateKeyToPublic,
+  UnsignedContractCallOptions,
 } from "@stacks/transactions";
 import {
   broadcastTx,
+  broadcastSponsoredTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
@@ -106,10 +110,17 @@ async function main() {
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
+    CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  const pubKey = privateKeyToPublic(key);
+
+  /**
+   * Uncomment to send directly by signing / paying for the transaction
+   * requires makeContractCall() and broadcastTx()
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  */
 
   // Get proposal info to determine bond amount for post-condition
   // The agent account is the recipient of the bond.
@@ -132,6 +143,9 @@ async function main() {
     Cl.principal(args.actionContract),
   ];
 
+  /**
+   * Uncomment to send directly by signing / paying for the transaction
+   * requires makeContractCall() and broadcastTx()
   const txOptions: SignedContractCallOptions = {
     contractAddress,
     contractName,
@@ -143,10 +157,38 @@ async function main() {
     postConditionMode: PostConditionMode.Deny,
     postConditions,
   };
+  */
 
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+  const unsignedTxOptions: UnsignedContractCallOptions = {
+    contractAddress,
+    contractName,
+    functionName: "conclude-action-proposal",
+    functionArgs,
+    network: networkObj,
+    publicKey: pubKey,
+    sponsored: true,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
+  };
+
+  try {
+    const unsignedTx = await makeUnsignedContractCall(unsignedTxOptions);
+    const broadcastResponse = await broadcastSponsoredTx(
+      unsignedTx,
+      networkObj
+    );
+    // const transaction = await makeContractCall(txOptions);
+    // const broadcastResponse = await broadcastTx(transaction, networkObj);
+    return broadcastResponse;
+  } catch (error) {
+    const errorMessage = [
+      `Error concluding action proposal via agent account:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
 }
 
 main()
