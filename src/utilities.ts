@@ -337,10 +337,10 @@ export async function broadcastSponsoredTx(
   console.log(`[DEBUG] broadcastSponsoredTx: Asset for Fee Payment: ${assetForFeePayment}`);
   console.log(`[DEBUG] broadcastSponsoredTx: Fees in Asset (uSTX): ${feesInAsset}`);
 
-  const originatorTxRaw = transaction.toString('hex');
+  const originatorTxRaw = transaction.serialize()
   console.log(`[DEBUG] broadcastSponsoredTx: Originator Tx Raw (first 64 chars): ${originatorTxRaw.substring(0,64)}...`);
 
-  const sponsorApiUrl = `${sponsorHostUrl}/v1/sponsor`;
+  const sponsorApiUrl = `${sponsorHostUrl}/dao/v1/sponsor`;
   console.log(`[DEBUG] broadcastSponsoredTx: Sponsor API URL: ${sponsorApiUrl}`);
 
   const sponsorRequestBody = {
