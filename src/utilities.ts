@@ -3,6 +3,9 @@ import {
   StacksNetwork,
   StacksNetworkName,
   STACKS_TESTNET,
+  STACKS_MAINNET,
+  STACKS_DEVNET,
+  STACKS_MOCKNET,
   TransactionVersion,
 } from "@stacks/network";
 import {
@@ -159,6 +162,24 @@ export const CONFIG = loadConfig();
 //////////////////////////////
 // NETWORK HELPERS
 //////////////////////////////
+
+export function getNetworkNameFromNetwork(network: StacksNetwork): StacksNetworkName {
+  if (network.chainId === STACKS_MAINNET.chainId) {
+    return "mainnet";
+  } else if (network.chainId === STACKS_TESTNET.chainId) {
+    return "testnet";
+  } else if (STACKS_DEVNET && network.chainId === STACKS_DEVNET.chainId) {
+    // STACKS_DEVNET might not be exported or available in all versions, check for existence
+    return "devnet";
+  } else if (STACKS_MOCKNET && network.chainId === STACKS_MOCKNET.chainId) {
+    // STACKS_MOCKNET might not be exported or available in all versions, check for existence
+    return "mocknet";
+  }
+  console.warn(
+    `Unknown StacksNetwork object provided (Chain ID: ${network.chainId}). Falling back to default network name from CONFIG.`
+  );
+  return CONFIG.NETWORK;
+}
 
 // get network from principal
 // limited to just testnet/mainnet for now
