@@ -3,6 +3,9 @@ import {
   makeContractCall,
   SignedContractCallOptions,
   PostConditionMode, // Though not strictly needed here, good for consistency
+  makeUnsignedContractCall,
+  privateKeyToPublic,
+  UnsignedContractCallOptions,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -14,6 +17,7 @@ import {
   getNextNonce,
   sendToLLM,
   isValidContractPrincipal,
+  broadcastSponsoredTx,
 } from "../../../../../utilities";
 
 const usage =
@@ -91,10 +95,19 @@ async function main() {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  const pubKey = privateKeyToPublic(key);
+
+  /**
+   * Uncomment to send directly by signing / paying for the transaction
+   * requires makeContractCall() and broadcastTx()
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  */
 
   const functionArgs = [Cl.uint(args.proposalId), Cl.bool(args.voteFor)];
 
+  /**
+   * Uncomment to send directly by signing / paying for the transaction
+   * requires makeContractCall() and broadcastTx()
   const txOptions: SignedContractCallOptions = {
     contractAddress: extensionAddress,
     contractName: extensionName,
@@ -106,10 +119,37 @@ async function main() {
     // No direct fund transfer post-conditions from the caller for this action
     postConditionMode: PostConditionMode.Allow,
   };
+  */
 
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+  const unsignedTxOptions: UnsignedContractCallOptions = {
+    contractAddress: extensionAddress,
+    contractName: extensionName,
+    functionName: "vote-on-action-proposal",
+    functionArgs,
+    network: networkObj,
+    publicKey: pubKey,
+    sponsored: true,
+    postConditionMode: PostConditionMode.Allow,
+  };
+
+  try {
+    const unsignedTx = await makeUnsignedContractCall(unsignedTxOptions);
+    const broadcastResponse = await broadcastSponsoredTx(
+      unsignedTx,
+      networkObj
+    );
+    // const transaction = await makeContractCall(txOptions);
+    // const broadcastResponse = await broadcastTx(transaction, networkObj);
+    return broadcastResponse;
+  } catch (error) {
+    const errorMessage = [
+      `Error voting on action proposal:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
 }
 
 main()

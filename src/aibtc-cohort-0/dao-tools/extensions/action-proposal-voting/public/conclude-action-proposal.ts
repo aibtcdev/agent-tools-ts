@@ -4,6 +4,9 @@ import {
   Pc,
   PostConditionMode,
   SignedContractCallOptions,
+  makeUnsignedContractCall,
+  privateKeyToPublic,
+  UnsignedContractCallOptions,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -15,6 +18,7 @@ import {
   sendToLLM,
   isValidContractPrincipal,
   getCurrentActionProposalBond,
+  broadcastSponsoredTx,
 } from "../../../../../utilities";
 
 const usage =
@@ -108,7 +112,13 @@ async function main() {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  const pubKey = privateKeyToPublic(key);
+
+  /**
+   * Uncomment to send directly by signing / paying for the transaction
+   * requires makeContractCall() and broadcastTx()
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  */
 
   const proposalBondInfo = await getCurrentActionProposalBond(
     args.daoActionProposalVotingContract,
@@ -127,6 +137,9 @@ async function main() {
     Cl.principal(args.actionContractToExecute),
   ];
 
+  /**
+   * Uncomment to send directly by signing / paying for the transaction
+   * requires makeContractCall() and broadcastTx()
   const txOptions: SignedContractCallOptions = {
     contractAddress: extensionAddress,
     contractName: extensionName,
@@ -136,12 +149,40 @@ async function main() {
     nonce: nextPossibleNonce,
     senderKey: key,
     postConditionMode: PostConditionMode.Allow,
-    //postConditions: postConditions,
+    //postConditions: postConditions, // Ensure this matches the original intent
+  };
+  */
+
+  const unsignedTxOptions: UnsignedContractCallOptions = {
+    contractAddress: extensionAddress,
+    contractName: extensionName,
+    functionName: "conclude-action-proposal",
+    functionArgs,
+    network: networkObj,
+    publicKey: pubKey,
+    sponsored: true,
+    postConditionMode: PostConditionMode.Allow,
+    //postConditions: postConditions, // Ensure this matches the original intent
   };
 
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+  try {
+    const unsignedTx = await makeUnsignedContractCall(unsignedTxOptions);
+    const broadcastResponse = await broadcastSponsoredTx(
+      unsignedTx,
+      networkObj
+    );
+    // const transaction = await makeContractCall(txOptions);
+    // const broadcastResponse = await broadcastTx(transaction, networkObj);
+    return broadcastResponse;
+  } catch (error) {
+    const errorMessage = [
+      `Error concluding action proposal:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
 }
 
 main()
