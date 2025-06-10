@@ -28,11 +28,7 @@ interface ExpectedArgs {
 function validateArgs(): ExpectedArgs {
   const [agentAccountContract, amountStr] = process.argv.slice(2);
   const amount = parseInt(amountStr);
-  if (
-    !agentAccountContract ||
-    !amountStr ||
-    isNaN(amount)
-  ) {
+  if (!agentAccountContract || !amountStr || isNaN(amount)) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -64,9 +60,7 @@ function validateArgs(): ExpectedArgs {
 
 async function main() {
   const args = validateArgs();
-  const [contractAddress, contractName] = args.agentAccountContract.split(
-    "."
-  );
+  const [contractAddress, contractName] = args.agentAccountContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(

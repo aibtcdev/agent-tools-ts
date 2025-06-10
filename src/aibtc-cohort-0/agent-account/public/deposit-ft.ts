@@ -32,12 +32,7 @@ interface ExpectedArgs {
 function validateArgs(): ExpectedArgs {
   const [agentAccountContract, ftContract, amountStr] = process.argv.slice(2);
   const amount = parseInt(amountStr);
-  if (
-    !agentAccountContract ||
-    !ftContract ||
-    !amountStr ||
-    isNaN(amount)
-  ) {
+  if (!agentAccountContract || !ftContract || !amountStr || isNaN(amount)) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -78,9 +73,7 @@ function validateArgs(): ExpectedArgs {
 
 async function main() {
   const args = validateArgs();
-  const [contractAddress, contractName] = args.agentAccountContract.split(
-    "."
-  );
+  const [contractAddress, contractName] = args.agentAccountContract.split(".");
   const [ftAddress, ftName] = args.ftContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
