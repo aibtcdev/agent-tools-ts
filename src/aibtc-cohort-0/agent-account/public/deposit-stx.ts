@@ -4,12 +4,8 @@ import {
   SignedContractCallOptions,
   PostConditionMode,
   Pc,
-  makeUnsignedContractCall,
-  privateKeyToPublic,
-  UnsignedContractCallOptions,
 } from "@stacks/transactions";
 import {
-  broadcastTx,
   broadcastSponsoredTx,
   CONFIG,
   createErrorResponse,
@@ -75,17 +71,11 @@ async function main() {
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
-    CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  const pubKey = privateKeyToPublic(key);
 
-  /**
-   * Uncomment to send directly by signing / paying for the transaction
-   * requires makeContractCall() and broadcastTx()
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-  */
 
   const postConditions = [
     Pc.principal(address) // The sender (user running the script)
@@ -95,9 +85,6 @@ async function main() {
 
   const functionArgs = [Cl.uint(args.amount)];
 
-  /**
-   * Uncomment to send directly by signing / paying for the transaction
-   * requires makeContractCall() and broadcastTx()
   const txOptions: SignedContractCallOptions = {
     contractAddress,
     contractName,
@@ -108,29 +95,16 @@ async function main() {
     senderKey: key,
     postConditionMode: PostConditionMode.Deny,
     postConditions,
-  };
-  */
-
-  const unsignedTxOptions: UnsignedContractCallOptions = {
-    contractAddress,
-    contractName,
-    functionName: "deposit-stx",
-    functionArgs,
-    network: networkObj,
-    publicKey: pubKey,
+    fee: 0,
     sponsored: true,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions,
   };
 
   try {
-    const unsignedTx = await makeUnsignedContractCall(unsignedTxOptions);
+    const transaction = await makeContractCall(txOptions);
     const broadcastResponse = await broadcastSponsoredTx(
-      unsignedTx,
+      transaction,
       networkObj
     );
-    // const transaction = await makeContractCall(txOptions);
-    // const broadcastResponse = await broadcastTx(transaction, networkObj);
     return broadcastResponse;
   } catch (error) {
     const errorMessage = [

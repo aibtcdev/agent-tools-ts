@@ -2,13 +2,9 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
-  PostConditionMode, // Though not strictly needed here, good for consistency
-  makeUnsignedContractCall,
-  privateKeyToPublic,
-  UnsignedContractCallOptions,
+  PostConditionMode,
 } from "@stacks/transactions";
 import {
-  broadcastTx,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
@@ -95,19 +91,11 @@ async function main() {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-  const pubKey = privateKeyToPublic(key);
 
-  /**
-   * Uncomment to send directly by signing / paying for the transaction
-   * requires makeContractCall() and broadcastTx()
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
-  */
 
   const functionArgs = [Cl.uint(args.proposalId), Cl.bool(args.voteFor)];
 
-  /**
-   * Uncomment to send directly by signing / paying for the transaction
-   * requires makeContractCall() and broadcastTx()
   const txOptions: SignedContractCallOptions = {
     contractAddress: extensionAddress,
     contractName: extensionName,
@@ -116,30 +104,17 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    // No direct fund transfer post-conditions from the caller for this action
     postConditionMode: PostConditionMode.Allow,
-  };
-  */
-
-  const unsignedTxOptions: UnsignedContractCallOptions = {
-    contractAddress: extensionAddress,
-    contractName: extensionName,
-    functionName: "vote-on-action-proposal",
-    functionArgs,
-    network: networkObj,
-    publicKey: pubKey,
+    fee: 0,
     sponsored: true,
-    postConditionMode: PostConditionMode.Allow,
   };
 
   try {
-    const unsignedTx = await makeUnsignedContractCall(unsignedTxOptions);
+    const transaction = await makeContractCall(txOptions);
     const broadcastResponse = await broadcastSponsoredTx(
-      unsignedTx,
+      transaction,
       networkObj
     );
-    // const transaction = await makeContractCall(txOptions);
-    // const broadcastResponse = await broadcastTx(transaction, networkObj);
     return broadcastResponse;
   } catch (error) {
     const errorMessage = [
