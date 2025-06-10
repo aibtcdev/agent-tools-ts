@@ -1,4 +1,3 @@
-// exec-buy-seats.ts
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 import {
   makeContractCall,
@@ -7,118 +6,100 @@ import {
 import {
   broadcastTx,
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  sendToLLM,
 } from "../utilities";
-
-const seatCount = Number(process.argv[2]); // Number of seats to buy
-const prelaunchContract = process.argv[3]; // Pre-launch contract address
-const contractType = (process.argv[4] as "meme" | "dao" | "helico") || "dao"; // Default to dao
-
-if (!seatCount || !prelaunchContract) {
-  console.error("Please provide all required parameters:");
-  console.error(
-    "bun run src/stacks-faktory/exec-buy-seats.ts <seat_count> <prelaunch_contract> [contract_type]"
-  );
-  console.error("Contract type can be 'meme', 'dao' (default), or 'helico'");
-  console.error("Examples:");
-  console.error(
-    "  DAO:  bun run src/stacks-faktory/exec-buy-seats.ts 3 STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.simpl1-pre-faktory dao"
-  );
-  process.exit(1);
-}
 
 const faktoryConfig = {
   network: CONFIG.NETWORK as "mainnet" | "testnet",
   hiroApiKey: CONFIG.HIRO_API_KEY,
 };
 
-(async () => {
-  try {
-    const { address, key } = await deriveChildAccount(
-      CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
+const usage =
+  "Usage: bun run exec-buy-seats.ts <seat_count> <prelaunch_contract> [contract_type]";
+const usageExample =
+  "Example: bun run exec-buy-seats.ts 3 STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.simpl1-pre-faktory dao";
 
-    const sdk = new FaktorySDK(faktoryConfig);
-    const networkObj = getNetwork(CONFIG.NETWORK);
-    const nonce = await getNextNonce(CONFIG.NETWORK, address);
+interface ExpectedArgs {
+  seatCount: number; // Number of seats to buy
+  prelaunchContract: string; // Pre-launch contract address
+  contractType: "meme" | "dao" | "helico"; // Contract type
+}
 
-    console.log("SDK version check...");
-    console.log(
-      "Available methods:",
-      Object.getOwnPropertyNames(Object.getPrototypeOf(sdk))
-    );
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [seatCountStr, prelaunchContract, contractTypeStr] =
+    process.argv.slice(2);
+  const seatCount = Number(seatCountStr);
+  const contractType = (contractTypeStr as "meme" | "dao" | "helico") || "dao";
 
-    // Try to get pre-launch info first
-    console.log("\nGetting pre-launch status...");
-    try {
-      const status = await sdk.getPrelaunchStatus(prelaunchContract, address);
-      console.log("Pre-launch status retrieved successfully");
-
-      const userSeats = status.userInfo.value.value["seats-owned"].value;
-      const remainingSeats =
-        status.remainingSeats.value.value["remainin-seats"].value;
-
-      console.log(`Current seats owned: ${userSeats}`);
-      console.log(`Remaining seats: ${remainingSeats}`);
-    } catch (error: any) {
-      console.log("Could not get pre-launch status:", error.message);
-    }
-
-    // Get buy seats parameters
-    console.log("\nPreparing buy seats transaction...");
-    const buySeatsParams = await sdk.getBuySeatsParams({
-      prelaunchContract,
-      seatCount,
-      senderAddress: address,
-      contractType: contractType,
-    });
-
-    console.log(
-      `Cost: ${buySeatsParams.estimatedCost} satoshis (${
-        buySeatsParams.estimatedCost / 100000000
-      } BTC)`
-    );
-    console.log(`Current seats: ${buySeatsParams.currentSeats}`);
-    console.log(`Max additional seats: ${buySeatsParams.maxAdditionalSeats}`);
-    console.log(`Detected contract type: ${buySeatsParams.detectedType}`);
-
-    // Add required properties for signing - use v6 pattern like aibtcdev main
-    const txOptions: SignedContractCallOptions = {
-      ...(buySeatsParams as any), // v6 casting
-      network: networkObj,
-      nonce,
-      senderKey: key,
-    };
-
-    // Create and broadcast transaction
-    console.log("\nCreating and broadcasting transaction...");
-    const tx = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTx(tx, networkObj);
-
-    const result = {
-      success: broadcastResponse.success ? true : false,
-      message: "Seat purchase transaction broadcast successfully!",
-      data: broadcastResponse.data,
-      contractType: buySeatsParams.detectedType,
-      seatCount,
-      estimatedCost: buySeatsParams.estimatedCost,
-    };
-
-    console.log(JSON.stringify(result, null, 2));
-  } catch (error: any) {
-    console.error("Error executing buy seats transaction:", error);
-
-    // More detailed error info
-    if (error.message.includes("getBuySeatsParams is not a function")) {
-      console.error("\nSDK Debug Info:");
-      console.error("This suggests a version mismatch. Try:");
-      console.error("npm install @faktoryfun/core-sdk@latest");
-    }
-
-    process.exit(1);
+  if (!seatCount || !prelaunchContract || isNaN(seatCount)) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
-})();
+  // verify contract address extracted from arguments
+  const [contractAddress, contractName] = prelaunchContract.split(".");
+  if (!contractAddress || !contractName) {
+    const errorMessage = [
+      `Invalid contract address: ${prelaunchContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // return validated arguments
+  return {
+    seatCount,
+    prelaunchContract,
+    contractType,
+  };
+}
+
+async function main() {
+  // validate and store provided args
+  const args = validateArgs();
+  // setup network and wallet info
+  const networkObj = getNetwork(CONFIG.NETWORK);
+  const { address, key } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  const sdk = new FaktorySDK(faktoryConfig);
+
+  // get buy seats parameters
+  const buySeatsParams = await sdk.getBuySeatsParams({
+    prelaunchContract: args.prelaunchContract,
+    seatCount: args.seatCount,
+    senderAddress: address,
+    contractType: args.contractType,
+  });
+
+  // add required properties for signing
+  const txOptions: SignedContractCallOptions = {
+    ...(buySeatsParams as any),
+    network: networkObj,
+    nonce: nextPossibleNonce,
+    senderKey: key,
+  };
+
+  // broadcast transaction and return response
+  const transaction = await makeContractCall(txOptions);
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
+}
+
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });

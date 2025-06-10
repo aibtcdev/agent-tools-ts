@@ -1,4 +1,3 @@
-// exec-refund.ts
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 import {
   makeContractCall,
@@ -7,87 +6,95 @@ import {
 import {
   broadcastTx,
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  sendToLLM,
 } from "../utilities";
-
-const prelaunchContract = process.argv[2]; // Pre-launch contract address
-const contractType = (process.argv[3] as "meme" | "dao") || "meme"; // Contract type: "meme" or "dao"
-
-if (!prelaunchContract) {
-  console.error("Please provide the pre-launch contract address:");
-  console.error(
-    "bun run src/stacks-faktory/exec-refund.ts <prelaunch_contract> [contract_type]"
-  );
-  console.error("Contract type can be 'meme' (default) or 'dao'");
-  console.error("Examples:");
-  console.error(
-    "  Meme: bun run src/stacks-faktory/exec-refund.ts SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.fakfun-pre-faktory meme"
-  );
-  console.error(
-    "  DAO:  bun run src/stacks-faktory/exec-refund.ts SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.aidao-pre-faktory dao"
-  );
-  process.exit(1);
-}
 
 const faktoryConfig = {
   network: CONFIG.NETWORK as "mainnet" | "testnet",
   hiroApiKey: CONFIG.HIRO_API_KEY,
 };
 
-(async () => {
-  try {
-    const { address, key } = await deriveChildAccount(
-      CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
+const usage =
+  "Usage: bun run exec-refund.ts <prelaunch_contract> [contract_type]";
+const usageExample =
+  "Example: bun run exec-refund.ts STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.simpl1-pre-faktory dao";
 
-    const sdk = new FaktorySDK(faktoryConfig);
-    const networkObj = getNetwork(CONFIG.NETWORK);
-    const nonce = await getNextNonce(CONFIG.NETWORK, address);
+interface ExpectedArgs {
+  prelaunchContract: string; // Pre-launch contract address
+  contractType: "meme" | "dao" | "helico"; // Contract type
+}
 
-    // Get refund parameters
-    console.log("\nPreparing refund transaction...");
-    const refundParams = await sdk.getRefundParams({
-      prelaunchContract,
-      senderAddress: address,
-      contractType: contractType,
-    });
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [prelaunchContract, contractTypeStr] = process.argv.slice(2);
+  const contractType = (contractTypeStr as "meme" | "dao" | "helico") || "dao";
 
-    console.log(
-      `Refund amount: ${refundParams.refundAmount} satoshis (${
-        refundParams.refundAmount / 100000000
-      } BTC)`
-    );
-    console.log(`Seats to refund: ${refundParams.seatsToRefund}`);
-
-    // Add required properties for signing - use v6 pattern
-    const txOptions: SignedContractCallOptions = {
-      ...(refundParams as any), // v6 casting
-      network: networkObj,
-      nonce,
-      senderKey: key,
-    };
-
-    // Create and broadcast transaction
-    console.log("\nCreating and broadcasting transaction...");
-    const tx = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTx(tx, networkObj);
-
-    const result = {
-      success: broadcastResponse.success ? true : false,
-      message: "Refund transaction broadcast successfully!",
-      data: broadcastResponse.data,
-      contractType: contractType,
-      refundAmount: refundParams.refundAmount,
-      seatsRefunded: refundParams.seatsToRefund,
-    };
-
-    console.log(JSON.stringify(result, null, 2));
-  } catch (error) {
-    console.error("Error executing refund transaction:", error);
-    process.exit(1);
+  if (!prelaunchContract) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
-})();
+  // verify contract address extracted from arguments
+  const [contractAddress, contractName] = prelaunchContract.split(".");
+  if (!contractAddress || !contractName) {
+    const errorMessage = [
+      `Invalid contract address: ${prelaunchContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // return validated arguments
+  return {
+    prelaunchContract,
+    contractType,
+  };
+}
+
+async function main() {
+  // validate and store provided args
+  const args = validateArgs();
+  // setup network and wallet info
+  const networkObj = getNetwork(CONFIG.NETWORK);
+  const { address, key } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  const sdk = new FaktorySDK(faktoryConfig);
+
+  // get refund parameters
+  const refundParams = await sdk.getRefundParams({
+    prelaunchContract: args.prelaunchContract,
+    senderAddress: address,
+    contractType: args.contractType,
+  });
+
+  // add required properties for signing
+  const txOptions: SignedContractCallOptions = {
+    ...(refundParams as any),
+    network: networkObj,
+    nonce: nextPossibleNonce,
+    senderKey: key,
+  };
+
+  // broadcast transaction and return response
+  const transaction = await makeContractCall(txOptions);
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
+}
+
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });
