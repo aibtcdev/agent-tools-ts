@@ -1,15 +1,17 @@
+import Bun from "bun";
+
 // --- Configuration ---
-// Replace these placeholder values with actual data for your test environment.
 const DAO_ACTION_PROPOSAL_VOTING_CONTRACT =
-  "ST000000000000000000002AMW42H.aibtc-action-proposal-voting";
+  "ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.fast-action-proposal-voting";
 const ACTION_CONTRACT_TO_EXECUTE =
-  "ST000000000000000000002AMW42H.some-action-contract";
-const DAO_TOKEN_CONTRACT = "ST000000000000000000002AMW42H.aibtc-token";
-const VOTER_ADDRESS = "ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5";
-const PROPOSAL_ID = "1";
-const STACKS_BLOCK_HEIGHT = "150000";
-const MESSAGE_TO_SEND = "A test message from our script";
-const MEMO = "A test memo";
+  "ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.fast-action-send-message";
+const DAO_TOKEN_CONTRACT =
+  "ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.fast-faktory";
+const VOTER_ADDRESS = "ST1B9N1SJPRK9D3H98FWGT8AXEGH8T4BH5P38Z4ZC";
+const PROPOSAL_ID = "30";
+const STACKS_BLOCK_HEIGHT = "2114000";
+const MESSAGE_TO_SEND = "A test message from our test script. TEST.";
+const MEMO = "A test memo because that's another way to pass data.";
 
 /**
  * Executes a shell command using Bun.spawnSync and logs its output.
