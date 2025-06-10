@@ -182,20 +182,9 @@ async function main() {
   */
 
   const stringCV = Cl.stringUtf8(args.messageToSend);
-  console.log("String CV:", stringCV);
-
-  const stringCVAscii = Cl.stringAscii(args.messageToSend);
-  console.log("String CV Ascii:", stringCVAscii);
-
-  const formattedBuffer = Cl.bufferFromUtf8(args.messageToSend);
-  console.log("Formatted Buffer:", formattedBuffer);
-
-  const serializedBuffer = formatSerializedBuffer(stringCV);
-  console.log("Serialized Buffer:", serializedBuffer);
-
   const functionArgs = [
     Cl.principal(args.actionContractToExecute),
-    serializedBuffer,
+    formatSerializedBuffer(stringCV),
     args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
   ];
 
