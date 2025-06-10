@@ -12,6 +12,7 @@ const PROPOSAL_ID = "30";
 const STACKS_BLOCK_HEIGHT = "2114000";
 const MESSAGE_TO_SEND = "A test message from our test script. TEST.";
 const MEMO = "A test memo because that's another way to pass data.";
+const TEST_DELAY_MS = 2000; // Delay between tests in milliseconds
 
 // --- Test Counters ---
 let successCount = 0;
@@ -84,7 +85,7 @@ async function main() {
     ],
     "Get Voting Configuration"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   runTool(
     [
@@ -95,7 +96,7 @@ async function main() {
     ],
     "Get Total Proposals"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   runTool(
     [
@@ -107,7 +108,7 @@ async function main() {
     ],
     "Get a specific Proposal"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   runTool(
     [
@@ -119,7 +120,7 @@ async function main() {
     ],
     "Get Liquid Supply at a specific block height"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   runTool(
     [
@@ -132,7 +133,7 @@ async function main() {
     ],
     "Get Voting Power for a user on a proposal"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   runTool(
     [
@@ -145,7 +146,7 @@ async function main() {
     ],
     "Get a user's Veto Vote Record for a proposal"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   runTool(
     [
@@ -158,7 +159,7 @@ async function main() {
     ],
     "Get a user's full Vote Records for a proposal"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   // --- Public (Transaction) Functions ---
   // Note: These will likely fail if on-chain conditions aren't met (e.g., proposal doesn't exist).
@@ -177,7 +178,7 @@ async function main() {
     ],
     "Create an Action Proposal"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   runTool(
     [
@@ -190,7 +191,7 @@ async function main() {
     ],
     "Vote 'FOR' on an Action Proposal"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   runTool(
     [
@@ -202,7 +203,7 @@ async function main() {
     ],
     "Veto an Action Proposal"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   runTool(
     [
@@ -216,7 +217,7 @@ async function main() {
     ],
     "Conclude an Action Proposal"
   );
-  await delay(1000);
+  await delay(TEST_DELAY_MS);
 
   // --- Final Summary ---
   console.log("\n\n--- Test Summary ---");
