@@ -25,7 +25,9 @@ function runTool(command: string[], description: string) {
   console.log(`-------------------------------------------------\n`);
 
   try {
-    const result = Bun.spawnSync(command);
+    const result = Bun.spawnSync(command, {
+      stderr: "pipe", // Pipe stderr to capture its output
+    });
 
     if (result.success) {
       console.log(`✅ Success (Exit Code: ${result.exitCode})`);
