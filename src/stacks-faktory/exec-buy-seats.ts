@@ -19,23 +19,17 @@ dotenv.config();
 
 const seatCount = Number(process.argv[2]); // Number of seats to buy
 const prelaunchContract = process.argv[3]; // Pre-launch contract address
-const contractType = (process.argv[4] as "meme" | "dao" | "helico") || "meme"; // Contract type: "meme", "dao", or "helico"
+const contractType = (process.argv[4] as "meme" | "dao" | "helico") || "dao"; // Default to dao
 
 if (!seatCount || !prelaunchContract) {
   console.error("Please provide all required parameters:");
   console.error(
     "bun run src/stacks-faktory/exec-buy-seats.ts <seat_count> <prelaunch_contract> [contract_type]"
   );
-  console.error("Contract type can be 'meme' (default), 'dao', or 'helico'");
+  console.error("Contract type can be 'meme', 'dao' (default), or 'helico'");
   console.error("Examples:");
   console.error(
-    "  Meme: bun run src/stacks-faktory/exec-buy-seats.ts 3 SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.fakfun-pre-faktory meme"
-  );
-  console.error(
-    "  DAO:  bun run src/stacks-faktory/exec-buy-seats.ts 3 SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.aidao-pre-faktory dao"
-  );
-  console.error(
-    "  Helico: bun run src/stacks-faktory/exec-buy-seats.ts 10 SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.helico-pre-faktory helico"
+    "  DAO:  bun run src/stacks-faktory/exec-buy-seats.ts 3 STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.simpl1-pre-faktory dao"
   );
   process.exit(1);
 }
@@ -57,21 +51,27 @@ const faktoryConfig = {
     const networkObj = getNetwork(CONFIG.NETWORK);
     const nonce = await getNextNonce(CONFIG.NETWORK, address);
 
-    // Get pre-launch info with contract type detection
-    // console.log("\nGetting pre-launch info...");
-    // const info = await sdk.getPrelaunchInfo(prelaunchContract, address);
+    console.log("SDK version check...");
+    console.log(
+      "Available methods:",
+      Object.getOwnPropertyNames(Object.getPrototypeOf(sdk))
+    );
 
-    // console.log(`Contract type: ${info.contractType.toUpperCase()}`);
-    // console.log(`Seat price: ${info.pricing.description}`);
-    // console.log(
-    //   "Current seats owned:",
-    //   info.userInfo.value.value["seats-owned"].value
-    // );
-    // console.log(
-    //   "Remaining seats:",
-    //   info.remainingSeats.value.value["remainin-seats"].value
-    // );
-    // console.log("Max seats allowed:", info.maxSeatsAllowed.value);
+    // Try to get pre-launch info first
+    console.log("\nGetting pre-launch status...");
+    try {
+      const status = await sdk.getPrelaunchStatus(prelaunchContract, address);
+      console.log("Pre-launch status retrieved successfully");
+
+      const userSeats = status.userInfo.value.value["seats-owned"].value;
+      const remainingSeats =
+        status.remainingSeats.value.value["remainin-seats"].value;
+
+      console.log(`Current seats owned: ${userSeats}`);
+      console.log(`Remaining seats: ${remainingSeats}`);
+    } catch (error: any) {
+      console.log("Could not get pre-launch status:", error.message);
+    }
 
     // Get buy seats parameters
     console.log("\nPreparing buy seats transaction...");
@@ -89,23 +89,26 @@ const faktoryConfig = {
     );
     console.log(`Current seats: ${buySeatsParams.currentSeats}`);
     console.log(`Max additional seats: ${buySeatsParams.maxAdditionalSeats}`);
+    console.log(`Detected contract type: ${buySeatsParams.detectedType}`);
 
-    // Add required properties for signing
-    // Add required properties for signing
+    // Debug the function args
+    console.log("Function args from SDK:", buySeatsParams.functionArgs);
+    console.log("Function args length:", buySeatsParams.functionArgs?.length);
+
+    // Add required properties for signing - use exact same pattern as working exec-sell
     const txOptions: SignedContractCallOptions = {
-      contractAddress: buySeatsParams.contractAddress,
-      contractName: buySeatsParams.contractName,
-      functionName: buySeatsParams.functionName,
-      functionArgs: buySeatsParams.functionArgs as unknown as ClarityValue[], // This works
-      network: networkObj, // Use the one from getNetwork() instead
-      anchorMode: buySeatsParams.anchorMode,
-      postConditionMode: buySeatsParams.postConditionMode,
-      postConditions: buySeatsParams.postConditions as any, // Cast here for now
+      ...buySeatsParams,
+      network: networkObj, // Override with proper network object
       senderKey: key,
       validateWithAbi: true,
       fee: 50000,
       nonce,
+      functionArgs: buySeatsParams.functionArgs as ClarityValue[], // Add this casting like exec-sell
     };
+
+    // Debug final tx options
+    console.log("Final functionArgs:", txOptions.functionArgs);
+    console.log("Final functionArgs length:", txOptions.functionArgs?.length);
 
     // Create and broadcast transaction
     console.log("\nCreating and broadcasting transaction...");
@@ -116,15 +119,22 @@ const faktoryConfig = {
       success: broadcastResponse.txid ? true : false,
       message: "Seat purchase transaction broadcast successfully!",
       txid: broadcastResponse.txid,
-      contractType,
+      contractType: buySeatsParams.detectedType,
       seatCount,
       estimatedCost: buySeatsParams.estimatedCost,
-      // priceDescription: info.pricing.description,
     };
 
     console.log(JSON.stringify(result, null, 2));
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error executing buy seats transaction:", error);
+
+    // More detailed error info
+    if (error.message.includes("getBuySeatsParams is not a function")) {
+      console.error("\nSDK Debug Info:");
+      console.error("This suggests a version mismatch. Try:");
+      console.error("npm install @faktoryfun/core-sdk@latest");
+    }
+
     process.exit(1);
   }
 })();
