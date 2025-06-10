@@ -138,19 +138,6 @@ async function main() {
     [
       "bun",
       "run",
-      `${basePath}/read-only/get-vote-record.ts`,
-      DAO_ACTION_PROPOSAL_VOTING_CONTRACT,
-      PROPOSAL_ID,
-      VOTER_ADDRESS,
-    ],
-    "Get a user's Vote Record for a proposal"
-  );
-  await delay(1000);
-
-  runTool(
-    [
-      "bun",
-      "run",
       `${basePath}/read-only/get-veto-vote-record.ts`,
       DAO_ACTION_PROPOSAL_VOTING_CONTRACT,
       PROPOSAL_ID,

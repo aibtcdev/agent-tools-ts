@@ -107,18 +107,26 @@ async function main(): Promise<ToolResponse<VoteRecordsResponse>> {
     network: networkObj,
   });
 
-  // The function returns a direct tuple, not an optional or response type
-  const rawData = cvToJSON(result).value;
+  const jsonResponse = cvToJSON(result);
+  console.log(
+    "Raw data from contract call:",
+    JSON.stringify(jsonResponse, null, 2)
+  );
+
+  const rawData = jsonResponse.value;
+
+  const voteRecordOptional = rawData["vote-record"].value;
+  const vetoVoteRecordOptional = rawData["veto-vote-record"].value;
 
   const responseData: VoteRecordsResponse = {
-    voteRecord: rawData.voteRecord.value // voteRecord is (optional {vote: bool, amount: uint})
+    voteRecord: voteRecordOptional
       ? {
-          vote: rawData.voteRecord.value.vote.value, // inner .value for bool
-          amount: rawData.voteRecord.value.amount.value, // inner .value for uint
+          vote: voteRecordOptional.value.vote.value,
+          amount: voteRecordOptional.value.amount.value,
         }
       : null,
-    vetoVoteRecord: rawData.vetoVoteRecord.value // vetoVoteRecord is (optional uint)
-      ? rawData.vetoVoteRecord.value.value // inner .value for uint
+    vetoVoteRecord: vetoVoteRecordOptional
+      ? vetoVoteRecordOptional.value
       : null,
   };
 
