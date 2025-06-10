@@ -115,8 +115,9 @@ async function main(): Promise<ToolResponse<VoteRecordsResponse>> {
 
   const rawData = jsonResponse.value;
 
-  const voteRecordOptional = rawData["vote-record"].value;
-  const vetoVoteRecordOptional = rawData["veto-vote-record"].value;
+  // Correctly access properties using camelCase as converted by cvToJSON
+  const voteRecordOptional = rawData.voteRecord.value;
+  const vetoVoteRecordOptional = rawData.vetoVoteRecord.value;
 
   const responseData: VoteRecordsResponse = {
     voteRecord: voteRecordOptional
