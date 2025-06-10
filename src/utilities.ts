@@ -173,16 +173,16 @@ export const CONFIG = loadConfig();
 // NETWORK HELPERS
 //////////////////////////////
 
-export function getNetworkNameFromNetwork(network: StacksNetwork): StacksNetworkName {
+export function getNetworkNameFromNetwork(
+  network: StacksNetwork
+): StacksNetworkName {
   if (network.chainId === STACKS_MAINNET.chainId) {
     return "mainnet";
   } else if (network.chainId === STACKS_TESTNET.chainId) {
     return "testnet";
   } else if (STACKS_DEVNET && network.chainId === STACKS_DEVNET.chainId) {
-    // STACKS_DEVNET might not be exported or available in all versions, check for existence
     return "devnet";
   } else if (STACKS_MOCKNET && network.chainId === STACKS_MOCKNET.chainId) {
-    // STACKS_MOCKNET might not be exported or available in all versions, check for existence
     return "mocknet";
   }
   console.warn(
@@ -320,91 +320,82 @@ export function broadcastTx(
   });
 }
 
+type SponsorResponse = {
+  txid: string;
+  rawTx: string;
+  feeEstimate: number;
+  result: {
+    txid: string;
+  };
+};
+
 export async function broadcastSponsoredTx(
-  transaction: StacksTransactionWire, // This is Buffer from @stacks/transactions
-  network: StacksNetwork // StacksNetwork object from @stacks/network
+  transaction: StacksTransactionWire,
+  network: StacksNetwork
 ): Promise<ToolResponse<TxBroadcastResultWithLink>> {
-  console.log("[DEBUG] broadcastSponsoredTx: Initiating sponsored transaction broadcast.");
-
   const currentNetworkName = getNetworkNameFromNetwork(network);
-  console.log(`[DEBUG] broadcastSponsoredTx: Determined network name: ${currentNetworkName}`);
-
   const sponsorHostUrl = CONFIG.AIBTC_SPONSOR_HOST_URL;
-  const assetForFeePayment = "stx"; // Hardcoded as per requirement
-  const feesInAsset = String(CONFIG.AIBTC_SPONSOR_FEE_AMOUNT_USTX);
-
-  console.log(`[DEBUG] broadcastSponsoredTx: Sponsor Host URL: ${sponsorHostUrl}`);
-  console.log(`[DEBUG] broadcastSponsoredTx: Asset for Fee Payment: ${assetForFeePayment}`);
-  console.log(`[DEBUG] broadcastSponsoredTx: Fees in Asset (uSTX): ${feesInAsset}`);
-
-  const originatorTxRaw = transaction.serialize()
-  console.log(`[DEBUG] broadcastSponsoredTx: Originator Tx Raw (first 64 chars): ${originatorTxRaw.substring(0,64)}...`);
-
+  const originatorTxRaw = transaction.serialize();
   const sponsorApiUrl = `${sponsorHostUrl}/dao/v1/sponsor`;
-  console.log(`[DEBUG] broadcastSponsoredTx: Sponsor API URL: ${sponsorApiUrl}`);
+  const feeAmount = CONFIG.AIBTC_SPONSOR_FEE_AMOUNT_USTX;
 
   const sponsorRequestBody = {
     tx: originatorTxRaw,
-    feesInTokens: feesInAsset,
     network: currentNetworkName,
+    feesInTokens: feeAmount,
   };
-  console.log("[DEBUG] broadcastSponsoredTx: Sponsor Request Body:", JSON.stringify(sponsorRequestBody, null, 2));
 
   try {
-    console.log("[DEBUG] broadcastSponsoredTx: Sending request to sponsor service...");
     const response = await fetch(sponsorApiUrl, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(sponsorRequestBody),
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { "Content-Type": "text/plain" },
     });
-
-    console.log(`[DEBUG] broadcastSponsoredTx: Sponsor service response status: ${response.status}`);
 
     if (!response.ok) {
       let errorDetails = `Sponsor API request failed with status: ${response.status}`;
       try {
         const errorJson = await response.json();
-        console.log("[DEBUG] broadcastSponsoredTx: Sponsor error response (JSON):", errorJson);
         errorDetails += ` - ${errorJson.error || JSON.stringify(errorJson)}`;
       } catch (e) {
-        console.log("[DEBUG] broadcastSponsoredTx: Sponsor error response (JSON parsing failed).");
         try {
           const errorText = await response.text();
-          console.log("[DEBUG] broadcastSponsoredTx: Sponsor error response (Text):", errorText);
           errorDetails += ` - ${errorText}`;
         } catch (e2) {
-          console.log("[DEBUG] broadcastSponsoredTx: Sponsor error response (Text parsing also failed).");
+          throw new Error(
+            `broadcastSponsoredTx: Sponsor error response (JSON and text parsing failed). ${errorDetails}`
+          );
         }
       }
-      console.error(`[DEBUG] broadcastSponsoredTx: Error: ${errorDetails}`);
-      return createErrorResponse(errorDetails);
+      throw new Error(`broadcastSponsoredTx: Error: ${errorDetails}`);
     }
 
-    const responseData = await response.json();
-    console.log("[DEBUG] broadcastSponsoredTx: Sponsor success response data:", JSON.stringify(responseData, null, 2));
+    const responseData = (await response.json()) as SponsorResponse;
 
-    if (!responseData.result || !responseData.result.txid) {
-      const errMsg = "Sponsored transaction broadcast failed: Invalid response from sponsor service. Missing txid.";
-      console.error(`[DEBUG] broadcastSponsoredTx: Error: ${errMsg}`);
-      console.error("[DEBUG] broadcastSponsoredTx: Full invalid responseData:", responseData);
-      return createErrorResponse(errMsg);
+    if (!responseData.result.txid) {
+      const errMsg =
+        "Sponsored transaction broadcast failed: Invalid response from sponsor service. Missing txid.";
+      throw new Error(`broadcastSponsoredTx: ${errMsg}`);
     }
 
-    const explorerUrl = getExplorerUrl(currentNetworkName, responseData.result.txid);
+    const explorerUrl = getExplorerUrl(
+      currentNetworkName,
+      responseData.result.txid
+    );
+
     const successResponse: ToolResponse<TxBroadcastResultWithLink> = {
       success: true,
       message: `Sponsored transaction broadcasted successfully: 0x${responseData.result.txid}`,
       data: {
-        ...responseData.result,
+        txid: responseData.result.txid,
         link: explorerUrl,
       },
     };
-    console.log("[DEBUG] broadcastSponsoredTx: Successfully processed sponsored transaction:", JSON.stringify(successResponse, null, 2));
     return successResponse;
-
   } catch (error) {
-    console.error("[DEBUG] broadcastSponsoredTx: Fetch request to sponsor service failed:", error);
-    return createErrorResponse(error);
+    throw new Error(
+      `broadcastSponsoredTx: Fetch request to sponsor service failed: ${error}`
+    );
   }
 }
 

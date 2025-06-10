@@ -1,15 +1,10 @@
 import {
   Cl,
-  ContractCallOptions,
   makeContractCall,
-  makeUnsignedContractCall,
-  privateKeyToPublic,
   SignedContractCallOptions,
-  UnsignedContractCallOptions,
 } from "@stacks/transactions";
 import {
   broadcastSponsoredTx,
-  broadcastTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
@@ -66,10 +61,8 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
     CONFIG.ACCOUNT_INDEX
   );
 
-  /**
-   * Uncomment to send directly by signing / paying for the transaction
-   * requires makeContractCall() and broadcastTx()
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
   const txOptions: SignedContractCallOptions = {
     contractAddress: baseDaoAddress,
     contractName: baseDaoName,
@@ -78,29 +71,16 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-  };
-  */
-
-  const pubKey = privateKeyToPublic(key);
-
-  const unsignedTxOptions: UnsignedContractCallOptions = {
-    contractAddress: baseDaoAddress,
-    contractName: baseDaoName,
-    functionName: "construct",
-    functionArgs: [Cl.principal(args.proposalContract)],
-    network: networkObj,
-    publicKey: pubKey,
+    fee: 0,
     sponsored: true,
   };
 
   try {
-    const unsignedTx = await makeUnsignedContractCall(unsignedTxOptions);
+    const transaction = await makeContractCall(txOptions);
     const broadcastResponse = await broadcastSponsoredTx(
-      unsignedTx,
+      transaction,
       networkObj
     );
-    // const transaction = await makeContractCall(txOptions);
-    // const broadcastResponse = await broadcastTx(transaction, networkObj);
     return broadcastResponse;
   } catch (error) {
     const errorMessage = [
