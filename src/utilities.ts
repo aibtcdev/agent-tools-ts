@@ -3,7 +3,6 @@ import {
   StacksNetwork,
   StacksNetworkName,
   STACKS_TESTNET,
-  STACKS_MAINNET,
   STACKS_DEVNET,
   STACKS_MOCKNET,
   TransactionVersion,
@@ -356,7 +355,16 @@ export async function broadcastSponsoredTx(
       let errorDetails = `Sponsor API request failed with status: ${response.status}`;
       try {
         const errorJson = await response.json();
-        errorDetails += ` - ${errorJson.error || JSON.stringify(errorJson)}`;
+        if (
+          typeof errorJson === "object" &&
+          errorJson !== null &&
+          "error" in errorJson &&
+          typeof (errorJson as any).error === "string"
+        ) {
+          errorDetails += ` - ${(errorJson as any).error}`;
+        } else {
+          errorDetails += ` - ${JSON.stringify(errorJson)}`;
+        }
       } catch (e) {
         try {
           const errorText = await response.text();
