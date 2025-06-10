@@ -18,6 +18,7 @@ import {
   isValidContractPrincipal,
 } from "../../../../../utilities";
 import { TokenInfoService } from "../../../../../api/token-info-service";
+import { formatSerializedBuffer } from "@aibtc/types";
 
 // This constant reflects the contract's definition and is used if dynamic fetching fails or as a fallback.
 const AIBTC_DAO_RUN_COST_AMOUNT = 10000000000; // u10000000000 from contract
@@ -182,7 +183,7 @@ async function main() {
 
   const functionArgs = [
     Cl.principal(args.actionContractToExecute),
-    Cl.bufferFromHex(Cl.serialize(Cl.stringUtf8(args.messageToSend))),
+    formatSerializedBuffer(Cl.stringUtf8(args.messageToSend)),
     args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
   ];
 
