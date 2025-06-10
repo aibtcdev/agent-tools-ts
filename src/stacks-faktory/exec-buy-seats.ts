@@ -91,13 +91,20 @@ const faktoryConfig = {
     console.log(`Max additional seats: ${buySeatsParams.maxAdditionalSeats}`);
 
     // Add required properties for signing
+    // Add required properties for signing
     const txOptions: SignedContractCallOptions = {
-      ...buySeatsParams,
+      contractAddress: buySeatsParams.contractAddress,
+      contractName: buySeatsParams.contractName,
+      functionName: buySeatsParams.functionName,
+      functionArgs: buySeatsParams.functionArgs as unknown as ClarityValue[], // This works
+      network: networkObj, // Use the one from getNetwork() instead
+      anchorMode: buySeatsParams.anchorMode,
+      postConditionMode: buySeatsParams.postConditionMode,
+      postConditions: buySeatsParams.postConditions as any, // Cast here for now
       senderKey: key,
       validateWithAbi: true,
-      fee: 50000, // Higher fee for pre-launch transactions
+      fee: 50000,
       nonce,
-      functionArgs: buySeatsParams.functionArgs as ClarityValue[],
     };
 
     // Create and broadcast transaction

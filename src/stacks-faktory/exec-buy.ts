@@ -1,101 +1,129 @@
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 import {
   makeContractCall,
-  broadcastTransaction,
   SignedContractCallOptions,
-  ClarityValue,
 } from "@stacks/transactions";
 import {
+  broadcastTx,
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
+  sendToLLM,
 } from "../utilities";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const stxAmount = Number(process.argv[2]); // STX amount in normal units
-const dexContract = process.argv[3];
-const slippage = Number(process.argv[4]) || 15; // default 15%
-
-//console.log("STX Amount:", stxAmount);
-//console.log("DEX Contract:", dexContract);
-//console.log("Slippage (%):", slippage);
-
-if (!stxAmount || !dexContract) {
-  console.error("Please provide all required parameters:");
-  console.error(
-    "ts-node src/faktory/exec-buy.ts <stx_amount> <dex_contract> [slippage]"
-  );
-  process.exit(1);
-}
 
 const faktoryConfig = {
   network: CONFIG.NETWORK as "mainnet" | "testnet",
   hiroApiKey: CONFIG.HIRO_API_KEY,
 };
 
-(async () => {
-  try {
-    const { address, key } = await deriveChildAccount(
-      CONFIG.NETWORK,
-      CONFIG.MNEMONIC,
-      CONFIG.ACCOUNT_INDEX
-    );
+const usage =
+  "Usage: bun run exec-buy.ts <btc_amount> <dex_contract> [slippage]";
+const usageExample =
+  "Example: bun run exec-buy.ts 0.002 STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.okbtc4-faktory-dex 15";
 
-    const sdk = new FaktorySDK(faktoryConfig);
-    const networkObj = getNetwork(CONFIG.NETWORK);
-    const nonce = await getNextNonce(CONFIG.NETWORK, address);
+interface ExpectedArgs {
+  btcAmount: number; // BTC amount in normal units
+  dexContract: string; // DEX contract address
+  slippage: number; // integer, e.g. 15 = 15% (default)
+}
 
-    // Get quote first for preview
-    //console.log("\nGetting quote...");
-    const inQuote = await sdk.getIn(dexContract, address, stxAmount); // No need to multiply by 1000000
-    //console.log("Quote:", JSON.stringify(inQuote, null, 2));
-
-    // Get buy parameters
-    //console.log("\nGetting buy parameters...");
-    const buyParams = await sdk.getBuyParams({
-      dexContract,
-      stx: stxAmount, // Changed from ustx, no need to multiply
-      senderAddress: address,
-      slippage,
-    });
-
-    // Add required properties for signing
-    const txOptions: SignedContractCallOptions = {
-      ...buyParams,
-      senderKey: key,
-      validateWithAbi: true,
-      fee: 30000,
-      nonce,
-      functionArgs: buyParams.functionArgs as ClarityValue[],
-    };
-
-    // Create and broadcast transaction
-    //console.log("\nCreating and broadcasting transaction...");
-    const tx = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTransaction(tx, networkObj);
-
-    const result = {
-      success: broadcastResponse.txid ? true : false,
-      message: "Transaction broadcast successfully!",
-      txid: broadcastResponse.txid,
-    };
-
-    console.log(JSON.stringify(result, null, 2));
-    /*
-    console.log("\nTransaction broadcast successfully!");
-    console.log("Transaction ID:", broadcastResponse.txid);
-    console.log(
-      "View transaction: https://explorer.hiro.so/txid/" +
-        broadcastResponse.txid +
-        "?chain=" +
-        CONFIG.NETWORK
-    );
-    */
-  } catch (error) {
-    console.error("Error executing buy transaction:", error);
-    process.exit(1);
+function validateArgs(): ExpectedArgs {
+  // verify all required arguments are provided
+  const [btcAmountStr, dexContract, slippageStr] = process.argv.slice(2);
+  const btcAmount = parseFloat(btcAmountStr);
+  const slippage = parseInt(slippageStr) || 15;
+  if (!btcAmount || !dexContract) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
-})();
+  // verify contract addresses extracted from arguments
+  const [dexContractAddress, dexContractName] = dexContract.split(".");
+  if (!dexContractAddress || !dexContractName) {
+    const errorMessage = [
+      `Invalid contract address: ${dexContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+  // return validated arguments
+  return {
+    btcAmount,
+    dexContract,
+    slippage,
+  };
+}
+
+async function main() {
+  // validate and store provided args
+  const args = validateArgs();
+  // setup network and wallet info
+  const networkObj = getNetwork(CONFIG.NETWORK);
+  const { address, key } = await deriveChildAccount(
+    CONFIG.NETWORK,
+    CONFIG.MNEMONIC,
+    CONFIG.ACCOUNT_INDEX
+  );
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+  const sdk = new FaktorySDK(faktoryConfig);
+
+  // Check token denomination
+  // console.log("Checking token denomination...");
+  const tokenInfo = await sdk.getToken(args.dexContract);
+  const isBtcDenominated = tokenInfo.data.denomination === "btc";
+
+  // Verify the token is BTC denominated
+  if (!isBtcDenominated) {
+    throw new Error(
+      `Token ${args.dexContract} is not BTC denominated. Use exec-buy-stx.ts for STX denominated tokens.`
+    );
+  }
+
+  // console.log(
+  //   `Token is BTC denominated. Using ${args.btcAmount} BTC (${
+  //     args.btcAmount * 100000000
+  //   } satoshis)`
+  // );
+
+  // // Validate amount range for BTC - warn if unusually large
+  // if (args.btcAmount > 0.1) {
+  //   console.log(
+  //     `WARNING: Amount ${args.btcAmount} BTC is unusually large. Please confirm.`
+  //   );
+  // }
+
+  // get buy parameters
+  // console.log("Getting buy parameters...");
+  const buyParams = await sdk.getBuyParams({
+    dexContract: args.dexContract,
+    inAmount: args.btcAmount, // accepts BTC amount for BTC-denominated tokens
+    senderAddress: address,
+    slippage: args.slippage,
+  });
+
+  // add required properties for signing
+  const txOptions: SignedContractCallOptions = {
+    ...(buyParams as any),
+    network: networkObj,
+    nonce: nextPossibleNonce,
+    senderKey: key,
+  };
+
+  // broadcast transaction and return response
+  const transaction = await makeContractCall(txOptions);
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
+}
+
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
+  });
