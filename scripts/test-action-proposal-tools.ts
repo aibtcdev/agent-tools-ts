@@ -18,6 +18,12 @@ let successCount = 0;
 let failureCount = 0;
 
 /**
+ * Pauses execution for a specified number of milliseconds.
+ * @param ms The number of milliseconds to wait.
+ */
+const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+/**
  * Executes a shell command using Bun.spawnSync and logs its output.
  * @param command The command to execute as an array of strings.
  * @param description A description of the test being run.
@@ -64,7 +70,7 @@ function runTool(command: string[], description: string) {
 /**
  * Main function to run all tool tests.
  */
-function main() {
+async function main() {
   const basePath =
     "src/aibtc-cohort-0/dao-tools/extensions/action-proposal-voting";
 
@@ -78,6 +84,7 @@ function main() {
     ],
     "Get Voting Configuration"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -88,6 +95,7 @@ function main() {
     ],
     "Get Total Proposals"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -99,6 +107,7 @@ function main() {
     ],
     "Get a specific Proposal"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -110,6 +119,7 @@ function main() {
     ],
     "Get Liquid Supply at a specific block height"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -122,6 +132,7 @@ function main() {
     ],
     "Get Voting Power for a user on a proposal"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -134,6 +145,7 @@ function main() {
     ],
     "Get a user's Vote Record for a proposal"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -146,6 +158,7 @@ function main() {
     ],
     "Get a user's Veto Vote Record for a proposal"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -158,6 +171,7 @@ function main() {
     ],
     "Get a user's full Vote Records for a proposal"
   );
+  await delay(1000);
 
   // --- Public (Transaction) Functions ---
   // Note: These will likely fail if on-chain conditions aren't met (e.g., proposal doesn't exist).
@@ -176,6 +190,7 @@ function main() {
     ],
     "Create an Action Proposal"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -188,6 +203,7 @@ function main() {
     ],
     "Vote 'FOR' on an Action Proposal"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -199,6 +215,7 @@ function main() {
     ],
     "Veto an Action Proposal"
   );
+  await delay(1000);
 
   runTool(
     [
@@ -212,6 +229,7 @@ function main() {
     ],
     "Conclude an Action Proposal"
   );
+  await delay(1000);
 
   // --- Final Summary ---
   console.log("\n\n--- Test Summary ---");
