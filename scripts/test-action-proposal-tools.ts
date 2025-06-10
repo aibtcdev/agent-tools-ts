@@ -13,6 +13,10 @@ const STACKS_BLOCK_HEIGHT = "2114000";
 const MESSAGE_TO_SEND = "A test message from our test script. TEST.";
 const MEMO = "A test memo because that's another way to pass data.";
 
+// --- Test Counters ---
+let successCount = 0;
+let failureCount = 0;
+
 /**
  * Executes a shell command using Bun.spawnSync and logs its output.
  * @param command The command to execute as an array of strings.
@@ -35,6 +39,7 @@ function runTool(command: string[], description: string) {
         console.log("Output (stdout):");
         console.log(new TextDecoder().decode(result.stdout));
       }
+      successCount++;
     } else {
       console.error(`❌ Failed (Exit Code: ${result.exitCode})`);
       if (result.stderr && result.stderr.length > 0) {
@@ -46,10 +51,12 @@ function runTool(command: string[], description: string) {
         console.error("Output (stdout):");
         console.error(new TextDecoder().decode(result.stdout));
       }
+      failureCount++;
     }
   } catch (error) {
     console.error("💥 Execution Failed with an exception:");
     console.error(error);
+    failureCount++;
   }
   console.log(`=================================================\n`);
 }
@@ -206,7 +213,19 @@ function main() {
     "Conclude an Action Proposal"
   );
 
-  console.log("✅ All tests completed.");
+  // --- Final Summary ---
+  console.log("\n\n--- Test Summary ---");
+  console.log(`Total Tests: ${successCount + failureCount}`);
+  console.log(`✅ Successes: ${successCount}`);
+  console.log(`❌ Failures:  ${failureCount}`);
+  console.log("--------------------\n");
+
+  if (failureCount > 0) {
+    console.error("⚠️ Some tests failed. Exiting with error code 1.");
+    process.exit(1);
+  } else {
+    console.log("✅ All tests completed successfully.");
+  }
 }
 
 main();
