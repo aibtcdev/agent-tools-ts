@@ -230,6 +230,10 @@ If you encounter errors, check:
 3. Account balance and token allowances
 4. Contract addresses and identifiers
 
+## Pre-Launch Tools
+
+For pre-launch seat management (buying seats, refunds, token claiming), see [Pre-Launch Tools README](./README-PRE.md).
+
 ## License
 
 These tools are provided under the MIT License. Use at your own risk.
