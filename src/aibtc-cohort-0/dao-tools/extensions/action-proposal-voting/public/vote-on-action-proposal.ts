@@ -2,10 +2,9 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
-  PostConditionMode, // Though not strictly needed here, good for consistency
+  PostConditionMode,
 } from "@stacks/transactions";
 import {
-  broadcastTx,
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
@@ -14,6 +13,7 @@ import {
   getNextNonce,
   sendToLLM,
   isValidContractPrincipal,
+  broadcastSponsoredTx,
 } from "../../../../../utilities";
 
 const usage =
@@ -91,6 +91,7 @@ async function main() {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   const functionArgs = [Cl.uint(args.proposalId), Cl.bool(args.voteFor)];
@@ -103,13 +104,27 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    // No direct fund transfer post-conditions from the caller for this action
     postConditionMode: PostConditionMode.Allow,
+    fee: 0,
+    sponsored: true,
   };
 
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+  try {
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastSponsoredTx(
+      transaction,
+      networkObj
+    );
+    return broadcastResponse;
+  } catch (error) {
+    const errorMessage = [
+      `Error voting on action proposal:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
 }
 
 main()

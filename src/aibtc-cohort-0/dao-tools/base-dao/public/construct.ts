@@ -4,7 +4,7 @@ import {
   SignedContractCallOptions,
 } from "@stacks/transactions";
 import {
-  broadcastTx,
+  broadcastSponsoredTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
@@ -60,6 +60,7 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   const txOptions: SignedContractCallOptions = {
@@ -70,11 +71,16 @@ async function main(): Promise<ToolResponse<TxBroadcastResultWithLink>> {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
+    fee: 0,
+    sponsored: true,
   };
 
   try {
     const transaction = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTx(transaction, networkObj);
+    const broadcastResponse = await broadcastSponsoredTx(
+      transaction,
+      networkObj
+    );
     return broadcastResponse;
   } catch (error) {
     const errorMessage = [

@@ -3,6 +3,8 @@ import {
   StacksNetwork,
   StacksNetworkName,
   STACKS_TESTNET,
+  STACKS_DEVNET,
+  STACKS_MOCKNET,
   TransactionVersion,
 } from "@stacks/network";
 import {
@@ -120,6 +122,8 @@ export interface AppConfig {
   AIBTC_DEFAULT_FEE: number;
   AIBTC_CORE_API_KEY: string;
   AIBTC_FAKTORY_API_KEY: string;
+  AIBTC_SPONSOR_HOST_URL: string;
+  AIBTC_SPONSOR_FEE_AMOUNT_USTX: number;
 }
 
 // define default values for app config
@@ -132,6 +136,8 @@ const DEFAULT_CONFIG: AppConfig = {
   AIBTC_DEFAULT_FEE: 100_000, // 0.1 STX
   AIBTC_CORE_API_KEY: "",
   AIBTC_FAKTORY_API_KEY: "",
+  AIBTC_SPONSOR_HOST_URL: "https://sponsoring.friedger.workers.dev",
+  AIBTC_SPONSOR_FEE_AMOUNT_USTX: 3000,
 };
 
 // load configuration from environment variables
@@ -150,6 +156,12 @@ function loadConfig(): AppConfig {
       process.env.AIBTC_CORE_API_KEY || DEFAULT_CONFIG.AIBTC_CORE_API_KEY,
     AIBTC_FAKTORY_API_KEY:
       process.env.AIBTC_FAKTORY_API_KEY || DEFAULT_CONFIG.AIBTC_FAKTORY_API_KEY,
+    AIBTC_SPONSOR_HOST_URL:
+      process.env.AIBTC_SPONSOR_HOST_URL ||
+      DEFAULT_CONFIG.AIBTC_SPONSOR_HOST_URL,
+    AIBTC_SPONSOR_FEE_AMOUNT_USTX:
+      Number(process.env.AIBTC_SPONSOR_FEE_AMOUNT_USTX) ||
+      DEFAULT_CONFIG.AIBTC_SPONSOR_FEE_AMOUNT_USTX,
   };
 }
 
@@ -159,6 +171,24 @@ export const CONFIG = loadConfig();
 //////////////////////////////
 // NETWORK HELPERS
 //////////////////////////////
+
+export function getNetworkNameFromNetwork(
+  network: StacksNetwork
+): StacksNetworkName {
+  if (network.chainId === STACKS_MAINNET.chainId) {
+    return "mainnet";
+  } else if (network.chainId === STACKS_TESTNET.chainId) {
+    return "testnet";
+  } else if (STACKS_DEVNET && network.chainId === STACKS_DEVNET.chainId) {
+    return "devnet";
+  } else if (STACKS_MOCKNET && network.chainId === STACKS_MOCKNET.chainId) {
+    return "mocknet";
+  }
+  console.warn(
+    `Unknown StacksNetwork object provided (Chain ID: ${network.chainId}). Falling back to default network name from CONFIG.`
+  );
+  return CONFIG.NETWORK;
+}
 
 // get network from principal
 // limited to just testnet/mainnet for now
@@ -287,6 +317,94 @@ export function broadcastTx(
       reject(createErrorResponse(error));
     }
   });
+}
+
+type SponsorResponse = {
+  txid: string;
+  rawTx: string;
+  feeEstimate: number;
+  result: {
+    txid: string;
+  };
+};
+
+export async function broadcastSponsoredTx(
+  transaction: StacksTransactionWire,
+  network: StacksNetwork
+): Promise<ToolResponse<TxBroadcastResultWithLink>> {
+  const currentNetworkName = getNetworkNameFromNetwork(network);
+  const sponsorHostUrl = CONFIG.AIBTC_SPONSOR_HOST_URL;
+  const originatorTxRaw = transaction.serialize();
+  const sponsorApiUrl = `${sponsorHostUrl}/dao/v1/sponsor`;
+  const feeAmount = CONFIG.AIBTC_SPONSOR_FEE_AMOUNT_USTX;
+
+  const sponsorRequestBody = {
+    tx: originatorTxRaw,
+    network: currentNetworkName,
+    feesInTokens: feeAmount,
+  };
+
+  try {
+    const response = await fetch(sponsorApiUrl, {
+      method: "POST",
+      body: JSON.stringify(sponsorRequestBody),
+      headers: { "Content-Type": "text/plain" },
+    });
+
+    if (!response.ok) {
+      let errorDetails = `Sponsor API request failed with status: ${response.status}`;
+      try {
+        const errorJson = await response.json();
+        if (
+          typeof errorJson === "object" &&
+          errorJson !== null &&
+          "error" in errorJson &&
+          typeof (errorJson as any).error === "string"
+        ) {
+          errorDetails += ` - ${(errorJson as any).error}`;
+        } else {
+          errorDetails += ` - ${JSON.stringify(errorJson)}`;
+        }
+      } catch (e) {
+        try {
+          const errorText = await response.text();
+          errorDetails += ` - ${errorText}`;
+        } catch (e2) {
+          throw new Error(
+            `broadcastSponsoredTx: Sponsor error response (JSON and text parsing failed). ${errorDetails}`
+          );
+        }
+      }
+      throw new Error(`broadcastSponsoredTx: Error: ${errorDetails}`);
+    }
+
+    const responseData = (await response.json()) as SponsorResponse;
+
+    if (!responseData.result.txid) {
+      const errMsg =
+        "Sponsored transaction broadcast failed: Invalid response from sponsor service. Missing txid.";
+      throw new Error(`broadcastSponsoredTx: ${errMsg}`);
+    }
+
+    const explorerUrl = getExplorerUrl(
+      currentNetworkName,
+      responseData.result.txid
+    );
+
+    const successResponse: ToolResponse<TxBroadcastResultWithLink> = {
+      success: true,
+      message: `Sponsored transaction broadcasted successfully: 0x${responseData.result.txid}`,
+      data: {
+        txid: responseData.result.txid,
+        link: explorerUrl,
+      },
+    };
+    return successResponse;
+  } catch (error) {
+    throw new Error(
+      `broadcastSponsoredTx: Fetch request to sponsor service failed: ${error}`
+    );
+  }
 }
 
 //////////////////////////////

@@ -8,7 +8,7 @@ import {
   fetchCallReadOnlyFunction,
 } from "@stacks/transactions";
 import {
-  broadcastTx,
+  broadcastSponsoredTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
@@ -139,6 +139,7 @@ async function main() {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   const votingConfig = await getVotingConfigurationFromContract(
@@ -197,11 +198,27 @@ async function main() {
     nonce: nextPossibleNonce,
     senderKey: key,
     postConditionMode: PostConditionMode.Allow,
+    postConditions: postConditions,
+    fee: 0,
+    sponsored: true,
   };
 
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+  try {
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastSponsoredTx(
+      transaction,
+      networkObj
+    );
+    return broadcastResponse;
+  } catch (error) {
+    const errorMessage = [
+      `Error creating action proposal:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
 }
 
 main()

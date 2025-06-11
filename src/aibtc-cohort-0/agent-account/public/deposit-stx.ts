@@ -6,7 +6,7 @@ import {
   Pc,
 } from "@stacks/transactions";
 import {
-  broadcastTx,
+  broadcastSponsoredTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
@@ -28,11 +28,7 @@ interface ExpectedArgs {
 function validateArgs(): ExpectedArgs {
   const [agentAccountContract, amountStr] = process.argv.slice(2);
   const amount = parseInt(amountStr);
-  if (
-    !agentAccountContract ||
-    !amountStr ||
-    isNaN(amount)
-  ) {
+  if (!agentAccountContract || !amountStr || isNaN(amount)) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -64,9 +60,7 @@ function validateArgs(): ExpectedArgs {
 
 async function main() {
   const args = validateArgs();
-  const [contractAddress, contractName] = args.agentAccountContract.split(
-    "."
-  );
+  const [contractAddress, contractName] = args.agentAccountContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -74,6 +68,7 @@ async function main() {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   const postConditions = [
@@ -94,11 +89,26 @@ async function main() {
     senderKey: key,
     postConditionMode: PostConditionMode.Deny,
     postConditions,
+    fee: 0,
+    sponsored: true,
   };
 
-  const transaction = await makeContractCall(txOptions);
-  const broadcastResponse = await broadcastTx(transaction, networkObj);
-  return broadcastResponse;
+  try {
+    const transaction = await makeContractCall(txOptions);
+    const broadcastResponse = await broadcastSponsoredTx(
+      transaction,
+      networkObj
+    );
+    return broadcastResponse;
+  } catch (error) {
+    const errorMessage = [
+      `Error depositing STX to agent account:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
 }
 
 main()

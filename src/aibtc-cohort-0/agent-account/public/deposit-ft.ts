@@ -6,7 +6,7 @@ import {
   Pc,
 } from "@stacks/transactions";
 import {
-  broadcastTx,
+  broadcastSponsoredTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
@@ -32,12 +32,7 @@ interface ExpectedArgs {
 function validateArgs(): ExpectedArgs {
   const [agentAccountContract, ftContract, amountStr] = process.argv.slice(2);
   const amount = parseInt(amountStr);
-  if (
-    !agentAccountContract ||
-    !ftContract ||
-    !amountStr ||
-    isNaN(amount)
-  ) {
+  if (!agentAccountContract || !ftContract || !amountStr || isNaN(amount)) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -78,9 +73,7 @@ function validateArgs(): ExpectedArgs {
 
 async function main() {
   const args = validateArgs();
-  const [contractAddress, contractName] = args.agentAccountContract.split(
-    "."
-  );
+  const [contractAddress, contractName] = args.agentAccountContract.split(".");
   const [ftAddress, ftName] = args.ftContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
@@ -89,6 +82,7 @@ async function main() {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   try {
@@ -121,16 +115,29 @@ async function main() {
       senderKey: key,
       postConditionMode: PostConditionMode.Deny,
       postConditions,
+      fee: 0,
+      sponsored: true,
     };
 
     const transaction = await makeContractCall(txOptions);
-    const broadcastResponse = await broadcastTx(transaction, networkObj);
+    const broadcastResponse = await broadcastSponsoredTx(
+      transaction,
+      networkObj
+    );
     return broadcastResponse;
   } catch (error) {
     if (error instanceof ContractCallError) {
-      throw new Error(`Contract call failed: ${error.message} (${error.code})`);
+      throw new Error(
+        `Operation failed (possibly fetching token info): ${error.message} (${error.code})`
+      );
     }
-    throw error;
+    const errorMessage = [
+      `Error depositing FT to agent account:`,
+      `${error instanceof Error ? error.message : String(error)}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
   }
 }
 
