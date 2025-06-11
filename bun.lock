@@ -5,7 +5,7 @@
       "name": "@aibtc/agent-tools",
       "dependencies": {
         "@bitflowlabs/core-sdk": "^2.2.0",
-        "@faktoryfun/core-sdk": "^0.3.1",
+        "@faktoryfun/core-sdk": "^0.3.2",
         "@jingcash/core-sdk": "^0.1.10",
         "@stacks/blockchain-api-client": "^8.11.1",
         "@stacks/bns": "^7.1.0",
@@ -29,7 +29,7 @@
       "devDependencies": {
         "@aibtc/types": "^0.4.1",
         "@types/bun": "^1.2.15",
-        "@types/node": "^24.0.0",
+        "@types/node": "^24.0.1",
         "bun-types": "^1.2.15",
         "tsup": "^8.5.0",
         "typescript": "^5.8.3",
@@ -91,7 +91,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.0", "", { "os": "win32", "cpu": "x64" }, "sha512-ZENoHJBxA20C2zFzh6AI4fT6RraMzjYw4xKWemRTRmRVtN9c5DcH9r/f2ihEkMjOW5eGgrwCslG/+Y/3bL+DHQ=="],
 
-    "@faktoryfun/core-sdk": ["@faktoryfun/core-sdk@0.3.1", "", { "dependencies": { "@stacks/common": "^7.0.0", "@stacks/network": "^7.0.0", "@stacks/stacks-blockchain-api-types": "^7.14.1", "@stacks/transactions": "^7.0.0", "@stacks/wallet-sdk": "^7.0.0" } }, "sha512-+WbcK7TnItmz5NDHdADSK8OLulEgGD/HsUa2kj7e08NWcsxfKJPLIBtZ7eqdnBIooOpXWELHWTwDB9GM+estFA=="],
+    "@faktoryfun/core-sdk": ["@faktoryfun/core-sdk@0.3.2", "", { "dependencies": { "@stacks/common": "^7.0.0", "@stacks/network": "^7.0.0", "@stacks/stacks-blockchain-api-types": "^7.14.1", "@stacks/transactions": "^7.0.0", "@stacks/wallet-sdk": "^7.0.0" } }, "sha512-/hPw88Kvj3mQ5nlTRgajPGFte03exMqb5N6SfD0JOXLOkmMjBszv4+oDqk94qSLXPiV5+SihT5KuGG66avydpA=="],
 
     "@isaacs/cliui": ["@isaacs/cliui@8.0.2", "", { "dependencies": { "string-width": "^5.1.2", "string-width-cjs": "npm:string-width@^4.2.0", "strip-ansi": "^7.0.1", "strip-ansi-cjs": "npm:strip-ansi@^6.0.1", "wrap-ansi": "^8.1.0", "wrap-ansi-cjs": "npm:wrap-ansi@^7.0.0" } }, ""],
 
@@ -201,7 +201,7 @@
 
     "@types/estree": ["@types/estree@1.0.6", "", {}, "sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw=="],
 
-    "@types/node": ["@types/node@24.0.0", "", { "dependencies": { "undici-types": "~7.8.0" } }, "sha512-yZQa2zm87aRVcqDyH5+4Hv9KYgSdgwX1rFnGvpbzMaC7YAljmhBET93TPiTd3ObwTL+gSpIzPKg5BqVxdCvxKg=="],
+    "@types/node": ["@types/node@24.0.1", "", { "dependencies": { "undici-types": "~7.8.0" } }, "sha512-MX4Zioh39chHlDJbKmEgydJDS3tspMP/lnQC67G3SWsTnb9NeYVWOjkxpOSy4oMfPs4StcWHwBrvUb4ybfnuaw=="],
 
     "acorn": ["acorn@8.14.1", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg=="],
 
@@ -507,10 +507,6 @@
 
     "@bitflowlabs/core-sdk/@stacks/transactions": ["@stacks/transactions@7.0.6", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/network": "^7.0.2", "c32check": "^2.0.0", "lodash.clonedeep": "^4.5.0" } }, "sha512-qRGo4tNwOh+avUv/u4JGqqUWQ8xW/iUWtJV0o3BxpMyRxqDXmj+m+yeAEVYf9jRDouOo+NaWmwtRmWc0URZPdw=="],
 
-    "@faktoryfun/core-sdk/@stacks/transactions": ["@stacks/transactions@7.0.6", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/network": "^7.0.2", "c32check": "^2.0.0", "lodash.clonedeep": "^4.5.0" } }, "sha512-qRGo4tNwOh+avUv/u4JGqqUWQ8xW/iUWtJV0o3BxpMyRxqDXmj+m+yeAEVYf9jRDouOo+NaWmwtRmWc0URZPdw=="],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk": ["@stacks/wallet-sdk@7.0.6", "", { "dependencies": { "@scure/bip32": "1.1.3", "@scure/bip39": "1.1.0", "@stacks/auth": "^7.0.6", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.0.6", "@stacks/network": "^7.0.2", "@stacks/profile": "^7.0.6", "@stacks/storage": "^7.0.6", "@stacks/transactions": "^7.0.6", "c32check": "^2.0.0", "jsontokens": "^4.0.1", "zone-file": "^2.0.0-beta.3" } }, "sha512-OTYdSfx7oYNAlNV1otUxmRA95gCaUQzrhloT5q4TxQKrxFXb2FLS/OoL0KoN3mYQgl0oDFGBViRj6B7I0bhjZQ=="],
-
     "@isaacs/cliui/string-width": ["string-width@5.1.2", "", { "dependencies": { "eastasianwidth": "^0.2.0", "emoji-regex": "^9.2.2", "strip-ansi": "^7.0.1" } }, ""],
 
     "@isaacs/cliui/wrap-ansi": ["wrap-ansi@8.1.0", "", { "dependencies": { "ansi-styles": "^6.1.0", "string-width": "^5.0.1", "strip-ansi": "^7.0.1" } }, ""],
@@ -614,14 +610,6 @@
     "@bitflowlabs/core-sdk/@stacks/connect/@stacks/auth": ["@stacks/auth@7.0.2", "", { "dependencies": { "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.0.2", "@stacks/network": "^7.0.2", "@stacks/profile": "^7.0.2", "cross-fetch": "^3.1.5", "jsontokens": "^4.0.1" } }, ""],
 
     "@bitflowlabs/core-sdk/@stacks/connect/@stacks/connect-ui": ["@stacks/connect-ui@6.6.0", "", { "dependencies": { "@stencil/core": "^2.17.1" } }, ""],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/auth": ["@stacks/auth@7.0.6", "", { "dependencies": { "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.0.6", "@stacks/network": "^7.0.2", "@stacks/profile": "^7.0.6", "cross-fetch": "^3.1.5", "jsontokens": "^4.0.1" } }, "sha512-ouLOZJWbsULdXbKFZESnAmTe94Hz7297WcU94ZahT0pVEvf06KlYmHiBMhVUH/sJw2Oz7ylX5SQOg8tAdQaLaA=="],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/encryption": ["@stacks/encryption@7.0.6", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@scure/bip39": "1.1.0", "@stacks/common": "^7.0.2", "base64-js": "^1.5.1", "bs58": "^5.0.0", "ripemd160-min": "^0.0.6", "varuint-bitcoin": "^1.1.2" } }, "sha512-tUaYmsaRHRS95eeVBrfctAixFwL2yZHjDltC3dgQ+JjpcYNnWuvPOWoEEENwSU/t/Dj0b/xGSd1YW7z9CFd+cQ=="],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/profile": ["@stacks/profile@7.0.6", "", { "dependencies": { "@stacks/common": "^7.0.2", "@stacks/network": "^7.0.2", "@stacks/transactions": "^7.0.6", "jsontokens": "^4.0.1", "schema-inspector": "^2.0.2", "zone-file": "^2.0.0-beta.3" } }, "sha512-VU1YJzlrlyJRASHmg1saCKVkkc3CWzOaHMREJAnbUdAUYtawCMhEpc0wvtZdqn3Om1dRh7iGgXoPmBdkK0PH0Q=="],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/storage": ["@stacks/storage@7.0.6", "", { "dependencies": { "@stacks/auth": "^7.0.6", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.0.6", "@stacks/network": "^7.0.2", "base64-js": "^1.5.1", "jsontokens": "^4.0.1" } }, "sha512-F3chiKYx0ElOaV98RfJ5wRSlP8rHooM7r+nWC6js/dV2jH493jLZkVntWdWjIVz4A7Qx/0EWS96cow4Bma3DPw=="],
 
     "@isaacs/cliui/string-width/emoji-regex": ["emoji-regex@9.2.2", "", {}, ""],
 
