@@ -18,6 +18,7 @@ import {
   isValidContractPrincipal,
 } from "../../../../../utilities";
 import { TokenInfoService } from "../../../../../api/token-info-service";
+import { formatSerializedBuffer } from "@aibtc/types";
 
 // This constant reflects the contract's definition and is used if dynamic fetching fails or as a fallback.
 const AIBTC_DAO_RUN_COST_AMOUNT = 10000000000; // u10000000000 from contract
@@ -165,6 +166,7 @@ async function main() {
       .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenAssetName),
   ];
 
+  /*
   console.log("==========");
   console.log(`Creating action proposal with the following parameters:`);
   console.log(
@@ -177,10 +179,12 @@ async function main() {
   console.log(`Total Cost Amount: ${totalCostAmount}`);
   console.log(`Post Conditions: ${JSON.stringify(postConditions, null, 2)}`);
   console.log(`Sender Address: ${address}`);
+  */
 
+  const stringCV = Cl.stringUtf8(args.messageToSend);
   const functionArgs = [
     Cl.principal(args.actionContractToExecute),
-    Cl.bufferFromHex(Cl.serialize(Cl.stringAscii(args.messageToSend))),
+    formatSerializedBuffer(stringCV),
     args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
   ];
 
