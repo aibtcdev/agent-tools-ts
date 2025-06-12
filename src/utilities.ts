@@ -125,7 +125,8 @@ export interface AppConfig {
 // define default values for app config
 const DEFAULT_CONFIG: AppConfig = {
   NETWORK: "testnet",
-  MNEMONIC: "",
+  MNEMONIC:
+    "crater office wreck aunt lumber casino veteran mixed float arrive lens final",
   ACCOUNT_INDEX: 0,
   HIRO_API_KEY: "",
   STXCITY_API_HOST: "https://stx.city",
