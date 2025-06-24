@@ -607,7 +607,10 @@ export function getTokenTypeFromContractName(
   throw new Error(`Unable to extract token type for contract: ${contractName}`);
 }
 
-// helper function to fetch the proposal bond amount from a core/action proposals voting contract
+/**
+ * Fetches the current bond amount for proposals in a DAO voting extension contract.
+ * @deprecated
+ */
 export async function getCurrentBondProposalAmount(
   proposalsExtensionContract: string,
   daoTokenContract: string,

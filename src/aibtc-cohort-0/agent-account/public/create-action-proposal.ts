@@ -10,43 +10,44 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getCurrentBondProposalAmount, // Assuming this utility can be used/adapted
+  getCurrentActionProposalBond,
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
   sendToLLM,
 } from "../../../utilities";
+import { formatSerializedBuffer } from "@aibtc/types";
 
 const usage =
-  "Usage: bun run create-action-proposal.ts <agentAccountContract> <votingContract> <daoTokenContract> <actionContract> <parametersHex> [memo]";
+  "Usage: bun run create-action-proposal.ts <agentAccountContract> <daoActionProposalVotingContract> <actionContractToExecute> <daoTokenContract> <messageToSend> [memo]";
 const usageExample =
-  'Example: bun run create-action-proposal.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-send-message 68656c6c6f20776f726c64 "My proposal"';
+  'Example: bun run create-action-proposal.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-acct-ST1PQ-PGZGM-ST35K-VM3QA ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-proposal-voting ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-token "This is my message." "This is my memo."';
 
 interface ExpectedArgs {
   agentAccountContract: string;
-  votingContract: string;
+  daoActionProposalVotingContract: string;
+  actionContractToExecute: string;
   daoTokenContract: string;
-  actionContract: string;
-  parametersHex: string;
+  messageToSend: string; // can replace with hex params in future
   memo?: string;
 }
 
 function validateArgs(): ExpectedArgs {
   const [
     agentAccountContract,
-    votingContract,
+    daoActionProposalVotingContract,
+    actionContractToExecute,
     daoTokenContract,
-    actionContract,
-    parametersHex,
+    messageToSend,
     memo,
   ] = process.argv.slice(2);
 
   if (
     !agentAccountContract ||
-    !votingContract ||
+    !daoActionProposalVotingContract ||
+    !actionContractToExecute ||
     !daoTokenContract ||
-    !actionContract ||
-    !parametersHex
+    !messageToSend
   ) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
@@ -64,9 +65,18 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  if (!isValidContractPrincipal(votingContract)) {
+  if (!isValidContractPrincipal(daoActionProposalVotingContract)) {
     const errorMessage = [
-      `Invalid voting contract address: ${votingContract}`,
+      `Invalid voting contract address: ${daoActionProposalVotingContract}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
+  if (!isValidContractPrincipal(actionContractToExecute)) {
+    const errorMessage = [
+      `Invalid action contract address: ${actionContractToExecute}`,
       usage,
       usageExample,
     ].join("\n");
@@ -80,37 +90,21 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  if (!isValidContractPrincipal(actionContract)) {
-    const errorMessage = [
-      `Invalid action contract address: ${actionContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-  // Basic hex validation for parameters
-  if (!/^[0-9a-fA-F]*$/.test(parametersHex)) {
-    const errorMessage = [
-      `Invalid parametersHex: ${parametersHex}. Must be a valid hex string.`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
 
   return {
     agentAccountContract,
-    votingContract,
+    daoActionProposalVotingContract,
+    actionContractToExecute,
+    messageToSend,
     daoTokenContract,
-    actionContract,
-    parametersHex,
-    memo,
+    memo: memo || undefined,
   };
 }
 
 async function main() {
   const args = validateArgs();
-  const [contractAddress, contractName] = args.agentAccountContract.split(".");
+  const [agentAccountAddress, agentAccountName] =
+    args.agentAccountContract.split(".");
   const [daoTokenAddress, daoTokenName] = args.daoTokenContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
@@ -122,36 +116,40 @@ async function main() {
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   // Get bond amount for post-condition
-  // The agent account is the sender of the bond.
-  const bondAmountInfo = await getCurrentBondProposalAmount(
-    args.votingContract, // proposalsExtensionContract in utility
+  const bondAmountInfo = await getCurrentActionProposalBond(
+    args.daoActionProposalVotingContract,
     args.daoTokenContract,
-    args.agentAccountContract // sender for context
+    address // sender for read-only call
   );
 
   const postConditions = [
-    Pc.principal(args.agentAccountContract) // The agent account sends the bond
+    // the bond amount is sent from the agent account
+    Pc.principal(args.agentAccountContract)
       .willSendEq(bondAmountInfo.bond.toString())
       .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.assetName),
+    // TODO: the reward is sent from the treasury to the rewards acct
+    // TODO: the run cost is sent from the treasury to the run cost contract
   ];
 
+  const stringCV = Cl.stringUtf8(args.messageToSend);
   const functionArgs = [
-    Cl.principal(args.votingContract),
-    Cl.principal(args.actionContract),
-    Cl.bufferFromHex(args.parametersHex),
+    Cl.principal(args.daoActionProposalVotingContract),
+    Cl.principal(args.actionContractToExecute),
+    formatSerializedBuffer(stringCV),
     args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
   ];
 
   const txOptions: SignedContractCallOptions = {
-    contractAddress,
-    contractName,
+    contractAddress: agentAccountAddress,
+    contractName: agentAccountName,
     functionName: "create-action-proposal",
     functionArgs,
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions,
+    postConditionMode: PostConditionMode.Allow,
+    // postConditionMode: PostConditionMode.Deny,
+    // postConditions,
   };
 
   const transaction = await makeContractCall(txOptions);
