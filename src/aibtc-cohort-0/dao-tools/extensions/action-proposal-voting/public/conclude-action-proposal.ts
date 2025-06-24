@@ -14,7 +14,6 @@ import {
   getNextNonce,
   sendToLLM,
   isValidContractPrincipal,
-  getCurrentActionProposalBond,
   getBondFromActionProposal,
 } from "../../../../../utilities";
 

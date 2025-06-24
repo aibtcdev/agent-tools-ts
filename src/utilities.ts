@@ -21,8 +21,6 @@ import {
   StacksTransactionWire,
   TxBroadcastResult,
   validateStacksAddress,
-  PrincipalCV,
-  UIntCV,
   ClarityType,
   ClarityValue,
   Cl,

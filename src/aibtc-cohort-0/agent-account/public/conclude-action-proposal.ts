@@ -10,8 +10,7 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getActionProposalInfo,
-  getBondFromActionProposal, // Assuming this utility can be used/adapted
+  getBondFromActionProposal,
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
