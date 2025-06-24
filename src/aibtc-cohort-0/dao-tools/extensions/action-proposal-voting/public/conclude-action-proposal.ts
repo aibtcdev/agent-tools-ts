@@ -14,34 +14,34 @@ import {
   getNextNonce,
   sendToLLM,
   isValidContractPrincipal,
-  getCurrentActionProposalBond,
+  getBondFromActionProposal,
 } from "../../../../../utilities";
 
 const usage =
-  "Usage: bun run conclude-action-proposal.ts <daoActionProposalVotingContract> <proposalId> <actionContractToExecute> <daoTokenContract>";
+  "Usage: bun run conclude-action-proposal.ts <daoActionProposalVotingContract> <actionContractToExecute> <daoTokenContract> <proposalId>";
 const usageExample =
-  "Example: bun run conclude-action-proposal.ts ST000000000000000000002AMW42H.aibtc-action-proposal-voting 1 ST000000000000000000002AMW42H.some-action-contract ST000000000000000000002AMW42H.aibtc-token";
+  "Example: bun run conclude-action-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-proposal-voting ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-token 13";
 
 interface ExpectedArgs {
   daoActionProposalVotingContract: string;
-  proposalId: number;
   actionContractToExecute: string;
   daoTokenContract: string;
+  proposalId: number;
 }
 
 function validateArgs(): ExpectedArgs {
   const [
     daoActionProposalVotingContract,
-    proposalIdStr,
     actionContractToExecute,
     daoTokenContract,
+    proposalIdStr,
   ] = process.argv.slice(2);
 
   if (
     !daoActionProposalVotingContract ||
-    proposalIdStr === undefined ||
     !actionContractToExecute ||
-    !daoTokenContract
+    !daoTokenContract ||
+    proposalIdStr === undefined
   ) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
@@ -54,16 +54,6 @@ function validateArgs(): ExpectedArgs {
   if (!isValidContractPrincipal(daoActionProposalVotingContract)) {
     const errorMessage = [
       `Invalid DAO Action Proposal Voting contract: ${daoActionProposalVotingContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
-  const proposalId = parseInt(proposalIdStr);
-  if (isNaN(proposalId)) {
-    const errorMessage = [
-      `Invalid proposalId: ${proposalIdStr}. Must be a number.`,
       usage,
       usageExample,
     ].join("\n");
@@ -88,11 +78,21 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
+  const proposalId = parseInt(proposalIdStr);
+  if (isNaN(proposalId)) {
+    const errorMessage = [
+      `Invalid proposalId: ${proposalIdStr}. Must be a number.`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
   return {
     daoActionProposalVotingContract,
-    proposalId,
     actionContractToExecute,
     daoTokenContract,
+    proposalId,
   };
 }
 
@@ -110,21 +110,24 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  const proposalBondInfo = await getCurrentActionProposalBond(
+  const proposalBondInfo = await getBondFromActionProposal(
     args.daoActionProposalVotingContract,
+    args.proposalId,
     args.daoTokenContract,
     address
   );
 
   const postConditions = [
+    // the bond amount is sent from the proposal voting contract
     Pc.principal(`${extensionAddress}.${extensionName}`)
-      .willSendEq(proposalBondInfo.bond.valueOf())
+      .willSendEq(proposalBondInfo.bond.toString())
       .ft(`${daoTokenAddress}.${daoTokenName}`, proposalBondInfo.assetName),
+    // TODO: the reward is sent from the rewards account contract
   ];
 
   const functionArgs = [
-    Cl.uint(args.proposalId),
     Cl.principal(args.actionContractToExecute),
+    Cl.uint(args.proposalId),
   ];
 
   const txOptions: SignedContractCallOptions = {
@@ -136,7 +139,8 @@ async function main() {
     nonce: nextPossibleNonce,
     senderKey: key,
     postConditionMode: PostConditionMode.Allow,
-    //postConditions: postConditions,
+    // postConditionMode: PostConditionMode.Deny,
+    // postConditions,
   };
 
   const transaction = await makeContractCall(txOptions);
