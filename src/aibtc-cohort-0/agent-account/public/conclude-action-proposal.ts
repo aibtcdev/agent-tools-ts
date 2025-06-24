@@ -10,7 +10,8 @@ import {
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
-  getActionProposalInfo, // Assuming this utility can be used/adapted
+  getActionProposalInfo,
+  getBondFromActionProposal, // Assuming this utility can be used/adapted
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
@@ -18,35 +19,33 @@ import {
 } from "../../../utilities";
 
 const usage =
-  "Usage: bun run conclude-action-proposal.ts <agentAccountContract> <votingContract> <daoTokenContract> <proposalId> <actionContract>";
+  "Usage: bun run conclude-action-proposal.ts <agentAccountContract> <daoActionProposalVotingContract> <actionContractToExecute> <daoTokenContract> <proposalId> ";
 const usageExample =
-  "Example: bun run conclude-action-proposal.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-proposals-v2 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token 12 ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-action-send-message";
+  "Example: bun run conclude-action-proposal.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-acct-ST1PQ-PGZGM-ST35K-VM3QA ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-proposal-voting ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-token 13";
 
 interface ExpectedArgs {
   agentAccountContract: string;
-  votingContract: string;
+  daoActionProposalVotingContract: string;
+  actionContractToExecute: string;
   daoTokenContract: string;
   proposalId: number;
-  actionContract: string;
 }
 
 function validateArgs(): ExpectedArgs {
   const [
     agentAccountContract,
-    votingContract,
+    daoActionProposalVotingContract,
+    actionContractToExecute,
     daoTokenContract,
     proposalIdStr,
-    actionContract,
   ] = process.argv.slice(2);
-  const proposalId = parseInt(proposalIdStr);
 
   if (
     !agentAccountContract ||
-    !votingContract ||
+    !daoActionProposalVotingContract ||
+    !actionContractToExecute ||
     !daoTokenContract ||
-    !proposalIdStr ||
-    isNaN(proposalId) ||
-    !actionContract
+    proposalIdStr === undefined
   ) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
@@ -64,25 +63,37 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  if (!isValidContractPrincipal(votingContract)) {
+  if (!isValidContractPrincipal(daoActionProposalVotingContract)) {
     const errorMessage = [
-      `Invalid voting contract address: ${votingContract}`,
+      `Invalid DAO Action Proposal Voting contract: ${daoActionProposalVotingContract}`,
       usage,
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
+
+  if (!isValidContractPrincipal(actionContractToExecute)) {
+    const errorMessage = [
+      `Invalid action contract to execute: ${actionContractToExecute}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
   if (!isValidContractPrincipal(daoTokenContract)) {
     const errorMessage = [
-      `Invalid DAO token contract address: ${daoTokenContract}`,
+      `Invalid DAO token contract: ${daoTokenContract}`,
       usage,
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
   }
-  if (!isValidContractPrincipal(actionContract)) {
+
+  const proposalId = parseInt(proposalIdStr);
+  if (isNaN(proposalId)) {
     const errorMessage = [
-      `Invalid action contract address: ${actionContract}`,
+      `Invalid proposalId: ${proposalIdStr}. Must be a number.`,
       usage,
       usageExample,
     ].join("\n");
@@ -91,16 +102,18 @@ function validateArgs(): ExpectedArgs {
 
   return {
     agentAccountContract,
-    votingContract,
+    daoActionProposalVotingContract,
+    actionContractToExecute,
     daoTokenContract,
     proposalId,
-    actionContract,
   };
 }
 
 async function main() {
   const args = validateArgs();
   const [contractAddress, contractName] = args.agentAccountContract.split(".");
+  const [extensionAddress, extensionName] =
+    args.daoActionProposalVotingContract.split(".");
   const [daoTokenAddress, daoTokenName] = args.daoTokenContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
@@ -111,25 +124,25 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // Get proposal info to determine bond amount for post-condition
-  // The agent account is the recipient of the bond.
-  const proposalInfo = await getActionProposalInfo(
-    args.votingContract, // proposalsExtensionContract in utility
+  const proposalBondInfo = await getBondFromActionProposal(
+    args.daoActionProposalVotingContract,
+    args.proposalId,
     args.daoTokenContract,
-    args.agentAccountContract, // sender/recipient for context
-    args.proposalId
+    address
   );
 
   const postConditions = [
-    Pc.principal(args.votingContract) // The voting contract sends the bond
-      .willSendEq(proposalInfo.bond.toString()) // Bond amount
-      .ft(`${daoTokenAddress}.${daoTokenName}`, proposalInfo.assetName), // Bond asset to the agent account
+    // the bond amount is sent from the proposal voting contract
+    Pc.principal(`${extensionAddress}.${extensionName}`)
+      .willSendEq(proposalBondInfo.bond.toString())
+      .ft(`${daoTokenAddress}.${daoTokenName}`, proposalBondInfo.assetName),
+    // TODO: the reward is sent from the rewards account contract
   ];
 
   const functionArgs = [
-    Cl.principal(args.votingContract),
+    Cl.principal(args.daoActionProposalVotingContract),
     Cl.uint(args.proposalId),
-    Cl.principal(args.actionContract),
+    Cl.principal(args.actionContractToExecute),
   ];
 
   const txOptions: SignedContractCallOptions = {
@@ -140,8 +153,9 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions,
+    postConditionMode: PostConditionMode.Allow,
+    // postConditionMode: PostConditionMode.Deny,
+    // postConditions,
   };
 
   const transaction = await makeContractCall(txOptions);

@@ -127,7 +127,7 @@ async function main() {
     Pc.principal(args.agentAccountContract)
       .willSendEq(bondAmountInfo.bond.toString())
       .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.assetName),
-    // TODO: the reward is sent from the treasury to the rewards acct
+    // TODO: the reward is sent from the treasury to the rewards account contract
     // TODO: the run cost is sent from the treasury to the run cost contract
   ];
 
