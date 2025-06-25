@@ -10,18 +10,18 @@ import {
 } from "../../../utilities";
 
 const usage =
-  "Usage: bun run is-approved-asset.ts <agentAccountContract> <assetContract>";
+  "Usage: bun run is-approved-contract.ts <agentAccountContract> <contractPrincipal>";
 const usageExample =
-  "Example: bun run is-approved-asset.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token";
+  "Example: bun run is-approved-contract.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token";
 
 interface ExpectedArgs {
   agentAccountContract: string;
-  assetContract: string;
+  contractPrincipal: string;
 }
 
 function validateArgs(): ExpectedArgs {
-  const [agentAccountContract, assetContract] = process.argv.slice(2);
-  if (!agentAccountContract || !assetContract) {
+  const [agentAccountContract, contractPrincipal] = process.argv.slice(2);
+  if (!agentAccountContract || !contractPrincipal) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -38,9 +38,9 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  if (!isValidContractPrincipal(assetContract)) {
+  if (!isValidContractPrincipal(contractPrincipal)) {
     const errorMessage = [
-      `Invalid asset contract address: ${assetContract}`,
+      `Invalid contract principal: ${contractPrincipal}`,
       usage,
       usageExample,
     ].join("\n");
@@ -49,7 +49,7 @@ function validateArgs(): ExpectedArgs {
 
   return {
     agentAccountContract,
-    assetContract,
+    contractPrincipal,
   };
 }
 
@@ -67,8 +67,8 @@ async function main(): Promise<ToolResponse<boolean>> {
   const result = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
-    functionName: "is-approved-asset",
-    functionArgs: [Cl.principal(args.assetContract)],
+    functionName: "is-approved-contract",
+    functionArgs: [Cl.principal(args.contractPrincipal)],
     senderAddress: address,
     network: networkObj,
   });
@@ -76,7 +76,7 @@ async function main(): Promise<ToolResponse<boolean>> {
   const isApproved = cvToValue(result, true) as boolean;
   return {
     success: true,
-    message: "Asset approval status retrieved successfully",
+    message: "Contract approval status retrieved successfully",
     data: isApproved,
   };
 }
