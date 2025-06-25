@@ -21,9 +21,7 @@ interface AgentAccountConfiguration {
   account: string;
   agent: string;
   owner: string;
-  daoToken: string;
-  daoTokenDex: string;
-  sbtcToken: string;
+  sbtc: string;
 }
 
 function validateArgs(): ExpectedArgs {

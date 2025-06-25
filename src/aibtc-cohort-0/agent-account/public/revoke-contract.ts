@@ -1,27 +1,34 @@
-import { fetchCallReadOnlyFunction, Cl, cvToValue } from "@stacks/transactions";
 import {
+  Cl,
+  makeContractCall,
+  SignedContractCallOptions,
+  PostConditionMode,
+} from "@stacks/transactions";
+import {
+  broadcastTx,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
+  getNextNonce,
   isValidContractPrincipal,
   sendToLLM,
-  ToolResponse,
 } from "../../../utilities";
 
 const usage =
-  "Usage: bun run is-approved-dex.ts <agentAccountContract> <dexContract>";
+  "Usage: bun run revoke-contract.ts <agentAccountContract> <contractToRevoke>";
 const usageExample =
-  "Example: bun run is-approved-dex.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.facey-faktory-dex";
+  "Example: bun run revoke-contract.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-proposal-voting";
 
 interface ExpectedArgs {
   agentAccountContract: string;
-  dexContract: string;
+  contractToRevoke: string;
 }
 
 function validateArgs(): ExpectedArgs {
-  const [agentAccountContract, dexContract] = process.argv.slice(2);
-  if (!agentAccountContract || !dexContract) {
+  const [agentAccountContract, contractToRevoke] = process.argv.slice(2);
+
+  if (!agentAccountContract || !contractToRevoke) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -38,9 +45,9 @@ function validateArgs(): ExpectedArgs {
     ].join("\n");
     throw new Error(errorMessage);
   }
-  if (!isValidContractPrincipal(dexContract)) {
+  if (!isValidContractPrincipal(contractToRevoke)) {
     const errorMessage = [
-      `Invalid DEX contract address: ${dexContract}`,
+      `Invalid contract to revoke address: ${contractToRevoke}`,
       usage,
       usageExample,
     ].join("\n");
@@ -49,36 +56,39 @@ function validateArgs(): ExpectedArgs {
 
   return {
     agentAccountContract,
-    dexContract,
+    contractToRevoke,
   };
 }
 
-async function main(): Promise<ToolResponse<boolean>> {
+async function main() {
   const args = validateArgs();
   const [contractAddress, contractName] = args.agentAccountContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
-  const { address } = await deriveChildAccount(
+  const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+  const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  const result = await fetchCallReadOnlyFunction({
+  const functionArgs = [Cl.principal(args.contractToRevoke)];
+
+  const txOptions: SignedContractCallOptions = {
     contractAddress,
     contractName,
-    functionName: "is-approved-dex",
-    functionArgs: [Cl.principal(args.dexContract)],
-    senderAddress: address,
+    functionName: "revoke-contract",
+    functionArgs,
     network: networkObj,
-  });
-
-  const isApproved = cvToValue(result, true) as boolean;
-  return {
-    success: true,
-    message: "DEX approval status retrieved successfully",
-    data: isApproved,
+    nonce: nextPossibleNonce,
+    senderKey: key,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions: [],
   };
+
+  const transaction = await makeContractCall(txOptions);
+  const broadcastResponse = await broadcastTx(transaction, networkObj);
+  return broadcastResponse;
 }
 
 main()
