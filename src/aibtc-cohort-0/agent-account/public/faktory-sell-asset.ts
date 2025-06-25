@@ -18,9 +18,9 @@ import {
 import { TokenInfoService } from "../../../api/token-info-service";
 
 const usage =
-  "Usage: bun run acct-sell-asset.ts <agentAccountContract> <faktoryDexContract> <assetContract> <amount>";
+  "Usage: bun run faktory-sell-asset.ts <agentAccountContract> <faktoryDexContract> <assetContract> <amount>";
 const usageExample =
-  "Example: bun run acct-sell-asset.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.facey-faktory-dex ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.facey-faktory 1000";
+  "Example: bun run faktory-sell-asset.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.facey-faktory-dex ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.facey-faktory 1000";
 
 interface ExpectedArgs {
   agentAccountContract: string;
@@ -132,7 +132,7 @@ async function main() {
   const txOptions: SignedContractCallOptions = {
     contractAddress: agentAccountContractAddress,
     contractName: agentAccountContractName,
-    functionName: "acct-sell-asset",
+    functionName: "faktory-sell-asset",
     functionArgs,
     network: networkObj,
     nonce: nextPossibleNonce,
