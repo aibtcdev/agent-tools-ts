@@ -5,7 +5,6 @@ import {
   createErrorResponse,
   deriveChildAccount,
   getNextNonce,
-  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
   validateNetwork,

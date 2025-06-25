@@ -3,7 +3,6 @@ import {
   CONFIG,
   convertStringToBoolean,
   createErrorResponse,
-  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
   validateNetwork,
@@ -88,7 +87,7 @@ async function main(): Promise<ToolResponse<GeneratedContractResponse>> {
       }
     );
 
-    console.log("Result:", result);
+    // console.log("Result:", result);
 
     if (!result.success || !result.data?.contract) {
       if (result.error) {
