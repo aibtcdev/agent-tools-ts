@@ -57,6 +57,52 @@ AIBTC_FAKTORY_API_KEY=your-api-key
 AIBTC_CORE_API_KEY=your-api-key
 ```
 
+## Command-Line Tools
+
+This repository contains several command-line tools for interacting with Stacks contracts. These tools provide safe, post-condition-protected methods for trading on Faktory DEXs.
+
+### Trading via an Agent Account
+
+These scripts execute trades through a deployed agent account smart contract. They are ideal for managing assets held within a specialized contract.
+
+**Sell an Asset:**
+
+Sell a specific amount of a fungible token for the DEX's payment asset (e.g., STX or sBTC).
+
+```sh
+bun run src/aibtc-cohort-0/agent-account/public/faktory-sell-asset.ts <agentContract> <dexContract> <assetContract> <amountToSell> [slippage]
+```
+-   **`<agentContract>`**: Your agent account contract (e.g., `ST1...agent-v1`).
+-   **`<dexContract>`**: The Faktory DEX contract (e.g., `ST2...aibtc-dex`).
+-   **`<assetContract>`**: The token you are selling (e.g., `ST2...aibtc-token`).
+-   **`<amountToSell>`**: The number of tokens you want to sell.
+-   **`[slippage]`**: Optional. Slippage tolerance in percent (e.g., `1` for 1%). Defaults to 1%.
+
+**Buy an Asset:**
+
+Spend a specific amount of the DEX's payment asset (e.g., STX or sBTC) to buy a fungible token.
+
+```sh
+bun run src/aibtc-cohort-0/agent-account/public/faktory-buy-asset.ts <agentContract> <dexContract> <assetContract> <amountToSpend> [slippage]
+```
+-   **`<amountToSpend>`**: The amount of STX or sBTC you want to spend.
+-   Other arguments are the same as selling.
+
+### Direct Wallet-to-DEX Trading
+
+These scripts execute trades directly from your wallet configured in the `.env` file.
+
+**Sell a Token (Directly):**
+```sh
+bun run src/stacks-faktory/exec-sell.ts <tokenAmount> <dexContract> [slippage]
+```
+
+**Buy a Token (Directly):**
+```sh
+# For BTC-denominated pools
+bun run src/stacks-faktory/exec-buy.ts <btcAmount> <dexContract> [slippage]
+```
+
 ## Usage Example
 
 Here's a basic example of how to import and use the package in your project:

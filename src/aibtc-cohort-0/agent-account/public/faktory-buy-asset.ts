@@ -104,7 +104,11 @@ async function main() {
 
   const sdk = new FaktorySDK(faktoryConfig);
 
-  // Get buy parameters from the SDK to determine trade details
+  // The aibtc-faktory-dex contract does not accept a slippage parameter directly.
+  // Therefore, we use the Faktory SDK to calculate the trade parameters and, most
+  // importantly, the minimum amount of the desired asset we should receive for our
+  // payment, given the slippage tolerance. This is enforced via a Stacks post-condition,
+  // which protects the agent account from price volatility at the transaction level.
   const buyParams = await sdk.getBuyParams({
     dexContract: args.faktoryDexContract,
     inAmount: args.amountToSpend,
@@ -136,12 +140,12 @@ async function main() {
   const minAmountToReceive = assetReceivePostCondition.amount;
 
   // The agent contract is expected to have a function with this signature:
-  // (define-public (faktory-buy-asset (dex principal) (token principal) (amount-to-spend uint) (min-to-receive uint)) ...)
+  // (define-public (faktory-buy-asset (faktory-dex <dao-faktory-dex>) (asset <faktory-token>) (amount uint)) ...)
+  // The `amount` here is the amount of the payment asset (e.g. sBTC) to spend.
   const functionArgs = [
     Cl.principal(args.faktoryDexContract),
     Cl.principal(args.assetContract),
     Cl.uint(amountToSpendUint),
-    Cl.uint(minAmountToReceive),
   ];
 
   const txOptions: SignedContractCallOptions = {

@@ -104,7 +104,11 @@ async function main() {
 
   const sdk = new FaktorySDK(faktoryConfig);
 
-  // Get sell parameters from the SDK to determine the minimum amount to receive
+  // The aibtc-faktory-dex contract does not accept a slippage parameter directly.
+  // Therefore, we use the Faktory SDK to calculate the minimum amount of the payment asset
+  // we should receive for our tokens, given the slippage tolerance. This is enforced
+  // via a Stacks post-condition, which protects the agent account from price
+  // volatility and front-running at the transaction level.
   const sellParams = await sdk.getSellParams({
     dexContract: args.faktoryDexContract,
     amount: args.amountToSell,
@@ -131,15 +135,14 @@ async function main() {
   }
 
   const amountToSellUint = assetSendPostCondition.amount;
-  const minAmountToReceive = paymentReceivePostCondition.amount;
 
   // The agent contract is expected to have a function with this signature:
-  // (define-public (faktory-sell-asset (dex principal) (token principal) (amount-to-sell uint) (min-to-receive uint)) ...)
+  // (define-public (faktory-sell-asset (faktory-dex <dao-faktory-dex>) (asset <faktory-token>) (amount uint)) ...)
+  // The `amount` here is the amount of the token to sell.
   const functionArgs = [
     Cl.principal(args.faktoryDexContract),
     Cl.principal(args.assetContract),
     Cl.uint(amountToSellUint),
-    Cl.uint(minAmountToReceive),
   ];
 
   const txOptions: SignedContractCallOptions = {
