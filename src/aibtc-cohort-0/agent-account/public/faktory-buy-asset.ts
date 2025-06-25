@@ -1,9 +1,12 @@
 import {
   Cl,
   makeContractCall,
-  Pc,
   PostConditionMode,
   SignedContractCallOptions,
+  PostCondition,
+  PostConditionType,
+  FungibleConditionCode,
+  FungiblePostCondition,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -15,31 +18,43 @@ import {
   isValidContractPrincipal,
   sendToLLM,
 } from "../../../utilities";
-import { TokenInfoService } from "../../../api/token-info-service";
+import { FaktorySDK } from "@faktoryfun/core-sdk";
+
+const faktoryConfig = {
+  network: CONFIG.NETWORK as "mainnet" | "testnet",
+  hiroApiKey: CONFIG.HIRO_API_KEY,
+};
 
 const usage =
-  "Usage: bun run faktory-buy-asset.ts <agentAccountContract> <faktoryDexContract> <assetContract> <amount>";
+  "Usage: bun run faktory-buy-asset.ts <agentAccountContract> <faktoryDexContract> <assetContract> <amountToSpend> [slippage]";
 const usageExample =
-  "Example: bun run faktory-buy-asset.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.facey-faktory-dex ST3DD7MASYJADCFXN3745R11RVM4PCXCPVRS3V27K.facey-faktory 1000";
+  "Example: bun run faktory-buy-asset.ts ST1..agent ST2..dex ST2..token 0.5 1";
 
 interface ExpectedArgs {
   agentAccountContract: string;
   faktoryDexContract: string;
   assetContract: string;
-  amount: number;
+  amountToSpend: number;
+  slippage: number;
 }
 
 function validateArgs(): ExpectedArgs {
-  const [agentAccountContract, faktoryDexContract, assetContract, amountStr] =
-    process.argv.slice(2);
-  const amount = parseInt(amountStr);
+  const [
+    agentAccountContract,
+    faktoryDexContract,
+    assetContract,
+    amountToSpendStr,
+    slippageStr,
+  ] = process.argv.slice(2);
+  const amountToSpend = parseFloat(amountToSpendStr);
+  const slippage = parseInt(slippageStr) || 1; // Default 1% slippage
 
   if (
     !agentAccountContract ||
     !faktoryDexContract ||
     !assetContract ||
-    !amountStr ||
-    isNaN(amount)
+    !amountToSpendStr ||
+    isNaN(amountToSpend)
   ) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
@@ -50,43 +65,27 @@ function validateArgs(): ExpectedArgs {
   }
 
   if (!isValidContractPrincipal(agentAccountContract)) {
-    const errorMessage = [
-      `Invalid agent account contract address: ${agentAccountContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
+    throw new Error(`Invalid agent account contract address: ${agentAccountContract}`);
   }
   if (!isValidContractPrincipal(faktoryDexContract)) {
-    const errorMessage = [
-      `Invalid Faktory DEX contract address: ${faktoryDexContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
+    throw new Error(`Invalid Faktory DEX contract address: ${faktoryDexContract}`);
   }
   if (!isValidContractPrincipal(assetContract)) {
-    const errorMessage = [
-      `Invalid asset contract address: ${assetContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
+    throw new Error(`Invalid asset contract address: ${assetContract}`);
   }
-  if (amount <= 0) {
-    const errorMessage = [
-      `Invalid amount: ${amount}. Amount must be positive.`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
+  if (amountToSpend <= 0) {
+    throw new Error(`Invalid amount to spend: ${amountToSpend}. Must be positive.`);
+  }
+  if (slippage < 0 || slippage > 100) {
+    throw new Error(`Invalid slippage: ${slippage}. Must be between 0 and 100.`);
   }
 
   return {
     agentAccountContract,
     faktoryDexContract,
     assetContract,
-    amount,
+    amountToSpend,
+    slippage,
   };
 }
 
@@ -94,8 +93,6 @@ async function main() {
   const args = validateArgs();
   const [agentAccountContractAddress, agentAccountContractName] =
     args.agentAccountContract.split(".");
-  const [assetContractAddress, assetContractName] =
-    args.assetContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
@@ -105,28 +102,46 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
-  const assetName = await tokenInfoService.getAssetNameFromAbi(
-    args.assetContract
-  );
-  if (!assetName) {
-    throw new Error(
-      `Could not determine asset name for token contract: ${args.assetContract}`
-    );
+  const sdk = new FaktorySDK(faktoryConfig);
+
+  // Get buy parameters from the SDK to determine trade details
+  const buyParams = await sdk.getBuyParams({
+    dexContract: args.faktoryDexContract,
+    inAmount: args.amountToSpend,
+    senderAddress: args.agentAccountContract, // The agent is the one buying
+    slippage: args.slippage,
+  });
+
+  // Extract the exact amount of the payment asset to spend from the SDK's proposed function call
+  const amountToSpendUint = (buyParams.functionArgs[2] as any).value;
+
+  // Find the post-condition for receiving the desired asset to determine the minimum amount to receive
+  const assetReceivePostCondition = buyParams.postConditions.find(
+    (pc: PostCondition) =>
+      pc.conditionType === PostConditionType.Fungible &&
+      pc.conditionCode === FungibleConditionCode.GreaterEqual
+  ) as FungiblePostCondition | undefined;
+
+  // Find the post-condition for sending the payment asset
+  const paymentSendPostCondition = buyParams.postConditions.find(
+    (pc: PostCondition) =>
+      pc.conditionType === PostConditionType.Fungible &&
+      pc.conditionCode === FungibleConditionCode.LessEqual
+  ) as FungiblePostCondition | undefined;
+
+  if (!assetReceivePostCondition || !paymentSendPostCondition) {
+    throw new Error("Could not determine trade parameters from Faktory SDK.");
   }
 
-  const postConditions = [
-    Pc.principal(args.faktoryDexContract) // DEX sends the FT
-      .willSendEq(args.amount) // Amount of FT
-      .ft(`${assetContractAddress}.${assetContractName}`, assetName), // To the agent account
-    // Note: Post-condition for sending payment asset (e.g., STX) from agent account
-    // is omitted because the exact cost from the DEX is not known upfront.
-  ];
+  const minAmountToReceive = assetReceivePostCondition.amount;
 
+  // The agent contract is expected to have a function with this signature:
+  // (define-public (faktory-buy-asset (dex principal) (token principal) (amount-to-spend uint) (min-to-receive uint)) ...)
   const functionArgs = [
     Cl.principal(args.faktoryDexContract),
     Cl.principal(args.assetContract),
-    Cl.uint(args.amount),
+    Cl.uint(amountToSpendUint),
+    Cl.uint(minAmountToReceive),
   ];
 
   const txOptions: SignedContractCallOptions = {
@@ -138,7 +153,7 @@ async function main() {
     nonce: nextPossibleNonce,
     senderKey: key,
     postConditionMode: PostConditionMode.Deny,
-    postConditions,
+    postConditions: [paymentSendPostCondition, assetReceivePostCondition],
   };
 
   const transaction = await makeContractCall(txOptions);
