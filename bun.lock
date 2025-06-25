@@ -4,7 +4,7 @@
     "": {
       "name": "@aibtc/agent-tools",
       "dependencies": {
-        "@bitflowlabs/core-sdk": "^2.3.0",
+        "@bitflowlabs/core-sdk": "^2.3.2",
         "@faktoryfun/core-sdk": "^0.3.2",
         "@jingcash/core-sdk": "^0.1.10",
         "@stacks/blockchain-api-client": "^8.11.2",
@@ -27,9 +27,9 @@
         "tslib": "^2.8.1",
       },
       "devDependencies": {
-        "@aibtc/types": "^0.4.1",
+        "@aibtc/types": "^0.6.0",
         "@types/bun": "^1.2.17",
-        "@types/node": "^24.0.3",
+        "@types/node": "^24.0.4",
         "bun-types": "^1.2.17",
         "tsup": "^8.5.0",
         "typescript": "^5.8.3",
@@ -37,9 +37,9 @@
     },
   },
   "packages": {
-    "@aibtc/types": ["@aibtc/types@0.4.1", "", {}, "sha512-JrvHKc50rXr3odoN7edXnOm9SQSAu1MsIn3wPSLSfCDdSCvgi1dHPBDh4WcvQydC6qNknLwH5udYbcXP6Mo9Zw=="],
+    "@aibtc/types": ["@aibtc/types@0.6.0", "", {}, "sha512-NIugpbxizRmvGCcubYyhqDm+kKm/ETHzj9vNnygPBEd9BQpWE0yIA219COowVJJFG7jfAVf5/47DrAkPcP0pgw=="],
 
-    "@bitflowlabs/core-sdk": ["@bitflowlabs/core-sdk@2.3.0", "", { "dependencies": { "@stacks/connect": "^7.10.2", "@stacks/network": "^7.0.2", "@stacks/transactions": "^7.0.5", "dotenv": "^16.4.7" } }, "sha512-wZ6B1h5bE7tfnySazN6GCI2y8lyJLJFrbumbCnnLr4EseSqVPL4VjfBCO2geCkTcI1YKlMaEe9xoCAPat9H4tw=="],
+    "@bitflowlabs/core-sdk": ["@bitflowlabs/core-sdk@2.3.2", "", { "dependencies": { "@stacks/connect": "^7.10.2", "@stacks/network": "^7.0.2", "@stacks/transactions": "^7.0.5", "dotenv": "^16.4.7" } }, "sha512-bulnNnA5XiQ5SLqXoVFlcCJAz0aVYmISyrsarwab3uYFhf94DdQzZIBK03ow5R5M/d4IwUIMx8klbDmadDlR5A=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.5", "", { "os": "aix", "cpu": "ppc64" }, "sha512-9o3TMmpmftaCMepOdA5k/yDw8SfInyzWWTjYTFCX3kPSDJMROQTb8jg+h9Cnwnmm1vOzvxN7gIfB5V2ewpjtGA=="],
 
@@ -203,7 +203,7 @@
 
     "@types/estree": ["@types/estree@1.0.7", "", {}, "sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ=="],
 
-    "@types/node": ["@types/node@24.0.3", "", { "dependencies": { "undici-types": "~7.8.0" } }, "sha512-R4I/kzCYAdRLzfiCabn9hxWfbuHS573x+r0dJMkkzThEa7pbrcDWK+9zu3e7aBOouf+rQAciqPFMnxwr0aWgKg=="],
+    "@types/node": ["@types/node@24.0.4", "", { "dependencies": { "undici-types": "~7.8.0" } }, "sha512-ulyqAkrhnuNq9pB76DRBTkcS6YsmDALy6Ua63V8OhrOBgbcYt6IOdzpw5P1+dyRIyMerzLkeYWBeOXPpA9GMAA=="],
 
     "acorn": ["acorn@8.15.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg=="],
 
