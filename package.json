@@ -36,7 +36,7 @@
     "chalk": "^5.4.1",
     "commander": "^14.0.0",
     "dexterity-sdk": "0.8.28",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.0",
     "eta": "^3.5.0",
     "ora": "^8.2.0",
     "stxcity-sdk": "^1.0.10",
