@@ -13,11 +13,13 @@ import {
 import {
   broadcastTx,
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getApiUrl,
   getNetwork,
   getNextNonce,
   isValidContractPrincipal,
+  sendToLLM,
 } from "../../utilities";
 import { StxBalance } from "@stacks/stacks-blockchain-api-types";
 
@@ -525,10 +527,21 @@ async function main() {
   console.log("\n" + "=".repeat(50));
   console.log("✅ Airdrop script finished.");
   console.log("========================================================");
+
+  return {
+    success: true,
+    message: "Airdrop script completed successfully.",
+    details: {
+      fundedStandardAccounts: AGENT_ACCOUNTS.length,
+      fundedSmartWallets: AGENT_WALLETS.length,
+      totalRecipients: AGENT_ACCOUNTS.length + AGENT_WALLETS.length,
+    },
+  };
 }
 
 main()
-  .catch(console.error)
-  .finally(() => {
-    process.exit();
+  .then(sendToLLM)
+  .catch((error) => {
+    sendToLLM(createErrorResponse(error));
+    process.exit(1);
   });
