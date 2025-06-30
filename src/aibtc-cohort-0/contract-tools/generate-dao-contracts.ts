@@ -151,6 +151,10 @@ async function main(): Promise<ToolResponse<GeneratedDaoContractsResponse>> {
       description: args.daoManifest,
       tweetOrigin: args.tweetOrigin,
     };
+    console.log(
+      `Requesting faktory contracts for token ${args.tokenSymbol} on ${network} with request body:`,
+      requestBody
+    );
     const { prelaunch, token, dex, pool } = await getFaktoryContracts(
       requestBody
     ); // name, code, hash, contract
