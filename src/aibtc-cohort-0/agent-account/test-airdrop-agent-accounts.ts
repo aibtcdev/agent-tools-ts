@@ -17,6 +17,7 @@ import {
   getApiUrl,
   getNetwork,
   getNextNonce,
+  isValidContractPrincipal,
 } from "../../utilities";
 import { StxBalance } from "@stacks/stacks-blockchain-api-types";
 
@@ -91,6 +92,39 @@ const DELAY_BETWEEN_RECIPIENTS_MS = 3000;
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+const usage =
+  "Usage: bun run test-airdrop-agent-accounts.ts <daoTokenContractId>";
+const usageExample =
+  "Example: bun run test-airdrop-agent-accounts.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-token";
+
+interface ExpectedArgs {
+  daoTokenContractId: string;
+}
+
+function validateArgs(): ExpectedArgs {
+  const [daoTokenContractId] = process.argv.slice(2);
+
+  if (!daoTokenContractId) {
+    const errorMessage = [
+      `Invalid arguments: Missing DAO token contract ID.`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
+  if (!isValidContractPrincipal(daoTokenContractId)) {
+    const errorMessage = [
+      `Invalid DAO token contract ID: ${daoTokenContractId}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
+  return { daoTokenContractId };
+}
 
 /**
  * Converts a standard token amount to its smallest unit (e.g., satoshis).
@@ -433,14 +467,14 @@ async function main() {
   console.log("🚀 Starting Airdrop Script for Agent Accounts & Wallets");
   console.log("========================================================");
 
+  const args = validateArgs();
+
   // --- 1. Setup Funder & Calculate Totals ---
   const funder = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
-
-  const DAO_TOKEN_CONTRACT_ID = `${DAO_TOKEN_DEPLOYER}.${DAO_TOKEN_NAME}`;
 
   const totalRecipients = AGENT_ACCOUNTS.length + AGENT_WALLETS.length;
   const totalStx = toSmallestUnit(STX_PER_RECIPIENT * totalRecipients, 6);
@@ -459,7 +493,7 @@ async function main() {
     totalStx,
     totalSbtc,
     totalDaoToken,
-    DAO_TOKEN_CONTRACT_ID
+    args.daoTokenContractId
   );
 
   // --- 3. Get Initial Nonce ---
@@ -471,7 +505,7 @@ async function main() {
     currentNonce = await fundStandardAccounts(
       funder,
       currentNonce,
-      DAO_TOKEN_CONTRACT_ID
+      args.daoTokenContractId
     );
   } else {
     console.log("\nℹ️ No standard agent accounts to fund.");
@@ -482,7 +516,7 @@ async function main() {
     currentNonce = await fundSmartWallets(
       funder,
       currentNonce,
-      DAO_TOKEN_CONTRACT_ID
+      args.daoTokenContractId
     );
   } else {
     console.log("\nℹ️ No smart contract wallets to fund.");
