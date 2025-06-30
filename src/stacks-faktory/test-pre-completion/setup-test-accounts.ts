@@ -1,10 +1,6 @@
 // setup-test-accounts.ts
 // One-time script to distribute 1 STX from account 0 to accounts 1-9
-import {
-  makeSTXTokenTransfer,
-  broadcastTransaction,
-  AnchorMode,
-} from "@stacks/transactions";
+import { makeSTXTokenTransfer } from "@stacks/transactions";
 import {
   broadcastTx,
   CONFIG,
@@ -48,7 +44,6 @@ async function main() {
         amount: 1000000n, // 1 STX in microSTX
         senderKey,
         network: networkObj,
-        anchorMode: AnchorMode.Any,
         nonce,
         fee: 1000n, // Small fee
       };

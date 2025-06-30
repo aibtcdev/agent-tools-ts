@@ -30,11 +30,11 @@ const SBTC_DECIMALS = 8;
 
 const DAO_TOKEN_CONTRACT_ID =
   "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-token"; // Example
-const DAO_TOKEN_DECIMALS = 6; // Assuming 6 decimals for the DAO token
+const DAO_TOKEN_DECIMALS = 8; // Assuming 8 decimals for the DAO token
 
 // --- Script Configuration ---
 // Delay in milliseconds between processing each recipient to avoid rate-limiting.
-const DELAY_BETWEEN_RECIPIENTS_MS = 5000;
+const DELAY_BETWEEN_RECIPIENTS_MS = 3000;
 
 // ============================================================================
 // Imports
@@ -42,12 +42,11 @@ const DELAY_BETWEEN_RECIPIENTS_MS = 5000;
 
 import {
   makeSTXTokenTransfer,
-  makeFungibleTokenTransfer,
   makeContractCall,
-  createAssetInfo,
-  AnchorMode,
   uintCV,
   contractPrincipalCV,
+  standardPrincipalCV,
+  noneCV,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -129,20 +128,9 @@ async function fundStandardAccounts(
     DAO_TOKEN_DECIMALS
   );
 
-  const [sbtcContractAddress, sbtcAssetName] = SBTC_CONTRACT_ID.split(".");
-  const sbtcAssetInfo = createAssetInfo(
-    sbtcContractAddress,
-    sbtcAssetName,
-    sbtcAssetName
-  );
-
-  const [daoTokenContractAddress, daoTokenAssetName] =
+  const [sbtcContractAddress, sbtcContractName] = SBTC_CONTRACT_ID.split(".");
+  const [daoTokenContractAddress, daoTokenContractName] =
     DAO_TOKEN_CONTRACT_ID.split(".");
-  const daoTokenAssetInfo = createAssetInfo(
-    daoTokenContractAddress,
-    daoTokenAssetName,
-    daoTokenAssetName
-  );
 
   for (const recipientAddress of AGENT_ACCOUNTS) {
     console.log(`\nProcessing account: ${recipientAddress}`);
@@ -156,7 +144,6 @@ async function fundStandardAccounts(
         senderKey: funder.key,
         network: networkObj,
         nonce,
-        anchorMode: AnchorMode.Any,
       });
       const stxResult = await broadcastTx(stxTx, networkObj);
       if (stxResult.success) {
@@ -173,14 +160,19 @@ async function fundStandardAccounts(
     // 2. Transfer sBTC
     try {
       console.log(`   - Sending ${SBTC_PER_RECIPIENT} sBTC...`);
-      const sbtcTx = await makeFungibleTokenTransfer({
-        recipient: recipientAddress,
-        amount: sbtcAmount,
-        assetInfo: sbtcAssetInfo,
+      const sbtcTx = await makeContractCall({
+        contractAddress: sbtcContractAddress,
+        contractName: sbtcContractName,
+        functionName: "transfer",
+        functionArgs: [
+          uintCV(sbtcAmount),
+          standardPrincipalCV(funder.address),
+          standardPrincipalCV(recipientAddress),
+          noneCV(),
+        ],
         senderKey: funder.key,
         network: networkObj,
         nonce,
-        anchorMode: AnchorMode.Any,
       });
       const sbtcResult = await broadcastTx(sbtcTx, networkObj);
       if (sbtcResult.success) {
@@ -196,14 +188,19 @@ async function fundStandardAccounts(
     // 3. Transfer DAO Token
     try {
       console.log(`   - Sending ${DAO_TOKEN_PER_RECIPIENT} DAO Token...`);
-      const daoTokenTx = await makeFungibleTokenTransfer({
-        recipient: recipientAddress,
-        amount: daoTokenAmount,
-        assetInfo: daoTokenAssetInfo,
+      const daoTokenTx = await makeContractCall({
+        contractAddress: daoTokenContractAddress,
+        contractName: daoTokenContractName,
+        functionName: "transfer",
+        functionArgs: [
+          uintCV(daoTokenAmount),
+          standardPrincipalCV(funder.address),
+          standardPrincipalCV(recipientAddress),
+          noneCV(),
+        ],
         senderKey: funder.key,
         network: networkObj,
         nonce,
-        anchorMode: AnchorMode.Any,
       });
       const daoTokenResult = await broadcastTx(daoTokenTx, networkObj);
       if (daoTokenResult.success) {
@@ -257,7 +254,6 @@ async function fundSmartWallets(
         senderKey: funder.key,
         network: networkObj,
         nonce,
-        anchorMode: AnchorMode.Any,
       });
       const stxResult = await broadcastTx(stxTx, networkObj);
       if (stxResult.success) {
@@ -287,7 +283,6 @@ async function fundSmartWallets(
         senderKey: funder.key,
         network: networkObj,
         nonce,
-        anchorMode: AnchorMode.Any,
       });
       const sbtcResult = await broadcastTx(sbtcTx, networkObj);
       if (sbtcResult.success) {
@@ -317,7 +312,6 @@ async function fundSmartWallets(
         senderKey: funder.key,
         network: networkObj,
         nonce,
-        anchorMode: AnchorMode.Any,
       });
       const daoTokenResult = await broadcastTx(daoTokenTx, networkObj);
       if (daoTokenResult.success) {
