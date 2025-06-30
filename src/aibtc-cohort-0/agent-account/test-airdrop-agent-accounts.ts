@@ -1,10 +1,39 @@
 // ============================================================================
+// Imports
+// ============================================================================
+
+import {
+  makeSTXTokenTransfer,
+  makeContractCall,
+  uintCV,
+  contractPrincipalCV,
+  standardPrincipalCV,
+  noneCV,
+} from "@stacks/transactions";
+import {
+  broadcastTx,
+  CONFIG,
+  deriveChildAccount,
+  getApiUrl,
+  getNetwork,
+  getNextNonce,
+} from "../../utilities";
+import { StxBalance } from "@stacks/stacks-blockchain-api-types";
+
+// ============================================================================
 // Configuration
 // ============================================================================
 
-// --- Funder Information ---
-// The account index from the .env MNEMONIC that will send the funds.
-const FUNDER_ACCOUNT_INDEX = 0;
+// Helper function for interface not found in @stacks/stacks-blockchain-api-types
+interface ApiFtResponse {
+  limit: number;
+  offset: number;
+  total: number;
+  results: {
+    token: string;
+    balance: string;
+  }[];
+}
 
 // --- Recipient Lists ---
 // An array of standard Stacks accounts to receive the airdrop.
@@ -17,13 +46,13 @@ const AGENT_ACCOUNTS: string[] = [
   "ST31S76S7P99YHZK9TFYNMN6FG4A57KZ556BPRKEV",
   "ST2VWCTT3NYHZJRJYD7YJA0VZZ0QCG1ACVR2A5DCP",
   "ST2EMZSA1CQQCGJEQ9JSDBWBV0NFDJ59EH63XAPKY",
-  "ST1M8KHCJXB3SBRQRDBCG3J3859AA1CN0AXDHQ3C0", // DUPLICATE
+  // "ST1M8KHCJXB3SBRQRDBCG3J3859AA1CN0AXDHQ3C0", // DUPLICATE
   "ST2TSG65G25BWVGKJSV4YAQMKXZNZAFDPMBABQ7B3",
   "SP37AEZVC0NRGSVJXBFTGYT5K6XHYZR59V7JR7J9T",
   "ST71N7X6G8KYGQPHZW7TB4PD1JZ6ND9AEV56NVJ1",
   "STRZ4P1ABSVSZPC4HZ4GDAW834HHEHJMF65X5S6D",
-  "STRZ4P1ABSVSZPC4HZ4GDAW834HHEHJMF65X5S6D", // DUPLICATE
-  "ST2EMZSA1CQQCGJEQ9JSDBWBV0NFDJ59EH63XAPKY", // DUPLICATE
+  // "STRZ4P1ABSVSZPC4HZ4GDAW834HHEHJMF65X5S6D", // DUPLICATE
+  // "ST2EMZSA1CQQCGJEQ9JSDBWBV0NFDJ59EH63XAPKY", // DUPLICATE
 ];
 
 // An array of smart contract wallet addresses to receive the airdrop.
@@ -36,13 +65,13 @@ const AGENT_WALLETS: string[] = [
   "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-ST31S-PRKEV-ST17J-HEM1H",
   "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-ST2VW-A5DCP-ST108-SJBXF",
   "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-ST2EM-XAPKY-ST3H8-F2M3K",
-  "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-ST1M8-HQ3C0-ST11K-4S5DC", // DUPLICATE OWNER
+  // "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-ST1M8-HQ3C0-ST11K-4S5DC", // DUPLICATE OWNER
   "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-ST2TS-BQ7B3-ST3YT-84TFS",
   "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-SP37A-R7J9T-ST18F-R5XW4",
   "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-ST71N-6NVJ1-STF5N-8P9Q3",
   "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-STRZ4-X5S6D-ST1F3-MQWNJ", // DUPLICATE OWNER
-  "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-STRZ4-X5S6D-ST1XM-BS1E6", // DUPLICATE OWNER
-  "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-ST2EM-XAPKY-ST1YA-D9RPB", // DUPLICATE OWNER
+  // "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-STRZ4-X5S6D-ST1XM-BS1E6", // DUPLICATE OWNER
+  // "ST1PE5V7DS1YPXGV1AZ80G7H6DNRHN79N23ZGE27N.aibtc-acct-ST2EM-XAPKY-ST1YA-D9RPB", // DUPLICATE OWNER
 ];
 
 // --- Airdrop Amounts (per recipient) ---
@@ -53,37 +82,11 @@ const DAO_TOKEN_PER_RECIPIENT = 1_000_000; // 1,000,000 of the DAO token
 // --- Contract & Token Details ---
 const SBTC_CONTRACT_ID = "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.sbtc-token";
 const SBTC_DECIMALS = 8;
-
-// DAO Token is now configured via deployer and name
-const DAO_TOKEN_DEPLOYER = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"; // Example deployer
-const DAO_TOKEN_NAME = "aibtc-token";
 const DAO_TOKEN_DECIMALS = 8; // Assuming 8 decimals for the DAO token
 
 // --- Script Configuration ---
 // Delay in milliseconds between processing each recipient to avoid rate-limiting.
 const DELAY_BETWEEN_RECIPIENTS_MS = 3000;
-
-// ============================================================================
-// Imports
-// ============================================================================
-
-import {
-  makeSTXTokenTransfer,
-  makeContractCall,
-  uintCV,
-  contractPrincipalCV,
-  standardPrincipalCV,
-  noneCV,
-  fetchCallReadOnlyFunction,
-  cvToValue,
-} from "@stacks/transactions";
-import {
-  broadcastTx,
-  CONFIG,
-  deriveChildAccount,
-  getNetwork,
-  getNextNonce,
-} from "../../utilities";
 
 // ============================================================================
 // Helper Functions
@@ -97,43 +100,6 @@ import {
  */
 function toSmallestUnit(amount: number, decimals: number): bigint {
   return BigInt(Math.floor(amount * 10 ** decimals));
-}
-
-/**
- * Fetches the balance of a fungible token for a given principal.
- * @param contractId - The contract ID of the FT (e.g., "address.contract-name").
- * @param principal - The principal to check the balance for.
- * @param network - The Stacks network object.
- * @returns The balance of the token as a bigint.
- */
-async function getFtBalance(
-  contractId: string,
-  principal: string,
-  network: any
-): Promise<bigint> {
-  const [contractAddress, contractName] = contractId.split(".");
-  const resultCV = await fetchCallReadOnlyFunction({
-    contractAddress,
-    contractName,
-    functionName: "get-balance",
-    functionArgs: [standardPrincipalCV(principal)],
-    senderAddress: principal,
-    network,
-  });
-
-  const result = cvToValue(resultCV);
-  // Handle functions that return (response uint err-code)
-  if (result && typeof result === "object" && "success" in result) {
-    if (result.success) {
-      return BigInt(result.value);
-    } else {
-      throw new Error(
-        `Failed to get balance for ${contractId}. Error: ${result.value}`
-      );
-    }
-  }
-  // Handle functions that return uint directly
-  return BigInt(result);
 }
 
 /**
@@ -154,10 +120,20 @@ async function checkFunderBalances(
   console.log("\n📊 Verifying funder balances...");
   console.log(`   Funder: ${funderAddress}`);
   const networkObj = getNetwork(CONFIG.NETWORK);
+  const apiUrl = getApiUrl(CONFIG.NETWORK);
+  console.log(`   API URL: ${apiUrl}`);
 
-  // 1. Check STX Balance
-  
-  const stxBalance = BigInt(accountInfo.balance);
+  // 1. Fetch STX balance from API
+
+  const stxBalanceUrl = `${apiUrl}/extended/v2/address/${funderAddress}/balances/stx`;
+  const stxResponse = await fetch(stxBalanceUrl);
+  if (!stxResponse.ok) {
+    throw new Error(`Failed to fetch STX balance: ${stxResponse.statusText}`);
+  }
+  const stxData = (await stxResponse.json()) as StxBalance;
+
+  // 2. Check STX balance
+  const stxBalance = BigInt(stxData.balance);
   console.log(`   - STX Balance: ${Number(stxBalance) / 1e6} STX`);
   console.log(`   - Required STX: ${Number(requiredSTX) / 1e6} STX`);
   if (stxBalance < requiredSTX) {
@@ -165,32 +141,49 @@ async function checkFunderBalances(
   }
   console.log("     ✅ Sufficient STX balance.");
 
-  // 2. Check sBTC Balance
-  const sbtcBalance = await getFtBalance(
-    SBTC_CONTRACT_ID,
-    funderAddress,
-    networkObj
-  );
+  // 3. Fetch fungible token balances from API
+
+  //https://api.platform.hiro.so/extended/v2/addresses/{principal}/balances/ft
+  const ftBalanceUrl = `${apiUrl}/extended/v2/addresses/${funderAddress}/balances/ft`;
+  const ftResponse = await fetch(ftBalanceUrl);
+  if (!ftResponse.ok) {
+    throw new Error(`Failed to fetch FT balances: ${ftResponse.statusText}`);
+  }
+  const ftData = (await ftResponse.json()) as ApiFtResponse;
+
+  // 4. Check sBTC balance
+  const sbtcBalance = ftData.results.find(
+    (ft) => ft.token === SBTC_CONTRACT_ID
+  )?.balance;
+  if (!sbtcBalance) {
+    // TODO: could hit faucet function here on testnet
+    throw new Error("❌ sBTC balance not found for funder.");
+  }
+  const sbtcBalanceBigInt = BigInt(sbtcBalance);
   console.log(
-    `   - sBTC Balance: ${Number(sbtcBalance) / 10 ** SBTC_DECIMALS} sBTC`
+    `   - sBTC Balance: ${Number(sbtcBalanceBigInt) / 10 ** SBTC_DECIMALS} sBTC`
   );
   console.log(
     `   - Required sBTC: ${Number(requiredSBTC) / 10 ** SBTC_DECIMALS} sBTC`
   );
-  if (sbtcBalance < requiredSBTC) {
+  if (sbtcBalanceBigInt < requiredSBTC) {
     throw new Error("❌ Insufficient sBTC balance.");
   }
   console.log("     ✅ Sufficient sBTC balance.");
 
-  // 3. Check DAO Token Balance
-  const daoTokenBalance = await getFtBalance(
-    daoTokenContractId,
-    funderAddress,
-    networkObj
-  );
+  // 5. Check DAO Token balance
+
+  const daoTokenBalance = ftData.results.find(
+    (ft) => ft.token === daoTokenContractId
+  )?.balance;
+  if (!daoTokenBalance) {
+    // TODO: could hit DEX function here on testnet
+    throw new Error("❌ DAO Token balance not found for funder.");
+  }
+  const daoTokenBalanceBigInt = BigInt(daoTokenBalance);
   console.log(
     `   - DAO Token Balance: ${
-      Number(daoTokenBalance) / 10 ** DAO_TOKEN_DECIMALS
+      Number(daoTokenBalanceBigInt) / 10 ** DAO_TOKEN_DECIMALS
     } DAO`
   );
   console.log(
@@ -198,7 +191,7 @@ async function checkFunderBalances(
       Number(requiredDaoToken) / 10 ** DAO_TOKEN_DECIMALS
     } DAO`
   );
-  if (daoTokenBalance < requiredDaoToken) {
+  if (daoTokenBalanceBigInt < requiredDaoToken) {
     throw new Error("❌ Insufficient DAO Token balance.");
   }
   console.log("     ✅ Sufficient DAO Token balance.");
@@ -245,11 +238,11 @@ async function fundStandardAccounts(
       });
       const stxResult = await broadcastTx(stxTx, networkObj);
       if (stxResult.success) {
-        console.log(`     ✅ Success! TXID: ${stxResult.data?.txid}`);
+        console.log(`     ✅ Success! DATA: ${stxResult.data}`);
         nonce++;
       } else {
         console.log(`     ❌ Failed: ${JSON.stringify(stxResult.data)}`);
-        // Decide if you want to stop or continue on failure
+        // TODO: decide to stop or continue on failure
       }
     } catch (error: any) {
       console.log(`     ❌ Error sending STX: ${error.message}`);
@@ -302,7 +295,7 @@ async function fundStandardAccounts(
       });
       const daoTokenResult = await broadcastTx(daoTokenTx, networkObj);
       if (daoTokenResult.success) {
-        console.log(`     ✅ Success! TXID: ${daoTokenResult.data?.txid}`);
+        console.log(`     ✅ Success! DATA: ${daoTokenResult.data}`);
         nonce++;
       } else {
         console.log(`     ❌ Failed: ${JSON.stringify(daoTokenResult.data)}`);
@@ -444,7 +437,7 @@ async function main() {
   const funder = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
-    FUNDER_ACCOUNT_INDEX
+    CONFIG.ACCOUNT_INDEX
   );
 
   const DAO_TOKEN_CONTRACT_ID = `${DAO_TOKEN_DEPLOYER}.${DAO_TOKEN_NAME}`;
