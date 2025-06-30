@@ -74,9 +74,8 @@ import {
   contractPrincipalCV,
   standardPrincipalCV,
   noneCV,
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   cvToValue,
-  ClarityValue,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -85,10 +84,6 @@ import {
   getNetwork,
   getNextNonce,
 } from "../../utilities";
-import {
-  AccountsApi,
-  Configuration as ApiConfig,
-} from "@stacks/blockchain-api-client";
 
 // ============================================================================
 // Helper Functions
@@ -117,7 +112,7 @@ async function getFtBalance(
   network: any
 ): Promise<bigint> {
   const [contractAddress, contractName] = contractId.split(".");
-  const resultCV = await callReadOnlyFunction({
+  const resultCV = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-balance",
@@ -161,11 +156,7 @@ async function checkFunderBalances(
   const networkObj = getNetwork(CONFIG.NETWORK);
 
   // 1. Check STX Balance
-  const apiConfig = new ApiConfig({ basePath: networkObj.coreApiUrl });
-  const accountsApi = new AccountsApi(apiConfig);
-  const accountInfo = await accountsApi.getAccountInfo({
-    principal: funderAddress,
-  });
+  
   const stxBalance = BigInt(accountInfo.balance);
   console.log(`   - STX Balance: ${Number(stxBalance) / 1e6} STX`);
   console.log(`   - Required STX: ${Number(requiredSTX) / 1e6} STX`);
