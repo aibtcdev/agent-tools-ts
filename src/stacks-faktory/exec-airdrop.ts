@@ -116,42 +116,49 @@ function loadRecipients(
     const fileContent = readFileSync(filePath, "utf-8");
     const data = JSON.parse(fileContent);
 
-    if (mode === "equal" || mode === "validate") {
-      // Expect array of addresses: ["addr1", "addr2", ...]
-      if (!Array.isArray(data)) {
-        throw new Error(
-          "For equal/validate mode, recipients file should contain an array of addresses"
-        );
-      }
-
-      return data.map((address: string) => {
-        if (typeof address !== "string") {
-          throw new Error("All recipients must be valid address strings");
-        }
-        return { address };
-      });
-    } else {
-      // Custom mode: expect array of objects with address, amount, memo
-      if (!Array.isArray(data)) {
-        throw new Error(
-          "For custom mode, recipients file should contain an array of recipient objects"
-        );
-      }
-
-      return data.map((recipient: any) => {
-        if (!recipient.address || typeof recipient.address !== "string") {
-          throw new Error("Each recipient must have a valid address string");
-        }
-        if (recipient.amount && typeof recipient.amount !== "number") {
-          throw new Error("Recipient amounts must be numbers");
-        }
-        return {
-          address: recipient.address,
-          amount: recipient.amount || 0,
-          memo: recipient.memo || undefined,
-        };
-      });
+    if (!Array.isArray(data)) {
+      throw new Error("Recipients file should contain an array");
     }
+
+    // Auto-detect format based on first element
+    if (data.length > 0) {
+      const firstItem = data[0];
+
+      // If first item is an object with 'address' property, treat as custom format
+      if (typeof firstItem === "object" && firstItem.address) {
+        // Custom format for all modes when detected
+        return data.map((recipient: any) => {
+          if (!recipient.address || typeof recipient.address !== "string") {
+            throw new Error("Each recipient must have a valid address string");
+          }
+          if (recipient.amount && typeof recipient.amount !== "number") {
+            throw new Error("Recipient amounts must be numbers");
+          }
+          return {
+            address: recipient.address,
+            amount: recipient.amount || 0,
+            memo: recipient.memo || undefined,
+          };
+        });
+      }
+      // If first item is a string, treat as simple address array
+      else if (typeof firstItem === "string") {
+        if (mode === "custom") {
+          throw new Error(
+            "Custom mode requires recipient objects with address, amount, and optional memo fields"
+          );
+        }
+
+        return data.map((address: string) => {
+          if (typeof address !== "string") {
+            throw new Error("All recipients must be valid address strings");
+          }
+          return { address };
+        });
+      }
+    }
+
+    throw new Error("Invalid recipients file format");
   } catch (error) {
     if (error instanceof SyntaxError) {
       throw new Error(`Invalid JSON in recipients file: ${filePath}`);
@@ -377,7 +384,7 @@ async function handleBatchedAirdrop(
       console.log(
         `✅ Batch ${i + 1} sent: ${
           broadcastResponse.success
-            ? broadcastResponse.result?.txid || "Transaction sent"
+            ? (broadcastResponse as any).result?.txid || "Transaction sent"
             : "Failed"
         }`
       );
