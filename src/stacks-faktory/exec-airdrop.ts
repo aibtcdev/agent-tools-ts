@@ -1,3 +1,4 @@
+// exec-airdrop.ts
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 import {
   makeContractCall,
