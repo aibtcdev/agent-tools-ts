@@ -1,11 +1,10 @@
+import { formatSerializedBuffer } from "@aibtc/types";
 import {
   Cl,
   makeContractCall,
   Pc,
   PostConditionMode,
   SignedContractCallOptions,
-  cvToJSON,
-  fetchCallReadOnlyFunction,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -16,71 +15,36 @@ import {
   getNextNonce,
   sendToLLM,
   isValidContractPrincipal,
+  getCurrentActionProposalBond,
 } from "../../../../../utilities";
-import { TokenInfoService } from "../../../../../api/token-info-service";
-
-// This constant reflects the contract's definition and is used if dynamic fetching fails or as a fallback.
-const AIBTC_DAO_RUN_COST_AMOUNT = 10000000000; // u10000000000 from contract
 
 const usage =
-  "Usage: bun run create-action-proposal.ts <daoActionProposalVotingContract> <actionContractToExecute> <messageToSend> <daoTokenContract> [memo]";
+  "Usage: bun run create-action-proposal.ts <daoActionProposalVotingContract> <actionContractToExecute> <daoTokenContract> <messageToSend> [memo]";
 const usageExample =
-  'Example: bun run create-action-proposal.ts ST000000000000000000002AMW42H.aibtc-action-proposal-voting ST000000000000000000002AMW42H.some-action-contract "hello from the dao" ST000000000000000000002AMW42H.aibtc-token "My proposal memo"';
+  'Example: bun run create-action-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-proposal-voting ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-send-message ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-token "This is my message." "This is my memo."';
 
 interface ExpectedArgs {
   daoActionProposalVotingContract: string;
   actionContractToExecute: string;
-  messageToSend: string;
   daoTokenContract: string;
+  messageToSend: string;
   memo?: string;
-}
-
-interface VotingConfigurationData {
-  proposalBond: string; // uint
-  // other fields from get-voting-configuration if needed later
-}
-
-async function getVotingConfigurationFromContract(
-  contractAddress: string,
-  contractName: string,
-  senderAddress: string,
-  network: any
-): Promise<VotingConfigurationData> {
-  const result = await fetchCallReadOnlyFunction({
-    contractAddress,
-    contractName,
-    functionName: "get-voting-configuration",
-    functionArgs: [],
-    senderAddress,
-    network,
-  });
-  const jsonData = cvToJSON(result).value;
-  if (jsonData && jsonData.proposalBond && jsonData.proposalBond.value) {
-    return {
-      proposalBond: jsonData.proposalBond.value,
-    };
-  }
-  throw new Error(
-    `Could not retrieve proposalBond from voting configuration: ${JSON.stringify(
-      jsonData
-    )}`
-  );
 }
 
 function validateArgs(): ExpectedArgs {
   const [
     daoActionProposalVotingContract,
     actionContractToExecute,
-    messageToSend,
     daoTokenContract,
+    messageToSend,
     memo,
   ] = process.argv.slice(2);
 
   if (
     !daoActionProposalVotingContract ||
     !actionContractToExecute ||
-    !messageToSend ||
-    !daoTokenContract
+    !daoTokenContract ||
+    !messageToSend
   ) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
@@ -140,47 +104,27 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  const votingConfig = await getVotingConfigurationFromContract(
-    extensionAddress,
-    extensionName,
-    address, // sender for read-only call
-    networkObj
+  // Get bond amount for post-condition
+  // The agent account is the sender of the bond.
+  const bondAmountInfo = await getCurrentActionProposalBond(
+    args.daoActionProposalVotingContract,
+    args.daoTokenContract,
+    address // sender for read-only call
   );
-  const dynamicProposalBond = parseInt(votingConfig.proposalBond);
-  const totalCostAmount = dynamicProposalBond + AIBTC_DAO_RUN_COST_AMOUNT;
-
-  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
-  const daoTokenAssetName = await tokenInfoService.getAssetNameFromAbi(
-    args.daoTokenContract
-  );
-  if (!daoTokenAssetName) {
-    throw new Error(
-      `Could not determine asset name for DAO token contract: ${args.daoTokenContract}`
-    );
-  }
 
   const postConditions = [
+    // the bond amount is sent from the agent wallet address
     Pc.principal(address)
-      .willSendGte(totalCostAmount.toString())
-      .ft(`${daoTokenAddress}.${daoTokenName}`, daoTokenAssetName),
+      .willSendEq(bondAmountInfo.bond.toString())
+      .ft(`${daoTokenAddress}.${daoTokenName}`, bondAmountInfo.assetName),
+    // TODO: the reward is sent from the treasury to the rewards account contract
+    // TODO: the run cost is sent from the treasury to the run cost contract
   ];
 
-  console.log("==========");
-  console.log(`Creating action proposal with the following parameters:`);
-  console.log(
-    `DAO Action Proposal Voting Contract: ${args.daoActionProposalVotingContract}`
-  );
-  console.log(`Action Contract to Execute: ${args.actionContractToExecute}`);
-  console.log(`Message: ${args.messageToSend}`);
-  console.log(`DAO Token Contract: ${args.daoTokenContract}`);
-  console.log(`Memo: ${args.memo || "None"}`);
-  console.log(`Total Cost Amount: ${totalCostAmount}`);
-  console.log(`Post Conditions: ${JSON.stringify(postConditions, null, 2)}`);
-  console.log(`Sender Address: ${address}`);
-
+  const stringCV = Cl.stringUtf8(args.messageToSend);
   const functionArgs = [
     Cl.principal(args.actionContractToExecute),
-    Cl.bufferFromHex(Cl.serialize(Cl.stringAscii(args.messageToSend))),
+    formatSerializedBuffer(stringCV),
     args.memo ? Cl.some(Cl.stringAscii(args.memo)) : Cl.none(),
   ];
 
@@ -193,6 +137,8 @@ async function main() {
     nonce: nextPossibleNonce,
     senderKey: key,
     postConditionMode: PostConditionMode.Allow,
+    // postConditionMode: PostConditionMode.Deny,
+    // postConditions,
   };
 
   const transaction = await makeContractCall(txOptions);

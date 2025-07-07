@@ -5,7 +5,6 @@ import {
   createErrorResponse,
   deriveChildAccount,
   getNextNonce,
-  isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
   validateNetwork,
@@ -19,15 +18,13 @@ import { validateStacksAddress } from "@stacks/transactions";
 import { saveAgentAccountToFile } from "../utils/save-contract";
 
 const usage =
-  "Usage: bun run deploy-agent-account.ts <ownerAddress> <agentAddress> <daoTokenContract> <daoTokenDexContract> [network] [saveToFile]";
+  "Usage: bun run deploy-agent-account.ts <ownerAddress> <agentAddress> [network] [saveToFile]";
 const usageExample =
-  'Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-token-dex "testnet" true';
+  'Example: bun run deploy-agent-account.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM "testnet" true';
 
 interface ExpectedArgs {
   ownerAddress: string;
   agentAddress: string;
-  daoTokenContract: string;
-  daoTokenDexContract: string;
   network?: string;
   saveToFile?: boolean;
 }
@@ -36,8 +33,6 @@ function validateArgs(): ExpectedArgs {
   const [
     ownerAddress,
     agentAddress,
-    daoTokenContract,
-    daoTokenDexContract,
     network = CONFIG.NETWORK,
     saveToFileStr = "false",
   ] = process.argv.slice(2);
@@ -60,32 +55,12 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!isValidContractPrincipal(daoTokenContract)) {
-    const errorMessage = [
-      `Invalid DAO token contract: ${daoTokenContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
-  if (!isValidContractPrincipal(daoTokenDexContract)) {
-    const errorMessage = [
-      `Invalid DAO token DEX contract: ${daoTokenDexContract}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
-
   // Parse saveToFile parameter
   const saveToFile = convertStringToBoolean(saveToFileStr);
 
   return {
     ownerAddress,
     agentAddress,
-    daoTokenContract,
-    daoTokenDexContract,
     network: validateNetwork(network),
     saveToFile,
   };
@@ -114,8 +89,6 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
       {
         account_owner: args.ownerAddress,
         account_agent: agentAddress,
-        dao_contract_token: `'${args.daoTokenContract}`, // fully qualified since we're replacing relative
-        dao_contract_token_dex: `'${args.daoTokenDexContract}`,
         contractName: contractName,
       }
     );

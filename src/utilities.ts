@@ -21,10 +21,9 @@ import {
   StacksTransactionWire,
   TxBroadcastResult,
   validateStacksAddress,
-  PrincipalCV,
-  UIntCV,
   ClarityType,
   ClarityValue,
+  Cl,
 } from "@stacks/transactions";
 import {
   getContractName,
@@ -444,7 +443,6 @@ type ActionProposalConfig = {
   proposalReward: bigint;
 };
 
-// TODO: update to latest proposal info format (more fields)
 type ProposalInfo = {
   createdAt: number;
   caller: string;
@@ -462,11 +460,52 @@ type ProposalInfo = {
   executed: boolean;
 };
 
+type ProposalDetails = {
+  action: string;
+  parameters: string;
+  bond: bigint;
+  caller: string;
+  creator: string;
+  creatorUserId: bigint;
+  liquidTokens: bigint;
+  memo?: string;
+};
+
+type ProposalBlocks = {
+  createdBtc: bigint;
+  createdStx: bigint;
+  voteStart: bigint;
+  voteEnd: bigint;
+  execStart: bigint;
+  execEnd: bigint;
+};
+
+type ProposalRecords = {
+  // accumulated during lifecycle
+  votesFor: bigint;
+  votesAgainst: bigint;
+  vetoVotes: bigint;
+  // updated after conclusion
+  concluded: boolean;
+  metQuorum: boolean;
+  metThreshold: boolean;
+  passed: boolean;
+  executed: boolean;
+  expired: boolean;
+  vetoMetQuorum: boolean;
+  vetoExceedsYes: boolean;
+  vetoed: boolean;
+};
+
+type FullProposalInfo = ProposalDetails & ProposalBlocks & ProposalRecords;
+
+// @deprecated
 type ActionProposalInfo = ProposalInfo & {
   action: string;
   parameters: string;
 };
 
+// @deprecated
 type TokenAssetName = {
   assetName: string;
 };
@@ -476,31 +515,17 @@ export async function getActionProposalInfo(
   daoTokenContract: string,
   sender: string,
   proposalId: number
-): Promise<ActionProposalInfo & TokenAssetName> {
+): Promise<FullProposalInfo> {
   // create a contract calls client to use the cache API
   const client = new ContractCallsClient(CONFIG.NETWORK);
   // get the proposal data from the contract
-  const proposalInfo = await client.callContractFunction(
+  const proposalInfo = await client.callContractFunction<FullProposalInfo>(
     proposalsExtensionContract,
     "get-proposal",
-    // 2025-04-16 workaround for v6 vs v7 stacks.js
-    [{ type: "uint", value: proposalId }],
+    [Cl.uint(proposalId)],
     { senderAddress: sender }
   );
-  // create a token info service to get the asset name
-  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
-  const assetName = await tokenInfoService.getAssetNameFromAbi(
-    daoTokenContract
-  );
-  if (!assetName) {
-    throw new Error(
-      `Could not determine asset name for token contract: ${daoTokenContract}`
-    );
-  }
-  return {
-    ...proposalInfo,
-    assetName,
-  };
+  return proposalInfo;
 }
 
 export async function getCoreProposalInfo(
@@ -608,7 +633,10 @@ export function getTokenTypeFromContractName(
   throw new Error(`Unable to extract token type for contract: ${contractName}`);
 }
 
-// helper function to fetch the proposal bond amount from a core/action proposals voting contract
+/**
+ * Fetches the current bond amount for proposals in a DAO voting extension contract.
+ * @deprecated
+ */
 export async function getCurrentBondProposalAmount(
   proposalsExtensionContract: string,
   daoTokenContract: string,
@@ -703,8 +731,34 @@ export async function getCurrentActionProposalBond(
 /**
  * Fetches the bond amount for a specific action proposal, retrieved from the proposal data after it's created.
  */
-export async function getBondFromActionProposal(): Promise<BondInfo | bigint> {
-  return 0n;
+export async function getBondFromActionProposal(
+  proposalsExtensionContract: string,
+  proposalId: number,
+  daoTokenContract: string,
+  sender: string
+): Promise<BondInfo> {
+  // get the proposal info
+  const proposalInfo = await getActionProposalInfo(
+    proposalsExtensionContract,
+    daoTokenContract,
+    sender,
+    proposalId
+  );
+  // get the asset name from the token contract
+  const tokenInfoService = new TokenInfoService(CONFIG.NETWORK);
+  const assetName = await tokenInfoService.getAssetNameFromAbi(
+    daoTokenContract
+  );
+  if (!assetName) {
+    throw new Error(
+      `Could not determine asset name for token contract: ${daoTokenContract}`
+    );
+  }
+  // return the bond amount and asset name
+  return {
+    bond: BigInt(proposalInfo.bond),
+    assetName: assetName,
+  };
 }
 
 //////////////////////////////

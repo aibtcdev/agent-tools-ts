@@ -2,7 +2,7 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
-  PostConditionMode, // Though not strictly needed here, good for consistency
+  PostConditionMode,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -18,7 +18,7 @@ import {
 const usage =
   "Usage: bun run veto-action-proposal.ts <daoActionProposalVotingContract> <proposalId>";
 const usageExample =
-  "Example: bun run veto-action-proposal.ts ST000000000000000000002AMW42H.aibtc-action-proposal-voting 1";
+  "Example: bun run veto-action-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-proposal-voting 1";
 
 interface ExpectedArgs {
   daoActionProposalVotingContract: string;
@@ -86,8 +86,8 @@ async function main() {
     network: networkObj,
     nonce: nextPossibleNonce,
     senderKey: key,
-    // No direct fund transfer post-conditions from the caller for this action
-    postConditionMode: PostConditionMode.Allow,
+    postConditionMode: PostConditionMode.Deny,
+    postConditions: [],
   };
 
   const transaction = await makeContractCall(txOptions);

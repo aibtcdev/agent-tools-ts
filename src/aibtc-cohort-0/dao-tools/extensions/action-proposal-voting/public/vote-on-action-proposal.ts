@@ -2,7 +2,7 @@ import {
   Cl,
   makeContractCall,
   SignedContractCallOptions,
-  PostConditionMode, // Though not strictly needed here, good for consistency
+  PostConditionMode,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -17,24 +17,24 @@ import {
 } from "../../../../../utilities";
 
 const usage =
-  "Usage: bun run vote-on-action-proposal.ts <daoActionProposalVotingContract> <proposalId> <voteFor (true/false)>";
+  "Usage: bun run vote-on-action-proposal.ts <daoActionProposalVotingContract> <proposalId> <vote (true/false)>";
 const usageExample =
-  "Example: bun run vote-on-action-proposal.ts ST000000000000000000002AMW42H.aibtc-action-proposal-voting 1 true";
+  "Example: bun run vote-on-action-proposal.ts ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-proposal-voting 13 true";
 
 interface ExpectedArgs {
   daoActionProposalVotingContract: string;
   proposalId: number;
-  voteFor: boolean;
+  vote: boolean;
 }
 
 function validateArgs(): ExpectedArgs {
-  const [daoActionProposalVotingContract, proposalIdStr, voteForStr] =
+  const [daoActionProposalVotingContract, proposalIdStr, voteStr] =
     process.argv.slice(2);
 
   if (
     !daoActionProposalVotingContract ||
     proposalIdStr === undefined ||
-    voteForStr === undefined
+    voteStr === undefined
   ) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
@@ -63,10 +63,10 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  const voteFor = convertStringToBoolean(voteForStr);
-  if (voteFor === undefined) {
+  const vote = convertStringToBoolean(voteStr);
+  if (vote === undefined) {
     const errorMessage = [
-      `Invalid voteFor value: ${voteForStr}. Must be 'true' or 'false'.`,
+      `Invalid vote value: ${voteStr}. Must be 'true' for yes or 'false' for no.`,
       usage,
       usageExample,
     ].join("\n");
@@ -76,7 +76,7 @@ function validateArgs(): ExpectedArgs {
   return {
     daoActionProposalVotingContract,
     proposalId,
-    voteFor,
+    vote,
   };
 }
 
@@ -93,7 +93,7 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  const functionArgs = [Cl.uint(args.proposalId), Cl.bool(args.voteFor)];
+  const functionArgs = [Cl.uint(args.proposalId), Cl.bool(args.vote)];
 
   const txOptions: SignedContractCallOptions = {
     contractAddress: extensionAddress,
