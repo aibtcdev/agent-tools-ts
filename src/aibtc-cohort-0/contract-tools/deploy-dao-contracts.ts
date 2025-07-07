@@ -310,7 +310,7 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
     );
 
     const coreRequestTokenInfo: aibtcCoreRequestTokenInfo = {
-      symbol: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+      symbol: args.tokenSymbolUpper,
       decimals: 8,
       max_supply: "1000000000", // 1 billion
       uri: args.tokenUri,
@@ -319,7 +319,7 @@ async function main(): Promise<ToolResponse<BroadcastedAndPostedResponse>> {
     };
 
     const aibtcRequestBody: aibtcCoreRequestBody = {
-      name: `${args.tokenSymbolUpper}•AIBTC•DAO`,
+      name: args.tokenSymbolUpper,
       mission: args.daoManifest,
       contracts: coreRequestContracts,
       token_info: coreRequestTokenInfo,
