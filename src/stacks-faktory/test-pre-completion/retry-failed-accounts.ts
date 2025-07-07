@@ -14,10 +14,10 @@ import {
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 
 const PRELAUNCH_CONTRACT =
-  "ST331D6T77PNS2YZXR03CDC4G3XN0SYBPV51RSJW1.simpl21-pre-faktory";
+  "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.fast10-pre-faktory";
 
 // Failed accounts from the test results
-const FAILED_ACCOUNTS = [2, 3, 9];
+const FAILED_ACCOUNTS = [1, 2, 3, 10, 11, 12];
 const SEATS_PER_ACCOUNT = 2;
 
 const faktoryConfig = {
