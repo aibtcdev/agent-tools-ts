@@ -65,7 +65,7 @@ async function main() {
   let successCount = 0;
 
   // Call faucet for accounts 0-9
-  for (let i = 0; i <= 9; i++) {
+  for (let i = 11; i <= 15; i++) {
     const success = await callFaucetForAccount(i);
     if (success) successCount++;
 

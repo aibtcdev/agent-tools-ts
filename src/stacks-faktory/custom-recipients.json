@@ -1,0 +1,17 @@
+[
+  {
+    "address": "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18",
+    "amount": 500000,
+    "memo": "Team allocation"
+  },
+  {
+    "address": "SP1PDVEHPWWKBC52WSNP1V0QHWGYDAP8ETJ8H67MT",
+    "amount": 300000,
+    "memo": "Advisor"
+  },
+  {
+    "address": "ST1M8KHCJXB3SBRQRDBCG3J3859AA1CN0AXDHQ3C0",
+    "amount": 200000,
+    "memo": "Community"
+  }
+]

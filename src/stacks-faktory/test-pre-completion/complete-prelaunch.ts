@@ -14,7 +14,7 @@ import {
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 
 const PRELAUNCH_CONTRACT =
-  "STV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RJ5XDY2.simpl1-pre-faktory";
+  "ST331D6T77PNS2YZXR03CDC4G3XN0SYBPV51RSJW1.simpl21-pre-faktory";
 
 const faktoryConfig = {
   network: CONFIG.NETWORK as "mainnet" | "testnet",

@@ -31,7 +31,7 @@ async function main() {
   let nonce = await getNextNonce(CONFIG.NETWORK, senderAddress);
 
   // Transfer 1 STX to accounts 1-9
-  for (let i = 1; i <= 9; i++) {
+  for (let i = 11; i <= 15; i++) {
     try {
       const { address: recipientAddress } = await deriveChildAccount(
         CONFIG.NETWORK,
