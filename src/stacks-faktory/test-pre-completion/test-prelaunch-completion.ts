@@ -14,7 +14,7 @@ import {
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 
 const PRELAUNCH_CONTRACT =
-  "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.fast10-pre-faktory";
+  "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.fast11-pre-faktory";
 const TOTAL_SEATS_NEEDED = 20;
 const MIN_USERS_NEEDED = 10;
 
@@ -123,7 +123,7 @@ async function main() {
   let successfulUsers = 0;
 
   // Strategy: 10 users, 2 seats each = 20 seats
-  for (let accountIndex = 4; accountIndex <= 9; accountIndex++) {
+  for (let accountIndex = 0; accountIndex <= 9; accountIndex++) {
     const seatsToBuy = 2;
     const success = await buySeatsForAccount(accountIndex, seatsToBuy);
 
@@ -134,6 +134,9 @@ async function main() {
       console.log(
         `📈 Progress: ${successfulUsers}/${MIN_USERS_NEEDED} users, ${totalSeatsBought}/${TOTAL_SEATS_NEEDED} seats`
       );
+
+      console.log(`   Waiting 1 second before checking status...`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Check status after each purchase
       const status = await checkPrelaunchStatus();
@@ -155,7 +158,8 @@ async function main() {
     }
 
     // Rate limiting delay
-    await new Promise((resolve) => setTimeout(resolve, 20000));
+    console.log(`   Waiting 5 seconds before next account...`);
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 
   // Final status check
