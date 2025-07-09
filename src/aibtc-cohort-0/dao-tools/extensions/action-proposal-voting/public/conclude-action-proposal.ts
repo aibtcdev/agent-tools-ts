@@ -126,8 +126,8 @@ async function main() {
   ];
 
   const functionArgs = [
-    Cl.principal(args.actionContractToExecute),
     Cl.uint(args.proposalId),
+    Cl.principal(args.actionContractToExecute),
   ];
 
   const txOptions: SignedContractCallOptions = {
