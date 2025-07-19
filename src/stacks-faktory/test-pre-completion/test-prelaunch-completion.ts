@@ -14,7 +14,7 @@ import {
 import { FaktorySDK } from "@faktoryfun/core-sdk";
 
 const PRELAUNCH_CONTRACT =
-  "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18.fast11-pre-faktory";
+  "ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.fast12-pre-faktory";
 const TOTAL_SEATS_NEEDED = 20;
 const MIN_USERS_NEEDED = 10;
 
