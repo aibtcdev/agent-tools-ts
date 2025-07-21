@@ -5,6 +5,10 @@ import {
   PostConditionMode,
 } from "@stacks/transactions";
 import {
+  AGENT_ACCOUNT_APPROVAL_TYPES,
+  AgentAccountApprovalType,
+} from "../../../aibtc-dao/types/dao-types";
+import {
   broadcastTx,
   CONFIG,
   createErrorResponse,
@@ -16,19 +20,21 @@ import {
 } from "../../../utilities";
 
 const usage =
-  "Usage: bun run approve-contract.ts <agentAccountContract> <contractToApprove>";
+  "Usage: bun run approve-contract.ts <agentAccountContract> <contractToApprove> <type>";
 const usageExample =
-  "Example: bun run approve-contract.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-proposal-voting";
+  "Example: bun run approve-contract.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.slow7-action-proposal-voting VOTING";
 
 interface ExpectedArgs {
   agentAccountContract: string;
   contractToApprove: string;
+  approvalType: number;
 }
 
 function validateArgs(): ExpectedArgs {
-  const [agentAccountContract, contractToApprove] = process.argv.slice(2);
+  const [agentAccountContract, contractToApprove, approvalTypeInput] =
+    process.argv.slice(2);
 
-  if (!agentAccountContract || !contractToApprove) {
+  if (!agentAccountContract || !contractToApprove || !approvalTypeInput) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -54,9 +60,39 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
+  let numericType: number | undefined;
+  const approvalTypeNumber = parseInt(approvalTypeInput, 10);
+  const validValues = Object.values(AGENT_ACCOUNT_APPROVAL_TYPES);
+
+  if (!isNaN(approvalTypeNumber)) {
+    if (validValues.includes(approvalTypeNumber as any)) {
+      numericType = approvalTypeNumber;
+    }
+  } else {
+    const upperApprovalType =
+      approvalTypeInput.toUpperCase() as AgentAccountApprovalType;
+    if (upperApprovalType in AGENT_ACCOUNT_APPROVAL_TYPES) {
+      numericType = AGENT_ACCOUNT_APPROVAL_TYPES[upperApprovalType];
+    }
+  }
+
+  if (numericType === undefined) {
+    const validOptions = [
+      ...Object.keys(AGENT_ACCOUNT_APPROVAL_TYPES),
+      ...validValues,
+    ].join(", ");
+    const errorMessage = [
+      `Invalid approval type: ${approvalTypeInput}. Must be one of ${validOptions}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
   return {
     agentAccountContract,
     contractToApprove,
+    approvalType: numericType,
   };
 }
 
@@ -72,7 +108,10 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  const functionArgs = [Cl.principal(args.contractToApprove)];
+  const functionArgs = [
+    Cl.principal(args.contractToApprove),
+    Cl.uint(args.approvalType),
+  ];
 
   const txOptions: SignedContractCallOptions = {
     contractAddress,

@@ -393,3 +393,16 @@ export interface ResourceData {
   totalUsed: number;
   url?: string;
 }
+
+//////////////////////////////
+// AGENT ACCOUNT TYPES
+//////////////////////////////
+
+export const AGENT_ACCOUNT_APPROVAL_TYPES = {
+  VOTING: 1,
+  SWAP: 2,
+  TOKEN: 3,
+} as const;
+
+export type AgentAccountApprovalType =
+  keyof typeof AGENT_ACCOUNT_APPROVAL_TYPES;
