@@ -4,10 +4,7 @@ import {
   SignedContractCallOptions,
   PostConditionMode,
 } from "@stacks/transactions";
-import {
-  AGENT_ACCOUNT_APPROVAL_TYPES,
-  AgentAccountApprovalType,
-} from "../../../aibtc-dao/types/dao-types";
+import { getAgentAccountApprovalType } from "@aibtc/types";
 import {
   broadcastTx,
   CONFIG,
@@ -60,32 +57,11 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  let numericType: number | undefined;
-  const approvalTypeNumber = parseInt(approvalTypeInput, 10);
-  const validValues = Object.values(AGENT_ACCOUNT_APPROVAL_TYPES);
-
-  if (!isNaN(approvalTypeNumber)) {
-    if (validValues.includes(approvalTypeNumber as any)) {
-      numericType = approvalTypeNumber;
-    }
-  } else {
-    const upperApprovalType =
-      approvalTypeInput.toUpperCase() as AgentAccountApprovalType;
-    if (upperApprovalType in AGENT_ACCOUNT_APPROVAL_TYPES) {
-      numericType = AGENT_ACCOUNT_APPROVAL_TYPES[upperApprovalType];
-    }
-  }
-
-  if (numericType === undefined) {
-    const validOptions = [
-      ...Object.keys(AGENT_ACCOUNT_APPROVAL_TYPES),
-      ...validValues,
-    ].join(", ");
-    const errorMessage = [
-      `Invalid approval type: ${approvalTypeInput}. Must be one of ${validOptions}`,
-      usage,
-      usageExample,
-    ].join("\n");
+  let numericType: number;
+  try {
+    numericType = getAgentAccountApprovalType(approvalTypeInput);
+  } catch (error: any) {
+    const errorMessage = [error.message, usage, usageExample].join("\n");
     throw new Error(errorMessage);
   }
 

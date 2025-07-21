@@ -4,10 +4,7 @@ import {
   SignedContractCallOptions,
   PostConditionMode,
 } from "@stacks/transactions";
-import {
-  AGENT_ACCOUNT_APPROVAL_TYPES,
-  AgentAccountApprovalType,
-} from "../../../aibtc-dao/types/dao-types";
+import { getAgentAccountApprovalType } from "@aibtc/types";
 import {
   broadcastTx,
   CONFIG,
@@ -60,32 +57,11 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  let numericType: number | undefined;
-  const revocationTypeNumber = parseInt(revocationTypeInput, 10);
-  const validValues = Object.values(AGENT_ACCOUNT_APPROVAL_TYPES);
-
-  if (!isNaN(revocationTypeNumber)) {
-    if (validValues.includes(revocationTypeNumber as any)) {
-      numericType = revocationTypeNumber;
-    }
-  } else {
-    const upperRevocationType =
-      revocationTypeInput.toUpperCase() as AgentAccountApprovalType;
-    if (upperRevocationType in AGENT_ACCOUNT_APPROVAL_TYPES) {
-      numericType = AGENT_ACCOUNT_APPROVAL_TYPES[upperRevocationType];
-    }
-  }
-
-  if (numericType === undefined) {
-    const validOptions = [
-      ...Object.keys(AGENT_ACCOUNT_APPROVAL_TYPES),
-      ...validValues,
-    ].join(", ");
-    const errorMessage = [
-      `Invalid revocation type: ${revocationTypeInput}. Must be one of ${validOptions}`,
-      usage,
-      usageExample,
-    ].join("\n");
+  let numericType: number;
+  try {
+    numericType = getAgentAccountApprovalType(revocationTypeInput);
+  } catch (error: any) {
+    const errorMessage = [error.message, usage, usageExample].join("\n");
     throw new Error(errorMessage);
   }
 
