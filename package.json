@@ -36,7 +36,7 @@
     "chalk": "^5.4.1",
     "commander": "^14.0.0",
     "dexterity-sdk": "0.8.28",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.1",
     "eta": "^3.5.0",
     "ora": "^8.2.0",
     "stxcity-sdk": "^1.0.10",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@aibtc/types": "^0.11.0",
     "@types/bun": "^1.2.19",
-    "@types/node": "^24.0.15",
+    "@types/node": "^24.1.0",
     "bun-types": "^1.2.19",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3"
