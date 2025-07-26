@@ -1,6 +1,5 @@
 import {
   makeSTXTokenTransfer,
-  broadcastTransaction,
   AnchorMode,
 } from "@stacks/transactions";
 import { bytesToHex } from "@stacks/common";
@@ -9,7 +8,8 @@ import {
   deriveChildAccount,
   getNetwork,
   getNextNonce,
-  stxToMicroStx,
+  MICROSTX_IN_STX,
+  broadcastTx,
 } from "../utilities";
 
 // CONFIGURATION
@@ -37,61 +37,50 @@ async function transferToken(
     // get the next nonce for the account
     const nonce = await getNextNonce(network, address);
 
-    // convert amount to microSTX
-    const convertedAmount = stxToMicroStx(Number(amount));
+    // convert amount from STX to microSTX (keeping as bigint)
+    const convertedAmount = amount * BigInt(MICROSTX_IN_STX);
 
     // build the transaction for transferring tokens
-    const txOptions = {
+    const txOptions: any = {
       recipient,
       amount: convertedAmount,
       senderKey: key,
       network: networkObj,
-      memo,
+      anchorMode: AnchorMode.Any,
       nonce,
       fee,
     };
 
+    // Add memo if provided
+    if (memo && memo.trim() !== "") {
+      txOptions.memo = memo;
+    }
+
     const transaction = await makeSTXTokenTransfer(txOptions);
+    
+    // Use the same broadcast method as the working example
+    const broadcastResponse = await broadcastTx(transaction, networkObj);
 
-    // To see the raw serialized transaction
-    const serializedTx = transaction.serialize();
-    const serializedTxHex = bytesToHex(serializedTx);
-    console.log(`Serialized Transaction (Hex): ${serializedTxHex}`);
-
-    // Broadcast the transaction
-    const broadcastResponse = await broadcastTransaction(
-      transaction,
-      networkObj
-    );
-
-    if ("error" in broadcastResponse) {
-      console.log("Transaction failed to broadcast");
-      console.log(`Error: ${broadcastResponse.error}`);
-      if (broadcastResponse.reason) {
-        console.log(`Reason: ${broadcastResponse.reason}`);
-      }
-      if (broadcastResponse.reason_data) {
-        console.log(
-          `Reason Data: ${JSON.stringify(
-            broadcastResponse.reason_data,
-            null,
-            2
-          )}`
-        );
-      }
-    } else {
-      console.log("Transaction broadcasted successfully!");
+    if (broadcastResponse.success) {
+      console.log("✅ STX transfer successful!");
       console.log(`FROM: ${address}`);
       console.log(`TO: ${recipient}`);
       console.log(`AMOUNT: ${amount} STX`);
-      console.log(`TXID: 0x${broadcastResponse.txid}`);
+      if (memo) console.log(`MEMO: ${memo}`);
+      console.log(`TX: ${broadcastResponse.data?.txid}`);
+      if (broadcastResponse.data?.link) {
+        console.log(`Explorer: ${broadcastResponse.data.link}`);
+      }
+    } else {
+      console.log("❌ STX transfer failed");
+      console.log(`Error: ${broadcastResponse.message}`);
     }
   } catch (error) {
     console.log(`Error transferring tokens: ${error}`);
   }
 }
 
-// Get the recipient, amount, memo, nonce, and fee from command line arguments and call transferToken
+// Get the recipient, amount, fee, and memo from command line arguments and call transferToken
 const recipient = process.argv[2];
 const amount = BigInt(process.argv[3]);
 const fee = BigInt(process.argv[4] || 200);
