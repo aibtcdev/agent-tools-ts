@@ -3,7 +3,6 @@ import {
   broadcastTransaction,
   AnchorMode,
 } from "@stacks/transactions";
-import { bytesToHex } from "@stacks/common";
 import {
   CONFIG,
   deriveChildAccount,
@@ -55,29 +54,19 @@ async function transferToken(
 
     // To see the raw serialized transaction
     const serializedTx = transaction.serialize();
-    const serializedTxHex = bytesToHex(serializedTx);
-    console.log(`Serialized Transaction (Hex): ${serializedTxHex}`);
+    console.log(`Serialized Transaction (Hex): ${serializedTx}`);
 
     // Broadcast the transaction
-    const broadcastResponse = await broadcastTransaction(
+    const broadcastResponse = await broadcastTransaction({
       transaction,
-      networkObj
-    );
+      network: networkObj,
+    });
 
     if ("error" in broadcastResponse) {
       console.log("Transaction failed to broadcast");
       console.log(`Error: ${broadcastResponse.error}`);
       if (broadcastResponse.reason) {
         console.log(`Reason: ${broadcastResponse.reason}`);
-      }
-      if (broadcastResponse.reason_data) {
-        console.log(
-          `Reason Data: ${JSON.stringify(
-            broadcastResponse.reason_data,
-            null,
-            2
-          )}`
-        );
       }
     } else {
       console.log("Transaction broadcasted successfully!");
