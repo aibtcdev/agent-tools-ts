@@ -27,7 +27,7 @@
         "tslib": "^2.8.1",
       },
       "devDependencies": {
-        "@aibtc/types": "^0.11.0",
+        "@aibtc/types": "^0.12.0",
         "@types/bun": "^1.2.19",
         "@types/node": "^24.1.0",
         "bun-types": "^1.2.19",
@@ -37,7 +37,7 @@
     },
   },
   "packages": {
-    "@aibtc/types": ["@aibtc/types@0.11.0", "", {}, "sha512-BnGiHaPkLd4RJwPG0PBEO5Lj4wuJmGwOdLklN6aNkggb/0FmL+fHH9zMD+ZO1OefgdrPON/drL3bJN2JjOeFUA=="],
+    "@aibtc/types": ["@aibtc/types@0.12.0", "", {}, "sha512-UnxG2hJHVG6hP4NIop+GqI2E/PlwNPnN87q28IZF5cgclFatXw79lFUlpm7T3ILkif12/khCQBnpipn892+hDQ=="],
 
     "@bitflowlabs/core-sdk": ["@bitflowlabs/core-sdk@2.4.0", "", { "dependencies": { "@stacks/connect": "^7.10.2", "@stacks/network": "^7.0.2", "@stacks/transactions": "^7.0.5", "dotenv": "^16.4.7" } }, "sha512-ii9W0/dfRb0tkw0Y44KJ+40VkHnH2a+Wgj+aWvcyCkFU9iE2LlQ3AQMZA+W1MHxTgBzah34ouzEs1+F6xhkSdg=="],
 
