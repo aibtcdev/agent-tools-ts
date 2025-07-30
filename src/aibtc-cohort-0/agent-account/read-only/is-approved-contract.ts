@@ -1,4 +1,5 @@
 import { fetchCallReadOnlyFunction, Cl, cvToValue } from "@stacks/transactions";
+import { getAgentAccountApprovalType } from "@aibtc/types";
 import {
   CONFIG,
   createErrorResponse,
@@ -10,18 +11,21 @@ import {
 } from "../../../utilities";
 
 const usage =
-  "Usage: bun run is-approved-contract.ts <agentAccountContract> <contractPrincipal>";
+  "Usage: bun run is-approved-contract.ts <agentAccountContract> <contractPrincipal> <type>";
 const usageExample =
-  "Example: bun run is-approved-contract.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token";
+  "Example: bun run is-approved-contract.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.aibtc-token TOKEN";
 
 interface ExpectedArgs {
   agentAccountContract: string;
   contractPrincipal: string;
+  approvalType: number;
 }
 
 function validateArgs(): ExpectedArgs {
-  const [agentAccountContract, contractPrincipal] = process.argv.slice(2);
-  if (!agentAccountContract || !contractPrincipal) {
+  const [agentAccountContract, contractPrincipal, approvalTypeInput] =
+    process.argv.slice(2);
+
+  if (!agentAccountContract || !contractPrincipal || !approvalTypeInput) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -47,9 +51,18 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
+  let numericType: number;
+  try {
+    numericType = getAgentAccountApprovalType(approvalTypeInput);
+  } catch (error: any) {
+    const errorMessage = [error.message, usage, usageExample].join("\n");
+    throw new Error(errorMessage);
+  }
+
   return {
     agentAccountContract,
     contractPrincipal,
+    approvalType: numericType,
   };
 }
 
@@ -68,7 +81,10 @@ async function main(): Promise<ToolResponse<boolean>> {
     contractAddress,
     contractName,
     functionName: "is-approved-contract",
-    functionArgs: [Cl.principal(args.contractPrincipal)],
+    functionArgs: [
+      Cl.principal(args.contractPrincipal),
+      Cl.uint(args.approvalType),
+    ],
     senderAddress: address,
     network: networkObj,
   });
