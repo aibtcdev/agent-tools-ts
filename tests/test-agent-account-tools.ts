@@ -21,7 +21,9 @@ const AMOUNT_TO_TRADE = "500";
 const PROPOSAL_PARAMETERS_HEX = "68656c6c6f20776f726c64"; // "hello world"
 const PROPOSAL_MEMO = "A test proposal from the agent account";
 const VOTE_CHOICE = "true";
-const TEST_DELAY_MS = 2000; // Delay between tests in milliseconds
+const TEST_DELAY_MS = 5000; // Delay between tests in milliseconds
+
+const APPROVAL_TYPES = AGENT_ACCOUNT_APPROVAL_TYPES
 
 // --- Test Counters ---
 let successCount = 0;
@@ -99,7 +101,7 @@ async function main() {
     [
       "bun",
       "run",
-      `${basePath}/read-only/is-approved-asset.ts`,
+      `${basePath}/read-only/is-approved-contract.ts`,
       AGENT_ACCOUNT_CONTRACT,
       ASSET_CONTRACT,
     ],
@@ -111,7 +113,7 @@ async function main() {
     [
       "bun",
       "run",
-      `${basePath}/read-only/is-approved-dex.ts`,
+      `${basePath}/read-only/is-approved-contract.ts`,
       AGENT_ACCOUNT_CONTRACT,
       DEX_CONTRACT,
     ],
