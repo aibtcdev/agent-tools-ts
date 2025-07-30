@@ -71,20 +71,6 @@ function validateArgs(): ExpectedArgs {
     }
   }
 
-  if (
-    !agentAccountContract ||
-    !swapAdapterContract ||
-    !daoTokenContract ||
-    !amountToSellStr ||
-    isNaN(amountToSell)
-  ) {
-    const errorMessage = [
-      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-  }
 
   if (!isValidContractPrincipal(agentAccountContract)) {
     throw new Error(`Invalid agent account contract address: ${agentAccountContract}`);

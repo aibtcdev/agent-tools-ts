@@ -5,10 +5,8 @@ import { AGENT_ACCOUNT_APPROVAL_TYPES } from "@aibtc/types";
 
 const AGENT_ACCOUNT_CONTRACT =
   "ST2Q77H5HHT79JK4932JCFDX4VY6XA3Y1F61A25CD.aibtc-acct-ST3YT-S5D18-ST29T-BAZND";
-const ASSET_CONTRACT =
-  "ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.slow12-faktory";
-const DEX_CONTRACT =
-  "ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.fast12-faktory-dex";
+const SWAP_ADAPTER_CONTRACT =
+  "ST2Q77H5HHT79JK4932JCFDX4VY6XA3Y1F61A25CD.aibtc-acct-swap-faktory-aibtc-sbtc";
 const VOTING_CONTRACT =
   "ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.fast12-action-proposal-voting";
 const DAO_TOKEN_CONTRACT =
@@ -18,7 +16,8 @@ const ACTION_CONTRACT =
 const PROPOSAL_ID = "1";
 const AMOUNT_TO_DEPOSIT_FT = "1000";
 const AMOUNT_TO_DEPOSIT_STX = "1000000"; // 1 STX in microSTX
-const AMOUNT_TO_TRADE = "500";
+const AMOUNT_TO_SPEND_SBTC = "0.000005"; // 500 sats
+const AMOUNT_TO_SELL_TOKEN = "500"; // 500 micro-units
 const PROPOSAL_PARAMETERS_HEX = "68656c6c6f20776f726c64"; // "hello world"
 const PROPOSAL_MEMO = "A test proposal from the agent account";
 const VOTE_CHOICE = "true";
@@ -102,10 +101,10 @@ async function main() {
       "run",
       `${basePath}/read-only/is-approved-contract.ts`,
       AGENT_ACCOUNT_CONTRACT,
-      ASSET_CONTRACT,
+      DAO_TOKEN_CONTRACT,
       String(AGENT_ACCOUNT_APPROVAL_TYPES.TOKEN),
     ],
-    "Check if Asset is Approved"
+    "Check if DAO Token is Approved"
   );
   await delay(TEST_DELAY_MS);
 
@@ -115,10 +114,10 @@ async function main() {
       "run",
       `${basePath}/read-only/is-approved-contract.ts`,
       AGENT_ACCOUNT_CONTRACT,
-      DEX_CONTRACT,
+      SWAP_ADAPTER_CONTRACT,
       String(AGENT_ACCOUNT_APPROVAL_TYPES.SWAP),
     ],
-    "Check if DEX is Approved"
+    "Check if Swap Adapter is Approved"
   );
   await delay(TEST_DELAY_MS);
 
@@ -194,7 +193,7 @@ async function main() {
       "run",
       `${basePath}/public/deposit-ft.ts`,
       AGENT_ACCOUNT_CONTRACT,
-      ASSET_CONTRACT,
+      DAO_TOKEN_CONTRACT,
       AMOUNT_TO_DEPOSIT_FT,
     ],
     "Deposit FT into Agent Account"
@@ -205,13 +204,14 @@ async function main() {
     [
       "bun",
       "run",
-      `${basePath}/public/acct-buy-asset.ts`,
+      `${basePath}/public/buy-dao-token.ts`,
       AGENT_ACCOUNT_CONTRACT,
-      DEX_CONTRACT,
-      ASSET_CONTRACT,
-      AMOUNT_TO_TRADE,
+      SWAP_ADAPTER_CONTRACT,
+      DAO_TOKEN_CONTRACT,
+      AMOUNT_TO_SPEND_SBTC,
+      "1", // minReceive
     ],
-    "Buy Asset via Agent Account"
+    "Buy DAO Token via Agent Account"
   );
   await delay(TEST_DELAY_MS);
 
@@ -219,13 +219,14 @@ async function main() {
     [
       "bun",
       "run",
-      `${basePath}/public/acct-sell-asset.ts`,
+      `${basePath}/public/sell-dao-token.ts`,
       AGENT_ACCOUNT_CONTRACT,
-      DEX_CONTRACT,
-      ASSET_CONTRACT,
-      AMOUNT_TO_TRADE,
+      SWAP_ADAPTER_CONTRACT,
+      DAO_TOKEN_CONTRACT,
+      AMOUNT_TO_SELL_TOKEN,
+      "1", // minReceive
     ],
-    "Sell Asset via Agent Account"
+    "Sell DAO Token via Agent Account"
   );
   await delay(TEST_DELAY_MS);
 
