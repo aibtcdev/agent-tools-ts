@@ -25,7 +25,7 @@ interface ExpectedArgs {
   swapAdapterContract: string;
   daoTokenContract: string;
   amountToSell: number;
-  minReceive: number;
+  minReceive?: bigint;
 }
 
 function validateArgs(): ExpectedArgs {
@@ -37,8 +37,16 @@ function validateArgs(): ExpectedArgs {
     minReceiveStr,
   ] = process.argv.slice(2);
   const amountToSell = parseFloat(amountToSellStr);
-  // Default minReceive to 1 if not provided, as swap adapters require it.
-  const minReceive = parseInt(minReceiveStr) || 1;
+  let minReceive: bigint | undefined;
+  if (minReceiveStr) {
+    try {
+      minReceive = BigInt(minReceiveStr);
+    } catch (e) {
+      throw new Error(
+        `Invalid minReceive value: ${minReceiveStr}. Must be a valid integer.`
+      );
+    }
+  }
 
   if (
     !agentAccountContract ||
@@ -102,7 +110,7 @@ async function main() {
     Cl.principal(args.swapAdapterContract),
     Cl.principal(args.daoTokenContract),
     Cl.uint(amountToSellUint),
-    Cl.some(Cl.uint(args.minReceive)), // Adapters require minReceive, so we use `some`
+    args.minReceive ? Cl.some(Cl.uint(args.minReceive)) : Cl.none(),
   ];
 
   const txOptions: SignedContractCallOptions = {
