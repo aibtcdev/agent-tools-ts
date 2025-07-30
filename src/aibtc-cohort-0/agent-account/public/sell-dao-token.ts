@@ -24,7 +24,7 @@ interface ExpectedArgs {
   agentAccountContract: string;
   swapAdapterContract: string;
   daoTokenContract: string;
-  amountToSell: number;
+  amountToSell: bigint;
   minReceive?: bigint;
 }
 
@@ -36,7 +36,30 @@ function validateArgs(): ExpectedArgs {
     amountToSellStr,
     minReceiveStr,
   ] = process.argv.slice(2);
-  const amountToSell = parseFloat(amountToSellStr);
+
+  if (
+    !agentAccountContract ||
+    !swapAdapterContract ||
+    !daoTokenContract ||
+    !amountToSellStr
+  ) {
+    const errorMessage = [
+      `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
+  let amountToSell: bigint;
+  try {
+    amountToSell = BigInt(amountToSellStr);
+  } catch (e) {
+    throw new Error(
+      `Invalid amountToSell value: ${amountToSellStr}. Must be a valid integer.`
+    );
+  }
+
   let minReceive: bigint | undefined;
   if (minReceiveStr) {
     try {
@@ -72,7 +95,7 @@ function validateArgs(): ExpectedArgs {
   if (!isValidContractPrincipal(daoTokenContract)) {
     throw new Error(`Invalid DAO token contract address: ${daoTokenContract}`);
   }
-  if (amountToSell <= 0) {
+  if (amountToSell <= 0n) {
     throw new Error(`Invalid amount to sell: ${amountToSell}. Must be positive.`);
   }
 
@@ -98,18 +121,15 @@ async function main() {
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  // TODO: The amountToSell is a float/number, but the contract expects a uint.
-  // This requires knowing the decimals of the token being sold.
-  // For now, we'll assume the input is already in the smallest unit (e.g., satoshis).
-  // A more robust solution would fetch token decimals and convert.
-  const amountToSellUint = Math.floor(args.amountToSell);
+  // The amountToSell is a bigint representing the micro-units of the token.
+  // The tool user is responsible for any required decimal conversion.
 
   // The agent contract is expected to have a function with this signature:
   // (define-public (sell-dao-token (swapAdapter <dao-swap-adapter>) (daoToken <ft-trait>) (amount uint) (minReceive (optional uint))))
   const functionArgs = [
     Cl.principal(args.swapAdapterContract),
     Cl.principal(args.daoTokenContract),
-    Cl.uint(amountToSellUint),
+    Cl.uint(args.amountToSell),
     args.minReceive ? Cl.some(Cl.uint(args.minReceive)) : Cl.none(),
   ];
 
