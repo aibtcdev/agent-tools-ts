@@ -25,10 +25,6 @@ import {
   ClarityValue,
   Cl,
 } from "@stacks/transactions";
-import {
-  getContractName,
-  getContractsBySubcategory,
-} from "./aibtc-dao/registries/dao-contract-registry";
 import { ContractCallsClient } from "./api/contract-calls-client";
 import { TokenInfoService } from "./api/token-info-service";
 import { ContractSubtype, ContractType } from "@aibtc/types";
@@ -1156,15 +1152,18 @@ export async function getFaktoryContracts(
     pool: poolResult.data.pool,
   };
 
-  verifyFaktoryContracts(faktoryContracts, faktoryRequestBody);
+  // verifyFaktoryContracts(faktoryContracts, faktoryRequestBody);
 
   return faktoryContracts;
 }
 
+/* BROKEN: removed code for getContractsBySubcategory
+// TODO: replace with @aibtc/types dao registry object
 function verifyFaktoryContracts(
   contracts: FaktoryGeneratedContracts,
   requestBody: FaktoryRequestBody
 ) {
+  
   function throwVerifyError(message: string) {
     throw new Error(`Faktory contract verification failed: ${message}`);
   }
@@ -1252,6 +1251,7 @@ function verifyFaktoryContracts(
   }
   // passes all verification checks
 }
+  */
 
 //////////////////////////////
 // AIBTC CORE
