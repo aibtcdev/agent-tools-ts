@@ -102,8 +102,8 @@ async function main() {
       "run",
       `${basePath}/read-only/is-approved-contract.ts`,
       AGENT_ACCOUNT_CONTRACT,
-      String(AGENT_ACCOUNT_APPROVAL_TYPES.TOKEN),
       ASSET_CONTRACT,
+      String(AGENT_ACCOUNT_APPROVAL_TYPES.TOKEN),
     ],
     "Check if Asset is Approved"
   );
@@ -115,10 +115,63 @@ async function main() {
       "run",
       `${basePath}/read-only/is-approved-contract.ts`,
       AGENT_ACCOUNT_CONTRACT,
-      String(AGENT_ACCOUNT_APPROVAL_TYPES.SWAP),
       DEX_CONTRACT,
+      String(AGENT_ACCOUNT_APPROVAL_TYPES.SWAP),
     ],
     "Check if DEX is Approved"
+  );
+  await delay(TEST_DELAY_MS);
+
+  // --- Approve/Revoke Cycle ---
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/public/approve-contract.ts`,
+      AGENT_ACCOUNT_CONTRACT,
+      VOTING_CONTRACT,
+      "VOTING",
+    ],
+    "Approve Voting Contract"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/is-approved-contract.ts`,
+      AGENT_ACCOUNT_CONTRACT,
+      VOTING_CONTRACT,
+      "VOTING",
+    ],
+    "Check if Voting Contract is Approved"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/public/revoke-contract.ts`,
+      AGENT_ACCOUNT_CONTRACT,
+      VOTING_CONTRACT,
+      "VOTING",
+    ],
+    "Revoke Voting Contract"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/is-approved-contract.ts`,
+      AGENT_ACCOUNT_CONTRACT,
+      VOTING_CONTRACT,
+      "VOTING",
+    ],
+    "Check if Voting Contract is Revoked"
   );
   await delay(TEST_DELAY_MS);
 
