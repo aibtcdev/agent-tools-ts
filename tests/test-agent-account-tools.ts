@@ -1,4 +1,5 @@
 import Bun from "bun";
+import { AGENT_ACCOUNT_APPROVAL_TYPES } from "@aibtc/types";
 
 // --- Configuration ---
 
@@ -22,8 +23,6 @@ const PROPOSAL_PARAMETERS_HEX = "68656c6c6f20776f726c64"; // "hello world"
 const PROPOSAL_MEMO = "A test proposal from the agent account";
 const VOTE_CHOICE = "true";
 const TEST_DELAY_MS = 5000; // Delay between tests in milliseconds
-
-const APPROVAL_TYPES = AGENT_ACCOUNT_APPROVAL_TYPES
 
 // --- Test Counters ---
 let successCount = 0;
@@ -103,6 +102,7 @@ async function main() {
       "run",
       `${basePath}/read-only/is-approved-contract.ts`,
       AGENT_ACCOUNT_CONTRACT,
+      String(AGENT_ACCOUNT_APPROVAL_TYPES.TOKEN),
       ASSET_CONTRACT,
     ],
     "Check if Asset is Approved"
@@ -115,6 +115,7 @@ async function main() {
       "run",
       `${basePath}/read-only/is-approved-contract.ts`,
       AGENT_ACCOUNT_CONTRACT,
+      String(AGENT_ACCOUNT_APPROVAL_TYPES.SWAP),
       DEX_CONTRACT,
     ],
     "Check if DEX is Approved"
