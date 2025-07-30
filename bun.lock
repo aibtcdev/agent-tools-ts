@@ -7,7 +7,7 @@
         "@bitflowlabs/core-sdk": "^2.4.0",
         "@faktoryfun/core-sdk": "^0.3.3",
         "@jingcash/core-sdk": "^0.1.10",
-        "@stacks/blockchain-api-client": "^8.11.5",
+        "@stacks/blockchain-api-client": "^8.11.6",
         "@stacks/bns": "^7.1.0",
         "@stacks/connect": "^8.1.9",
         "@stacks/encryption": "^7.1.0",
@@ -27,7 +27,7 @@
         "tslib": "^2.8.1",
       },
       "devDependencies": {
-        "@aibtc/types": "^0.11.0",
+        "@aibtc/types": "^0.12.0",
         "@types/bun": "^1.2.19",
         "@types/node": "^24.1.0",
         "bun-types": "^1.2.19",
@@ -37,7 +37,7 @@
     },
   },
   "packages": {
-    "@aibtc/types": ["@aibtc/types@0.11.0", "", {}, "sha512-BnGiHaPkLd4RJwPG0PBEO5Lj4wuJmGwOdLklN6aNkggb/0FmL+fHH9zMD+ZO1OefgdrPON/drL3bJN2JjOeFUA=="],
+    "@aibtc/types": ["@aibtc/types@0.12.0", "", {}, "sha512-UnxG2hJHVG6hP4NIop+GqI2E/PlwNPnN87q28IZF5cgclFatXw79lFUlpm7T3ILkif12/khCQBnpipn892+hDQ=="],
 
     "@bitflowlabs/core-sdk": ["@bitflowlabs/core-sdk@2.4.0", "", { "dependencies": { "@stacks/connect": "^7.10.2", "@stacks/network": "^7.0.2", "@stacks/transactions": "^7.0.5", "dotenv": "^16.4.7" } }, "sha512-ii9W0/dfRb0tkw0Y44KJ+40VkHnH2a+Wgj+aWvcyCkFU9iE2LlQ3AQMZA+W1MHxTgBzah34ouzEs1+F6xhkSdg=="],
 
@@ -163,7 +163,7 @@
 
     "@stacks/auth": ["@stacks/auth@7.1.0", "", { "dependencies": { "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.1.0", "@stacks/network": "^7.0.2", "@stacks/profile": "^7.1.0", "cross-fetch": "^3.1.5", "jsontokens": "^4.0.1" } }, "sha512-I2Wlk2ucM0roXSF7aDUThyLQan3PIkqC7QQ1ZL1ulorha7IraqubasJX8j/q/ZE58z9gQnPOf0ayf0r0ocNOuQ=="],
 
-    "@stacks/blockchain-api-client": ["@stacks/blockchain-api-client@8.11.5", "", { "dependencies": { "@types/node": "20.14.14", "eventemitter3": "^4.0.7", "jsonrpc-lite": "^2.2.0", "openapi-fetch": "^0.10.5", "socket.io-client": "^4.7.5" } }, "sha512-9dv/Q7gEkgKmu886VXsGziFuuEAINwC5sogCYkeu1anQk8fEb6jcJ6Kh7O+ieGcGajtGJ4qpo0LehHYm1bx18w=="],
+    "@stacks/blockchain-api-client": ["@stacks/blockchain-api-client@8.11.6", "", { "dependencies": { "@types/node": "20.14.14", "eventemitter3": "^4.0.7", "jsonrpc-lite": "^2.2.0", "openapi-fetch": "^0.10.5", "socket.io-client": "^4.7.5" } }, "sha512-dKd5bxsiCShxexHFUq2SMrWWZ75qVlHNQJmbXqB7EHQzubqx0t7p1ydHKgtEWTTm3dpc7LY/h67a3yOLpKhGFQ=="],
 
     "@stacks/bns": ["@stacks/bns@7.1.0", "", { "dependencies": { "@stacks/common": "^7.0.2", "@stacks/network": "^7.0.2", "@stacks/transactions": "^7.1.0" } }, "sha512-9shfDXOSSRa3ob5aU8/CTFfj5d0I5uBwFvguz7FkwDw3EjUJDcCQSwyDVxK/NamYoDY7VtFfH8tT27K9fscRiA=="],
 
