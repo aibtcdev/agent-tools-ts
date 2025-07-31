@@ -60,11 +60,14 @@ export async function deployContract(
     throw new Error(`Contract source code is empty`);
   }
 
+  // setting temp fee due to a bug in the default fee calculation
+  const tempFee = BigInt(100_000); // 0.1 STX for contract deploy
   const transaction = await makeContractDeploy({
     contractName: displayName ?? name,
     codeBody: source,
     senderKey: key,
     nonce: nonce ?? 0,
+    fee: tempFee,
     network: validNetwork,
     clarityVersion: validClarityVersion,
     postConditions: [], // empty, no transfers expected
