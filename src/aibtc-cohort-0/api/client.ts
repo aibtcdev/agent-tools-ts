@@ -13,11 +13,14 @@ export class ContractApiClient {
   private baseUrl: string;
 
   constructor() {
+    /* select endpoint based on CONFIG
     this.baseUrl =
       CONFIG.NETWORK === "mainnet"
         ? "https://daos.aibtc.dev/api"
-        : // : "https://daos-staging.aibtc.dev/api";
-          "https://aibtcdev-daos-preview.hosting-962.workers.dev/api";
+        : "https://daos-staging.aibtc.dev/api";
+        */
+    // temporary override for faster development cycles
+    this.baseUrl = "https://aibtcdev-daos-preview.hosting-962.workers.dev/api";
   }
 
   async getAllContracts() {
