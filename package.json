@@ -33,7 +33,7 @@
     "@stacks/wallet-sdk": "^7.1.2",
     "alex-sdk": "^3.2.1",
     "bitflow-sdk": "^1.6.1",
-    "chalk": "^5.4.1",
+    "chalk": "^5.5.0",
     "commander": "^14.0.0",
     "dexterity-sdk": "0.8.28",
     "dotenv": "^17.2.1",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@aibtc/types": "^0.13.0",
     "@types/bun": "^1.2.19",
-    "@types/node": "^24.1.0",
+    "@types/node": "^24.2.0",
     "bun-types": "^1.2.19",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2"
