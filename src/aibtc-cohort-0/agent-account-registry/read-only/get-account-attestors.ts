@@ -1,7 +1,4 @@
-import {
-  fetchCallReadOnlyFunction,
-  Cl,
-} from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, Cl } from "@stacks/transactions";
 import {
   CONFIG,
   convertClarityTuple,

@@ -1,8 +1,4 @@
-import {
-  fetchCallReadOnlyFunction,
-  Cl,
-  cvToValue,
-} from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, Cl, cvToValue } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,

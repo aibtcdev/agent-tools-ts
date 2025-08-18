@@ -3,11 +3,11 @@ import Bun from "bun";
 // --- Configuration ---
 // Note: These values should be updated to match the deployed contract and account addresses.
 const REGISTRY_CONTRACT =
-  "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.agent-account-registry";
+  "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.agent-account-registry";
 const AGENT_ACCOUNT_TO_TEST =
-  "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test";
-const OWNER_PRINCIPAL = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
-const AGENT_PRINCIPAL = "ST20B4P152W5SA1Y5M05ECX5X5Y5D4RBPYJ3R4G31";
+  "SP2Z94F6QX847PMXTPJJ2ZCCN79JZDW3PJ4E6ZABY.aibtc-acct-SP1Q5-9330A-SP3KQ-SG355";
+const OWNER_PRINCIPAL = "SP1Q51S90KJ0ED1ARYW3H3M2BT58QYQ9PYZR9330A";
+const AGENT_PRINCIPAL = "SP3KQAWTG762Z3377FSN6JDD5B3M7BJCPY5PSG355";
 const TEST_DELAY_MS = 5000; // Delay between tests in milliseconds
 
 // --- Test Counters ---
@@ -73,7 +73,12 @@ async function main() {
   // --- Initial State Read-Only Functions ---
   console.log("\n--- Checking Initial State ---");
   runTool(
-    ["bun", "run", `${basePath}/read-only/get-registry-config.ts`, REGISTRY_CONTRACT],
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-registry-config.ts`,
+      REGISTRY_CONTRACT,
+    ],
     "Get Registry Configuration"
   );
   await delay(TEST_DELAY_MS);
