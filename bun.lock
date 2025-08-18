@@ -5,7 +5,7 @@
       "name": "@aibtc/agent-tools",
       "dependencies": {
         "@bitflowlabs/core-sdk": "^2.4.0",
-        "@faktoryfun/core-sdk": "^0.3.3",
+        "@faktoryfun/core-sdk": "^0.3.5",
         "@jingcash/core-sdk": "^0.1.10",
         "@stacks/blockchain-api-client": "^8.12.0",
         "@stacks/bns": "^7.2.0",
@@ -17,7 +17,7 @@
         "@stacks/wallet-sdk": "^7.2.0",
         "alex-sdk": "^3.2.1",
         "bitflow-sdk": "^1.6.1",
-        "chalk": "^5.5.0",
+        "chalk": "^5.6.0",
         "commander": "^14.0.0",
         "dexterity-sdk": "0.8.28",
         "dotenv": "^17.2.1",
@@ -27,17 +27,17 @@
         "tslib": "^2.8.1",
       },
       "devDependencies": {
-        "@aibtc/types": "^0.14.0",
-        "@types/bun": "^1.2.19",
-        "@types/node": "^24.2.0",
-        "bun-types": "^1.2.19",
+        "@aibtc/types": "^0.18.0",
+        "@types/bun": "^1.2.20",
+        "@types/node": "^24.3.0",
+        "bun-types": "^1.2.20",
         "tsup": "^8.5.0",
         "typescript": "^5.9.2",
       },
     },
   },
   "packages": {
-    "@aibtc/types": ["@aibtc/types@0.14.0", "", {}, "sha512-UthebZowCcDzKYCZH6giqmKN/uOcolwX7wJY4sgMlZqmcYFOTw4pLo2vwowdO85SsI7ME9d5DC0mC6Hpjs0Efg=="],
+    "@aibtc/types": ["@aibtc/types@0.18.0", "", {}, "sha512-VLalOGwaFH5Y5nYTx19olLAkGaA/xZETa8U0KVeUDMiRZ/E+e3lc4JVJfaaoiLzj3rr2ipusfPhg4otAxCpWzA=="],
 
     "@bitflowlabs/core-sdk": ["@bitflowlabs/core-sdk@2.4.0", "", { "dependencies": { "@stacks/connect": "^7.10.2", "@stacks/network": "^7.0.2", "@stacks/transactions": "^7.0.5", "dotenv": "^16.4.7" } }, "sha512-ii9W0/dfRb0tkw0Y44KJ+40VkHnH2a+Wgj+aWvcyCkFU9iE2LlQ3AQMZA+W1MHxTgBzah34ouzEs1+F6xhkSdg=="],
 
@@ -91,7 +91,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.5", "", { "os": "win32", "cpu": "x64" }, "sha512-TXv6YnJ8ZMVdX+SXWVBo/0p8LTcrUYngpWjvm91TMjjBQii7Oz11Lw5lbDV5Y0TzuhSJHwiH4hEtC1I42mMS0g=="],
 
-    "@faktoryfun/core-sdk": ["@faktoryfun/core-sdk@0.3.3", "", { "dependencies": { "@stacks/common": "^7.0.0", "@stacks/network": "^7.0.0", "@stacks/stacks-blockchain-api-types": "^7.14.1", "@stacks/transactions": "^7.0.0", "@stacks/wallet-sdk": "^7.0.0" } }, "sha512-Uqfr3EQBcJ5Hb41bJdo8UwOLg2V1pY6rxFjYdzlI83IO9MoY1pdx1KeHWJ9dcHuyKWxK9bPbhPdoWcGrxtuI0w=="],
+    "@faktoryfun/core-sdk": ["@faktoryfun/core-sdk@0.3.5", "", { "dependencies": { "@stacks/common": "^7.0.0", "@stacks/network": "^7.0.0", "@stacks/stacks-blockchain-api-types": "^7.14.1", "@stacks/transactions": "^7.0.0", "@stacks/wallet-sdk": "^7.0.0" } }, "sha512-D4qeK5wgT0VNfYmWqtfTr87EPiUnRsHFQNkIuLBPkZmEr4RgRKAhNyeGo1dGi2pPFKoaP4iFQIDH1ImOGeyKgA=="],
 
     "@isaacs/cliui": ["@isaacs/cliui@8.0.2", "", { "dependencies": { "string-width": "^5.1.2", "string-width-cjs": "npm:string-width@^4.2.0", "strip-ansi": "^7.0.1", "strip-ansi-cjs": "npm:strip-ansi@^6.0.1", "wrap-ansi": "^8.1.0", "wrap-ansi-cjs": "npm:wrap-ansi@^7.0.0" } }, "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA=="],
 
@@ -199,11 +199,11 @@
 
     "@types/bn.js": ["@types/bn.js@5.2.0", "", { "dependencies": { "@types/node": "*" } }, "sha512-DLbJ1BPqxvQhIGbeu8VbUC1DiAiahHtAYvA0ZEAa4P31F7IaArc8z3C3BRQdWX4mtLQuABG4yzp76ZrS02Ui1Q=="],
 
-    "@types/bun": ["@types/bun@1.2.19", "", { "dependencies": { "bun-types": "1.2.19" } }, "sha512-d9ZCmrH3CJ2uYKXQIUuZ/pUnTqIvLDS0SK7pFmbx8ma+ziH/FRMoAq5bYpRG7y+w1gl+HgyNZbtqgMq4W4e2Lg=="],
+    "@types/bun": ["@types/bun@1.2.20", "", { "dependencies": { "bun-types": "1.2.20" } }, "sha512-dX3RGzQ8+KgmMw7CsW4xT5ITBSCrSbfHc36SNT31EOUg/LA9JWq0VDdEXDRSe1InVWpd2yLUM1FUF/kEOyTzYA=="],
 
     "@types/estree": ["@types/estree@1.0.7", "", {}, "sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ=="],
 
-    "@types/node": ["@types/node@24.2.0", "", { "dependencies": { "undici-types": "~7.10.0" } }, "sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw=="],
+    "@types/node": ["@types/node@24.3.0", "", { "dependencies": { "undici-types": "~7.10.0" } }, "sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow=="],
 
     "@types/react": ["@types/react@19.1.8", "", { "dependencies": { "csstype": "^3.0.2" } }, "sha512-AwAfQ2Wa5bCx9WP8nZL2uMZWod7J7/JSplxbTmBQ5ms6QpqNYm672H0Vu9ZVKVngQ+ii4R/byguVEUZQyeg44g=="],
 
@@ -239,7 +239,7 @@
 
     "buffer": ["buffer@6.0.3", "", { "dependencies": { "base64-js": "^1.3.1", "ieee754": "^1.2.1" } }, "sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA=="],
 
-    "bun-types": ["bun-types@1.2.19", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-uAOTaZSPuYsWIXRpj7o56Let0g/wjihKCkeRqUBhlLVM/Bt+Fj9xTo+LhC1OV1XDaGkz4hNC80et5xgy+9KTHQ=="],
+    "bun-types": ["bun-types@1.2.20", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-pxTnQYOrKvdOwyiyd/7sMt9yFOenN004Y6O4lCcCUoKVej48FS5cvTw9geRaEcB9TsDZaJKAxPTVvi8tFsVuXA=="],
 
     "bundle-require": ["bundle-require@5.1.0", "", { "dependencies": { "load-tsconfig": "^0.2.3" }, "peerDependencies": { "esbuild": ">=0.18" } }, "sha512-3WrrOuZiyaaZPWiEt4G3+IffISVC9HYlWueJEBWED4ZH4aIAC2PnkdnuRrR94M+w6yGWn4AglWtJtBI8YqvgoA=="],
 
@@ -249,7 +249,7 @@
 
     "call-bind-apply-helpers": ["call-bind-apply-helpers@1.0.2", "", { "dependencies": { "es-errors": "^1.3.0", "function-bind": "^1.1.2" } }, "sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ=="],
 
-    "chalk": ["chalk@5.5.0", "", {}, "sha512-1tm8DTaJhPBG3bIkVeZt1iZM9GfSX2lzOeDVZH9R9ffRHpmHvxZ/QhgQH/aDTkswQVt+YHdXAdS/In/30OjCbg=="],
+    "chalk": ["chalk@5.6.0", "", {}, "sha512-46QrSQFyVSEyYAgQ22hQ+zDa60YHA4fBstHmtSApj1Y5vKtG27fWowW03jCk5KcbXEWPZUIR894aARCA/G1kfQ=="],
 
     "chokidar": ["chokidar@4.0.3", "", { "dependencies": { "readdirp": "^4.0.1" } }, "sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA=="],
 
@@ -543,9 +543,7 @@
 
     "@bitflowlabs/core-sdk/dotenv": ["dotenv@16.5.0", "", {}, "sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg=="],
 
-    "@faktoryfun/core-sdk/@stacks/transactions": ["@stacks/transactions@7.1.0", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/network": "^7.0.2", "c32check": "^2.0.0", "lodash.clonedeep": "^4.5.0" } }, "sha512-/4n5h+ka5N3mq16f1Zo0O0g2gyOYhaXFdGN8ifLz38NJmkjnCDXqi/ogB6NFNpSKGonyqyF5Vz1UPaQHwO8+IA=="],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk": ["@stacks/wallet-sdk@7.1.2", "", { "dependencies": { "@scure/bip32": "1.1.3", "@scure/bip39": "1.1.0", "@stacks/auth": "^7.1.0", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.1.0", "@stacks/network": "^7.0.2", "@stacks/profile": "^7.1.0", "@stacks/storage": "^7.1.0", "@stacks/transactions": "^7.1.0", "c32check": "^2.0.0", "jsontokens": "^4.0.1", "zone-file": "^2.0.0-beta.3" } }, "sha512-LQNCu3aj5SsAEn1pTDTo4CDjEXFfgpN/ssF9evWdHOTQlyFK3E8lnEDbnD+Ulyjyak0aGz7ut+G93z2Y448mrQ=="],
+    "@faktoryfun/core-sdk/@stacks/network": ["@stacks/network@7.2.0", "", { "dependencies": { "@stacks/common": "^7.0.2", "cross-fetch": "^3.1.5" } }, "sha512-AkLougCF2RLbK97TtISZxAhF3cE757XMXWOGKvEFWNauiQ5/bYyI9W5jZypG3yI/AyYIo04NKoFWWTnpJcn1iA=="],
 
     "@isaacs/cliui/string-width": ["string-width@5.1.2", "", { "dependencies": { "eastasianwidth": "^0.2.0", "emoji-regex": "^9.2.2", "strip-ansi": "^7.0.1" } }, "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA=="],
 
@@ -600,8 +598,6 @@
     "bitflow-sdk/@stacks/transactions": ["@stacks/transactions@6.17.0", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@stacks/common": "^6.16.0", "@stacks/network": "^6.17.0", "c32check": "^2.0.0", "lodash.clonedeep": "^4.5.0" } }, "sha512-FUah2BRgV66ApLcEXGNGhwyFTRXqX5Zco3LpiM3essw8PF0NQlHwwdPgtDko5RfrJl3LhGXXe/30nwsfNnB3+g=="],
 
     "bitflow-sdk/dotenv": ["dotenv@16.5.0", "", {}, "sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg=="],
-
-    "bun-types/@types/node": ["@types/node@24.0.15", "", { "dependencies": { "undici-types": "~7.8.0" } }, "sha512-oaeTSbCef7U/z7rDeJA138xpG3NuKc64/rZ2qmUFkFJmnMsAPaluIifqyWd8hSSMxyP9oie3dLAqYPblag9KgA=="],
 
     "cliui/string-width": ["string-width@4.2.3", "", { "dependencies": { "emoji-regex": "^8.0.0", "is-fullwidth-code-point": "^3.0.0", "strip-ansi": "^6.0.1" } }, "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g=="],
 
@@ -665,12 +661,6 @@
 
     "@bitflowlabs/core-sdk/@stacks/connect/@stacks/connect-ui": ["@stacks/connect-ui@6.6.0", "", { "dependencies": { "@stencil/core": "^2.17.1" } }, "sha512-uc22RH99umYzB94h5LiKPtGu34IBGrwUb3TfijGb2ZMudaMCiv/Fr1jjZKfQW5MRmexnbAEmGZpFlQKinCcsUA=="],
 
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/auth": ["@stacks/auth@7.1.0", "", { "dependencies": { "@noble/secp256k1": "1.7.1", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.1.0", "@stacks/network": "^7.0.2", "@stacks/profile": "^7.1.0", "cross-fetch": "^3.1.5", "jsontokens": "^4.0.1" } }, "sha512-I2Wlk2ucM0roXSF7aDUThyLQan3PIkqC7QQ1ZL1ulorha7IraqubasJX8j/q/ZE58z9gQnPOf0ayf0r0ocNOuQ=="],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/encryption": ["@stacks/encryption@7.1.0", "", { "dependencies": { "@noble/hashes": "1.1.5", "@noble/secp256k1": "1.7.1", "@scure/bip39": "1.1.0", "@stacks/common": "^7.0.2", "base64-js": "^1.5.1", "bs58": "^5.0.0", "ripemd160-min": "^0.0.6", "varuint-bitcoin": "^1.1.2" } }, "sha512-KOHtQzCMIa5vGxB1xRB86q5vH2S6VGlMX23Z3n/81mI8ITMsozJjeBF9m/VwkfoMJTmJRs/PoKREbCmEgro7kw=="],
-
-    "@faktoryfun/core-sdk/@stacks/wallet-sdk/@stacks/storage": ["@stacks/storage@7.1.0", "", { "dependencies": { "@stacks/auth": "^7.1.0", "@stacks/common": "^7.0.2", "@stacks/encryption": "^7.1.0", "@stacks/network": "^7.0.2", "base64-js": "^1.5.1", "jsontokens": "^4.0.1" } }, "sha512-mNI5X2ix3gGXmYxio45GdmSKUkmHn03GsyKHsLTBOGDu96K8wWUSQlLYdh4nVfNwbbMSTGXyozZsECrkOH/vwA=="],
-
     "@isaacs/cliui/string-width/emoji-regex": ["emoji-regex@9.2.2", "", {}, "sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg=="],
 
     "@isaacs/cliui/wrap-ansi/ansi-styles": ["ansi-styles@6.2.1", "", {}, "sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug=="],
@@ -700,8 +690,6 @@
     "bitflow-sdk/@stacks/network/@stacks/common": ["@stacks/common@6.16.0", "", { "dependencies": { "@types/bn.js": "^5.1.0", "@types/node": "^18.0.4" } }, "sha512-PnzvhrdGRMVZvxTulitlYafSK4l02gPCBBoI9QEoTqgSnv62oaOXhYAUUkTMFKxdHW1seVEwZsrahuXiZPIAwg=="],
 
     "bitflow-sdk/@stacks/transactions/@stacks/common": ["@stacks/common@6.16.0", "", { "dependencies": { "@types/bn.js": "^5.1.0", "@types/node": "^18.0.4" } }, "sha512-PnzvhrdGRMVZvxTulitlYafSK4l02gPCBBoI9QEoTqgSnv62oaOXhYAUUkTMFKxdHW1seVEwZsrahuXiZPIAwg=="],
-
-    "bun-types/@types/node/undici-types": ["undici-types@7.8.0", "", {}, "sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw=="],
 
     "cliui/string-width/emoji-regex": ["emoji-regex@8.0.0", "", {}, "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A=="],
 
