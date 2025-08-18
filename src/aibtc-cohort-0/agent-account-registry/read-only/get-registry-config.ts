@@ -8,7 +8,7 @@ import {
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
-} from "../../../../utilities";
+} from "../../../utilities";
 
 const usage = "Usage: bun run get-registry-config.ts <registryContract>";
 const usageExample =
