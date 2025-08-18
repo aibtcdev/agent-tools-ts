@@ -1,8 +1,8 @@
 import { fetchCallReadOnlyFunction } from "@stacks/transactions";
 import {
   CONFIG,
-  convertClarityTuple,
   createErrorResponse,
+  decodeClarityValues,
   deriveChildAccount,
   getNetwork,
   isValidContractPrincipal,
@@ -70,7 +70,7 @@ async function main(): Promise<ToolResponse<RegistryConfig>> {
     network: networkObj,
   });
 
-  const config = convertClarityTuple<RegistryConfig>(result);
+  const config = decodeClarityValues(result) as RegistryConfig;
 
   return {
     success: true,

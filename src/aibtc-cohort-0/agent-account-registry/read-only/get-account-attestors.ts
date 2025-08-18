@@ -1,8 +1,8 @@
 import { fetchCallReadOnlyFunction, Cl } from "@stacks/transactions";
 import {
   CONFIG,
-  convertClarityTuple,
   createErrorResponse,
+  decodeClarityValues,
   deriveChildAccount,
   getNetwork,
   isValidContractPrincipal,
@@ -81,7 +81,7 @@ async function main(): Promise<ToolResponse<AccountAttestors>> {
     network: networkObj,
   });
 
-  const attestors = convertClarityTuple<AccountAttestors>(result);
+  const attestors = decodeClarityValues(result) as AccountAttestors;
 
   return {
     success: true,

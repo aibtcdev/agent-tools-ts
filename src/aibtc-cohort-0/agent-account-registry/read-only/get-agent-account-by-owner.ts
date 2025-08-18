@@ -1,12 +1,12 @@
 import {
   fetchCallReadOnlyFunction,
   Cl,
-  cvToValue,
   validateStacksAddress,
 } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
+  decodeClarityValues,
   deriveChildAccount,
   getNetwork,
   isValidContractPrincipal,
@@ -79,7 +79,7 @@ async function main(): Promise<ToolResponse<string | null>> {
     network: networkObj,
   });
 
-  const agentAccount = cvToValue(result, true) as string | null;
+  const agentAccount = decodeClarityValues(result) as string | null;
 
   return {
     success: true,

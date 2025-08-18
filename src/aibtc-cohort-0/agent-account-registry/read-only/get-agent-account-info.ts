@@ -1,7 +1,8 @@
-import { fetchCallReadOnlyFunction, Cl, cvToValue } from "@stacks/transactions";
+import { fetchCallReadOnlyFunction, Cl } from "@stacks/transactions";
 import {
   CONFIG,
   createErrorResponse,
+  decodeClarityValues,
   deriveChildAccount,
   getNetwork,
   isValidContractPrincipal,
@@ -80,7 +81,7 @@ async function main(): Promise<ToolResponse<AgentAccountInfo | null>> {
     network: networkObj,
   });
 
-  const accountInfo = cvToValue(result, true) as AgentAccountInfo | null;
+  const accountInfo = decodeClarityValues(result) as AgentAccountInfo | null;
 
   return {
     success: true,
