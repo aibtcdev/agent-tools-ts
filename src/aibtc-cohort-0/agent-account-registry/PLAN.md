@@ -128,3 +128,47 @@ These scripts will query the contract's state without creating a transaction.
         *   Call `fetchCallReadOnlyFunction` with `functionName: "get-account-attestors"`.
         *   Convert the result (a tuple of booleans) with `convertClarityTuple`.
         *   Return a `ToolResponse` with the attestor status object.
+
+---
+
+## Testing
+Create a test script `tests/test-agent-account-registry-tools.ts` to execute all the newly created tool scripts and verify their functionality.
+
+### 1. `tests/test-agent-account-registry-tools.ts`
+*   **Objective**: Create a comprehensive test suite for all agent account registry tools.
+*   **Pseudo-code Plan**:
+    1.  **Configuration**: Define constants for the `REGISTRY_CONTRACT`, `AGENT_ACCOUNT_TO_REGISTER`, `OWNER_PRINCIPAL`, and `AGENT_PRINCIPAL`.
+    2.  **Test Runner**: Use the `runTool` and `delay` helper functions from the existing `test-agent-account-tools.ts` example.
+    3.  **Test Sequence**:
+        *   Call all read-only tools first to check initial state:
+            *   `get-registry-config`
+            *   `get-agent-account-info` (for a known account)
+            *   `get-agent-account-by-owner`
+            *   `get-agent-account-by-agent`
+            *   `get-account-attestors`
+        *   Execute a `register-agent-account` call.
+        *   Execute an `attest-agent-account` call.
+        *   Re-run the read-only tools to verify the state changes after the transactions.
+    4.  **Summary**: Keep track of `successCount` and `failureCount` and print a summary at the end. Exit with code 1 on failure.
+
+---
+
+## Testing
+Create a test script `tests/test-agent-account-registry-tools.ts` to execute all the newly created tool scripts and verify their functionality.
+
+### 1. `tests/test-agent-account-registry-tools.ts`
+*   **Objective**: Create a comprehensive test suite for all agent account registry tools.
+*   **Pseudo-code Plan**:
+    1.  **Configuration**: Define constants for the `REGISTRY_CONTRACT`, `AGENT_ACCOUNT_TO_REGISTER`, `OWNER_PRINCIPAL`, and `AGENT_PRINCIPAL`.
+    2.  **Test Runner**: Use the `runTool` and `delay` helper functions from the existing `test-agent-account-tools.ts` example.
+    3.  **Test Sequence**:
+        *   Call all read-only tools first to check initial state:
+            *   `get-registry-config`
+            *   `get-agent-account-info` (for a known account)
+            *   `get-agent-account-by-owner`
+            *   `get-agent-account-by-agent`
+            *   `get-account-attestors`
+        *   Execute a `register-agent-account` call.
+        *   Execute an `attest-agent-account` call.
+        *   Re-run the read-only tools to verify the state changes after the transactions.
+    4.  **Summary**: Keep track of `successCount` and `failureCount` and print a summary at the end. Exit with code 1 on failure.
