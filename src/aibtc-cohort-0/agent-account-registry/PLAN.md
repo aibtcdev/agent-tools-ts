@@ -129,4 +129,19 @@ These scripts will query the contract's state without creating a transaction.
         *   Convert the result (a tuple of booleans) with `convertClarityTuple`.
         *   Return a `ToolResponse` with the attestor status object.
 
+---
+
+## Testing
+Create a test script `tests/test-agent-account-registry-tools.ts` to execute all the newly created tool scripts and verify their functionality. This has been completed.
+
+---
+
+## Testing
+Create a test script `tests/test-agent-account-registry-tools.ts` to execute all the newly created tool scripts and verify their functionality. This has been completed.
+
+---
+
+## Testing
+Create a test script `tests/test-agent-account-registry-tools.ts` to execute all the newly created tool scripts and verify their functionality. This has been completed.
+
 
