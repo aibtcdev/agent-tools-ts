@@ -1,10 +1,9 @@
 import {
   makeContractCall,
-  AnchorMode,
   uintCV,
-  standardPrincipalCV,
   noneCV,
   Pc,
+  principalCV,
 } from "@stacks/transactions";
 import {
   CONFIG,
@@ -61,8 +60,8 @@ async function transfer(
       functionName: "transfer",
       functionArgs: [
         uintCV(amount),
-        standardPrincipalCV(address),
-        standardPrincipalCV(recipient),
+        principalCV(address),
+        principalCV(recipient),
         noneCV(),
       ],
       senderKey: key,
