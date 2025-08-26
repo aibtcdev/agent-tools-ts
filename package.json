@@ -46,7 +46,7 @@
     "@aibtc/types": "^0.18.0",
     "@types/bun": "^1.2.20",
     "@types/node": "^24.3.0",
-    "bun-types": "^1.2.20",
+    "bun-types": "^1.2.21",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2"
   },
