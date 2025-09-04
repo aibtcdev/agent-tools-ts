@@ -1,13 +1,16 @@
 import Bun from "bun";
+import { getKnownAddress } from "@aibtc/types";
 
 // --- Configuration ---
-// Note: These values should be updated to match the deployed contract and account addresses.
-const REGISTRY_CONTRACT =
-  "SPV9K21TBFAK4KNRJXF5DFP8N7W46G4V9RCJDC22.agent-account-registry";
-const AGENT_ACCOUNT_TO_TEST =
-  "SP2Z94F6QX847PMXTPJJ2ZCCN79JZDW3PJ4E6ZABY.aibtc-acct-SP1Q5-9330A-SP3KQ-SG355";
+
+const REGISTRY_CONTRACT = getKnownAddress("mainnet", "FAKTORY_REGISTRY");
+
+// pulled from the live instance
 const OWNER_PRINCIPAL = "SP1Q51S90KJ0ED1ARYW3H3M2BT58QYQ9PYZR9330A";
 const AGENT_PRINCIPAL = "SP3KQAWTG762Z3377FSN6JDD5B3M7BJCPY5PSG355";
+const AGENT_ACCOUNT_TO_TEST =
+  "SP2Z94F6QX847PMXTPJJ2ZCCN79JZDW3PJ4E6ZABY.aibtc-acct-SP1Q5-9330A-SP3KQ-SG355";
+
 const TEST_DELAY_MS = 5000; // Delay between tests in milliseconds
 
 // --- Test Counters ---

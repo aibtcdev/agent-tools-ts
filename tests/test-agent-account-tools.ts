@@ -1,18 +1,23 @@
 import Bun from "bun";
-import { AGENT_ACCOUNT_APPROVAL_TYPES } from "@aibtc/types";
+import { AGENT_ACCOUNT_APPROVAL_TYPES, getKnownAddress } from "@aibtc/types";
 
 // --- Configuration ---
 
-const AGENT_ACCOUNT_CONTRACT =
-  "ST2Q77H5HHT79JK4932JCFDX4VY6XA3Y1F61A25CD.aibtc-acct-ST3YT-S5D18-ST29T-BAZND";
+const targetSymbol = "fake17";
+
+// TODO: expose from the types package?
+// const registry = setupFullContractRegistry();
+
+const VOTING_CONTRACT = `ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.${targetSymbol}-action-proposal-voting`;
+const DAO_TOKEN_CONTRACT = `ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.${targetSymbol}-faktory`;
+const ACTION_CONTRACT = `ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.${targetSymbol}-action-send-message`;
+
 const SWAP_ADAPTER_CONTRACT =
   "ST2Q77H5HHT79JK4932JCFDX4VY6XA3Y1F61A25CD.aibtc-acct-swap-faktory-aibtc-sbtc";
-const VOTING_CONTRACT =
-  "ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.fast12-action-proposal-voting";
-const DAO_TOKEN_CONTRACT =
-  "ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.fast12-faktory";
-const ACTION_CONTRACT =
-  "ST35K818S3K2GSNEBC3M35GA3W8Q7X72KF4RVM3QA.fast12-action-send-message";
+
+const AGENT_ACCOUNT_CONTRACT =
+  "ST2Q77H5HHT79JK4932JCFDX4VY6XA3Y1F61A25CD.aibtc-acct-ST3YT-S5D18-ST29T-BAZND";
+
 const PROPOSAL_ID = "1";
 const AMOUNT_TO_DEPOSIT_FT = "1000";
 const AMOUNT_TO_DEPOSIT_STX = "1000000"; // 1 STX in microSTX
