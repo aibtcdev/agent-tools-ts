@@ -1,10 +1,17 @@
+import { getKnownAddress } from "@aibtc/types";
 import Bun from "bun";
 
 // --- Configuration ---
-const DAO_RUN_COST_CONTRACT = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-dao-run-cost";
-const TEST_TOKEN = "ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5.aibtc-token";
-const TEST_OWNER = "ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5";
-const TEST_RECIPIENT = "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG";
+
+const targetSymbol = "fake17";
+
+// TODO: expose from the types package?
+// const registry = setupFullContractRegistry();
+
+const DAO_RUN_COST_CONTRACT = getKnownAddress("testnet", "AIBTC_RUN_COST");
+const TEST_TOKEN = `ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.${targetSymbol}-faktory`;
+const TEST_OWNER = "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18";
+const TEST_RECIPIENT = "ST3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKQ3H2FSP";
 const TEST_AMOUNT = "1000";
 const TEST_REQUIRED_1 = "3";
 const TEST_REQUIRED_2 = "1";
