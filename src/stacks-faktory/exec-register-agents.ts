@@ -15,6 +15,11 @@ import {
 } from "../utilities";
 import { readFileSync } from "fs";
 
+const DEPLOYER_ADDRESSES = {
+  mainnet: "SP2Z94F6QX847PMXTPJJ2ZCCN79JZDW3PJ4E6ZABY",
+  testnet: "ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1",
+};
+
 const usage = [
   "Usage: bun run exec-register-agents.ts <agents_file>",
   "",
@@ -28,6 +33,12 @@ const usage = [
   "Network contracts:",
   "  Testnet: ST29D6YMDNAKN1P045T6Z817RTE1AC0JAAAG2EQZZ.agent-account-registry",
   "  Mainnet: SP29D6YMDNAKN1P045T6Z817RTE1AC0JAA99WAX2B.agent-account-registry",
+  "",
+  "IMPORTANT - Authorization Required:",
+  "  This tool can only be run by the deployer addresses:",
+  `  Testnet: ${DEPLOYER_ADDRESSES.testnet}`,
+  `  Mainnet: ${DEPLOYER_ADDRESSES.mainnet}`,
+  "  Make sure your mnemonic/account derives to one of these addresses.",
   "",
   "Function: register-agent-account",
 ].join("\n");
@@ -56,6 +67,26 @@ function getRegistryContract(network: string): string {
   } else {
     throw new Error(`Unsupported network: ${network}`);
   }
+}
+
+function validateDeployerAddress(network: string, address: string) {
+  const expectedAddress =
+    DEPLOYER_ADDRESSES[network as keyof typeof DEPLOYER_ADDRESSES];
+
+  if (!expectedAddress) {
+    throw new Error(`Unsupported network: ${network}`);
+  }
+
+  if (address !== expectedAddress) {
+    throw new Error(
+      `Authorization Error: This tool can only be run by the deployer address.\n` +
+        `Expected address for ${network}: ${expectedAddress}\n` +
+        `Your address: ${address}\n\n` +
+        `Make sure your mnemonic/account configuration derives to the correct deployer address.`
+    );
+  }
+
+  console.log(`✅ Authorization verified: Using deployer address ${address}`);
 }
 
 function loadAgents(filePath: string): string[] {
@@ -194,6 +225,22 @@ async function executeRegistrations(
         } else {
           console.log(`    ❌ Failed: ${broadcastResponse.message}`);
           failureCount++;
+
+          // Check for authorization-related errors
+          if (
+            broadcastResponse.message &&
+            (broadcastResponse.message.includes("unauthorized") ||
+              broadcastResponse.message.includes("permission") ||
+              broadcastResponse.message.includes("owner"))
+          ) {
+            console.log(
+              `    ⚠️  This may be an authorization issue. Ensure you're using the deployer address: ${
+                DEPLOYER_ADDRESSES[
+                  CONFIG.NETWORK as keyof typeof DEPLOYER_ADDRESSES
+                ]
+              }`
+            );
+          }
         }
 
         batchResults.push({
@@ -249,6 +296,9 @@ async function main() {
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+
+  // Validate that we're using the correct deployer address
+  validateDeployerAddress(CONFIG.NETWORK, address);
 
   const registryContract = getRegistryContract(CONFIG.NETWORK);
   console.log(`Registry contract: ${registryContract}`);
