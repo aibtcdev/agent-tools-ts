@@ -34,7 +34,7 @@ const usage = [
 
 const usageExample = [
   "Examples:",
-  "  bun run exec-register-agents.ts agent-accounts.json",
+  "  bun run exec-register-agents.ts agents.json",
   "  bun run exec-register-agents.ts testnet-agents.json",
 ].join("\n");
 
@@ -58,7 +58,7 @@ function getRegistryContract(network: string): string {
   }
 }
 
-function loadAgentAccounts(filePath: string): string[] {
+function loadAgents(filePath: string): string[] {
   try {
     const fileContent = readFileSync(filePath, "utf-8");
     const data = JSON.parse(fileContent);
@@ -70,7 +70,7 @@ function loadAgentAccounts(filePath: string): string[] {
     }
 
     if (data.length === 0) {
-      throw new Error("No agent accounts found in JSON file");
+      throw new Error("No agents found in JSON file");
     }
 
     // Validate each agent account
@@ -114,9 +114,7 @@ async function createRegistrationBatches(
   senderAddress: string,
   agents: string[]
 ) {
-  // Since we're making individual contract calls, we can process them in smaller batches
-  // to avoid overwhelming the network
-  const BATCH_SIZE = 10; // Conservative batch size for contract calls
+  const BATCH_SIZE = 10;
   const batches = [];
 
   for (let i = 0; i < agents.length; i += BATCH_SIZE) {
@@ -176,14 +174,11 @@ async function executeRegistrations(
           contractAddress,
           contractName,
           functionName: "register-agent-account",
-          functionArgs: [
-            // The agent account principal
-            standardPrincipalCV(agentAccount),
-          ],
+          functionArgs: [standardPrincipalCV(agentAccount)],
           network: networkObj,
           nonce: nextNonce,
           senderKey: key,
-          fee: 1000, // Conservative fee
+          fee: 1000,
         };
 
         const transaction = await makeContractCall(txOptions);
@@ -206,7 +201,6 @@ async function executeRegistrations(
           result: broadcastResponse,
         });
 
-        // Small delay between individual transactions to avoid nonce conflicts
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {
         console.log(`    ❌ Error registering ${agentAccount}: ${error}`);
@@ -226,7 +220,6 @@ async function executeRegistrations(
       batchResults,
     });
 
-    // Longer delay between batches
     if (i < registrationBatches.batches.length - 1) {
       console.log("⏳ Waiting 5 seconds before next batch...");
       await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -248,10 +241,8 @@ async function main() {
   console.log(`🏁 Agent Registration Tool`);
   console.log(`Network: ${CONFIG.NETWORK}`);
 
-  // Validate and store provided args
   const args = validateArgs();
 
-  // Setup network and wallet info
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -259,23 +250,19 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
 
-  // Determine registry contract based on network
   const registryContract = getRegistryContract(CONFIG.NETWORK);
   console.log(`Registry contract: ${registryContract}`);
 
-  // Load agent accounts from JSON file
-  console.log(`📂 Loading agent accounts from ${args.agentsFile}...`);
-  const agents = loadAgentAccounts(args.agentsFile);
-  console.log(`✅ Loaded ${agents.length} agent accounts`);
+  console.log(`📂 Loading agents from ${args.agentsFile}...`);
+  const agents = loadAgents(args.agentsFile);
+  console.log(`✅ Loaded ${agents.length} agents`);
 
-  // Create registration batches
   const registrationBatches = await createRegistrationBatches(
     registryContract,
     address,
     agents
   );
 
-  // Execute the registrations
   return await executeRegistrations(
     registrationBatches,
     networkObj,
@@ -290,7 +277,6 @@ main()
     console.log(`✅ Successful registrations: ${result.successCount}`);
     console.log(`❌ Failed registrations: ${result.failureCount}`);
 
-    // Format the result to match ToolResponse structure
     const toolResponse = {
       success: true,
       message: "Agent registration completed",
