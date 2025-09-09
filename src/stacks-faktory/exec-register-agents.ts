@@ -2,7 +2,7 @@
 import {
   makeContractCall,
   SignedContractCallOptions,
-  standardPrincipalCV,
+  contractPrincipalCV,
 } from "@stacks/transactions";
 import {
   broadcastTx,
@@ -201,11 +201,14 @@ async function executeRegistrations(
         const [contractAddress, contractName] =
           registrationBatches.registryContract.split(".");
 
+        // Parse agent account contract principal
+        const [agentAddress, agentContractName] = agentAccount.split(".");
+
         const txOptions: SignedContractCallOptions = {
           contractAddress,
           contractName,
           functionName: "register-agent-account",
-          functionArgs: [standardPrincipalCV(agentAccount)],
+          functionArgs: [contractPrincipalCV(agentAddress, agentContractName)],
           network: networkObj,
           nonce: nextNonce,
           senderKey: key,
