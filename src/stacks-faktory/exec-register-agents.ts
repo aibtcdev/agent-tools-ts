@@ -2,7 +2,6 @@
 import {
   makeContractCall,
   SignedContractCallOptions,
-  contractPrincipalCV,
   principalCV,
 } from "@stacks/transactions";
 import {
@@ -15,10 +14,11 @@ import {
   sendToLLM,
 } from "../utilities";
 import { readFileSync } from "fs";
+import { getKnownAddress } from "@aibtc/types";
 
 const DEPLOYER_ADDRESSES = {
-  mainnet: "SP2Z94F6QX847PMXTPJJ2ZCCN79JZDW3PJ4E6ZABY",
-  testnet: "ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1",
+  mainnet: getKnownAddress("mainnet", "DEPLOYER"),
+  testnet: getKnownAddress("testnet", "DEPLOYER"),
 };
 
 const usage = [
@@ -62,9 +62,9 @@ function validateArgs(): { agentsFile: string } {
 
 function getRegistryContract(network: string): string {
   if (network === "testnet") {
-    return "ST29D6YMDNAKN1P045T6Z817RTE1AC0JAAAG2EQZZ.agent-account-registry";
+    return getKnownAddress("testnet", "FAKTORY_REGISTRY");
   } else if (network === "mainnet") {
-    return "SP29D6YMDNAKN1P045T6Z817RTE1AC0JAA99WAX2B.agent-account-registry";
+    return getKnownAddress("mainnet", "FAKTORY_REGISTRY");
   } else {
     throw new Error(`Unsupported network: ${network}`);
   }
