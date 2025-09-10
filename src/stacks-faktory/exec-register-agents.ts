@@ -182,6 +182,7 @@ async function executeRegistrations(
   const results = [];
   let successCount = 0;
   let failureCount = 0;
+  let currentNonce = await getNextNonce(CONFIG.NETWORK, address);
 
   for (let i = 0; i < registrationBatches.batches.length; i++) {
     const batch = registrationBatches.batches[i];
@@ -196,8 +197,6 @@ async function executeRegistrations(
       try {
         console.log(`  📝 Registering: ${agentAccount}`);
 
-        const nextNonce = await getNextNonce(CONFIG.NETWORK, address);
-
         // Parse registry contract
         const [contractAddress, contractName] =
           registrationBatches.registryContract.split(".");
@@ -208,7 +207,7 @@ async function executeRegistrations(
           functionName: "register-agent-account",
           functionArgs: [principalCV(agentAccount)],
           network: networkObj,
-          nonce: nextNonce,
+          nonce: currentNonce,
           senderKey: key,
           fee: 1000,
         };
@@ -228,6 +227,7 @@ async function executeRegistrations(
             }`
           );
           successCount++;
+          currentNonce++;
         } else {
           console.log(`    ❌ Failed: ${broadcastResponse.message}`);
           failureCount++;
