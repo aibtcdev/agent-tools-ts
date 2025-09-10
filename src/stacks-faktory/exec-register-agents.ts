@@ -191,17 +191,18 @@ async function registerAgents(
       const broadcastResponse = await broadcastTx(transaction, networkObj);
 
       if (broadcastResponse.success) {
+        const txid = broadcastResponse.data?.txid;
+        const link = broadcastResponse.data?.link;
         console.log(
-          `  ✅ Success: ${
-            (broadcastResponse as any).result?.txid || "Transaction sent"
-          }`
+          `  ✅ Success: ${txid ? `0x${txid}` : "Transaction sent"}`
         );
         successCount++;
         currentNonce++;
         results.push({
           agentAccount,
           success: true,
-          txid: (broadcastResponse as any).result?.txid,
+          txid,
+          link
         });
       } else {
         console.log(`  ❌ Failed: ${broadcastResponse.message}`);
@@ -262,7 +263,7 @@ async function registerAgents(
     successCount,
     failureCount,
     registryContract,
-    results,
+    registrations: results,
   };
 }
 
