@@ -13,13 +13,15 @@ import {
   getNextNonce,
   sendToLLM,
 } from "../utilities";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { getKnownAddress } from "@aibtc/types";
 
 const DEPLOYER_ADDRESSES = {
   mainnet: getKnownAddress("mainnet", "DEPLOYER"),
   testnet: getKnownAddress("testnet", "DEPLOYER"),
 };
+
+const SLEEP_MS = 1000;
 
 const usage = [
   "Usage: bun run exec-register-agents.ts <agents_file>",
@@ -141,151 +143,125 @@ function loadAgents(filePath: string): string[] {
   }
 }
 
-async function createRegistrationBatches(
-  registryContract: string,
-  senderAddress: string,
-  agents: string[]
-) {
-  const BATCH_SIZE = 10;
-  const batches = [];
-
-  for (let i = 0; i < agents.length; i += BATCH_SIZE) {
-    const batchAgents = agents.slice(i, i + BATCH_SIZE);
-
-    batches.push({
-      agents: batchAgents,
-      batchIndex: Math.floor(i / BATCH_SIZE),
-      batchSize: batchAgents.length,
-      isLastBatch: i + BATCH_SIZE >= agents.length,
-    });
-  }
-
-  return {
-    type: "batched",
-    batches,
-    totalBatches: batches.length,
-    totalAgents: agents.length,
-    registryContract,
-  };
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function executeRegistrations(
-  registrationBatches: any,
+async function registerAgents(
+  agents: string[],
+  registryContract: string,
   networkObj: any,
   key: string,
-  address: string
+  address: string,
+  agentsFile: string
 ) {
   console.log(`🚀 Starting agent registration process...`);
-  console.log(`Total batches: ${registrationBatches.totalBatches}`);
-  console.log(`Total agents: ${registrationBatches.totalAgents}`);
+  console.log(`Total agents: ${agents.length}`);
 
   const results = [];
   let successCount = 0;
   let failureCount = 0;
   let currentNonce = await getNextNonce(CONFIG.NETWORK, address);
 
-  for (let i = 0; i < registrationBatches.batches.length; i++) {
-    const batch = registrationBatches.batches[i];
-    console.log(
-      `\n📤 Processing batch ${i + 1}/${registrationBatches.totalBatches}`
-    );
-    console.log(`Agents in batch: ${batch.batchSize}`);
+  for (let i = 0; i < agents.length; i++) {
+    const agentAccount = agents[i];
+    try {
+      console.log(`📝 Registering ${i + 1}/${agents.length}: ${agentAccount}`);
 
-    const batchResults = [];
+      // Parse registry contract
+      const [contractAddress, contractName] = registryContract.split(".");
 
-    for (const agentAccount of batch.agents) {
-      try {
-        console.log(`  📝 Registering: ${agentAccount}`);
+      const txOptions: SignedContractCallOptions = {
+        contractAddress,
+        contractName,
+        functionName: "register-agent-account",
+        functionArgs: [principalCV(agentAccount)],
+        network: networkObj,
+        nonce: currentNonce,
+        senderKey: key,
+        fee: 1000,
+      };
 
-        // Parse registry contract
-        const [contractAddress, contractName] =
-          registrationBatches.registryContract.split(".");
+      console.log(`  TX options:`, {
+        ...txOptions,
+        senderKey: "REDACTED",
+      });
 
-        const txOptions: SignedContractCallOptions = {
-          contractAddress,
-          contractName,
-          functionName: "register-agent-account",
-          functionArgs: [principalCV(agentAccount)],
-          network: networkObj,
-          nonce: currentNonce,
-          senderKey: key,
-          fee: 1000,
-        };
+      const transaction = await makeContractCall(txOptions);
+      const broadcastResponse = await broadcastTx(transaction, networkObj);
 
-        console.log(`    TX options:`, {
-          ...txOptions,
-          senderKey: "REDACTED",
+      if (broadcastResponse.success) {
+        console.log(
+          `  ✅ Success: ${
+            (broadcastResponse as any).result?.txid || "Transaction sent"
+          }`
+        );
+        successCount++;
+        currentNonce++;
+        results.push({
+          agentAccount,
+          success: true,
+          txid: (broadcastResponse as any).result?.txid,
         });
+      } else {
+        console.log(`  ❌ Failed: ${broadcastResponse.message}`);
+        failureCount++;
 
-        const transaction = await makeContractCall(txOptions);
-        const broadcastResponse = await broadcastTx(transaction, networkObj);
-
-        if (broadcastResponse.success) {
+        // Check for authorization-related errors
+        if (
+          broadcastResponse.message &&
+          (broadcastResponse.message.includes("unauthorized") ||
+            broadcastResponse.message.includes("permission") ||
+            broadcastResponse.message.includes("owner"))
+        ) {
           console.log(
-            `    ✅ Success: ${
-              (broadcastResponse as any).result?.txid || "Transaction sent"
+            `  ⚠️  This may be an authorization issue. Ensure you're using the deployer address: ${
+              DEPLOYER_ADDRESSES[
+                CONFIG.NETWORK as keyof typeof DEPLOYER_ADDRESSES
+              ]
             }`
           );
-          successCount++;
-          currentNonce++;
-        } else {
-          console.log(`    ❌ Failed: ${broadcastResponse.message}`);
-          failureCount++;
-
-          // Check for authorization-related errors
-          if (
-            broadcastResponse.message &&
-            (broadcastResponse.message.includes("unauthorized") ||
-              broadcastResponse.message.includes("permission") ||
-              broadcastResponse.message.includes("owner"))
-          ) {
-            console.log(
-              `    ⚠️  This may be an authorization issue. Ensure you're using the deployer address: ${
-                DEPLOYER_ADDRESSES[
-                  CONFIG.NETWORK as keyof typeof DEPLOYER_ADDRESSES
-                ]
-              }`
-            );
-          }
         }
 
-        batchResults.push({
-          agentAccount: agentAccount,
-          result: broadcastResponse,
+        results.push({
+          agentAccount,
+          success: false,
+          message: broadcastResponse.message,
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } catch (error) {
-        console.log(`    ❌ Error registering ${agentAccount}: ${error}`);
-        failureCount++;
-        batchResults.push({
-          agentAccount: agentAccount,
-          result: {
-            success: false,
-            message: error instanceof Error ? error.message : String(error),
-          },
-        });
+        // On failure, write remaining agents to file and exit
+        const remainingAgents = agents.slice(i);
+        const remainingFile = `${agentsFile.replace(/\.json$/, '')}-remaining.json`;
+        writeFileSync(remainingFile, JSON.stringify(remainingAgents, null, 2));
+        console.log(`❌ Wrote remaining agents to ${remainingFile}`);
+        throw new Error(`Registration failed at ${agentAccount}. Remaining agents saved to ${remainingFile}`);
       }
-    }
 
-    results.push({
-      batchIndex: i,
-      batchResults,
-    });
+      await sleep(SLEEP_MS);
+    } catch (error) {
+      console.log(`❌ Error registering ${agentAccount}: ${error}`);
+      failureCount++;
+      results.push({
+        agentAccount,
+        success: false,
+        message: error instanceof Error ? error.message : String(error),
+      });
 
-    if (i < registrationBatches.batches.length - 1) {
-      console.log("⏳ Waiting 5 seconds before next batch...");
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      // On error, write remaining agents to file and rethrow
+      const remainingAgents = agents.slice(i);
+      const remainingFile = `${agentsFile.replace(/\.json$/, '')}-remaining.json`;
+      writeFileSync(remainingFile, JSON.stringify(remainingAgents, null, 2));
+      console.log(`❌ Wrote remaining agents to ${remainingFile}`);
+      throw error;
     }
   }
 
   return {
     type: "agent_registration",
-    totalBatches: registrationBatches.totalBatches,
-    totalAgents: registrationBatches.totalAgents,
+    totalAgents: agents.length,
     successCount,
     failureCount,
-    registryContract: registrationBatches.registryContract,
+    registryContract,
     results,
   };
 }
@@ -313,17 +289,13 @@ async function main() {
   const agents = loadAgents(args.agentsFile);
   console.log(`✅ Loaded ${agents.length} agents`);
 
-  const registrationBatches = await createRegistrationBatches(
+  return await registerAgents(
+    agents,
     registryContract,
-    address,
-    agents
-  );
-
-  return await executeRegistrations(
-    registrationBatches,
     networkObj,
     key,
-    address
+    address,
+    args.agentsFile
   );
 }
 
