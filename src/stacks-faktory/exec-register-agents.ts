@@ -200,7 +200,6 @@ async function registerAgents(
         currentNonce++;
         results.push({
           agentAccount,
-          success: true,
           txid,
           link
         });
