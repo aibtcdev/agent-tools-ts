@@ -182,10 +182,12 @@ async function registerAgents(
         fee: 1000,
       };
 
+      /* for debug:
       console.log(`  TX options:`, {
         ...txOptions,
         senderKey: "REDACTED",
       });
+      */
 
       const transaction = await makeContractCall(txOptions);
       const broadcastResponse = await broadcastTx(transaction, networkObj);
@@ -193,15 +195,13 @@ async function registerAgents(
       if (broadcastResponse.success) {
         const txid = broadcastResponse.data?.txid;
         const link = broadcastResponse.data?.link;
-        console.log(
-          `  ✅ Success: ${txid ? `0x${txid}` : "Transaction sent"}`
-        );
+        console.log(`  ✅ Success: ${txid ? `0x${txid}` : "Transaction sent"}`);
         successCount++;
         currentNonce++;
         results.push({
           agentAccount,
           txid,
-          link
+          link,
         });
       } else {
         console.log(`  ❌ Failed: ${broadcastResponse.message}`);
@@ -231,10 +231,15 @@ async function registerAgents(
 
         // On failure, write remaining agents to file and exit
         const remainingAgents = agents.slice(i);
-        const remainingFile = `${agentsFile.replace(/\.json$/, '')}-remaining.json`;
+        const remainingFile = `${agentsFile.replace(
+          /\.json$/,
+          ""
+        )}-remaining.json`;
         writeFileSync(remainingFile, JSON.stringify(remainingAgents, null, 2));
         console.log(`❌ Wrote remaining agents to ${remainingFile}`);
-        throw new Error(`Registration failed at ${agentAccount}. Remaining agents saved to ${remainingFile}`);
+        throw new Error(
+          `Registration failed at ${agentAccount}. Remaining agents saved to ${remainingFile}`
+        );
       }
 
       await sleep(SLEEP_MS);
@@ -249,7 +254,10 @@ async function registerAgents(
 
       // On error, write remaining agents to file and rethrow
       const remainingAgents = agents.slice(i);
-      const remainingFile = `${agentsFile.replace(/\.json$/, '')}-remaining.json`;
+      const remainingFile = `${agentsFile.replace(
+        /\.json$/,
+        ""
+      )}-remaining.json`;
       writeFileSync(remainingFile, JSON.stringify(remainingAgents, null, 2));
       console.log(`❌ Wrote remaining agents to ${remainingFile}`);
       throw error;
