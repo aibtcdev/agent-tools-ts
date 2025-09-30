@@ -100,31 +100,24 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-// Hardcoded manual tx_ids - REPLACE THESE WITH YOUR ACTUAL TRANSACTION IDs FROM MANUAL DEPLOYMENTS
-// Get these from Stacks explorer (testnet: https://explorer.stacks.co/?chain=testnet) by searching your deployer address
-// and filtering for "Contract Deploy" txs. Match by contract name in tx details.
 const MANUAL_TX_IDS: Record<string, string> = {
-  // Placeholders - FILL IN ALL ENTRIES FROM _full_response.json displayNames
-  // Example format: "elonbtc-faktory": "0x123abc...", 
-  // Ensure keys exactly match displayName values in JSON (case-sensitive)
-  "elonbtc-faktory": "0x...",
-  "elonbtc-pre-faktory": "0x...",
-  "xyk-pool-sbtc-elonbtc-v-1-1": "0x...",
-  "elonbtc-faktory-dex": "0x...",
-  "elonbtc-base-dao": "0x...",
-  "elonbtc-treasury": "0x...",
-  "elonbtc-action-proposal-voting": "0x...",
-  "elonbtc-dao-charter": "0x...",
-  "elonbtc-dao-epoch": "0x...",
-  "elonbtc-onchain-messaging": "0x...",
-  "elonbtc-token-owner": "0x...",
-  "elonbtc-action-send-message": "0x...",
-  "elonbtc-base-initialize-dao": "0x...",
-  "elonbtc-acct-swap-faktory-aibtc-sbtc": "0x...",
-  "elonbtc-acct-swap-bitflow-aibtc-sbtc": "0x...",
-  "elonbtc-faktory-buy-and-deposit": "0x...",
-  "elonbtc-bitflow-buy-and-deposit": "0x...",
-  // Add more if JSON has additional contracts
+  "elonbtc-faktory": "0x318f19c6605ae4f83c523ba5fb99b1d5390e08f0e76da72d366a9b8205152248",
+  "elonbtc-pre-faktory": "0x8836e5cfc2c4cac84b5d25ec2bb9b20f1bf2c613bfc80dc5c3bbedb8775fbd93",
+  "xyk-pool-sbtc-elonbtc-v-1-1": "0x039f0faf39ce7b9c04244a44ea2698b24b17afe6a9e321309e569f6b0df38aca",
+  "elonbtc-faktory-dex": "0x3f3e217d05d856bd86482e39543476a37b4710417f2fd0e801dc1836068e9c2f",
+  "elonbtc-base-dao": "0xa81f9195c8044cc75662fe1469288ebcd5b0e56cb10ff11d3b1a127324561344",
+  "elonbtc-treasury": "0xae6a23137881bddfdd19f8aabfbdcf55b338f1bebb8afd06de89d993b1ad745b",
+  "elonbtc-action-proposal-voting": "0x71b6bce85db507ccc652723c01e0b242ede707889521fea9b7ffa3faaf4a5be7",
+  "elonbtc-dao-charter": "0xadcab9466bd94805e6ea1fa4c134e60878e3b8235102c9eb37d209327f1373e7",
+  "elonbtc-dao-epoch": "0x7c8df909f9283b5d49d154bd5cd7d455148906f639872dbb5397fdf61313599c",
+  "elonbtc-onchain-messaging": "0x5dc5d982f5589f03ceaf6524543e5bfcd3f2a4fe4f4e6a0f159eff5b802d9db7",
+  "elonbtc-token-owner": "0x070487124d4d306cad829da9ac07dc310070e66b9b03f73598b74b55c6163d27",
+  "elonbtc-action-send-message": "0x186ca9754d533171d1b4ea64c31256b3d7bac18e6c3ef9bf1fb8d9c5c4f3ecee",
+  "elonbtc-base-initialize-dao": "0x8a4a98fe20e41b141c6d75d2a095a1e01ab48aaa0efb6cda273d6db95ce72abb",
+  "elonbtc-acct-swap-faktory-aibtc-sbtc": "0xb8026abcbb432d5d0df77c42fefe4e15bece39f63a67ddf84ea7b6869ead42e6",
+  "elonbtc-acct-swap-bitflow-aibtc-sbtc": "0xd8a4cabb7bc9d8469c30a47a3814199863e9b716629c4c7de29b5087a991dcf1",
+  "elonbtc-faktory-buy-and-deposit": "0xe10ab503adf9a6bc5518ad5c186961bdbec2a8e7353568349fadd920db4c3dd1",
+  "elonbtc-bitflow-buy-and-deposit": "0x5131c45d2846a9e281550a38cbba986670b9d68a73471562c1cf338c82589234",
 };
 
 async function main(): Promise<ToolResponse<any>> {
