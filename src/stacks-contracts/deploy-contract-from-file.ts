@@ -15,19 +15,20 @@ import {
 } from "./services/contract-deployer";
 
 const usage =
-  "Usage: bun run deploy-contract-from-file.ts <contractName> <sourceFile> [clarityVersion]";
+  "Usage: bun run deploy-contract-from-file.ts <contractName> <sourceFile> [clarityVersion] [fee]";
 const usageExample =
-  'Example: bun run deploy-contract-from-file.ts "wow-dao-charter" "./generated/wow/wow-dao-charter.clar" 3';
+  'Example: bun run deploy-contract-from-file.ts "wow-dao-charter" "./generated/wow/wow-dao-charter.clar" 3 1000000';
 
 interface ExpectedArgs {
   contractName: string;
   sourceFile: string;
   clarityVersion?: ClarityVersion;
+  fee?: number;
 }
 
 function validateArgs(): ExpectedArgs {
   // verify all required arguments are provided
-  const [contractName, sourceFile, clarityVersion] = process.argv.slice(2);
+  const [contractName, sourceFile, clarityVersion, fee] = process.argv.slice(2);
   // check for req params
   if (!contractName || !sourceFile) {
     const errorMessage = [
@@ -72,6 +73,7 @@ function validateArgs(): ExpectedArgs {
     contractName,
     sourceFile,
     clarityVersion: clarityVer,
+    fee: fee ? parseInt(fee) : undefined,
   };
 }
 
@@ -100,7 +102,8 @@ async function main(): Promise<ToolResponse<DeployedSingleContract>> {
   };
   const deploymentDetails = await contractDeployer.deployContract(
     contract,
-    nextPossibleNonce
+    nextPossibleNonce,
+    args.fee
   );
   // return deployment details
   return {

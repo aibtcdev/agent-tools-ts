@@ -54,7 +54,8 @@ export class ContractDeployer {
    */
   async deployContract(
     contract: SingleContract,
-    nonce?: number
+    nonce?: number,
+    fee?: number,
   ): Promise<DeployedSingleContract> {
     // Create the contract deployment transaction
     const transaction = await makeContractDeploy({
@@ -62,6 +63,7 @@ export class ContractDeployer {
       codeBody: contract.source,
       senderKey: this.senderKey,
       nonce: nonce === 0 ? 0 : nonce ? nonce : undefined,
+      fee: fee,
       network: this.network,
       postConditions: [], // empty, no transfers expected
       postConditionMode: PostConditionMode.Deny,
