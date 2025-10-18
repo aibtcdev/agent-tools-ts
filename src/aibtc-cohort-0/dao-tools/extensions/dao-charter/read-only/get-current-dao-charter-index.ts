@@ -7,9 +7,10 @@ import {
   isValidContractPrincipal,
   sendToLLM,
   ToolResponse,
-} from "../../../../../../utilities";
+} from "../../../../../utilities";
 
-const usage = "Usage: bun run get-current-dao-charter-index.ts <daoCharterContract>";
+const usage =
+  "Usage: bun run get-current-dao-charter-index.ts <daoCharterContract>";
 const usageExample =
   "Example: bun run get-current-dao-charter-index.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter";
 
