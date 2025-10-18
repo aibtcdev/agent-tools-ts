@@ -8,8 +8,8 @@ const targetSymbol = "fake17";
 // const registry = setupFullContractRegistry();
 
 const DAO_CHARTER_CONTRACT = `ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.${targetSymbol}-dao-charter`;
-const TEST_CHARTER_TEXT_1 = "This is the initial DAO charter text.";
-const TEST_CHARTER_TEXT_2 = "This is the updated DAO charter text.";
+const TEST_CHARTER_TEXT_1 = "technocapital";
+const TEST_CHARTER_TEXT_2 = "acceleration";
 const TEST_MONARCH_PRINCIPAL_1 = "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18";
 const TEST_MONARCH_PRINCIPAL_2 = "ST3ZA8Z9DHHM612MYXNT96DJ3E1N7J04ZKQ3H2FSP";
 const TEST_DELAY_MS = 5000; // Delay between tests in milliseconds
