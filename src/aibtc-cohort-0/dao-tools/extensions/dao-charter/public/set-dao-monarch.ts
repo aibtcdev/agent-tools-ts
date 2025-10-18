@@ -14,7 +14,7 @@ import {
   sendToLLM,
   ToolResponse,
   TxBroadcastResultWithLink,
-} from "../../../../../../utilities";
+} from "../../../../../utilities";
 
 const usage =
   "Usage: bun run set-dao-monarch.ts <daoCharterContract> <monarchPrincipal>";
