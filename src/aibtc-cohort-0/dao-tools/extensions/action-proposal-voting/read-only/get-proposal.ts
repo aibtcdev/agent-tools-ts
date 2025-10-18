@@ -18,11 +18,6 @@ const usage =
 const usageExample =
   "Example: bun run get-proposal.ts ST000000000000000000002AMW42H.aibtc-action-proposal-voting 1";
 
-interface ExpectedArgs {
-  daoActionProposalVotingContract: string;
-  proposalId: number;
-}
-
 // Define the expected structure of the proposal data based on the Clarity contract
 interface ProposalData {
   action: string; // principal
@@ -53,7 +48,7 @@ interface ProposalData {
   vetoed: boolean;
 }
 
-function validateArgs(): ExpectedArgs {
+async function main(): Promise<ToolResponse<ProposalData | null>> {
   const [daoActionProposalVotingContract, proposalIdStr] =
     process.argv.slice(2);
   if (!daoActionProposalVotingContract || proposalIdStr === undefined) {
@@ -86,16 +81,6 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  return {
-    daoActionProposalVotingContract,
-    proposalId,
-  };
-}
-
-async function main(): Promise<ToolResponse<ProposalData | null>> {
-  const args = validateArgs();
-  const [contractAddress, contractName] =
-    args.daoActionProposalVotingContract.split(".");
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address: senderAddress } = await deriveChildAccount(
     CONFIG.NETWORK,
@@ -107,7 +92,7 @@ async function main(): Promise<ToolResponse<ProposalData | null>> {
     contractAddress,
     contractName,
     functionName: "get-proposal",
-    functionArgs: [Cl.uint(args.proposalId)],
+    functionArgs: [Cl.uint(proposalId)],
     senderAddress,
     network: networkObj,
   });
