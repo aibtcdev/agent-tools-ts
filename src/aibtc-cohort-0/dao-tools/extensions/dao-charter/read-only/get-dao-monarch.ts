@@ -15,11 +15,16 @@ import {
   ToolResponse,
 } from "../../../../../utilities";
 
+interface ExpectedArgs {
+  daoCharterContract: string;
+  index: number;
+}
+
 const usage = "Usage: bun run get-dao-monarch.ts <daoCharterContract> <index>";
 const usageExample =
   "Example: bun run get-dao-monarch.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter 1";
 
-async function main(): Promise<ToolResponse<DaoMonarch | null>> {
+function validateArgs(): ExpectedArgs {
   const [daoCharterContract, indexStr] = process.argv.slice(2);
   if (!daoCharterContract || !indexStr) {
     const errorMessage = [
@@ -49,7 +54,15 @@ async function main(): Promise<ToolResponse<DaoMonarch | null>> {
     throw new Error(errorMessage);
   }
 
-  const [contractAddress, contractName] = daoCharterContract.split(".");
+  return {
+    daoCharterContract,
+    index,
+  };
+}
+
+async function main(): Promise<ToolResponse<DaoMonarch | null>> {
+  const args = validateArgs();
+  const [contractAddress, contractName] = args.daoCharterContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
@@ -62,7 +75,7 @@ async function main(): Promise<ToolResponse<DaoMonarch | null>> {
     contractAddress,
     contractName,
     functionName: "get-dao-monarch",
-    functionArgs: [Cl.uint(index)],
+    functionArgs: [Cl.uint(args.index)],
     senderAddress: address,
     network: networkObj,
   });

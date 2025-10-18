@@ -11,11 +11,15 @@ import {
   ToolResponse,
 } from "../../../../../utilities";
 
+interface ExpectedArgs {
+  daoCharterContract: string;
+}
+
 const usage = "Usage: bun run get-current-dao-monarch.ts <daoCharterContract>";
 const usageExample =
   "Example: bun run get-current-dao-monarch.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter";
 
-async function main(): Promise<ToolResponse<DaoMonarch | null>> {
+function validateArgs(): ExpectedArgs {
   const [daoCharterContract] = process.argv.slice(2);
   if (!daoCharterContract) {
     const errorMessage = [
@@ -35,7 +39,14 @@ async function main(): Promise<ToolResponse<DaoMonarch | null>> {
     throw new Error(errorMessage);
   }
 
-  const [contractAddress, contractName] = daoCharterContract.split(".");
+  return {
+    daoCharterContract,
+  };
+}
+
+async function main(): Promise<ToolResponse<DaoMonarch | null>> {
+  const args = validateArgs();
+  const [contractAddress, contractName] = args.daoCharterContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(

@@ -13,6 +13,10 @@ const usage = "Usage: bun run get-configuration.ts <agentAccountContract>";
 const usageExample =
   "Example: bun run get-configuration.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.aibtc-agent-account-test";
 
+interface ExpectedArgs {
+  agentAccountContract: string;
+}
+
 interface AgentAccountConfiguration {
   account: string;
   agent: string;
@@ -20,7 +24,7 @@ interface AgentAccountConfiguration {
   sbtc: string;
 }
 
-async function main(): Promise<ToolResponse<AgentAccountConfiguration>> {
+function validateArgs(): ExpectedArgs {
   const [agentAccountContract] = process.argv.slice(2);
   if (!agentAccountContract) {
     const errorMessage = [
@@ -40,7 +44,14 @@ async function main(): Promise<ToolResponse<AgentAccountConfiguration>> {
     throw new Error(errorMessage);
   }
 
-  const [contractAddress, contractName] = agentAccountContract.split(".");
+  return {
+    agentAccountContract,
+  };
+}
+
+async function main(): Promise<ToolResponse<AgentAccountConfiguration>> {
+  const args = validateArgs();
+  const [contractAddress, contractName] = args.agentAccountContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(

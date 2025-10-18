@@ -15,12 +15,17 @@ import {
   ToolResponse,
 } from "../../../../../utilities";
 
+interface ExpectedArgs {
+  daoCharterContract: string;
+  version: number;
+}
+
 const usage =
   "Usage: bun run get-dao-charter.ts <daoCharterContract> <version>";
 const usageExample =
   "Example: bun run get-dao-charter.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter 1";
 
-async function main(): Promise<ToolResponse<DaoCharter | null>> {
+function validateArgs(): ExpectedArgs {
   const [daoCharterContract, versionStr] = process.argv.slice(2);
   if (!daoCharterContract || !versionStr) {
     const errorMessage = [
@@ -50,7 +55,15 @@ async function main(): Promise<ToolResponse<DaoCharter | null>> {
     throw new Error(errorMessage);
   }
 
-  const [contractAddress, contractName] = daoCharterContract.split(".");
+  return {
+    daoCharterContract,
+    version,
+  };
+}
+
+async function main(): Promise<ToolResponse<DaoCharter | null>> {
+  const args = validateArgs();
+  const [contractAddress, contractName] = args.daoCharterContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address } = await deriveChildAccount(
@@ -63,7 +76,7 @@ async function main(): Promise<ToolResponse<DaoCharter | null>> {
     contractAddress,
     contractName,
     functionName: "get-dao-charter",
-    functionArgs: [Cl.uint(version)],
+    functionArgs: [Cl.uint(args.version)],
     senderAddress: address,
     network: networkObj,
   });
