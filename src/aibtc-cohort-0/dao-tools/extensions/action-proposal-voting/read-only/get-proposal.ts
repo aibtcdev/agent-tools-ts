@@ -96,6 +96,7 @@ async function main(): Promise<ToolResponse<ProposalData | null>> {
   const args = validateArgs();
   const [contractAddress, contractName] =
     args.daoActionProposalVotingContract.split(".");
+
   const networkObj = getNetwork(CONFIG.NETWORK);
   const { address: senderAddress } = await deriveChildAccount(
     CONFIG.NETWORK,
