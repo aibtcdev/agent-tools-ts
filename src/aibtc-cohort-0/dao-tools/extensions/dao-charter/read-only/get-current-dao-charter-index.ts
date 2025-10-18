@@ -14,11 +14,7 @@ const usage =
 const usageExample =
   "Example: bun run get-current-dao-charter-index.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter";
 
-interface ExpectedArgs {
-  daoCharterContract: string;
-}
-
-async function main(): Promise<ToolResponse<number>> {
+async function main(): Promise<ToolResponse<number | null>> {
   const [daoCharterContract] = process.argv.slice(2);
   if (!daoCharterContract) {
     const errorMessage = [
@@ -47,7 +43,7 @@ async function main(): Promise<ToolResponse<number>> {
     CONFIG.ACCOUNT_INDEX
   );
 
-  const result = await fetchCallReadOnlyFunction({
+  const resultCV = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-current-dao-charter-index",
@@ -56,10 +52,15 @@ async function main(): Promise<ToolResponse<number>> {
     network: networkObj,
   });
 
+  let data: number | null = null;
+  if (resultCV.type === ClarityType.OptionalSome) {
+    data = Number(cvToValue(resultCV.value));
+  }
+
   return {
     success: true,
     message: "Current DAO charter index retrieved successfully",
-    data: Number(cvToValue(result)),
+    data,
   };
 }
 

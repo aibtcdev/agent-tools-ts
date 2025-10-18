@@ -13,11 +13,7 @@ const usage = "Usage: bun run get-current-dao-monarch.ts <daoCharterContract>";
 const usageExample =
   "Example: bun run get-current-dao-monarch.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter";
 
-interface ExpectedArgs {
-  daoCharterContract: string;
-}
-
-async function main(): Promise<ToolResponse<string>> {
+async function main(): Promise<ToolResponse<DaoMonarch | null>> {
   const [daoCharterContract] = process.argv.slice(2);
   if (!daoCharterContract) {
     const errorMessage = [
@@ -46,7 +42,7 @@ async function main(): Promise<ToolResponse<string>> {
     CONFIG.ACCOUNT_INDEX
   );
 
-  const result = await fetchCallReadOnlyFunction({
+  const resultCV = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-current-dao-monarch",
@@ -55,10 +51,30 @@ async function main(): Promise<ToolResponse<string>> {
     network: networkObj,
   });
 
+  let data: DaoMonarch | null = null;
+  if (resultCV.type === ClarityType.OptionalSome) {
+    const tupleObj = convertClarityTuple<{
+      burnHeight: bigint;
+      createdAt: bigint;
+      caller: string;
+      sender: string;
+      previousMonarch: string;
+      newMonarch: string;
+    }>(resultCV.value);
+    data = {
+      burnHeight: Number(tupleObj.burnHeight),
+      createdAt: Number(tupleObj.createdAt),
+      caller: tupleObj.caller,
+      sender: tupleObj.sender,
+      previousMonarch: tupleObj.previousMonarch,
+      newMonarch: tupleObj.newMonarch,
+    };
+  }
+
   return {
     success: true,
-    message: "Current DAO monarch retrieved successfully",
-    data: cvToValue(result),
+    message: "Current DAO monarch record retrieved successfully",
+    data,
   };
 }
 

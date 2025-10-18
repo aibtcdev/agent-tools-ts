@@ -82,8 +82,9 @@ async function main() {
       "run",
       `${basePath}/read-only/get-dao-charter.ts`,
       DAO_CHARTER_CONTRACT,
+      "1",
     ],
-    "Get DAO Charter (Initial)"
+    "Get DAO Charter version 1 (Initial)"
   );
   await delay(TEST_DELAY_MS);
 
@@ -93,8 +94,9 @@ async function main() {
       "run",
       `${basePath}/read-only/get-dao-monarch.ts`,
       DAO_CHARTER_CONTRACT,
+      "1",
     ],
-    "Get DAO Monarch (Initial)"
+    "Get DAO Monarch index 1 (Initial)"
   );
   await delay(TEST_DELAY_MS);
 
@@ -162,8 +164,9 @@ async function main() {
       "run",
       `${basePath}/read-only/get-dao-charter.ts`,
       DAO_CHARTER_CONTRACT,
+      "1",
     ],
-    "Get DAO Charter (After Set to Text 1)"
+    "Get DAO Charter version 1 (After Set to Text 1)"
   );
   await delay(TEST_DELAY_MS);
 
@@ -207,8 +210,9 @@ async function main() {
       "run",
       `${basePath}/read-only/get-dao-charter.ts`,
       DAO_CHARTER_CONTRACT,
+      "2",
     ],
-    "Get DAO Charter (After Set to Text 2)"
+    "Get DAO Charter version 2 (After Set to Text 2)"
   );
   await delay(TEST_DELAY_MS);
 
@@ -254,8 +258,9 @@ async function main() {
       "run",
       `${basePath}/read-only/get-dao-monarch.ts`,
       DAO_CHARTER_CONTRACT,
+      "1",
     ],
-    "Get DAO Monarch (After Set to Principal 1)"
+    "Get DAO Monarch index 1 (After Set to Principal 1)"
   );
   await delay(TEST_DELAY_MS);
 
@@ -299,8 +304,9 @@ async function main() {
       "run",
       `${basePath}/read-only/get-dao-monarch.ts`,
       DAO_CHARTER_CONTRACT,
+      "2",
     ],
-    "Get DAO Monarch (After Set to Principal 2)"
+    "Get DAO Monarch index 2 (After Set to Principal 2)"
   );
   await delay(TEST_DELAY_MS);
 

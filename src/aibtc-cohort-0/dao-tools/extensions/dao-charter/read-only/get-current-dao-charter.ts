@@ -13,11 +13,7 @@ const usage = "Usage: bun run get-current-dao-charter.ts <daoCharterContract>";
 const usageExample =
   "Example: bun run get-current-dao-charter.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter";
 
-interface ExpectedArgs {
-  daoCharterContract: string;
-}
-
-async function main(): Promise<ToolResponse<string>> {
+async function main(): Promise<ToolResponse<DaoCharter | null>> {
   const [daoCharterContract] = process.argv.slice(2);
   if (!daoCharterContract) {
     const errorMessage = [
@@ -46,7 +42,7 @@ async function main(): Promise<ToolResponse<string>> {
     CONFIG.ACCOUNT_INDEX
   );
 
-  const result = await fetchCallReadOnlyFunction({
+  const resultCV = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-current-dao-charter",
@@ -55,10 +51,28 @@ async function main(): Promise<ToolResponse<string>> {
     network: networkObj,
   });
 
+  let data: DaoCharter | null = null;
+  if (resultCV.type === ClarityType.OptionalSome) {
+    const tupleObj = convertClarityTuple<{
+      burnHeight: bigint;
+      createdAt: bigint;
+      caller: string;
+      sender: string;
+      charter: string;
+    }>(resultCV.value);
+    data = {
+      burnHeight: Number(tupleObj.burnHeight),
+      createdAt: Number(tupleObj.createdAt),
+      caller: tupleObj.caller,
+      sender: tupleObj.sender,
+      charter: tupleObj.charter,
+    };
+  }
+
   return {
     success: true,
-    message: "Current DAO charter retrieved successfully",
-    data: cvToValue(result),
+    message: "Current DAO charter record retrieved successfully",
+    data,
   };
 }
 

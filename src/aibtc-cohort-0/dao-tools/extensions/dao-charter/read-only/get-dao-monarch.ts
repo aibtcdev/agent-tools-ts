@@ -9,17 +9,13 @@ import {
   ToolResponse,
 } from "../../../../../utilities";
 
-const usage = "Usage: bun run get-dao-monarch.ts <daoCharterContract>";
+const usage = "Usage: bun run get-dao-monarch.ts <daoCharterContract> <index>";
 const usageExample =
-  "Example: bun run get-dao-monarch.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter";
+  "Example: bun run get-dao-monarch.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter 1";
 
-interface ExpectedArgs {
-  daoCharterContract: string;
-}
-
-async function main(): Promise<ToolResponse<string | null>> {
-  const [daoCharterContract] = process.argv.slice(2);
-  if (!daoCharterContract) {
+async function main(): Promise<ToolResponse<DaoMonarch | null>> {
+  const [daoCharterContract, indexStr] = process.argv.slice(2);
+  if (!daoCharterContract || !indexStr) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -37,6 +33,16 @@ async function main(): Promise<ToolResponse<string | null>> {
     throw new Error(errorMessage);
   }
 
+  const index = parseInt(indexStr, 10);
+  if (isNaN(index) || index < 0) {
+    const errorMessage = [
+      `Invalid index: ${indexStr}. Must be a non-negative integer.`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
   const [contractAddress, contractName] = daoCharterContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
@@ -46,20 +52,39 @@ async function main(): Promise<ToolResponse<string | null>> {
     CONFIG.ACCOUNT_INDEX
   );
 
-  const result = await fetchCallReadOnlyFunction({
+  const resultCV = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-dao-monarch",
-    functionArgs: [],
+    functionArgs: [Cl.uint(index)],
     senderAddress: address,
     network: networkObj,
   });
 
-  const monarch = cvToValue(result);
+  let data: DaoMonarch | null = null;
+  if (resultCV.type === ClarityType.OptionalSome) {
+    const tupleObj = convertClarityTuple<{
+      burnHeight: bigint;
+      createdAt: bigint;
+      caller: string;
+      sender: string;
+      previousMonarch: string;
+      newMonarch: string;
+    }>(resultCV.value);
+    data = {
+      burnHeight: Number(tupleObj.burnHeight),
+      createdAt: Number(tupleObj.createdAt),
+      caller: tupleObj.caller,
+      sender: tupleObj.sender,
+      previousMonarch: tupleObj.previousMonarch,
+      newMonarch: tupleObj.newMonarch,
+    };
+  }
+
   return {
     success: true,
-    message: "DAO monarch retrieved successfully",
-    data: monarch.type === "none" ? null : monarch.value,
+    message: "DAO monarch record retrieved successfully",
+    data,
   };
 }
 

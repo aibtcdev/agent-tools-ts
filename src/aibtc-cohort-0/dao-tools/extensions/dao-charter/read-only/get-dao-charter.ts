@@ -9,17 +9,13 @@ import {
   ToolResponse,
 } from "../../../../../utilities";
 
-const usage = "Usage: bun run get-dao-charter.ts <daoCharterContract>";
+const usage = "Usage: bun run get-dao-charter.ts <daoCharterContract> <version>";
 const usageExample =
-  "Example: bun run get-dao-charter.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter";
+  "Example: bun run get-dao-charter.ts ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-charter 1";
 
-interface ExpectedArgs {
-  daoCharterContract: string;
-}
-
-async function main(): Promise<ToolResponse<string | null>> {
-  const [daoCharterContract] = process.argv.slice(2);
-  if (!daoCharterContract) {
+async function main(): Promise<ToolResponse<DaoCharter | null>> {
+  const [daoCharterContract, versionStr] = process.argv.slice(2);
+  if (!daoCharterContract || !versionStr) {
     const errorMessage = [
       `Invalid arguments: ${process.argv.slice(2).join(" ")}`,
       usage,
@@ -37,6 +33,16 @@ async function main(): Promise<ToolResponse<string | null>> {
     throw new Error(errorMessage);
   }
 
+  const version = parseInt(versionStr, 10);
+  if (isNaN(version) || version < 0) {
+    const errorMessage = [
+      `Invalid version: ${versionStr}. Must be a non-negative integer.`,
+      usage,
+      usageExample,
+    ].join("\n");
+    throw new Error(errorMessage);
+  }
+
   const [contractAddress, contractName] = daoCharterContract.split(".");
 
   const networkObj = getNetwork(CONFIG.NETWORK);
@@ -46,20 +52,37 @@ async function main(): Promise<ToolResponse<string | null>> {
     CONFIG.ACCOUNT_INDEX
   );
 
-  const result = await fetchCallReadOnlyFunction({
+  const resultCV = await fetchCallReadOnlyFunction({
     contractAddress,
     contractName,
     functionName: "get-dao-charter",
-    functionArgs: [],
+    functionArgs: [Cl.uint(version)],
     senderAddress: address,
     network: networkObj,
   });
 
-  const charter = cvToValue(result);
+  let data: DaoCharter | null = null;
+  if (resultCV.type === ClarityType.OptionalSome) {
+    const tupleObj = convertClarityTuple<{
+      burnHeight: bigint;
+      createdAt: bigint;
+      caller: string;
+      sender: string;
+      charter: string;
+    }>(resultCV.value);
+    data = {
+      burnHeight: Number(tupleObj.burnHeight),
+      createdAt: Number(tupleObj.createdAt),
+      caller: tupleObj.caller,
+      sender: tupleObj.sender,
+      charter: tupleObj.charter,
+    };
+  }
+
   return {
     success: true,
-    message: "DAO charter retrieved successfully",
-    data: charter.type === "none" ? null : charter.value,
+    message: "DAO charter record retrieved successfully",
+    data,
   };
 }
 

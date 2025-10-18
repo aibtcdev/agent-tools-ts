@@ -1457,3 +1457,20 @@ export type AibtcCorePostResponse = {
     token_id: string;
   };
 };
+
+export interface DaoCharter {
+  burnHeight: number;
+  createdAt: number;
+  caller: string;
+  sender: string;
+  charter: string;
+}
+
+export interface DaoMonarch {
+  burnHeight: number;
+  createdAt: number;
+  caller: string;
+  sender: string;
+  previousMonarch: string;
+  newMonarch: string;
+}
