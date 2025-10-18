@@ -98,6 +98,50 @@ async function main() {
   );
   await delay(TEST_DELAY_MS);
 
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-charter.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Charter (Initial)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-monarch.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Monarch (Initial)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-charter-index.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Charter Index (Initial)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-monarch-index.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Monarch Index (Initial)"
+  );
+  await delay(TEST_DELAY_MS);
+
   // --- Public (Transaction) Functions: Set DAO Charter Cycle ---
   console.log("\n--- Set DAO Charter Cycle ---");
   runTool(
@@ -127,6 +171,28 @@ async function main() {
     [
       "bun",
       "run",
+      `${basePath}/read-only/get-current-dao-charter.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Charter (After Set to Text 1)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-charter-index.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Charter Index (After Set to Text 1)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
       `${basePath}/public/set-dao-charter.ts`,
       DAO_CHARTER_CONTRACT,
       TEST_CHARTER_TEXT_2,
@@ -143,6 +209,28 @@ async function main() {
       DAO_CHARTER_CONTRACT,
     ],
     "Get DAO Charter (After Set to Text 2)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-charter.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Charter (After Set to Text 2)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-charter-index.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Charter Index (After Set to Text 2)"
   );
   await delay(TEST_DELAY_MS);
 
@@ -175,6 +263,28 @@ async function main() {
     [
       "bun",
       "run",
+      `${basePath}/read-only/get-current-dao-monarch.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Monarch (After Set to Principal 1)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-monarch-index.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Monarch Index (After Set to Principal 1)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
       `${basePath}/public/set-dao-monarch.ts`,
       DAO_CHARTER_CONTRACT,
       TEST_MONARCH_PRINCIPAL_2,
@@ -191,6 +301,28 @@ async function main() {
       DAO_CHARTER_CONTRACT,
     ],
     "Get DAO Monarch (After Set to Principal 2)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-monarch.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Monarch (After Set to Principal 2)"
+  );
+  await delay(TEST_DELAY_MS);
+
+  runTool(
+    [
+      "bun",
+      "run",
+      `${basePath}/read-only/get-current-dao-monarch-index.ts`,
+      DAO_CHARTER_CONTRACT,
+    ],
+    "Get Current DAO Monarch Index (After Set to Principal 2)"
   );
   await delay(TEST_DELAY_MS);
 
