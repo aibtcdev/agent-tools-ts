@@ -2,12 +2,12 @@ import Bun from "bun";
 
 // --- Configuration ---
 
-const targetSymbol = "fake17";
+const targetSymbol = "aitest4";
 
 // TODO: expose from the types package?
 // const registry = setupFullContractRegistry();
 
-const DAO_CHARTER_CONTRACT = `ST1Q9YZ2NY4KVBB08E005HAK3FSM8S3RX2WARP9Q1.${targetSymbol}-dao-charter`;
+const DAO_CHARTER_CONTRACT = `ST2Q77H5HHT79JK4932JCFDX4VY6XA3Y1F61A25CD.${targetSymbol}-dao-charter`;
 const TEST_CHARTER_TEXT_1 = "technocapital";
 const TEST_CHARTER_TEXT_2 = "acceleration";
 const TEST_MONARCH_PRINCIPAL_1 = "ST3YT0XW92E6T2FE59B2G5N2WNNFSBZ6MZKQS5D18";
