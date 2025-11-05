@@ -76,6 +76,15 @@ export async function deployContract(
 
   const broadcastResponse = await broadcastTx(transaction, networkObj);
 
+  // Truncate source code for response
+  if (contract.source) {
+    const truncatedSource =
+      contract.source.length > 100
+        ? contract.source.substring(0, 97) + "..."
+        : contract.source;
+    contract.source = truncatedSource;
+  }
+
   const fullResponse: BroadcastedContractResponse = {
     ...contract,
     ...broadcastResponse.data!,
