@@ -38,21 +38,11 @@ function validateArgs(): ExpectedArgs {
   ] = process.argv.slice(2);
 
   if (!validateStacksAddress(ownerAddress)) {
-    const errorMessage = [
-      `Invalid owner address: ${ownerAddress}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
+    throw new Error(`Invalid owner address: ${ownerAddress}`);
   }
 
   if (!validateStacksAddress(agentAddress)) {
-    const errorMessage = [
-      `Invalid agent address: ${agentAddress}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
+    throw new Error(`Invalid agent address: ${agentAddress}`);
   }
 
   // Parse saveToFile parameter
@@ -100,11 +90,7 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
       if (generatedContractResponse.error) {
         throw new Error(generatedContractResponse.error.message);
       }
-      throw new Error(
-        `Failed to generate agent account: ${JSON.stringify(
-          generatedContractResponse
-        )}`
-      );
+      throw new Error(JSON.stringify(generatedContractResponse));
     }
 
     const contract = generatedContractResponse.data.contract;
@@ -139,11 +125,7 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
     const deployResult = await deployContract(contract, deploymentOptions);
 
     if (!deployResult.success) {
-      throw new Error(
-        `Failed to deploy agent account contract: ${JSON.stringify(
-          deployResult
-        )}`
-      );
+      throw new Error(JSON.stringify(deployResult));
     }
 
     // Truncate source code for response
@@ -160,15 +142,6 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
     return deployResult;
   } catch (error) {
     throw error;
-    /* trying something simpler - return the error direct
-    const errorMessage = [
-      `Error deploying agent account:`,
-      `${error instanceof Error ? error.message : String(error)}`,
-      usage,
-      usageExample,
-    ].join("\n");
-    throw new Error(errorMessage);
-    */
   }
 }
 
