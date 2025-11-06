@@ -81,9 +81,15 @@ function validateArgs(): ExpectedArgs {
     throw new Error(errorMessage);
   }
 
-  if (!validateStacksAddress(originAddress)) {
+  const originAddressParts = originAddress.split(".");
+
+  if (!validateStacksAddress(originAddressParts[0])) {
     const errorMessage = [
-      `Invalid origin address: ${originAddress}`,
+      `Invalid origin address: ${
+        originAddressParts.length > 1
+          ? originAddressParts.join(".")
+          : originAddressParts[0]
+      }`,
       usage,
       usageExample,
     ].join("\n");
