@@ -159,6 +159,8 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
 
     return deployResult;
   } catch (error) {
+    throw error;
+    /* trying something simpler - return the error direct
     const errorMessage = [
       `Error deploying agent account:`,
       `${error instanceof Error ? error.message : String(error)}`,
@@ -166,6 +168,7 @@ async function main(): Promise<ToolResponse<BroadcastedContractResponse>> {
       usageExample,
     ].join("\n");
     throw new Error(errorMessage);
+    */
   }
 }
 
