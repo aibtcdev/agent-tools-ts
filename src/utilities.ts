@@ -47,8 +47,7 @@ export type ToolResponse<T> = {
 export function createErrorResponse(
   error: any
 ): ToolResponse<Error | undefined> {
-  const errorMessage =
-    error instanceof Error ? JSON.stringify(error.message) : String(error);
+  const errorMessage = error instanceof Error ? error.message : String(error);
   const errorData = error instanceof Error ? error : undefined;
   const response: ToolResponse<Error | undefined> = {
     success: false,
@@ -319,39 +318,75 @@ export function convertClarityTuple<T>(clarityValue: ClarityValue): T {
  * @param preserveContainers - If true, preserves container types in the output
  * @returns JavaScript representation of the Clarity value
  */
-export function decodeClarityValues(value: ClarityValue, strictJsonCompat = true, preserveContainers = false): any {
-	switch (value.type) {
-		case ClarityType.Tuple:
-			return decodeTupleRecursively(value as TupleCV, strictJsonCompat, preserveContainers);
-		case ClarityType.List:
-			return decodeListRecursively(value as ListCV, strictJsonCompat, preserveContainers);
-		case ClarityType.OptionalSome:
-			if (preserveContainers) {
-				return {
-					type: ClarityType.OptionalSome,
-					value: decodeClarityValues((value as SomeCV).value, strictJsonCompat, preserveContainers),
-				};
-			}
-			return decodeClarityValues((value as SomeCV).value, strictJsonCompat, preserveContainers);
-		case ClarityType.ResponseOk:
-			if (preserveContainers) {
-				return {
-					type: ClarityType.ResponseOk,
-					value: decodeClarityValues((value as ResponseOkCV).value, strictJsonCompat, preserveContainers),
-				};
-			}
-			return decodeClarityValues((value as ResponseOkCV).value, strictJsonCompat, preserveContainers);
-		case ClarityType.ResponseErr:
-			if (preserveContainers) {
-				return {
-					type: ClarityType.ResponseErr,
-					value: decodeClarityValues((value as ResponseErrorCV).value, strictJsonCompat, preserveContainers),
-				};
-			}
-			return decodeClarityValues((value as ResponseErrorCV).value, strictJsonCompat, preserveContainers);
-		default:
-			return cvToValue(value, strictJsonCompat);
-	}
+export function decodeClarityValues(
+  value: ClarityValue,
+  strictJsonCompat = true,
+  preserveContainers = false
+): any {
+  switch (value.type) {
+    case ClarityType.Tuple:
+      return decodeTupleRecursively(
+        value as TupleCV,
+        strictJsonCompat,
+        preserveContainers
+      );
+    case ClarityType.List:
+      return decodeListRecursively(
+        value as ListCV,
+        strictJsonCompat,
+        preserveContainers
+      );
+    case ClarityType.OptionalSome:
+      if (preserveContainers) {
+        return {
+          type: ClarityType.OptionalSome,
+          value: decodeClarityValues(
+            (value as SomeCV).value,
+            strictJsonCompat,
+            preserveContainers
+          ),
+        };
+      }
+      return decodeClarityValues(
+        (value as SomeCV).value,
+        strictJsonCompat,
+        preserveContainers
+      );
+    case ClarityType.ResponseOk:
+      if (preserveContainers) {
+        return {
+          type: ClarityType.ResponseOk,
+          value: decodeClarityValues(
+            (value as ResponseOkCV).value,
+            strictJsonCompat,
+            preserveContainers
+          ),
+        };
+      }
+      return decodeClarityValues(
+        (value as ResponseOkCV).value,
+        strictJsonCompat,
+        preserveContainers
+      );
+    case ClarityType.ResponseErr:
+      if (preserveContainers) {
+        return {
+          type: ClarityType.ResponseErr,
+          value: decodeClarityValues(
+            (value as ResponseErrorCV).value,
+            strictJsonCompat,
+            preserveContainers
+          ),
+        };
+      }
+      return decodeClarityValues(
+        (value as ResponseErrorCV).value,
+        strictJsonCompat,
+        preserveContainers
+      );
+    default:
+      return cvToValue(value, strictJsonCompat);
+  }
 }
 
 /**
@@ -362,12 +397,19 @@ export function decodeClarityValues(value: ClarityValue, strictJsonCompat = true
  * @param preserveContainers - If true, preserves container types in the output
  * @returns JavaScript object representation of the tuple
  */
-export function decodeTupleRecursively(tuple: TupleCV, strictJsonCompat = true, preserveContainers = false): any {
-	return Object.fromEntries(
-		Object.entries(tuple.value).map(([key, value]) => {
-			return [key, decodeClarityValues(value, strictJsonCompat, preserveContainers)];
-		})
-	);
+export function decodeTupleRecursively(
+  tuple: TupleCV,
+  strictJsonCompat = true,
+  preserveContainers = false
+): any {
+  return Object.fromEntries(
+    Object.entries(tuple.value).map(([key, value]) => {
+      return [
+        key,
+        decodeClarityValues(value, strictJsonCompat, preserveContainers),
+      ];
+    })
+  );
 }
 
 /**
@@ -378,10 +420,14 @@ export function decodeTupleRecursively(tuple: TupleCV, strictJsonCompat = true, 
  * @param preserveContainers - If true, preserves container types in the output
  * @returns JavaScript array representation of the list
  */
-export function decodeListRecursively(list: ListCV, strictJsonCompat = true, preserveContainers = false): any[] {
-	return list.value.map((value) => {
-		return decodeClarityValues(value, strictJsonCompat, preserveContainers);
-	});
+export function decodeListRecursively(
+  list: ListCV,
+  strictJsonCompat = true,
+  preserveContainers = false
+): any[] {
+  return list.value.map((value) => {
+    return decodeClarityValues(value, strictJsonCompat, preserveContainers);
+  });
 }
 
 export function isValidContractPrincipal(principal: string): boolean {
