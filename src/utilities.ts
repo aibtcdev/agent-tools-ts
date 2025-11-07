@@ -44,12 +44,10 @@ export type ToolResponse<T> = {
   data?: T;
 };
 
-export function createErrorResponse(
-  error: any
-): ToolResponse<Error | undefined> {
+export function createErrorResponse(error: any): ToolResponse<string | Error> {
   const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorData = error instanceof Error ? error : undefined;
-  const response: ToolResponse<Error | undefined> = {
+  const errorData = error instanceof Error ? error : String(error);
+  const response: ToolResponse<string | Error> = {
     success: false,
     message: errorMessage,
     data: errorData,
