@@ -1,4 +1,10 @@
-import { CONFIG, deriveChildAccount } from "../utilities";
+import {
+  CONFIG,
+  createErrorResponse,
+  deriveChildAccount,
+  sendToLLM,
+  ToolResponse,
+} from "../utilities";
 
 // get address for a given account index in the wallet
 
@@ -20,7 +26,17 @@ async function main() {
   const { address } = await deriveChildAccount(network, mnemonic, accountIndex);
 
   // log account address with account index
-  console.log(`${address}`);
+  const returnValue: ToolResponse<string> = {
+    success: true,
+    message: `Derived address for account index ${accountIndex}: ${address}`,
+    data: address,
+  };
+  return returnValue;
 }
 
-main();
+main()
+  .then(sendToLLM)
+  .catch((error) => {
+    createErrorResponse(error);
+    process.exit(1);
+  });

@@ -2,6 +2,7 @@ import { makeSTXTokenTransfer } from "@stacks/transactions";
 import {
   broadcastTx,
   CONFIG,
+  createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
@@ -103,6 +104,6 @@ async function transferToken() {
 transferToken()
   .then(sendToLLM)
   .catch((error) => {
-    console.error(error);
+    createErrorResponse(error);
     process.exit(1);
   });
