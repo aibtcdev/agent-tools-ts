@@ -104,6 +104,6 @@ async function transferToken() {
 transferToken()
   .then(sendToLLM)
   .catch((error) => {
-    createErrorResponse(error);
+    sendToLLM(createErrorResponse(error));
     process.exit(1);
   });
