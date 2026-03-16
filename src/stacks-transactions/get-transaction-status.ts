@@ -30,7 +30,13 @@ function validateArgs(): ExpectedArgs {
 // gets transaction data from the API
 async function getTransaction(network: string, txId: string): Promise<Transaction> {
   const apiUrl = getApiUrl(network);
-  const response = await fetch(`${apiUrl}/extended/v1/tx/${txId}`);
+  const response = await fetch(`${apiUrl}/extended/v1/tx/${txId}`, {
+    headers: {
+      ...(CONFIG.HIRO_API_KEY
+        ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
+        : {}),
+    },
+  });
   if (!response.ok) {
     throw new Error(`Failed to get transaction: ${response.statusText}`);
   }

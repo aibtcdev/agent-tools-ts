@@ -508,7 +508,14 @@ export async function deriveChildAccounts(
 export async function getNonces(network: string, address: string) {
   const apiUrl = getApiUrl(network);
   const response = await fetch(
-    `${apiUrl}/extended/v1/address/${address}/nonces`
+    `${apiUrl}/extended/v1/address/${address}/nonces`,
+    {
+      headers: {
+        ...(CONFIG.HIRO_API_KEY
+          ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
+          : {}),
+      },
+    }
   );
   if (!response.ok) {
     throw new Error(`Failed to get nonce: ${response.statusText}`);
@@ -961,7 +968,13 @@ export type BlockHeightResponse = {
 export async function getCurrentBlockHeights(): Promise<BlockHeightResponse> {
   try {
     const baseUrl = getApiUrl(CONFIG.NETWORK);
-    const response = await fetch(`${baseUrl}/extended/v2/blocks?limit=1`);
+    const response = await fetch(`${baseUrl}/extended/v2/blocks?limit=1`, {
+      headers: {
+        ...(CONFIG.HIRO_API_KEY
+          ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
+          : {}),
+      },
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

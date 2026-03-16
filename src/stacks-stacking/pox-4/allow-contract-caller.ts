@@ -82,6 +82,9 @@ async function getPOXDetails(network: NetworkType) {
   const response = await fetch(`${apiUrl}/v2/pox`, {
     headers: {
       Accept: "application/json",
+      ...(CONFIG.HIRO_API_KEY
+        ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
+        : {}),
     },
   });
   if (!response.ok) {

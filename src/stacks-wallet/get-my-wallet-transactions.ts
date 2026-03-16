@@ -11,7 +11,14 @@ interface TransactionsResponse {
 async function getWalletTransactions(network: string, address: string) {
   const apiUrl = getApiUrl(network);
   const response = await fetch(
-    `${apiUrl}/extended/v2/addresses/${address}/transactions`
+    `${apiUrl}/extended/v2/addresses/${address}/transactions`,
+    {
+      headers: {
+        ...(CONFIG.HIRO_API_KEY
+          ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
+          : {}),
+      },
+    }
   );
   if (!response.ok) {
     throw new Error(`Failed to get transactions: ${response.statusText}`);
