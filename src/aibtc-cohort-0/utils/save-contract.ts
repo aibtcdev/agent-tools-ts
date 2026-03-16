@@ -3,12 +3,42 @@ import fs from "node:fs";
 import path from "node:path";
 
 /**
+ * Validate that a filename segment contains only safe characters.
+ * Prevents path traversal via directory separators, null bytes, or shell metacharacters.
+ */
+function validateFilenameSegment(value: string, fieldName: string): void {
+  if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+    throw new Error(
+      `Invalid ${fieldName}: must contain only alphanumeric, underscore, or hyphen characters`
+    );
+  }
+}
+
+/**
+ * Assert that a resolved file path stays within the expected base directory.
+ * Guards against symlink-based or double-encoded traversal that slips past
+ * simple string checks.
+ */
+function assertWithinDirectory(filePath: string, baseDir: string): void {
+  const resolved = path.resolve(filePath);
+  const base = path.resolve(baseDir);
+  if (!resolved.startsWith(base + path.sep) && resolved !== base) {
+    throw new Error(
+      `Path traversal detected: ${filePath} is outside ${baseDir}`
+    );
+  }
+}
+
+/**
  * Save generated agent account contract to a file in the contract-tools/generated directory
  */
 export async function saveAgentAccountToFile(
   contract: ContractResponse,
   network: string
 ) {
+  // Validate user-controlled path segments before using them in filesystem calls
+  validateFilenameSegment(network, "network");
+
   // Create the directory if it doesn't exist
   const outputDir = path.join(
     __dirname,
@@ -20,7 +50,9 @@ export async function saveAgentAccountToFile(
 
   // Use the contract's name property
   const contractName = contract.displayName ?? contract.name;
+  validateFilenameSegment(contractName, "contractName");
   const filePath = path.join(outputDir, `${contractName}.clar`);
+  assertWithinDirectory(filePath, path.join(__dirname, "generated"));
 
   if (!contract.source) {
     throw new Error(
@@ -33,6 +65,7 @@ export async function saveAgentAccountToFile(
 
   // Save the full response as JSON for reference
   const jsonPath = path.join(outputDir, `${contractName}.json`);
+  assertWithinDirectory(jsonPath, path.join(__dirname, "generated"));
   fs.writeFileSync(jsonPath, JSON.stringify(contract, null, 2));
 
   return {
@@ -59,6 +92,10 @@ export async function saveDaoContractsToFiles(
   tokenSymbol: string,
   network: string
 ) {
+  // Validate user-controlled path segments before using them in filesystem calls
+  validateFilenameSegment(tokenSymbol, "tokenSymbol");
+  validateFilenameSegment(network, "network");
+
   // Create the directory if it doesn't exist
   const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
   //console.log(`Saving contracts to ${outputDir}`);
@@ -71,7 +108,9 @@ export async function saveDaoContractsToFiles(
       contractData.displayName ??
       getContractDisplayName(tokenSymbol, contractData.name);
 
+    validateFilenameSegment(contractName, "contractName");
     const filePath = path.join(outputDir, `${contractName}.clar`);
+    assertWithinDirectory(filePath, path.join(__dirname, "generated"));
     if (!contractData.source) {
       throw new Error(
         `Contract ${contractName} does not have source code available`
@@ -83,6 +122,7 @@ export async function saveDaoContractsToFiles(
   }
   // Save the full response as JSON for reference
   const jsonPath = path.join(outputDir, `_full_response.json`);
+  assertWithinDirectory(jsonPath, path.join(__dirname, "generated"));
   fs.writeFileSync(jsonPath, JSON.stringify(contracts, null, 2));
   //console.log(`Saved full response to ${jsonPath}`);
 }
