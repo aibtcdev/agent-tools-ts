@@ -120,10 +120,8 @@ export interface AppConfig {
 }
 
 // define default values for app config
-const DEFAULT_CONFIG: AppConfig = {
+const DEFAULT_CONFIG: Omit<AppConfig, "MNEMONIC"> = {
   NETWORK: "testnet",
-  MNEMONIC:
-    "crater office wreck aunt lumber casino veteran mixed float arrive lens final",
   ACCOUNT_INDEX: 0,
   HIRO_API_KEY: "",
   STXCITY_API_HOST: "https://stx.city",
@@ -134,9 +132,14 @@ const DEFAULT_CONFIG: AppConfig = {
 
 // load configuration from environment variables
 function loadConfig(): AppConfig {
+  if (!process.env.MNEMONIC) {
+    throw new Error(
+      "MNEMONIC environment variable is required. Set it before running."
+    );
+  }
   return {
     NETWORK: validateNetwork(process.env.NETWORK),
-    MNEMONIC: process.env.MNEMONIC || DEFAULT_CONFIG.MNEMONIC,
+    MNEMONIC: process.env.MNEMONIC,
     ACCOUNT_INDEX:
       Number(process.env.ACCOUNT_INDEX) || DEFAULT_CONFIG.ACCOUNT_INDEX,
     HIRO_API_KEY: process.env.HIRO_API_KEY || DEFAULT_CONFIG.HIRO_API_KEY,
