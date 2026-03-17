@@ -1,4 +1,4 @@
-import { postToAibtcCore, getImageUrlFromTokenUri, validateNetwork, CONFIG, deriveChildAccount, ToolResponse, sendToLLM, createErrorResponse } from "../../utilities";
+import { postToAibtcCore, getImageUrlFromTokenUri, validateNetwork, CONFIG, deriveChildAccount, ToolResponse, sendToLLM, createErrorResponse, AibtcCorePostResponse } from "../../utilities";
 import { readFileSync } from "fs";
 import { validateStacksAddress } from "@stacks/transactions";
 
@@ -120,7 +120,9 @@ const MANUAL_TX_IDS: Record<string, string> = {
   "elonbtc-bitflow-buy-and-deposit": "0x5131c45d2846a9e281550a38cbba986670b9d68a73471562c1cf338c82589234",
 };
 
-async function main(): Promise<ToolResponse<any>> {
+type RegisterDaoResult = AibtcCorePostResponse | { reconstructedPayload: AibtcCoreRequestBody; contractsFromJson: number };
+
+async function main(): Promise<ToolResponse<RegisterDaoResult>> {
   // Validate and store provided args
   const args = validateArgs();
 

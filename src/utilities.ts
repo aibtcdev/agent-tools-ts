@@ -63,7 +63,7 @@ export function replaceBigintWithString(key: string, value: any) {
   return value;
 }
 
-export function sendToLLM(toolResponse: ToolResponse<any>) {
+export function sendToLLM(toolResponse: ToolResponse<unknown>) {
   console.log(JSON.stringify(toolResponse, replaceBigintWithString, 2));
 }
 
