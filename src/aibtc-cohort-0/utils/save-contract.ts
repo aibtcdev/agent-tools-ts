@@ -2,6 +2,50 @@ import { ContractResponse } from "@aibtc/types";
 import fs from "node:fs";
 import path from "node:path";
 
+const SAFE_NAME_REGEX = /^[a-zA-Z0-9_-]+$/;
+const ALLOWED_NETWORKS = new Set(["mainnet", "testnet", "devnet"]);
+
+/**
+ * Sanitize a name used as a path component.
+ * Throws if the name contains characters outside [a-zA-Z0-9_-] or is empty.
+ */
+function sanitizeName(name: string, fieldName: string): string {
+  const cleaned = name.trim();
+  if (!cleaned || !SAFE_NAME_REGEX.test(cleaned)) {
+    throw new Error(
+      `Invalid ${fieldName}: must contain only letters, numbers, hyphens, and underscores. Got: ${JSON.stringify(name)}`
+    );
+  }
+  return cleaned;
+}
+
+/**
+ * Validate that the network string is one of the allowed values.
+ * Throws if the value is not in the allowlist.
+ */
+function validateNetwork(network: string): string {
+  if (!ALLOWED_NETWORKS.has(network)) {
+    throw new Error(
+      `Invalid network: must be one of ${[...ALLOWED_NETWORKS].join(", ")}. Got: ${JSON.stringify(network)}`
+    );
+  }
+  return network;
+}
+
+/**
+ * Assert that a resolved output path stays within the expected base directory.
+ * Throws if the path escapes the base, providing a belt-and-suspenders guard.
+ */
+function assertPathConfined(outputDir: string): void {
+  const resolvedPath = path.resolve(outputDir);
+  const expectedBase = path.resolve(path.join(__dirname, "generated"));
+  if (!resolvedPath.startsWith(expectedBase + path.sep) && resolvedPath !== expectedBase) {
+    throw new Error(
+      `Path traversal detected: resolved path ${resolvedPath} is outside expected directory ${expectedBase}`
+    );
+  }
+}
+
 /**
  * Save generated agent account contract to a file in the contract-tools/generated directory
  */
@@ -9,17 +53,24 @@ export async function saveAgentAccountToFile(
   contract: ContractResponse,
   network: string
 ) {
+  const safeNetwork = validateNetwork(network);
+
+  // Use the contract's name property
+  const contractName = sanitizeName(
+    contract.displayName ?? contract.name,
+    "contractName"
+  );
+
   // Create the directory if it doesn't exist
   const outputDir = path.join(
     __dirname,
     "generated",
     "agent-accounts",
-    network
+    safeNetwork
   );
+  assertPathConfined(outputDir);
   fs.mkdirSync(outputDir, { recursive: true });
 
-  // Use the contract's name property
-  const contractName = contract.displayName ?? contract.name;
   const filePath = path.join(outputDir, `${contractName}.clar`);
 
   if (!contract.source) {
@@ -59,17 +110,23 @@ export async function saveDaoContractsToFiles(
   tokenSymbol: string,
   network: string
 ) {
+  const safeSymbol = sanitizeName(tokenSymbol, "tokenSymbol");
+  const safeNetwork = validateNetwork(network);
+
   // Create the directory if it doesn't exist
-  const outputDir = path.join(__dirname, "generated", tokenSymbol, network);
+  const outputDir = path.join(__dirname, "generated", safeSymbol, safeNetwork);
+  assertPathConfined(outputDir);
   //console.log(`Saving contracts to ${outputDir}`);
   fs.mkdirSync(outputDir, { recursive: true });
 
   // Save each contract to a file
   for (const contractData of contracts) {
     // Use the contract's name property if available
-    const contractName =
+    const contractName = sanitizeName(
       contractData.displayName ??
-      getContractDisplayName(tokenSymbol, contractData.name);
+        getContractDisplayName(safeSymbol, contractData.name),
+      "contractName"
+    );
 
     const filePath = path.join(outputDir, `${contractName}.clar`);
     if (!contractData.source) {
