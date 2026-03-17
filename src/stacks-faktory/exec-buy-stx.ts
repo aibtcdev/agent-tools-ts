@@ -5,12 +5,14 @@ import {
 } from "@stacks/transactions";
 import {
   broadcastTx,
+  checkSufficientBalance,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
   getNetwork,
   getNextNonce,
   sendToLLM,
+  stxToMicroStx,
 } from "../utilities";
 
 const faktoryConfig = {
@@ -71,6 +73,16 @@ async function main() {
     CONFIG.ACCOUNT_INDEX
   );
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
+
+  // check that the account has enough STX before broadcasting
+  const requiredMicroStx = BigInt(stxToMicroStx(args.stxAmount));
+  const balanceError = await checkSufficientBalance(
+    address,
+    requiredMicroStx,
+    networkObj
+  );
+  if (balanceError) return balanceError;
+
   const sdk = new FaktorySDK(faktoryConfig);
 
   // Check token denomination

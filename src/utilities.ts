@@ -5,6 +5,7 @@ import {
   STACKS_TESTNET,
   TransactionVersion,
 } from "@stacks/network";
+import { StackingClient } from "@stacks/stacking";
 import {
   generateNewAccount,
   generateWallet,
@@ -285,6 +286,32 @@ export function broadcastTx(
       reject(createErrorResponse(error));
     }
   });
+}
+
+//////////////////////////////
+// BALANCE CHECK HELPERS
+//////////////////////////////
+
+/**
+ * Checks whether an address has sufficient STX balance before broadcasting.
+ * Returns null if the balance is sufficient, or a ToolResponse error if not.
+ */
+export async function checkSufficientBalance(
+  address: string,
+  requiredMicroStx: bigint,
+  network: StacksNetwork
+): Promise<ToolResponse<null> | null> {
+  const client = new StackingClient({ address, network });
+  const total = await client.getAccountBalance();
+  const locked = await client.getAccountBalanceLocked();
+  const available = total - locked;
+  if (available < requiredMicroStx) {
+    return {
+      success: false,
+      message: `Insufficient STX balance. Required: ${requiredMicroStx} microSTX, Available: ${available} microSTX`,
+    };
+  }
+  return null;
 }
 
 //////////////////////////////

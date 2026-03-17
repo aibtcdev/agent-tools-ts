@@ -1,6 +1,7 @@
 import { makeSTXTokenTransfer } from "@stacks/transactions";
 import {
   broadcastTx,
+  checkSufficientBalance,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
@@ -73,11 +74,17 @@ async function transferToken() {
     accountIndex
   );
 
+  // check that the account has enough STX before broadcasting
+  const convertedAmount = stxToMicroStx(Number(amount));
+  const balanceError = await checkSufficientBalance(
+    address,
+    BigInt(convertedAmount) + fee,
+    networkObj
+  );
+  if (balanceError) return balanceError;
+
   // get the next nonce for the account
   const nonce = await getNextNonce(network, address);
-
-  // convert amount to microSTX
-  const convertedAmount = stxToMicroStx(Number(amount));
 
   // build the transaction for transferring tokens
   const txOptions = {

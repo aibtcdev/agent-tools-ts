@@ -1,8 +1,10 @@
 import { ClarityVersion } from "@stacks/transactions";
 import {
+  checkSufficientBalance,
   CONFIG,
   createErrorResponse,
   deriveChildAccount,
+  getNetwork,
   getNextNonce,
   sendToLLM,
   ToolResponse,
@@ -65,15 +67,25 @@ function validateArgs(): ExpectedArgs {
   };
 }
 
-async function main(): Promise<ToolResponse<DeployedSingleContract>> {
+async function main(): Promise<ToolResponse<DeployedSingleContract | null>> {
   // validate and store provided args
   const args = validateArgs();
   // setup network and wallet info
+  const networkObj = getNetwork(CONFIG.NETWORK);
   const { address, key } = await deriveChildAccount(
     CONFIG.NETWORK,
     CONFIG.MNEMONIC,
     CONFIG.ACCOUNT_INDEX
   );
+
+  // check that the account has enough STX for deployment fee before broadcasting
+  const balanceError = await checkSufficientBalance(
+    address,
+    BigInt(CONFIG.AIBTC_DEFAULT_FEE),
+    networkObj
+  );
+  if (balanceError) return balanceError;
+
   // setup deployment details
   const nextPossibleNonce = await getNextNonce(CONFIG.NETWORK, address);
   const contractDeployer = new ContractDeployer(CONFIG.NETWORK, address, key);
