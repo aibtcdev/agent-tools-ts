@@ -223,6 +223,59 @@ export class ContractCallsClient {
 
     return this.getContractAbi<T>(contractAddress, contractName, options);
   }
+
+  /**
+   * Fetch token metadata from the cache
+   *
+   * @param tokenContract - The token contract principal (address.name)
+   * @param options - Additional options including cache control
+   * @returns The token metadata
+   */
+  async getTokenMetadata<T = any>(
+    tokenContract: string,
+    options: {
+      cacheControl?: CacheControlOptions;
+    } = {}
+  ): Promise<T> {
+    const url = `${this.baseUrl}/metadata/ft/${tokenContract}`;
+
+    const queryParams = new URLSearchParams();
+
+    const cacheControl = options.cacheControl || {};
+    if (cacheControl.bustCache) {
+      queryParams.append("bustCache", "true");
+    }
+    if (cacheControl.skipCache) {
+      queryParams.append("skipCache", "true");
+    }
+    if (cacheControl.ttl !== undefined) {
+      queryParams.append("ttl", cacheControl.ttl.toString());
+    }
+
+    queryParams.append("network", this.network);
+
+    const queryString = queryParams.toString();
+    const requestUrl = queryString ? `${url}?${queryString}` : url;
+
+    const response = await fetch(requestUrl);
+
+    const result = (await response.json()) as {
+      success: boolean;
+      data?: T;
+      error?: {
+        code: string;
+        message: string;
+        details?: any;
+        id?: string;
+      };
+    };
+
+    if (result.success && result.data !== undefined) {
+      return result.data;
+    } else {
+      return undefined as T;
+    }
+  }
 }
 
 /**
