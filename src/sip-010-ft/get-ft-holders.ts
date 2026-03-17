@@ -1,6 +1,6 @@
 // CONFIGURATION
 
-import { CONFIG, getApiUrl } from "../utilities";
+import { CONFIG, getApiUrl, getHiroHeaders } from "../utilities";
 
 type FungibleTokenHoldersResponse = {
   limit: number;
@@ -25,9 +25,7 @@ async function getFungibleTokenHolders(
     `${apiUrl}/extended/v1/tokens/ft/${token}/holders?limit=${limit}&offset=${offset}`,
     {
       headers: {
-        ...(CONFIG.HIRO_API_KEY
-          ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
-          : {}),
+        ...getHiroHeaders(),
       },
     }
   );

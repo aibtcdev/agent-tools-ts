@@ -3,6 +3,7 @@ import {
   CONFIG,
   createErrorResponse,
   getApiUrl,
+  getHiroHeaders,
   sendToLLM,
   ToolResponse
 } from "../utilities";
@@ -32,9 +33,7 @@ async function getTransaction(network: string, txId: string): Promise<Transactio
   const apiUrl = getApiUrl(network);
   const response = await fetch(`${apiUrl}/extended/v1/tx/${txId}`, {
     headers: {
-      ...(CONFIG.HIRO_API_KEY
-        ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
-        : {}),
+      ...getHiroHeaders(),
     },
   });
   if (!response.ok) {

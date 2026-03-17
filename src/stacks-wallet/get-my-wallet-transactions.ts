@@ -1,7 +1,7 @@
 // CONFIGURATION
 
 import { Transaction } from "@stacks/stacks-blockchain-api-types";
-import { CONFIG, getApiUrl, deriveChildAccount } from "../utilities";
+import { CONFIG, getApiUrl, getHiroHeaders, deriveChildAccount } from "../utilities";
 
 // gets transaction data from the API
 interface TransactionsResponse {
@@ -14,9 +14,7 @@ async function getWalletTransactions(network: string, address: string) {
     `${apiUrl}/extended/v2/addresses/${address}/transactions`,
     {
       headers: {
-        ...(CONFIG.HIRO_API_KEY
-          ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
-          : {}),
+        ...getHiroHeaders(),
       },
     }
   );

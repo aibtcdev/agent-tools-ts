@@ -2,6 +2,7 @@ import {
   CONFIG,
   createErrorResponse,
   getApiUrl,
+  getHiroHeaders,
   getNetworkByPrincipal,
   sendToLLM,
   ToolResponse,
@@ -59,9 +60,7 @@ export async function main(): Promise<ToolResponse<ContractSourceResponse>> {
     {
       headers: {
         Accept: "application/json",
-        ...(CONFIG.HIRO_API_KEY
-          ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
-          : {}),
+        ...getHiroHeaders(),
       },
     }
   );

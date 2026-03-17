@@ -154,6 +154,14 @@ function loadConfig(): AppConfig {
 // export the configuration object to load for env vars
 export const CONFIG = loadConfig();
 
+// Returns Authorization header for Hiro API calls when an API key is configured,
+// or an empty object when no key is set (avoids sending "Bearer " with no token).
+export function getHiroHeaders(): Record<string, string> {
+  return CONFIG.HIRO_API_KEY
+    ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
+    : {};
+}
+
 //////////////////////////////
 // NETWORK HELPERS
 //////////////////////////////
@@ -511,9 +519,7 @@ export async function getNonces(network: string, address: string) {
     `${apiUrl}/extended/v1/address/${address}/nonces`,
     {
       headers: {
-        ...(CONFIG.HIRO_API_KEY
-          ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
-          : {}),
+        ...getHiroHeaders(),
       },
     }
   );
@@ -941,7 +947,7 @@ export async function getHiroTokenMetadata(
     const baseUrl = getApiUrl(CONFIG.NETWORK);
     const response = await fetch(`${baseUrl}/metadata/v1/ft/${contractId}`, {
       headers: {
-        Authorization: `Bearer ${CONFIG.HIRO_API_KEY}`,
+        ...getHiroHeaders(),
       },
     });
     if (!response.ok) {
@@ -970,9 +976,7 @@ export async function getCurrentBlockHeights(): Promise<BlockHeightResponse> {
     const baseUrl = getApiUrl(CONFIG.NETWORK);
     const response = await fetch(`${baseUrl}/extended/v2/blocks?limit=1`, {
       headers: {
-        ...(CONFIG.HIRO_API_KEY
-          ? { Authorization: `Bearer ${CONFIG.HIRO_API_KEY}` }
-          : {}),
+        ...getHiroHeaders(),
       },
     });
     if (!response.ok) {
