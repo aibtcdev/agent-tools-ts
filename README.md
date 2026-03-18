@@ -1,3 +1,5 @@
+> **⚠️ This repository is scheduled for archive.** Development has moved to [aibtc-mcp-server](https://github.com/aibtcdev/aibtc-mcp-server) and [skills](https://github.com/aibtcdev/skills).
+
 <img src="https://aibtc.dev/logos/aibtcdev-primary-logo-black-wide-1000px.png" alt="AIBTC Working Group Logo" style="width: 100%; max-width: 1000px; display: block; margin: 1rem auto;" />
 
 # AIBTC Agent Tools (TypeScript)
